@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getDictionary } from "@/lib/getDictionary";
+import { isLang } from "@/lib/i18n";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
@@ -21,6 +24,9 @@ export default async function RealityIndex({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
+  if (!isLang(lang)) notFound();
+  const t = getDictionary(lang);
+
   const supabase = getServerSupabase();
   const { data, error } = await supabase
     .from("v_promoted_condos")
@@ -35,12 +41,8 @@ export default async function RealityIndex({
   return (
     <main className="max-w-3xl mx-auto p-6">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Marketing vs Reality</h1>
-        <p className="text-zinc-400 text-sm max-w-xl">
-          영향력자 / 광고가 미는 콘도들. 마케팅 주장 옆에 우리 데이터를
-          붙여서 보여줍니다. 인플루언서 이름을 공격하지 않고, 측정값으로만
-          이야기합니다.
-        </p>
+        <h1 className="text-3xl font-bold mb-2">{t.reality.title}</h1>
+        <p className="text-zinc-400 text-sm max-w-xl">{t.reality.lead}</p>
       </header>
 
       {error && (
@@ -48,10 +50,7 @@ export default async function RealityIndex({
       )}
 
       {rows.length === 0 ? (
-        <div className="text-zinc-500 text-sm">
-          아직 등록된 promoted condo 없음. <code>/admin/promotions</code>에서
-          추가하세요.
-        </div>
+        <div className="text-zinc-500 text-sm">{t.reality.emptyState}</div>
       ) : (
         <ul className="space-y-2">
           {rows.map((r) => {
@@ -67,7 +66,7 @@ export default async function RealityIndex({
                     <div className="min-w-0">
                       <div className="font-semibold truncate">{r.name}</div>
                       <div className="text-xs text-zinc-500 mt-0.5">
-                        {r.region_name ?? "—"} · promoted by {r.promoted_by} (
+                        {r.region_name ?? "—"} · {t.reality.promotedBy} {r.promoted_by} (
                         {r.platform ?? "?"})
                       </div>
                       {r.claim && (
@@ -88,7 +87,7 @@ export default async function RealityIndex({
                       >
                         {above > 0 ? `+${above.toFixed(1)}%` : `${above.toFixed(1)}%`}
                         <div className="text-[10px] text-zinc-500 font-normal">
-                          vs district
+                          {t.reality.vsDistrict}
                         </div>
                       </div>
                     )}

@@ -70,6 +70,24 @@ const dict: Dict = {
         badge: "3 longform posts",
       },
     ],
+    featured: {
+      superValue: {
+        eyebrow: "★ 슈퍼 밸류",
+        title: "중심부 + 저평가 + 시설 풀세팅 — 우리가 뽑은 베스트",
+        subtitle: (sv: number, total: number) =>
+          `${total}채 점수 매긴 것 중 ${sv}채 선정`,
+      },
+      bubbleWatch: {
+        eyebrow: "❌ 거품 경보",
+        title: "같은 구 대비 가장 비싼 콘도 — 사기 전에 검증",
+        subtitle: "같은 khet, 같은 평수 — 그런데 평균의 3~4배 가격",
+      },
+      dryHighGround: {
+        eyebrow: "🌊 안전 고지대",
+        title: "2011 대홍수 + 그 이후 매 우기에도 안 잠긴 구역",
+        subtitle: "Flood Level 1/5 — 중심부 고지대, 배수 인프라 견고",
+      },
+    },
     inventoryTitle: "Bangkok Condo Inventory",
     inventoryStatsCondos: "buildings",
     inventoryStatsDistricts: "districts",
@@ -165,6 +183,13 @@ const dict: Dict = {
     latestListing: "최근 매물",
     tagline1: "데이터 기반,",
     tagline2: "인플루언서 아님",
+  },
+  reality: {
+    title: "Marketing vs Reality",
+    lead: "영향력자 / 광고가 미는 콘도들. 마케팅 주장 옆에 우리 데이터를 붙여서 보여줍니다. 인플루언서 이름을 공격하지 않고, 측정값으로만 이야기합니다.",
+    emptyState: "아직 등록된 promoted condo 없음.",
+    promotedBy: "프로모션",
+    vsDistrict: "구 평균 대비",
   },
   condoPage: {
     buildingFacts: "빌딩 정보",

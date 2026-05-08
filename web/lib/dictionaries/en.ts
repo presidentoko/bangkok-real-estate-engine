@@ -71,6 +71,24 @@ const dict = {
         badge: "3 longform posts",
       },
     ],
+    featured: {
+      superValue: {
+        eyebrow: "★ SUPER VALUE",
+        title: "Top picks — central + underpriced + maxed-out amenities",
+        subtitle: (sv: number, total: number) =>
+          `${sv} buildings flagged out of ${total} we scored`,
+      },
+      bubbleWatch: {
+        eyebrow: "❌ BUBBLE WATCH",
+        title: "Most-overpriced vs district — verify before buying",
+        subtitle: "Same khet, same square meter — these cost 3-4× the local average",
+      },
+      dryHighGround: {
+        eyebrow: "🌊 DRY HIGH GROUND",
+        title: "Districts that stayed dry in 2011 + every monsoon since",
+        subtitle: "Flood Level 1/5 — central elevated, robust drainage",
+      },
+    },
     inventoryTitle: "Bangkok Condo Inventory",
     inventoryStatsCondos: "buildings",
     inventoryStatsDistricts: "districts",
@@ -166,6 +184,13 @@ const dict = {
     latestListing: "Latest listing",
     tagline1: "powered by data,",
     tagline2: "not influencers",
+  },
+  reality: {
+    title: "Marketing vs Reality",
+    lead: "Influencer / advertiser-promoted condos. We place our measured data next to their marketing claims. We don't attack the influencer — only the numbers.",
+    emptyState: "No promoted condos yet.",
+    promotedBy: "promoted by",
+    vsDistrict: "vs district",
   },
   condoPage: {
     buildingFacts: "Building facts",

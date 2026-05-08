@@ -20,11 +20,19 @@ const STATIC_PATHS = [
   { path: "/blog/sukhumvit-vs-sathorn-condo-comparison", changeFrequency: "weekly" as const, priority: 0.7 },
 ];
 
+function langAlternates(path: string): Record<string, string> {
+  // Per-page hreflang map; same path under each locale + x-default → en.
+  const out: Record<string, string> = { "x-default": `${SITE_URL}/en${path}` };
+  for (const l of LANGS) out[l] = `${SITE_URL}/${l}${path}`;
+  return out;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const out: MetadataRoute.Sitemap = [];
 
-  // One entry per (lang, static path)
+  // One entry per (lang, static path), each carrying language alternates so
+  // Google understands the EN/KO/TH versions are siblings, not duplicates.
   for (const lang of LANGS) {
     for (const sp of STATIC_PATHS) {
       out.push({
@@ -32,6 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: now,
         changeFrequency: sp.changeFrequency,
         priority: sp.priority,
+        alternates: { languages: langAlternates(sp.path) },
       });
     }
   }
@@ -51,12 +60,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (rows.length === 0) break;
     for (const r of rows) {
       const lastMod = r.last_seen_at ? new Date(r.last_seen_at) : now;
+      const condoPath = `/condo/${r.id}`;
       for (const lang of LANGS) {
         out.push({
-          url: `${SITE_URL}/${lang}/condo/${r.id}`,
+          url: `${SITE_URL}/${lang}${condoPath}`,
           lastModified: lastMod,
           changeFrequency: "weekly",
           priority: 0.6,
+          alternates: { languages: langAlternates(condoPath) },
         });
       }
     }

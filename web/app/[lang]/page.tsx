@@ -124,10 +124,10 @@ export default async function Home({
       {superValue.length > 0 && (
         <FeaturedRow
           lang={lang}
-          eyebrow="★ SUPER VALUE"
+          eyebrow={t.home.featured.superValue.eyebrow}
           eyebrowColor="text-emerald-400"
-          title="Top picks — central + underpriced + maxed-out amenities"
-          subtitle={`${stats.superValue} buildings flagged out of ${stats.withBubble} we scored`}
+          title={t.home.featured.superValue.title}
+          subtitle={t.home.featured.superValue.subtitle(stats.superValue, stats.withBubble)}
           condos={superValue}
         />
       )}
@@ -135,10 +135,10 @@ export default async function Home({
       {/* Bubble TOP */}
       <FeaturedRow
         lang={lang}
-        eyebrow="❌ BUBBLE WATCH"
+        eyebrow={t.home.featured.bubbleWatch.eyebrow}
         eyebrowColor="text-rose-400"
-        title="Most-overpriced vs district — verify before buying"
-        subtitle="Same khet, same square meter — these cost 3-4× the local average"
+        title={t.home.featured.bubbleWatch.title}
+        subtitle={t.home.featured.bubbleWatch.subtitle}
         condos={overpriced}
       />
 
@@ -146,10 +146,10 @@ export default async function Home({
       {safest.length > 0 && (
         <FeaturedRow
           lang={lang}
-          eyebrow="🌊 DRY HIGH GROUND"
+          eyebrow={t.home.featured.dryHighGround.eyebrow}
           eyebrowColor="text-sky-400"
-          title="Districts that stayed dry in 2011 + every monsoon since"
-          subtitle="Flood Level 1/5 — central elevated, robust drainage"
+          title={t.home.featured.dryHighGround.title}
+          subtitle={t.home.featured.dryHighGround.subtitle}
           condos={safest}
         />
       )}
