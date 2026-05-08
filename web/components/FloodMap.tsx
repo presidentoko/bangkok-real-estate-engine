@@ -67,6 +67,14 @@ export function FloodMap({
     });
     mapRef.current = map;
 
+    // Surface internal maplibre errors (tile fetch fails, style parse, etc).
+    // These don't bubble up to the load callback's try/catch.
+    map.on("error", (e) => {
+      const msg = e.error?.message || String(e.error) || "unknown map error";
+      console.error("[FloodMap] map error:", msg, e);
+      setError(msg);
+    });
+
     map.on("load", async () => {
       try {
         const res = await fetch(GEOJSON_URL);
