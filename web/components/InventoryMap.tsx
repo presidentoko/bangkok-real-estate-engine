@@ -6,7 +6,6 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 const BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
 const BANGKOK_CENTER: [number, number] = [100.5018, 13.7563];
-const GEOJSON_URL = "/bangkok-districts.geojson";
 
 export type KhetCount = { name: string; count: number };
 export type CondoPoint = {
@@ -16,6 +15,8 @@ export type CondoPoint = {
   lng: number;
   url?: string | null;
 };
+
+type GeoJson = { type: string; features: Array<Record<string, unknown>> };
 
 // Bridge OSM canonical names ("Huai Khwang") with hipflat-derived slugs
 // ("huai-khwang") so the same khet doesn't end up as two map regions.
@@ -28,11 +29,13 @@ export function InventoryMap({
   points = [],
   totalBuildings,
   condoLinkPrefix = "/condo/",
+  districts,
 }: {
   khetCounts: KhetCount[];
   points?: CondoPoint[];
   totalBuildings?: number;
   condoLinkPrefix?: string;
+  districts: GeoJson;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hover, setHover] = useState<{ name: string; count: number } | null>(
@@ -79,23 +82,20 @@ export function InventoryMap({
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(container);
 
-    map.on("load", async () => {
+    map.on("load", () => {
       try {
-        const res = await fetch(GEOJSON_URL);
-        if (!res.ok) {
-          throw new Error(
-            `district geojson not found (${res.status}). Run: python scripts/fetch_district_geojson.py`
-          );
-        }
-        const geojson = await res.json();
+        // Districts are passed in by the server component (avoids a client
+        // fetch that some networks were 403'ing).
+        const geojson = JSON.parse(JSON.stringify(districts)) as GeoJson;
 
         for (const f of geojson.features ?? []) {
-          const name = f.properties?.name ?? "";
+          const props = (f.properties as { name?: string } | undefined) ?? {};
+          const name = props.name ?? "";
           const c = countByNorm.get(normalize(String(name))) ?? 0;
-          f.properties = { ...(f.properties ?? {}), building_count: c };
+          f.properties = { ...props, building_count: c };
         }
 
-        map.addSource("districts", { type: "geojson", data: geojson });
+        map.addSource("districts", { type: "geojson", data: geojson as unknown as GeoJSON.FeatureCollection });
 
         map.addLayer({
           id: "districts-fill",

@@ -22,9 +22,15 @@ export default async function Home({
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
 
-  const [condos, stats] = await Promise.all([
+  const [condos, stats, districts] = await Promise.all([
     fetchAllCondos(),
     fetchSiteStats(),
+    fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/bangkok-districts.geojson`,
+      { next: { revalidate: 3600 } }
+    )
+      .then((r) => (r.ok ? r.json() : { type: "FeatureCollection", features: [] }))
+      .catch(() => ({ type: "FeatureCollection", features: [] })),
   ]);
 
   // ---- Aggregations
@@ -213,6 +219,7 @@ export default async function Home({
           points={points}
           totalBuildings={stats.buildings}
           condoLinkPrefix={`/${lang}/condo/`}
+          districts={districts}
         />
         <p className="text-xs text-zinc-500 mt-2">{t.home.inventoryHelp}</p>
       </section>

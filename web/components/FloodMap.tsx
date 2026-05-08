@@ -7,7 +7,6 @@ import { colorForLevel, descriptorForLevel } from "@/lib/floodColors";
 
 const BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
 const BANGKOK_CENTER: [number, number] = [100.5018, 13.7563];
-const GEOJSON_URL = "/bangkok-districts.geojson";
 
 type DistrictHover = {
   name: string;
@@ -24,12 +23,18 @@ export type FloodPoint = {
   url?: string | null;
 };
 
+// Loose shape — the server fetched the file and passes it down. Each feature
+// has properties.name + properties.flood_risk_level.
+type GeoJson = { type: string; features: Array<Record<string, unknown>> };
+
 export function FloodMap({
   points = [],
   condoLinkPrefix = "/condo/",
+  districts,
 }: {
   points?: FloodPoint[];
   condoLinkPrefix?: string;
+  districts: GeoJson;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hover, setHover] = useState<DistrictHover | null>(null);
@@ -76,24 +81,23 @@ export function FloodMap({
       setError(msg);
     });
 
-    map.on("load", async () => {
+    map.on("load", () => {
       try {
-        const res = await fetch(GEOJSON_URL);
-        if (!res.ok) {
-          throw new Error(
-            `district geojson not found (${res.status}). Run: python scripts/fetch_district_geojson.py`
-          );
-        }
-        const geojson = await res.json();
+        // Districts come pre-fetched from the server component; bypassing
+        // a client-side fetch dodges WAF/region-restriction edge cases that
+        // were 403'ing /bangkok-districts.geojson on some networks.
+        const geojson = JSON.parse(JSON.stringify(districts)) as GeoJson;
 
         // Promote a stable feature id so setFeatureState's hover highlight
         // sticks per-district. Without this maplibre rejects the call silently.
         let nextId = 1;
         for (const f of geojson.features ?? []) {
-          if (f.id == null) f.id = nextId++;
+          if ((f as { id?: unknown }).id == null) {
+            (f as { id?: unknown }).id = nextId++;
+          }
         }
 
-        map.addSource("districts", { type: "geojson", data: geojson });
+        map.addSource("districts", { type: "geojson", data: geojson as unknown as GeoJSON.FeatureCollection });
 
         map.addLayer({
           id: "districts-fill",

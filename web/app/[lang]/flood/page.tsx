@@ -120,7 +120,11 @@ export default async function FloodPage({
         />
       </div>
 
-      <FloodMap points={points} condoLinkPrefix={`/${lang}/condo/`} />
+      <FloodMap
+        points={points}
+        condoLinkPrefix={`/${lang}/condo/`}
+        districts={{ type: "FeatureCollection", features: features as unknown as Array<Record<string, unknown>> }}
+      />
 
       <div className="mt-6 grid md:grid-cols-2 gap-6">
         <FloodLegend lang={lang} />
