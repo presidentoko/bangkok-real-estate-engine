@@ -1,0 +1,38 @@
+# Secrets / env
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs / transient output
+*.log
+logs/
+*.tmp
+
+# Browser automation profiles (huge, contain cookies/cache)
+.nodriver-profile/
+.playwright-profile/
+.playwright/
+
+# Node / Next.js
+node_modules/
+web/.next/
+web/out/
+web/tsconfig.tsbuildinfo
+
+# Vercel local link (contains .env.production.local — re-link via `vercel link`)
+.vercel/
+web/.vercel/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

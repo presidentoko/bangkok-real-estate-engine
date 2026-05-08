@@ -1,0 +1,104 @@
+import Link from "next/link";
+import { getServerSupabase } from "@/lib/supabase";
+
+export const revalidate = 3600;
+
+type Row = {
+  promotion_id: string;
+  condo_id: string;
+  name: string;
+  region_name: string | null;
+  promoted_by: string;
+  platform: string | null;
+  claim: string | null;
+  bubble_index: number | null;
+  added_at: string;
+};
+
+export default async function RealityIndex({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  const supabase = getServerSupabase();
+  const { data, error } = await supabase
+    .from("v_promoted_condos")
+    .select(
+      "promotion_id, condo_id, name, region_name, promoted_by, platform, claim, bubble_index, added_at"
+    )
+    .order("added_at", { ascending: false })
+    .limit(50);
+
+  const rows: Row[] = data ?? [];
+
+  return (
+    <main className="max-w-3xl mx-auto p-6">
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Marketing vs Reality</h1>
+        <p className="text-zinc-400 text-sm max-w-xl">
+          영향력자 / 광고가 미는 콘도들. 마케팅 주장 옆에 우리 데이터를
+          붙여서 보여줍니다. 인플루언서 이름을 공격하지 않고, 측정값으로만
+          이야기합니다.
+        </p>
+      </header>
+
+      {error && (
+        <div className="text-red-400 text-sm mb-3">DB error: {error.message}</div>
+      )}
+
+      {rows.length === 0 ? (
+        <div className="text-zinc-500 text-sm">
+          아직 등록된 promoted condo 없음. <code>/admin/promotions</code>에서
+          추가하세요.
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {rows.map((r) => {
+            const above =
+              r.bubble_index != null ? r.bubble_index - 100 : null;
+            return (
+              <li key={r.promotion_id}>
+                <Link
+                  href={`/${lang}/reality/${r.promotion_id}`}
+                  className="block p-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition border border-zinc-800"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold truncate">{r.name}</div>
+                      <div className="text-xs text-zinc-500 mt-0.5">
+                        {r.region_name ?? "—"} · promoted by {r.promoted_by} (
+                        {r.platform ?? "?"})
+                      </div>
+                      {r.claim && (
+                        <div className="text-sm text-zinc-300 italic mt-2">
+                          &ldquo;{r.claim}&rdquo;
+                        </div>
+                      )}
+                    </div>
+                    {above != null && (
+                      <div
+                        className={`text-right shrink-0 font-bold ${
+                          above > 15
+                            ? "text-red-400"
+                            : above < -15
+                            ? "text-emerald-400"
+                            : "text-zinc-400"
+                        }`}
+                      >
+                        {above > 0 ? `+${above.toFixed(1)}%` : `${above.toFixed(1)}%`}
+                        <div className="text-[10px] text-zinc-500 font-normal">
+                          vs district
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </main>
+  );
+}
