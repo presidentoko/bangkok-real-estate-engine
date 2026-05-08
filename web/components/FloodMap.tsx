@@ -21,7 +21,7 @@ export type FloodPoint = {
   name: string;
   lat: number;
   lng: number;
-  level: number | null; // flood level of the building's khet
+  level: number | null;
   url?: string | null;
 };
 
@@ -33,7 +33,6 @@ export function FloodMap({
   condoLinkPrefix?: string;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
   const [hover, setHover] = useState<DistrictHover | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,18 +56,7 @@ export function FloodMap({
   );
 
   useEffect(() => {
-    console.log("[FloodMap] useEffect fired", {
-      hasContainer: !!containerRef.current,
-      pointCount: points.length,
-    });
-    if (!containerRef.current) {
-      console.warn("[FloodMap] no container — bailing");
-      return;
-    }
-    console.log("[FloodMap] container size", {
-      w: containerRef.current.clientWidth,
-      h: containerRef.current.clientHeight,
-    });
+    if (!containerRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: BASEMAP_STYLE,
@@ -76,70 +64,65 @@ export function FloodMap({
       zoom: 10,
       attributionControl: { compact: true },
     });
-    mapRef.current = map;
-    console.log("[FloodMap] map instance created");
 
     map.on("error", (e) => {
       const msg = e.error?.message || String(e.error) || "unknown map error";
-      console.error("[FloodMap] map error:", msg, e);
       setError(msg);
     });
-    map.on("styledata", () => console.log("[FloodMap] styledata fired"));
 
     map.on("load", async () => {
-      console.log("[FloodMap] load fired");
       try {
-        console.log("[FloodMap] fetching geojson…");
         const res = await fetch(GEOJSON_URL);
-        console.log("[FloodMap] geojson response", { ok: res.ok, status: res.status });
         if (!res.ok) {
           throw new Error(
             `district geojson not found (${res.status}). Run: python scripts/fetch_district_geojson.py`
           );
         }
         const geojson = await res.json();
-        console.log("[FloodMap] geojson parsed", {
-          features: geojson?.features?.length,
-          firstProp: geojson?.features?.[0]?.properties,
-        });
+
+        // Promote a stable feature id so setFeatureState's hover highlight
+        // sticks per-district. Without this maplibre rejects the call silently.
+        let nextId = 1;
+        for (const f of geojson.features ?? []) {
+          if (f.id == null) f.id = nextId++;
+        }
 
         map.addSource("districts", { type: "geojson", data: geojson });
-        console.log("[FloodMap] addSource districts done");
 
-        console.log("[FloodMap] adding districts-fill layer");
         map.addLayer({
           id: "districts-fill",
           type: "fill",
           source: "districts",
           paint: {
             "fill-color": [
-              "case",
-              ["==", ["get", "flood_risk_level"], 5], "#dc2626",
-              ["==", ["get", "flood_risk_level"], 4], "#fb923c",
-              ["==", ["get", "flood_risk_level"], 3], "#facc15",
-              ["==", ["get", "flood_risk_level"], 2], "#84cc16",
-              ["==", ["get", "flood_risk_level"], 1], "#10b981",
-              ["==", ["get", "flood_risk_level"], 0], "#1f2937",
+              "match",
+              ["get", "flood_risk_level"],
+              5, "#dc2626",
+              4, "#fb923c",
+              3, "#facc15",
+              2, "#84cc16",
+              1, "#10b981",
+              0, "#1f2937",
               "#3f3f46",
             ],
             "fill-opacity": [
-              "case", ["boolean", ["feature-state", "hover"], false], 0.85, 0.6,
+              "case",
+              ["boolean", ["feature-state", "hover"], false],
+              0.85,
+              0.6,
             ],
           },
         });
 
-        console.log("[FloodMap] districts-fill done; adding districts-outline");
         map.addLayer({
           id: "districts-outline",
           type: "line",
           source: "districts",
-          paint: {
-            "line-color": "#18181b",
-            "line-width": 1,
-          },
+          paint: { "line-color": "#18181b", "line-width": 1 },
         });
 
-        console.log("[FloodMap] outline done; adding buildings source+layer");
+        // Building points coloured by their host district's flood level.
+        // White ring for visibility against any underlying choropleth colour.
         map.addSource("buildings", { type: "geojson", data: pointsGeoJson });
         map.addLayer({
           id: "buildings-points",
@@ -151,12 +134,13 @@ export function FloodMap({
               9, 1.5, 13, 3, 16, 6,
             ],
             "circle-color": [
-              "case",
-              ["==", ["get", "level"], 5], "#dc2626",
-              ["==", ["get", "level"], 4], "#fb923c",
-              ["==", ["get", "level"], 3], "#facc15",
-              ["==", ["get", "level"], 2], "#84cc16",
-              ["==", ["get", "level"], 1], "#10b981",
+              "match",
+              ["get", "level"],
+              5, "#dc2626",
+              4, "#fb923c",
+              3, "#facc15",
+              2, "#84cc16",
+              1, "#10b981",
               "#a1a1aa",
             ],
             "circle-stroke-width": 0.7,
@@ -164,6 +148,7 @@ export function FloodMap({
             "circle-opacity": 0.95,
           },
         });
+
         map.on("click", "buildings-points", (e) => {
           const f = e.features?.[0];
           if (!f) return;
@@ -195,15 +180,14 @@ export function FloodMap({
             return;
           }
           const f = features[0];
-          const id = f.id;
-          if (id != null && id !== hoverId) {
+          if (f.id != null && f.id !== hoverId) {
             if (hoverId != null) {
               map.setFeatureState(
                 { source: "districts", id: hoverId },
                 { hover: false }
               );
             }
-            hoverId = id;
+            hoverId = f.id;
             map.setFeatureState(
               { source: "districts", id: hoverId },
               { hover: true }
@@ -233,6 +217,10 @@ export function FloodMap({
           setHover(null);
           map.getCanvas().style.cursor = "";
         });
+
+        // Defensive resize on the next frame — covers the case where the
+        // container's final size is computed after maplibre's initial layout.
+        requestAnimationFrame(() => map.resize());
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       }
