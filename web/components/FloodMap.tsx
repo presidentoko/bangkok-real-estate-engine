@@ -62,6 +62,11 @@ export function FloodMap({
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    console.log("[FloodMap]", {
+      districts: districts?.features?.length,
+      points: points.length,
+      containerH: container.offsetHeight,
+    });
     const map = new maplibregl.Map({
       container,
       style: BASEMAP_STYLE,
@@ -244,7 +249,8 @@ export function FloodMap({
 
   return (
     <div className="relative w-full h-[70vh] min-h-[480px] rounded-2xl overflow-hidden border border-zinc-800">
-      <div ref={containerRef} className="absolute inset-0" />
+      {/* Debug background — if user sees magenta, the canvas isn't covering. */}
+      <div ref={containerRef} className="absolute inset-0" style={{ background: "#ff00ff" }} />
 
       {hover && (
         <div className="absolute top-3 right-3 bg-zinc-900/95 backdrop-blur border border-zinc-700 rounded-xl p-3 max-w-[220px] pointer-events-none">
