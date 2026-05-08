@@ -57,7 +57,18 @@ export function FloodMap({
   );
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    console.log("[FloodMap] useEffect fired", {
+      hasContainer: !!containerRef.current,
+      pointCount: points.length,
+    });
+    if (!containerRef.current) {
+      console.warn("[FloodMap] no container — bailing");
+      return;
+    }
+    console.log("[FloodMap] container size", {
+      w: containerRef.current.clientWidth,
+      h: containerRef.current.clientHeight,
+    });
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: BASEMAP_STYLE,
@@ -66,16 +77,17 @@ export function FloodMap({
       attributionControl: { compact: true },
     });
     mapRef.current = map;
+    console.log("[FloodMap] map instance created");
 
-    // Surface internal maplibre errors (tile fetch fails, style parse, etc).
-    // These don't bubble up to the load callback's try/catch.
     map.on("error", (e) => {
       const msg = e.error?.message || String(e.error) || "unknown map error";
       console.error("[FloodMap] map error:", msg, e);
       setError(msg);
     });
+    map.on("styledata", () => console.log("[FloodMap] styledata fired"));
 
     map.on("load", async () => {
+      console.log("[FloodMap] load fired");
       try {
         const res = await fetch(GEOJSON_URL);
         if (!res.ok) {
