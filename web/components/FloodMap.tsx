@@ -56,14 +56,21 @@ export function FloodMap({
   );
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
     const map = new maplibregl.Map({
-      container: containerRef.current,
+      container,
       style: BASEMAP_STYLE,
       center: BANGKOK_CENTER,
       zoom: 10,
       attributionControl: { compact: true },
     });
+
+    // Container can resolve its final size after maplibre's init
+    // (h-[70vh] + min-h-[480px] interaction with flex parent). Without an
+    // observer the canvas stays at whatever height it was at first paint.
+    const ro = new ResizeObserver(() => map.resize());
+    ro.observe(container);
 
     map.on("error", (e) => {
       const msg = e.error?.message || String(e.error) || "unknown map error";
@@ -227,6 +234,7 @@ export function FloodMap({
     });
 
     return () => {
+      ro.disconnect();
       map.remove();
     };
   }, [pointsGeoJson, condoLinkPrefix]);

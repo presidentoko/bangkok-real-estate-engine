@@ -66,14 +66,19 @@ export function InventoryMap({
   );
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
     const map = new maplibregl.Map({
-      container: containerRef.current,
+      container,
       style: BASEMAP_STYLE,
       center: BANGKOK_CENTER,
       zoom: 10,
       attributionControl: { compact: true },
     });
+
+    // Sync canvas when container's final size resolves after init.
+    const ro = new ResizeObserver(() => map.resize());
+    ro.observe(container);
 
     map.on("load", async () => {
       try {
@@ -221,6 +226,7 @@ export function InventoryMap({
     });
 
     return () => {
+      ro.disconnect();
       map.remove();
     };
   }, [countByNorm, pointsGeoJson, condoLinkPrefix]);
