@@ -26,8 +26,9 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!isLang(lang)) return {};
   return {
+    // No canonical here — each page sets its own (otherwise every /ko/* page
+    // signals canonical=/ko, telling Google all /ko/* are duplicates).
     alternates: {
-      canonical: `/${lang}`,
       languages: {
         en: `${SITE_URL}/en`,
         ko: `${SITE_URL}/ko`,
@@ -87,6 +88,13 @@ export default async function LangLayout({
 
   return (
     <>
+      {/* Root layout pins <html lang="en"> at SSR. Patch it client-side so the
+          browser, Lighthouse, and JS-rendering crawlers see the right locale. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.documentElement.lang=${JSON.stringify(lang)}`,
+        }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
