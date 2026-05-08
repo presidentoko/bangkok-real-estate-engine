@@ -36,25 +36,40 @@ MAX_DELAY_S = 60
 RESET_AFTER_SUCCESSES = 5
 SKIP_IF_FETCHED_WITHIN_DAYS = 14
 
+# Per-step nodriver timeouts. Without these, a hard Cloudflare challenge or
+# unresponsive page can leave verify_cf()/evaluate() awaiting forever (this
+# silently hung Tier B for 1.5h on 2026-05-07).
+GOTO_TIMEOUT_S = 60
+VERIFY_CF_TIMEOUT_S = 30
+EVALUATE_TIMEOUT_S = 15
+
 
 def _load_targets(force: bool) -> list[dict]:
+    """Page through hipflat condos that have geo (Tier A done) and need Tier B."""
     c = get_client()
-    rows = (
-        c.table("condos")
-        .select("id,name,url,latitude,tier_b_fetched_at")
-        .eq("source", "hipflat")
-        .execute()
-        .data
-    ) or []
+    PAGE = 1000
+    rows: list[dict] = []
+    offset = 0
+    while True:
+        q = (
+            c.table("condos")
+            .select("id,name,url,latitude,tier_b_fetched_at")
+            .eq("source", "hipflat")
+        )
+        if not force:
+            # Tier A pre-req: only enrich buildings that already have geo.
+            q = q.not_.is_("latitude", "null")
+        chunk = q.range(offset, offset + PAGE - 1).execute().data or []
+        rows.extend(chunk)
+        if len(chunk) < PAGE:
+            break
+        offset += PAGE
     if force:
         return [r for r in rows if r.get("url")]
     cutoff = datetime.now(timezone.utc) - timedelta(days=SKIP_IF_FETCHED_WITHIN_DAYS)
     out = []
     for r in rows:
         if not r.get("url"):
-            continue
-        # Tier A pre-req — we only enrich buildings that already have geo.
-        if r.get("latitude") is None:
             continue
         fetched = r.get("tier_b_fetched_at")
         if fetched:
@@ -70,15 +85,25 @@ def _load_targets(force: bool) -> list[dict]:
 
 async def _fetch_html(url: str, browser, label: str) -> str | None:
     """Same nodriver flow as fetch_detail but returns raw HTML so the Tier B
-    parser can use it directly. Saves a redundant Tier A parse pass."""
+    parser can use it directly. Saves a redundant Tier A parse pass.
+
+    Each nodriver await is bounded by an asyncio.wait_for() so a single hung
+    page can never stall the whole pipeline.
+    """
     import asyncio as aio
     try:
-        tab = await browser.get(url)
+        tab = await aio.wait_for(browser.get(url), timeout=GOTO_TIMEOUT_S)
+    except aio.TimeoutError:
+        logger.warning(f"[tier_b] {label} goto timed out after {GOTO_TIMEOUT_S}s")
+        return None
     except Exception as e:
         logger.warning(f"[tier_b] {label} goto failed: {e}")
         return None
     try:
-        await tab.verify_cf()
+        await aio.wait_for(tab.verify_cf(), timeout=VERIFY_CF_TIMEOUT_S)
+    except aio.TimeoutError:
+        logger.warning(f"[tier_b] {label} verify_cf timed out after {VERIFY_CF_TIMEOUT_S}s — skipping")
+        return None
     except Exception as e:
         logger.debug(f"[tier_b] {label} verify_cf: {e}")
     try:
@@ -87,7 +112,15 @@ async def _fetch_html(url: str, browser, label: str) -> str | None:
         await aio.sleep(2.0)
     try:
         from src.scrapers.hipflat import _unwrap
-        html = _unwrap(await tab.evaluate("document.documentElement.outerHTML"))
+        html = _unwrap(
+            await aio.wait_for(
+                tab.evaluate("document.documentElement.outerHTML"),
+                timeout=EVALUATE_TIMEOUT_S,
+            )
+        )
+    except aio.TimeoutError:
+        logger.warning(f"[tier_b] {label} outerHTML timed out after {EVALUATE_TIMEOUT_S}s")
+        return None
     except Exception as e:
         logger.warning(f"[tier_b] {label} outerHTML failed: {e}")
         return None

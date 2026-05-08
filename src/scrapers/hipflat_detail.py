@@ -338,6 +338,13 @@ def _completeness(apt: dict, faq: dict, chars: dict, total_units: int | None) ->
 
 POST_NAV_PAUSE_S = 1.5
 
+# Per-step nodriver timeouts. Without these, a hard Cloudflare challenge or
+# unresponsive page can hang an await forever (Tier B silently stalled 1.5h
+# on 2026-05-07 because verify_cf() never returned).
+GOTO_TIMEOUT_S = 60
+VERIFY_CF_TIMEOUT_S = 30
+EVALUATE_TIMEOUT_S = 15
+
 
 async def fetch_detail(
     url: str,
@@ -354,12 +361,18 @@ async def fetch_detail(
     from pathlib import Path
     label = label or url.rsplit("/", 1)[-1]
     try:
-        tab = await browser.get(url)
+        tab = await asyncio.wait_for(browser.get(url), timeout=GOTO_TIMEOUT_S)
+    except asyncio.TimeoutError:
+        logger.warning(f"[hipflat_detail] {label} goto timed out after {GOTO_TIMEOUT_S}s")
+        return None
     except Exception as e:
         logger.warning(f"[hipflat_detail] {label} goto failed: {e}")
         return None
     try:
-        await tab.verify_cf()
+        await asyncio.wait_for(tab.verify_cf(), timeout=VERIFY_CF_TIMEOUT_S)
+    except asyncio.TimeoutError:
+        logger.warning(f"[hipflat_detail] {label} verify_cf timed out — skipping")
+        return None
     except Exception as e:
         # nodriver raises NoneType when no challenge present — that's the happy path.
         logger.debug(f"[hipflat_detail] {label} verify_cf: {e}")
@@ -371,7 +384,15 @@ async def fetch_detail(
         # outerHTML reflects whatever the DOM is at this instant; for Tier A
         # the JSON-LD + section.* are SSR-rendered and present immediately.
         from src.scrapers.hipflat import _unwrap
-        html = _unwrap(await tab.evaluate("document.documentElement.outerHTML"))
+        html = _unwrap(
+            await asyncio.wait_for(
+                tab.evaluate("document.documentElement.outerHTML"),
+                timeout=EVALUATE_TIMEOUT_S,
+            )
+        )
+    except asyncio.TimeoutError:
+        logger.warning(f"[hipflat_detail] {label} outerHTML timed out")
+        return None
     except Exception as e:
         logger.warning(f"[hipflat_detail] {label} get HTML failed: {e}")
         return None
