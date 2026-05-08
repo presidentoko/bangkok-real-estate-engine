@@ -50,11 +50,23 @@ SKIP_IF_FETCHED_WITHIN_DAYS = 7
 
 
 def _load_targets(force: bool) -> list[dict]:
+    """Page through all hipflat rows; PostgREST caps each response at ~1000."""
     c = get_client()
-    q = c.table("condos").select(
-        "id,name,url,latitude,detail_fetched_at"
-    ).eq("source", "hipflat")
-    rows = q.execute().data or []
+    PAGE = 1000
+    rows: list[dict] = []
+    offset = 0
+    while True:
+        q = c.table("condos").select(
+            "id,name,url,latitude,detail_fetched_at"
+        ).eq("source", "hipflat")
+        if not force:
+            # Filter at DB level: skip buildings already geo-located.
+            q = q.is_("latitude", "null")
+        chunk = q.range(offset, offset + PAGE - 1).execute().data or []
+        rows.extend(chunk)
+        if len(chunk) < PAGE:
+            break
+        offset += PAGE
     if force:
         return [r for r in rows if r.get("url")]
     cutoff = datetime.now(timezone.utc) - timedelta(days=SKIP_IF_FETCHED_WITHIN_DAYS)
@@ -62,8 +74,7 @@ def _load_targets(force: bool) -> list[dict]:
     for r in rows:
         if not r.get("url"):
             continue
-        if r.get("latitude") is not None:
-            continue
+        # latitude null guaranteed by DB filter above; just check the recency cutoff.
         fetched = r.get("detail_fetched_at")
         if fetched:
             try:
