@@ -5,8 +5,7 @@ import maplibregl, { type MapMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { colorForLevel, descriptorForLevel } from "@/lib/floodColors";
 
-const BASEMAP_STYLE =
-  "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+const BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
 const BANGKOK_CENTER: [number, number] = [100.5018, 13.7563];
 const GEOJSON_URL = "/bangkok-districts.geojson";
 
