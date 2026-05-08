@@ -5,7 +5,14 @@ import maplibregl, { type MapMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { colorForLevel, descriptorForLevel } from "@/lib/floodColors";
 
-const BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
+// Self-hosted blank style — no external tiles. Districts render on top.
+const BLANK_STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  sources: {},
+  layers: [
+    { id: "bg", type: "background", paint: { "background-color": "#0f172a" } },
+  ],
+};
 const BANGKOK_CENTER: [number, number] = [100.5018, 13.7563];
 
 type DistrictHover = {
@@ -69,7 +76,7 @@ export function FloodMap({
     });
     const map = new maplibregl.Map({
       container,
-      style: BASEMAP_STYLE,
+      style: BLANK_STYLE,
       center: BANGKOK_CENTER,
       zoom: 10,
       attributionControl: { compact: true },
@@ -249,8 +256,7 @@ export function FloodMap({
 
   return (
     <div className="relative w-full h-[70vh] min-h-[480px] rounded-2xl overflow-hidden border border-zinc-800">
-      {/* Debug background — if user sees magenta, the canvas isn't covering. */}
-      <div ref={containerRef} className="absolute inset-0" style={{ background: "#ff00ff" }} />
+      <div ref={containerRef} className="absolute inset-0" />
 
       {hover && (
         <div className="absolute top-3 right-3 bg-zinc-900/95 backdrop-blur border border-zinc-700 rounded-xl p-3 max-w-[220px] pointer-events-none">
