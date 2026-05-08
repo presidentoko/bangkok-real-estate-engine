@@ -89,16 +89,24 @@ export function FloodMap({
     map.on("load", async () => {
       console.log("[FloodMap] load fired");
       try {
+        console.log("[FloodMap] fetching geojson…");
         const res = await fetch(GEOJSON_URL);
+        console.log("[FloodMap] geojson response", { ok: res.ok, status: res.status });
         if (!res.ok) {
           throw new Error(
             `district geojson not found (${res.status}). Run: python scripts/fetch_district_geojson.py`
           );
         }
         const geojson = await res.json();
+        console.log("[FloodMap] geojson parsed", {
+          features: geojson?.features?.length,
+          firstProp: geojson?.features?.[0]?.properties,
+        });
 
         map.addSource("districts", { type: "geojson", data: geojson });
+        console.log("[FloodMap] addSource districts done");
 
+        console.log("[FloodMap] adding districts-fill layer");
         map.addLayer({
           id: "districts-fill",
           type: "fill",
@@ -120,6 +128,7 @@ export function FloodMap({
           },
         });
 
+        console.log("[FloodMap] districts-fill done; adding districts-outline");
         map.addLayer({
           id: "districts-outline",
           type: "line",
@@ -130,8 +139,7 @@ export function FloodMap({
           },
         });
 
-        // Building points coloured by their host district's flood level.
-        // White ring for visibility against any underlying choropleth colour.
+        console.log("[FloodMap] outline done; adding buildings source+layer");
         map.addSource("buildings", { type: "geojson", data: pointsGeoJson });
         map.addLayer({
           id: "buildings-points",
