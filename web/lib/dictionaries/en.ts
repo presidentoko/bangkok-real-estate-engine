@@ -11,6 +11,7 @@ const dict = {
     inventory: "Inventory",
     reality: "Marketing vs Reality",
     blog: "Blog",
+    contact: "Contact",
   },
   footer: {
     about:
@@ -191,6 +192,40 @@ const dict = {
     emptyState: "No promoted condos yet.",
     promotedBy: "promoted by",
     vsDistrict: "vs district",
+    sponsorCta: "Sponsor a slot — your claim, our data →",
+  },
+  contact: {
+    title: "Contact",
+    lead: "Sponsor a verified condo report, license our data, get featured in press, or just say hi. We read every message.",
+    form: {
+      inquiryType: "What's this about?",
+      types: {
+        general: "General inquiry",
+        promote: "Promote my condo (paid placement)",
+        b2b_reports: "License data / B2B market reports",
+        press: "Press / interview",
+        other: "Other",
+      },
+      name: "Your name",
+      email: "Your email",
+      message: "Message",
+      submit: "Send",
+      submitting: "Sending…",
+      success: "Thanks — we'll reply within 2 business days.",
+      errorGeneric: "Something went wrong. Try email instead.",
+      fallbackPrefix: "or email us at",
+      fallbackEmail: "umma@xx.gg",
+    },
+    useCases: [
+      {
+        title: "Promote my condo",
+        body: "Buy a Marketing-vs-Reality slot. We do not soften the data — but you control the claim wording. Pay only after we confirm fit.",
+      },
+      {
+        title: "License RealData market reports",
+        body: "Quarterly Bangkok-wide bubble / flood / amenity datasets in CSV + dashboard. For agents, REITs, and analysts.",
+      },
+    ],
   },
   condoPage: {
     buildingFacts: "Building facts",

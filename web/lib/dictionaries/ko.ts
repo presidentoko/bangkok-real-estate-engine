@@ -10,6 +10,7 @@ const dict: Dict = {
     inventory: "인벤토리",
     reality: "Marketing vs Reality",
     blog: "Blog",
+    contact: "문의",
   },
   footer: {
     about:
@@ -190,6 +191,40 @@ const dict: Dict = {
     emptyState: "아직 등록된 promoted condo 없음.",
     promotedBy: "프로모션",
     vsDistrict: "구 평균 대비",
+    sponsorCta: "여기에 내 콘도 슬롯 — 클레임은 당신, 데이터는 우리 →",
+  },
+  contact: {
+    title: "문의",
+    lead: "검증된 콘도 리포트 스폰서, 데이터 라이선스, 언론 인터뷰, 그냥 인사 — 모든 메시지를 읽습니다.",
+    form: {
+      inquiryType: "어떤 용건인가요?",
+      types: {
+        general: "일반 문의",
+        promote: "내 콘도 프로모션 (유료)",
+        b2b_reports: "데이터 라이선스 / B2B 시장 리포트",
+        press: "언론 / 인터뷰",
+        other: "기타",
+      },
+      name: "이름",
+      email: "이메일",
+      message: "메시지",
+      submit: "보내기",
+      submitting: "전송 중…",
+      success: "감사합니다 — 영업일 기준 2일 내 답변드리겠습니다.",
+      errorGeneric: "전송 실패. 이메일로 보내주세요.",
+      fallbackPrefix: "또는 이메일",
+      fallbackEmail: "umma@xx.gg",
+    },
+    useCases: [
+      {
+        title: "콘도 프로모션",
+        body: "Marketing vs Reality 슬롯 구매. 데이터는 절대 완화하지 않지만, 클레임 문구는 직접 통제 가능. 매칭 확인 후 결제.",
+      },
+      {
+        title: "RealData 시장 리포트 라이선스",
+        body: "방콕 전체 거품/침수/편의시설 데이터셋 분기 발행 (CSV + 대시보드). 에이전트, 리츠, 애널리스트용.",
+      },
+    ],
   },
   condoPage: {
     buildingFacts: "빌딩 정보",
