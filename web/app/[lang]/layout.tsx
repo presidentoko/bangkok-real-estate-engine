@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CitySwitcher } from "@/components/CitySwitcher";
+import { CondoSearch } from "@/components/CondoSearch";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
@@ -110,11 +111,14 @@ export default async function LangLayout({
             <CitySwitcher lang={lang} />
           </div>
           <div className="flex items-center gap-1 sm:gap-3 text-sm">
+            <div className="hidden md:block">
+              <CondoSearch lang={lang} />
+            </div>
             {NAV.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
-                className="px-2 py-1 rounded text-zinc-300 hover:text-white hover:bg-zinc-800 transition"
+                className="hidden sm:inline px-2 py-1 rounded text-zinc-300 hover:text-white hover:bg-zinc-800 transition"
               >
                 {n.label}
               </Link>
