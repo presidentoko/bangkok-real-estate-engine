@@ -1,10 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
+import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLang(lang)) return { title: "Marketing vs Reality — RealData" };
+  const t = getDictionary(lang);
+  return {
+    title: `${t.reality.title} — RealData`,
+    description: t.reality.lead,
+    alternates: {
+      canonical: `${SEO_SITE_URL}/${lang}/reality`,
+      languages: langAlternates("/reality"),
+    },
+  };
+}
 
 type Row = {
   promotion_id: string;

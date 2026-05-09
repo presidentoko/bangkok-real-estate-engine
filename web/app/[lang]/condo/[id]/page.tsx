@@ -8,6 +8,7 @@ import { ReportCard } from "@/components/ReportCard";
 import { decodeEntities } from "@/lib/decode";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
+import { langAlternates } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
@@ -72,7 +73,10 @@ export async function generateMetadata({
   return {
     title,
     description: desc,
-    alternates: { canonical: `${SITE_URL}/${lang}/condo/${id}` },
+    alternates: {
+      canonical: `${SITE_URL}/${lang}/condo/${id}`,
+      languages: langAlternates(`/condo/${id}`),
+    },
     openGraph: {
       title,
       description: desc,
@@ -282,11 +286,28 @@ export default async function CondoPage({
     ...(additionalProps.length ? { additionalProperty: additionalProps } : {}),
   };
 
+  // Breadcrumbs help SERP show RealData → Bangkok → {region} → {condo} as a
+  // path. Big CTR win for AI Overviews and rich results.
+  const breadcrumbsJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "RealData", item: `${SITE_URL}/${lang}` },
+      { "@type": "ListItem", position: 2, name: "Inventory", item: `${SITE_URL}/${lang}/inventory` },
+      { "@type": "ListItem", position: 3, name: region, item: `${SITE_URL}/${lang}/inventory` },
+      { "@type": "ListItem", position: 4, name: condoRaw.name, item: `${SITE_URL}/${lang}/condo/${condoRaw.id}` },
+    ],
+  };
+
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
       />
       <ReportCard
         condo={{ ...condoRaw, regions }}

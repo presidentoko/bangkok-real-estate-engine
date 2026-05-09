@@ -1,22 +1,28 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { FloodLegend } from "@/components/FloodLegend";
 import { FloodMapSvg, type FloodPoint } from "@/components/FloodMapSvg";
 import { FloodStats } from "@/components/FloodStats";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
+import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ lang: string }>;
-}) {
+}): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Flood map — RealData" };
   const t = getDictionary(lang);
   return {
     title: `${t.flood.title} — RealData`,
     description: t.flood.lead,
+    alternates: {
+      canonical: `${SEO_SITE_URL}/${lang}/flood`,
+      languages: langAlternates("/flood"),
+    },
   };
 }
 

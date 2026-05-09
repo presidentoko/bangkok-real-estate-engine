@@ -1,10 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { InventoryGrid } from "@/components/InventoryGrid";
 import { isLang } from "@/lib/i18n";
 import { fetchAllCondos } from "@/lib/queries/condos";
+import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
 export const revalidate = 3600;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLang(lang)) return { title: "Inventory — RealData" };
+  return {
+    title: "Bangkok Condo Inventory — every building, mapped | RealData",
+    description:
+      "All hipflat-tracked Bangkok condo buildings. Filter by district, browse cards, click into per-building report.",
+    alternates: {
+      canonical: `${SEO_SITE_URL}/${lang}/inventory`,
+      languages: langAlternates("/inventory"),
+    },
+  };
+}
 
 export default async function InventoryPage({
   params,

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
@@ -9,9 +10,34 @@ import {
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { fetchAllCondos, fetchSiteStats, type CondoSummary } from "@/lib/queries/condos";
+import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
 // Stale while revalidate; data only changes when scrapers run (weekly).
 export const revalidate = 3600;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLang(lang)) return {};
+  const t = getDictionary(lang);
+  return {
+    title: `${t.brand.name} — ${t.home.heroTitle1} ${t.home.heroTitle2Highlight}${t.home.heroTitle3}`,
+    description: t.home.heroLead,
+    alternates: {
+      canonical: `${SEO_SITE_URL}/${lang}`,
+      languages: langAlternates(""),
+    },
+    openGraph: {
+      title: t.brand.name,
+      description: t.home.heroLead,
+      url: `${SEO_SITE_URL}/${lang}`,
+      type: "website",
+    },
+  };
+}
 
 export default async function Home({
   params,

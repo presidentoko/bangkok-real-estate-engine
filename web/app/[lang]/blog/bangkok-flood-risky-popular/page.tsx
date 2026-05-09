@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLang, type Lang } from "@/lib/i18n";
+import { blogBreadcrumbs } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
 const SITE_URL =
@@ -275,6 +276,12 @@ export default async function FloodRiskyPost({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, t.h1)),
+        }}
       />
       <article>
         <header className="mb-6">

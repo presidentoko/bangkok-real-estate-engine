@@ -1,13 +1,27 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
+import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
-export const metadata = {
-  title: "RealData Blog — Bangkok property data analysis",
-  description:
-    "Independent data analysis of the Bangkok condo market. No influencer marketing.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLang(lang)) return { title: "RealData Blog" };
+  const t = getDictionary(lang);
+  return {
+    title: `${t.blogIndex.title} — Bangkok property data analysis`,
+    description: t.blogIndex.lead,
+    alternates: {
+      canonical: `${SEO_SITE_URL}/${lang}/blog`,
+      languages: langAlternates("/blog"),
+    },
+  };
+}
 
 // All posts are now translated to en / ko / th. Title/desc/tag come from
 // per-lang maps; the post bodies are translated inline in each /blog/[slug]
