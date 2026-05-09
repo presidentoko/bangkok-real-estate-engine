@@ -11,6 +11,7 @@ const dict = {
     inventory: "Inventory",
     reality: "Marketing vs Reality",
     blog: "Blog",
+    about: "Methodology",
     contact: "Contact",
   },
   footer: {
@@ -187,6 +188,78 @@ const dict = {
     latestListing: "Latest listing",
     tagline1: "powered by data,",
     tagline2: "not influencers",
+  },
+  about: {
+    title: "Methodology",
+    lead: "How RealData measures every Thai condo. Sources, formulas, refresh cadence, and what we deliberately don't do.",
+    sectionMission: {
+      title: "What we do",
+      body: "We measure 1,700+ condos across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi continuously. Every building gets a Bubble Index, livability score, and (in Bangkok) a flood-risk level — independent of the listing source's marketing copy. No referral fees, no ad placements, no influencer deals.",
+    },
+    sectionSources: {
+      title: "Where the numbers come from",
+      items: [
+        { k: "Listings & price", v: "hipflat.co.th, weekly re-crawl. Per-unit listings (sale + rent), area, bedrooms, publisher." },
+        { k: "Flood risk (Bangkok)", v: "BMA Drainage Department + JICA reports + 2011 great-flood inundation records. District (khet) baseline, not coordinate-level." },
+        { k: "Transit & amenities", v: "OpenStreetMap via Overpass API. BTS/MRT stations + hospitals/schools/supermarkets within 1km." },
+        { k: "District boundaries", v: "OSM admin_level=6 polygons. Used for choropleth + per-district aggregations." },
+      ],
+    },
+    sectionFormulas: {
+      title: "How we score",
+      items: [
+        { k: "Bubble Index", v: "(building's median price-per-sqm ÷ district median price-per-sqm) × 100. 100 = at market. 200 = double the local average. <80 = underpriced. >130 = bubble suspect. Districts with fewer than 5 sampled buildings excluded (small-sample noise)." },
+        { k: "Livability Score", v: "Weighted aggregate of BTS/MRT distance, hospitals/schools/supermarkets within 1km, and total amenities. 0–100 scale." },
+        { k: "Super Value flag", v: "Underpriced (Bubble Index < 90) AND top-quartile livability." },
+        { k: "Flood Risk (0–5)", v: "0 = none observed, 1 = very low (central elevated), 2 = occasional puddling, 3 = neighborhood flooding common, 4 = waist-deep recurring, 5 = severe full-area inundation." },
+      ],
+    },
+    sectionWhatWeDont: {
+      title: "What we deliberately don't do",
+      items: [
+        "We don't broker listings. Listing clicks go to the original hipflat page.",
+        "We don't take referral fees from agents or developers.",
+        "We don't run banner ads. Marketing-vs-Reality slots are paid promotion — clearly labeled.",
+        "We don't accept influencer placement or 'sponsored content' that shapes our data.",
+        "We don't publish bubble_index values above 10× district median — those are data-quality issues, not real prices.",
+      ],
+    },
+    sectionRefresh: {
+      title: "Refresh cadence",
+      items: [
+        { k: "Listings & price", v: "Weekly hipflat re-crawl" },
+        { k: "Flood risk", v: "Annual (after BMA monsoon report)" },
+        { k: "Transit & amenities", v: "Quarterly review on OSM change detection" },
+      ],
+      footer: "Each building page surfaces its measurement timestamp.",
+    },
+    sectionLimits: {
+      title: "What we can't see (yet)",
+      items: [
+        "Block-level flood polygons — BMA does not publish them. We use district-level baselines.",
+        "Foreigner-quota availability per building — varies by project office. Confirm before purchase.",
+        "Off-plan / pre-construction pipeline — we only measure standing inventory listed on hipflat.",
+        "Resale velocity — we have median sale price, but not days-on-market or sale-through ratio yet.",
+      ],
+    },
+    faq: [
+      {
+        q: "Why should I trust RealData over an agent?",
+        a: "Because we publish our methodology, our sources, and our refresh cadence — and we don't get paid by listings. An agent's incentive is closing the sale; ours is being correct. Verify any number we publish against the underlying hipflat page (linked from every condo report).",
+      },
+      {
+        q: "Is RealData affiliated with hipflat?",
+        a: "No. We crawl hipflat's public pages within their robots.txt and rate-limit policies, the same way Google or Bing does. We attribute every listing back to its original hipflat URL. We have no revenue share or partnership with them.",
+      },
+      {
+        q: "Why is the Bubble Index missing for some buildings?",
+        a: "Three reasons: (1) the building has no listings on hipflat yet, (2) its district has fewer than 5 sampled buildings (peer baseline too thin), or (3) the computed value was implausible (>10× district median, treated as a data-quality issue and dropped).",
+      },
+      {
+        q: "Why is flood risk only available in Bangkok?",
+        a: "BMA (Bangkok Metropolitan Administration) is the only authority publishing district-level monsoon flood records. Phuket, Chiang Mai, etc. have provincial-level flood data, but not the per-district granularity needed to score individual buildings. We're researching alternative data sources for those markets.",
+      },
+    ],
   },
   cityPage: {
     headerSuffix: "condo report",

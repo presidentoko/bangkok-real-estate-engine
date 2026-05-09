@@ -84,6 +84,7 @@ export default async function LangLayout({
     { href: `/${lang}/inventory`, label: t.nav.inventory },
     { href: `/${lang}/reality`, label: t.nav.reality },
     { href: `/${lang}/blog`, label: t.nav.blog },
+    { href: `/${lang}/about`, label: t.nav.about },
     { href: `/${lang}/contact`, label: t.nav.contact },
   ];
 
