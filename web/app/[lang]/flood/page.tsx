@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { FloodLegend } from "@/components/FloodLegend";
-import { FloodMap, type FloodPoint } from "@/components/FloodMap";
+import { FloodMapSvg, type FloodPoint } from "@/components/FloodMapSvg";
 import { FloodStats } from "@/components/FloodStats";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
@@ -120,7 +120,7 @@ export default async function FloodPage({
         />
       </div>
 
-      <FloodMap
+      <FloodMapSvg
         points={points}
         condoLinkPrefix={`/${lang}/condo/`}
         districts={{ type: "FeatureCollection", features: features as unknown as Array<Record<string, unknown>> }}
