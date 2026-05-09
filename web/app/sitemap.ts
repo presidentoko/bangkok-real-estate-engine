@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { CITIES } from "@/lib/cities";
 import { LANGS } from "@/lib/i18n";
 import { getServerSupabase } from "@/lib/supabase";
 
@@ -42,6 +43,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: sp.changeFrequency,
         priority: sp.priority,
         alternates: { languages: langAlternates(sp.path) },
+      });
+    }
+    // Per-city landing pages — Phuket, Chiang Mai, Pattaya, Hua Hin, Chonburi.
+    for (const city of CITIES) {
+      const path = `/city/${city.slug}`;
+      out.push({
+        url: `${SITE_URL}/${lang}${path}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.7,
+        alternates: { languages: langAlternates(path) },
       });
     }
   }

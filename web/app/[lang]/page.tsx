@@ -7,6 +7,7 @@ import {
   type KhetCount,
   type CondoPoint,
 } from "@/components/InventoryMapSvg";
+import { CITIES } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { fetchAllCondos, fetchSiteStats, type CondoSummary } from "@/lib/queries/condos";
@@ -248,6 +249,32 @@ export default async function Home({
           districts={districts}
         />
         <p className="text-xs text-zinc-500 mt-2">{t.home.inventoryHelp}</p>
+      </section>
+
+      {/* Other cities */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-900">
+        <div className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+            {t.home.citiesHeader}
+          </h2>
+          <p className="text-zinc-400 text-sm mt-1 max-w-xl">{t.home.citiesLead}</p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {CITIES.map((c) => (
+            <Link
+              key={c.slug}
+              href={`/${lang}/city/${c.slug}`}
+              className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 transition group"
+            >
+              <div className="font-bold text-zinc-100 group-hover:text-blue-300 transition">
+                {c.name[lang]}
+              </div>
+              <div className="text-[11px] text-zinc-500 mt-1.5 leading-snug line-clamp-3">
+                {c.tagline[lang]}
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* FAQ */}

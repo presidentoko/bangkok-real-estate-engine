@@ -90,6 +90,8 @@ const dict = {
         subtitle: "Flood Level 1/5 — central elevated, robust drainage",
       },
     },
+    citiesHeader: "Other markets we cover",
+    citiesLead: "Same data engine, different cities. Pattaya, Phuket, Chiang Mai, Hua Hin, Chonburi.",
     inventoryTitle: "Bangkok Condo Inventory",
     inventoryStatsCondos: "buildings",
     inventoryStatsDistricts: "districts",

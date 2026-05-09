@@ -89,6 +89,8 @@ const dict: Dict = {
         subtitle: "ระดับน้ำท่วม 1/5 — พื้นที่สูงใจกลางเมือง ระบบระบายน้ำดี",
       },
     },
+    citiesHeader: "เมืองอื่นที่เราครอบคลุม",
+    citiesLead: "เอนจินข้อมูลเดียวกัน เมืองต่างกัน พัทยา ภูเก็ต เชียงใหม่ หัวหิน ชลบุรี",
     inventoryTitle: "รายการคอนโดกรุงเทพ",
     inventoryStatsCondos: "อาคาร",
     inventoryStatsDistricts: "เขต",

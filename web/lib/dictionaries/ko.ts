@@ -89,6 +89,8 @@ const dict: Dict = {
         subtitle: "Flood Level 1/5 — 중심부 고지대, 배수 인프라 견고",
       },
     },
+    citiesHeader: "우리가 커버하는 다른 도시",
+    citiesLead: "같은 데이터 엔진, 다른 도시. 파타야, 푸켓, 치앙마이, 후아힌, 촌부리.",
     inventoryTitle: "Bangkok Condo Inventory",
     inventoryStatsCondos: "buildings",
     inventoryStatsDistricts: "districts",
