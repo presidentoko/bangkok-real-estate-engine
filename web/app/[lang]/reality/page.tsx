@@ -63,6 +63,9 @@ export default async function RealityIndex({
       <header className="mb-6">
         <h1 className="text-3xl font-bold mb-2">{t.reality.title}</h1>
         <p className="text-zinc-400 text-sm max-w-xl">{t.reality.lead}</p>
+        <div className="mt-3 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-400 max-w-xl">
+          {t.reality.note}
+        </div>
         <Link
           href={`/${lang}/contact?type=promote`}
           className="inline-block mt-3 text-xs font-semibold text-blue-400 hover:text-blue-300"

@@ -6,7 +6,7 @@ const dict: Dict = {
     tagline: "powered by data, not influencers",
   },
   nav: {
-    flood: "แผนที่น้ำท่วม",
+    flood: "น้ำท่วมกรุงเทพ",
     inventory: "รายการคอนโด",
     reality: "Marketing vs Reality",
     blog: "Blog",
@@ -190,6 +190,7 @@ const dict: Dict = {
   reality: {
     title: "Marketing vs Reality",
     lead: "คอนโดที่อินฟลูเอนเซอร์/โฆษณาช่วยโปรโมต เราวางข้อมูลที่เราวัดเองข้างๆ ข้อความการตลาด ไม่โจมตีตัวบุคคล พูดด้วยตัวเลขเท่านั้น",
+    note: "นี่คือสล็อตโปรโมตแบบจ่ายเงิน ผู้สนับสนุนกำหนดข้อความการตลาด เราคุมคอลัมน์ข้อมูล ต้องการลงโฆษณา? ติดต่อเรา",
     emptyState: "ยังไม่มีคอนโดที่ถูกโปรโมต",
     promotedBy: "โปรโมตโดย",
     vsDistrict: "เทียบกับเขต",

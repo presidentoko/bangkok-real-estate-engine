@@ -6,7 +6,7 @@ const dict: Dict = {
     tagline: "powered by data, not influencers",
   },
   nav: {
-    flood: "침수 지도",
+    flood: "방콕 침수",
     inventory: "인벤토리",
     reality: "Marketing vs Reality",
     blog: "Blog",
@@ -190,6 +190,7 @@ const dict: Dict = {
   reality: {
     title: "Marketing vs Reality",
     lead: "영향력자 / 광고가 미는 콘도들. 마케팅 주장 옆에 우리 데이터를 붙여서 보여줍니다. 인플루언서 이름을 공격하지 않고, 측정값으로만 이야기합니다.",
+    note: "유료 프로모션 슬롯입니다. 마케팅 문구는 스폰서가 정하고, 데이터 칸은 우리가 통제합니다. 등록 문의는 Contact.",
     emptyState: "아직 등록된 promoted condo 없음.",
     promotedBy: "프로모션",
     vsDistrict: "구 평균 대비",

@@ -7,7 +7,7 @@ const dict = {
     tagline: "powered by data, not influencers",
   },
   nav: {
-    flood: "Flood Map",
+    flood: "Bangkok Flood",
     inventory: "Inventory",
     reality: "Marketing vs Reality",
     blog: "Blog",
@@ -191,6 +191,7 @@ const dict = {
   reality: {
     title: "Marketing vs Reality",
     lead: "Influencer / advertiser-promoted condos. We place our measured data next to their marketing claims. We don't attack the influencer — only the numbers.",
+    note: "This is a paid-promotion slot. Sponsors pay for the marketing claim; we control the data column. Want your condo here? Contact us.",
     emptyState: "No promoted condos yet.",
     promotedBy: "promoted by",
     vsDistrict: "vs district",
