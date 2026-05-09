@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CitySwitcher } from "@/components/CitySwitcher";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
@@ -101,12 +102,12 @@ export default async function LangLayout({
       />
       <header className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur sticky top-0 z-50">
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          <Link href={`/${lang}`} className="font-black text-lg tracking-tight">
-            <span className="text-blue-400">Real</span>{t.brand.name.replace("Real", "")}
-            <span className="hidden sm:inline text-zinc-600 font-normal text-xs ml-2">
-              Bangkok
-            </span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href={`/${lang}`} className="font-black text-lg tracking-tight">
+              <span className="text-blue-400">Real</span>{t.brand.name.replace("Real", "")}
+            </Link>
+            <CitySwitcher lang={lang} />
+          </div>
           <div className="flex items-center gap-1 sm:gap-3 text-sm">
             {NAV.map((n) => (
               <Link
