@@ -2,10 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
 import {
-  InventoryMap,
+  InventoryMapSvg,
   type KhetCount,
   type CondoPoint,
-} from "@/components/InventoryMap";
+} from "@/components/InventoryMapSvg";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { fetchAllCondos, fetchSiteStats, type CondoSummary } from "@/lib/queries/condos";
@@ -214,7 +214,7 @@ export default async function Home({
             {t.home.inventoryFullList}
           </Link>
         </div>
-        <InventoryMap
+        <InventoryMapSvg
           khetCounts={khetCounts}
           points={points}
           totalBuildings={stats.buildings}
