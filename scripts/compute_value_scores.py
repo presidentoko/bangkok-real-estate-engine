@@ -146,15 +146,17 @@ def main() -> int:
         if not r_med or r_med <= 0 or b_med is None:
             continue
         bubble_index = round(b_med / r_med * 100, 2)
-        # value_scores.bubble_index is numeric(6,2) — max 9999.99. Anything
-        # above that is invariably bad data (mis-parsed area driving pps to
-        # the moon, or a single luxe unit in a sparse region). Cap and log.
-        if bubble_index > 9999.99:
+        # >1000 (i.e. building 10x district median pps) is invariably bad
+        # data — usually a mis-parsed area_sqm driving pps to the moon, or
+        # a one-unit region with no useful baseline. Skip writing the row
+        # so the site shows that building's bubble as "no data" (gray)
+        # instead of "9999% bubble suspect".
+        if bubble_index > 1000:
             logger.warning(
-                f"capping bubble_index for {cid}: {bubble_index} -> 9999.99 "
+                f"skipping insane bubble_index for {cid}: {bubble_index} "
                 f"(b_med={b_med}, r_med={r_med}, period={period})"
             )
-            bubble_index = 9999.99
+            continue
         score_rows.append({
             "condo_id": cid,
             "bubble_index": bubble_index,
