@@ -5,11 +5,11 @@ export const runtime = "edge";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt =
-  "RealData — Bangkok condo buildings mapped, no influencer marketing";
+  "RealData — Thailand condo buildings mapped, no influencer marketing";
 
 export default async function OG() {
   // Best-effort live count; fall back to a hardcoded floor if DB is offline.
-  let total = 1088;
+  let total = 1700;
   try {
     const supabase = getServerSupabase();
     const { count } = await supabase
@@ -74,7 +74,7 @@ export default async function OG() {
             fontWeight: 500,
           }}
         >
-          mapped across Bangkok
+          mapped across Thailand · Bangkok · Phuket · Chiang Mai · Pattaya
         </div>
 
         <div

@@ -187,6 +187,27 @@ const dict: Dict = {
     tagline1: "ขับเคลื่อนด้วยข้อมูล",
     tagline2: "ไม่ใช่อินฟลูเอนเซอร์",
   },
+  cityPage: {
+    headerSuffix: "รายงานคอนโด",
+    statBuildings: "อาคาร",
+    statSubAreas: "พื้นที่ย่อย",
+    statGeo: "ระบุพิกัดแล้ว",
+    statWithBubble: "มี Bubble Index",
+    mapTitle: (name: string) => `แผนที่คอนโด${name}`,
+    mapSubtitle: (n: number) => `${n.toLocaleString()} อาคาร · สี = Bubble Index`,
+    superValueEyebrow: "★ ซูเปอร์แวลู",
+    superValueTitle: "ราคาต่ำกว่าตลาด + สิ่งอำนวยครบ",
+    superValueSubtitle: (sv: number, total: number, city: string) =>
+      `จาก ${total} อาคารที่เราให้คะแนนใน${city} คัดมา ${sv} อาคาร`,
+    bubbleEyebrow: "❌ เตือนฟองสบู่",
+    bubbleTitle: "ราคาแพงสุดเทียบพื้นที่เดียวกัน",
+    bubbleSubtitle:
+      "พื้นที่ย่อยเดียวกัน ตารางเมตรเดียวกัน — แต่พรีเมียมสูงสุด",
+    fullInventoryTitle: (city: string) => `อาคารทั้งหมดใน${city}`,
+    fullInventoryStat: (n: number) => `ติดตาม ${n.toLocaleString()} อาคาร`,
+    pendingPipeline: "ยังไม่มีคอนโดที่ติดตาม กำลังเก็บข้อมูล",
+    otherCitiesHeader: "เมืองอื่น",
+  },
   reality: {
     title: "Marketing vs Reality",
     lead: "คอนโดที่อินฟลูเอนเซอร์/โฆษณาช่วยโปรโมต เราวางข้อมูลที่เราวัดเองข้างๆ ข้อความการตลาด ไม่โจมตีตัวบุคคล พูดด้วยตัวเลขเท่านั้น",

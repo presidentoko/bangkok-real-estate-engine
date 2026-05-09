@@ -187,6 +187,27 @@ const dict: Dict = {
     tagline1: "데이터 기반,",
     tagline2: "인플루언서 아님",
   },
+  cityPage: {
+    headerSuffix: "콘도 리포트",
+    statBuildings: "빌딩",
+    statSubAreas: "서브 구역",
+    statGeo: "지도 매핑",
+    statWithBubble: "Bubble Index 산출",
+    mapTitle: (name: string) => `${name} 콘도 지도`,
+    mapSubtitle: (n: number) => `${n.toLocaleString()}채 · 색상 = Bubble Index`,
+    superValueEyebrow: "★ 슈퍼 밸류",
+    superValueTitle: "저평가 + 시설 풀세팅",
+    superValueSubtitle: (sv: number, total: number, city: string) =>
+      `${city}에서 점수 매긴 ${total}채 중 ${sv}채 선정`,
+    bubbleEyebrow: "❌ 거품 경보",
+    bubbleTitle: "같은 구역 대비 가장 비싼 콘도",
+    bubbleSubtitle:
+      "같은 서브 구역, 같은 평수 — 그런데 평균보다 가장 높은 프리미엄.",
+    fullInventoryTitle: (city: string) => `${city} 전체 빌딩`,
+    fullInventoryStat: (n: number) => `${n.toLocaleString()}채 추적 중`,
+    pendingPipeline: "아직 추적된 콘도 없음. 파이프라인 진행 중.",
+    otherCitiesHeader: "다른 도시",
+  },
   reality: {
     title: "Marketing vs Reality",
     lead: "영향력자 / 광고가 미는 콘도들. 마케팅 주장 옆에 우리 데이터를 붙여서 보여줍니다. 인플루언서 이름을 공격하지 않고, 측정값으로만 이야기합니다.",

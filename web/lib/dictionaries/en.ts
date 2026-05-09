@@ -188,6 +188,27 @@ const dict = {
     tagline1: "powered by data,",
     tagline2: "not influencers",
   },
+  cityPage: {
+    headerSuffix: "condo report",
+    statBuildings: "buildings",
+    statSubAreas: "sub-areas",
+    statGeo: "geo-located",
+    statWithBubble: "with Bubble Index",
+    mapTitle: (name: string) => `${name} condo map`,
+    mapSubtitle: (n: number) => `${n.toLocaleString()} buildings · color = Bubble Index`,
+    superValueEyebrow: "★ SUPER VALUE",
+    superValueTitle: "Underpriced + amenity-rich picks",
+    superValueSubtitle: (sv: number, total: number, city: string) =>
+      `${sv} flagged out of ${total} we scored in ${city}`,
+    bubbleEyebrow: "❌ BUBBLE WATCH",
+    bubbleTitle: "Most-overpriced vs same area",
+    bubbleSubtitle:
+      "Same sub-area, same square meter — these cost the most premium.",
+    fullInventoryTitle: (city: string) => `All ${city} buildings`,
+    fullInventoryStat: (n: number) => `${n.toLocaleString()} tracked`,
+    pendingPipeline: "No condos tracked yet. Pipeline running.",
+    otherCitiesHeader: "Other cities",
+  },
   reality: {
     title: "Marketing vs Reality",
     lead: "Influencer / advertiser-promoted condos. We place our measured data next to their marketing claims. We don't attack the influencer — only the numbers.",

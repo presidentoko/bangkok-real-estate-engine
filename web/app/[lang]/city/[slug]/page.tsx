@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
 import { CityMapSvg, type CityPoint } from "@/components/CityMapSvg";
 import { CITIES, getCity, type City, type CitySlug } from "@/lib/cities";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
 import { type CondoSummary, type PropertyType } from "@/lib/queries/condos";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
@@ -161,6 +162,7 @@ export default async function CityPage({
   const cityName = city.name[lang];
   const tagline = city.tagline[lang];
   const audience = city.audience[lang];
+  const t = getDictionary(lang).cityPage;
 
   // ---- Structured data
   const placeJsonLd = {
@@ -235,7 +237,7 @@ export default async function CityPage({
               {cityName}
             </span>
             <span className="text-zinc-400 font-bold ml-3 text-2xl sm:text-3xl">
-              condo report
+              {t.headerSuffix}
             </span>
           </h1>
           <p className="text-zinc-400 mt-4 max-w-3xl text-base sm:text-lg leading-relaxed">
@@ -245,10 +247,10 @@ export default async function CityPage({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 max-w-2xl">
             {[
-              { n: total.toLocaleString(), l: "buildings" },
-              { n: districts.size.toLocaleString(), l: "sub-areas" },
-              { n: geoLocated.toLocaleString(), l: "geo-located" },
-              { n: withBubble.toLocaleString(), l: "with Bubble Index" },
+              { n: total.toLocaleString(), l: t.statBuildings },
+              { n: districts.size.toLocaleString(), l: t.statSubAreas },
+              { n: geoLocated.toLocaleString(), l: t.statGeo },
+              { n: withBubble.toLocaleString(), l: t.statWithBubble },
             ].map((s) => (
               <div
                 key={s.l}
@@ -268,10 +270,8 @@ export default async function CityPage({
       {points.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-baseline gap-3 mb-3">
-            <h2 className="text-xl font-semibold">{cityName} condo map</h2>
-            <span className="text-zinc-500 text-sm">
-              {points.length.toLocaleString()} buildings · color = Bubble Index
-            </span>
+            <h2 className="text-xl font-semibold">{t.mapTitle(cityName)}</h2>
+            <span className="text-zinc-500 text-sm">{t.mapSubtitle(points.length)}</span>
           </div>
           <CityMapSvg
             points={points}
@@ -287,13 +287,13 @@ export default async function CityPage({
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="mb-4">
             <div className="text-xs font-bold uppercase tracking-widest mb-1 text-emerald-400">
-              ★ SUPER VALUE
+              {t.superValueEyebrow}
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Underpriced + amenity-rich picks
+              {t.superValueTitle}
             </h2>
             <p className="text-zinc-500 text-sm mt-1">
-              {superValue} flagged out of {withBubble} we scored in {cityName}
+              {t.superValueSubtitle(superValue, withBubble, cityName)}
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -309,14 +309,12 @@ export default async function CityPage({
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="mb-4">
             <div className="text-xs font-bold uppercase tracking-widest mb-1 text-rose-400">
-              ❌ BUBBLE WATCH
+              {t.bubbleEyebrow}
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Most-overpriced vs same area
+              {t.bubbleTitle}
             </h2>
-            <p className="text-zinc-500 text-sm mt-1">
-              Same sub-area, same square meter — these cost the most premium.
-            </p>
+            <p className="text-zinc-500 text-sm mt-1">{t.bubbleSubtitle}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {overpriced.map((c) => (
@@ -329,15 +327,11 @@ export default async function CityPage({
       {/* Full inventory */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex items-baseline gap-3 mb-3 flex-wrap">
-          <h2 className="text-xl font-semibold">All {cityName} buildings</h2>
-          <span className="text-zinc-500 text-sm">
-            {total.toLocaleString()} tracked
-          </span>
+          <h2 className="text-xl font-semibold">{t.fullInventoryTitle(cityName)}</h2>
+          <span className="text-zinc-500 text-sm">{t.fullInventoryStat(total)}</span>
         </div>
         {condos.length === 0 ? (
-          <div className="text-zinc-500 text-sm">
-            No condos tracked yet. Pipeline running.
-          </div>
+          <div className="text-zinc-500 text-sm">{t.pendingPipeline}</div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {condos.map((c) => (
@@ -355,7 +349,7 @@ export default async function CityPage({
       {/* Other cities */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-900">
         <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">
-          Other cities
+          {t.otherCitiesHeader}
         </h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
           {([{ slug: "bangkok", name: { en: "Bangkok", ko: "방콕", th: "กรุงเทพ" }, href: `/${lang}` }] as Array<{
