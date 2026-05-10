@@ -127,7 +127,7 @@ export default async function LangLayout({
               ))}
             </div>
             <LangSwitcher current={lang} />
-            <MobileMenu links={NAV} />
+            <MobileMenu links={NAV} lang={lang} />
           </div>
         </nav>
       </header>

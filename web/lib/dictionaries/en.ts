@@ -290,6 +290,22 @@ const dict = {
     promotedBy: "promoted by",
     vsDistrict: "vs district",
     sponsorCta: "Sponsor a slot — your claim, our data →",
+    casesHeader: "Auto-flagged: claims a buyer is most likely to hear",
+    casesIntro:
+      "We pulled the most-overpriced condos by Bubble Index across each market. The marketing positioning column shows the line a buyer hears in agent decks; the RealData column shows the measurement.",
+    sponsoredHeader: "Sponsored slots",
+    bubbleLabel: "Bubble",
+    floodLabel: "Flood",
+    marketingLabel: "Marketing positioning",
+    realDataLabel: "RealData",
+    claimByMarket: {
+      bangkok: '"Premium central location · Luxury investment grade"',
+      pattaya: '"Beachfront premium · Russian/Chinese demand · Guaranteed yield"',
+      phuket: '"Resort lifestyle · Pool villa standard · Hotel-grade rental"',
+      huahin: '"Stable retirement market · Low volatility coastal asset"',
+      chonburi: '"EEC growth corridor · Industrial-corridor upside"',
+      chiangmai: '"Digital nomad capital · Long-stay foreign demand"',
+    },
   },
   contact: {
     title: "Contact",

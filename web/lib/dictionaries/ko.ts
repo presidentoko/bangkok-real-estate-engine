@@ -289,6 +289,22 @@ const dict: Dict = {
     promotedBy: "프로모션",
     vsDistrict: "구 평균 대비",
     sponsorCta: "여기에 내 콘도 슬롯 — 클레임은 당신, 데이터는 우리 →",
+    casesHeader: "자동 추출: 매수자가 가장 자주 듣는 마케팅 vs 실측",
+    casesIntro:
+      "도시별로 Bubble Index가 가장 높은 콘도들을 뽑았습니다. 왼쪽은 에이전트 자료에서 흔히 듣는 마케팅 포지셔닝, 오른쪽은 RealData 측정값입니다.",
+    sponsoredHeader: "스폰서 슬롯",
+    bubbleLabel: "거품",
+    floodLabel: "침수",
+    marketingLabel: "마케팅 포지셔닝",
+    realDataLabel: "RealData",
+    claimByMarket: {
+      bangkok: '"프리미엄 중심부 · 럭셔리 투자급"',
+      pattaya: '"해변 프리미엄 · 러시아·중국 수요 · 확정 수익"',
+      phuket: '"리조트 라이프스타일 · 풀빌라 스탠다드 · 호텔급 임대"',
+      huahin: '"안정적 은퇴 시장 · 변동성 낮은 해안 자산"',
+      chonburi: '"EEC 성장 corridor · 산업 라인 상승 여력"',
+      chiangmai: '"디지털 노마드 수도 · 장기 체류 외국인 수요"',
+    },
   },
   contact: {
     title: "문의",

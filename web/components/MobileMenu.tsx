@@ -3,10 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { CondoSearch } from "@/components/CondoSearch";
 
 export type MobileMenuLink = { href: string; label: string };
 
-export function MobileMenu({ links }: { links: MobileMenuLink[] }) {
+export function MobileMenu({
+  links,
+  lang,
+}: {
+  links: MobileMenuLink[];
+  lang: string;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -57,7 +64,10 @@ export function MobileMenu({ links }: { links: MobileMenuLink[] }) {
             className="fixed inset-x-0 top-14 bg-zinc-950 border-b border-zinc-800 z-50 max-h-[calc(100vh-3.5rem)] overflow-y-auto"
             role="menu"
           >
-            <div className="px-4 py-2 divide-y divide-zinc-900">
+            <div className="px-4 pt-3 pb-2">
+              <CondoSearch lang={lang} />
+            </div>
+            <div className="px-4 py-2 divide-y divide-zinc-900 border-t border-zinc-900">
               {links.map((l) => (
                 <Link
                   key={l.href}
