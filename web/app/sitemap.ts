@@ -15,6 +15,7 @@ const STATIC_PATHS = [
   { path: "/reality", changeFrequency: "daily" as const, priority: 0.7 },
   { path: "/blog", changeFrequency: "weekly" as const, priority: 0.7 },
   { path: "/about", changeFrequency: "monthly" as const, priority: 0.6 },
+  { path: "/data", changeFrequency: "daily" as const, priority: 0.8 },
   { path: "/contact", changeFrequency: "yearly" as const, priority: 0.5 },
   { path: "/blog/bangkok-overpriced-top10", changeFrequency: "weekly" as const, priority: 0.6 },
   { path: "/blog/bangkok-foreigner-best-value", changeFrequency: "weekly" as const, priority: 0.6 },
