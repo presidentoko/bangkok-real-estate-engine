@@ -55,6 +55,51 @@ export default async function AboutPage({
     ],
   };
 
+  // Dataset schema — marks our crawl + scoring as a citable dataset.
+  // AI agents (Perplexity, Google AI Overviews) preferentially cite Datasets
+  // over plain articles when answering quantitative questions.
+  const datasetJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Thailand Condo Bubble Index, Flood Risk & Livability Dataset",
+    description:
+      "Independent measurement of 1,700+ condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi. Per-building Bubble Index, district-level flood risk, OSM-derived livability score, weekly refresh.",
+    url: `${SEO_SITE_URL}/${lang}/about`,
+    creator: { "@id": `${SEO_SITE_URL}/#org` },
+    publisher: { "@id": `${SEO_SITE_URL}/#org` },
+    license: `${SEO_SITE_URL}/${lang}/about`,
+    isAccessibleForFree: true,
+    keywords: [
+      "Bangkok condo prices",
+      "Phuket condo investment",
+      "Chiang Mai condo prices",
+      "Thailand bubble index",
+      "Bangkok flood risk",
+      "foreign buyer Thailand condo",
+      "BMA flood data",
+    ],
+    spatialCoverage: {
+      "@type": "Place",
+      name: "Thailand",
+      geo: {
+        "@type": "GeoShape",
+        box: "5.61 97.34 20.46 105.64",
+      },
+    },
+    temporalCoverage: "2026-04/..",
+    variableMeasured: [
+      { "@type": "PropertyValue", name: "Bubble Index", description: "Building's price-per-sqm vs district median × 100" },
+      { "@type": "PropertyValue", name: "Flood Risk Level", description: "BMA monsoon flood severity, 0–5, district baseline (Bangkok)" },
+      { "@type": "PropertyValue", name: "Livability Score", description: "Weighted aggregate of BTS/MRT, hospitals, schools, supermarkets within 1km" },
+      { "@type": "PropertyValue", name: "Super Value flag", description: "Underpriced AND top-quartile livability" },
+    ],
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "text/html",
+      contentUrl: `${SEO_SITE_URL}/${lang}/inventory`,
+    },
+  };
+
   return (
     <main className="max-w-3xl mx-auto p-6 sm:p-8">
       <script
@@ -64,6 +109,10 @@ export default async function AboutPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJsonLd) }}
       />
 
       <header className="mb-10">

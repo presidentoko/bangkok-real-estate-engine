@@ -191,8 +191,8 @@ export default async function OverpricedTop10({
     inLanguage: lang,
     datePublished: PUBLISHED,
     dateModified: PUBLISHED,
-    author: { "@type": "Organization", name: "RealData" },
-    publisher: { "@type": "Organization", name: "RealData" },
+    author: { "@id": `${SITE_URL}/#org` },
+    publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: POST_URL,
     description: META[lang].desc,
     mainEntity: {

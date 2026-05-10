@@ -21,6 +21,8 @@ const STATIC_PATHS = [
   { path: "/blog/bangkok-flood-risky-popular", changeFrequency: "weekly" as const, priority: 0.6 },
   { path: "/blog/bangkok-foreign-buyer-guide-2026", changeFrequency: "weekly" as const, priority: 0.7 },
   { path: "/blog/sukhumvit-vs-sathorn-condo-comparison", changeFrequency: "weekly" as const, priority: 0.7 },
+  { path: "/blog/phuket-bubble-watch", changeFrequency: "weekly" as const, priority: 0.7 },
+  { path: "/blog/chiang-mai-best-value-2026", changeFrequency: "weekly" as const, priority: 0.7 },
 ];
 
 function langAlternates(path: string): Record<string, string> {

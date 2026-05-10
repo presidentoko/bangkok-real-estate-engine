@@ -28,6 +28,36 @@ export async function generateMetadata({
 // page via a CONTENT switch.
 const POSTS = [
   {
+    slug: "phuket-bubble-watch",
+    title: {
+      en: "Phuket Bubble Watch — Top 10 Overpriced Condos",
+      ko: "푸켓 콘도 거품 TOP 10",
+      th: "10 อันดับคอนโดภูเก็ตราคาเกินจริง",
+    },
+    description: {
+      en: "Data analysis of 63 Phuket condos. Which buildings cost 2-4× their sub-area average? Bubble Index ranking, Russian/Chinese-investor context.",
+      ko: "푸켓 콘도 63채를 같은 sub-area 중간가와 비교. 거품 큰 빌딩 10곳 + 러시아·중국 투자자 맥락.",
+      th: "วิเคราะห์คอนโดภูเก็ต 63 อาคาร อาคารไหนแพงเกิน 2-4 เท่าของพื้นที่ย่อย? อันดับ Bubble Index พร้อมบริบทนักลงทุนรัสเซีย/จีน",
+    },
+    date: "2026-05-09",
+    tag: { en: "Bubble", ko: "거품", th: "ฟองสบู่" },
+  },
+  {
+    slug: "chiang-mai-best-value-2026",
+    title: {
+      en: "Chiang Mai Best-Value Condos for Long-Stay Foreigners",
+      ko: "장기 체류 외국인용 치앙마이 저평가 콘도",
+      th: "คอนโดเชียงใหม่ราคาคุ้มค่าสำหรับชาวต่างชาติพำนักยาว",
+    },
+    description: {
+      en: "Underpriced Chiang Mai condos — Bubble Index < 90 ranked. For digital nomads, retirees, long-stay foreigners. No broker fees, no influencer placement.",
+      ko: "치앙마이 sub-area 평균 미만 저평가 콘도 랭킹. 디지털 노마드·은퇴자·장기 외국인 거주자용.",
+      th: "คอนโดเชียงใหม่ราคาต่ำกว่าค่ามัธยฐานพื้นที่ย่อย Bubble Index < 90 จัดอันดับ สำหรับดิจิทัลโนแมด ผู้เกษียณ ชาวต่างชาติพำนักยาว",
+    },
+    date: "2026-05-09",
+    tag: { en: "Picks", ko: "추천", th: "แนะนำ" },
+  },
+  {
     slug: "bangkok-foreign-buyer-guide-2026",
     title: {
       en: "Bangkok Condo Buyer Guide 2026 — Foreigner's Handbook",
