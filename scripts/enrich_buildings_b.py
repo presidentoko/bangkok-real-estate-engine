@@ -202,6 +202,14 @@ async def _run(limit: int | None, force: bool) -> int:
     logger.info(
         f"DONE in {elapsed/60:.1f} min — ok={n_ok} fail={n_fail}  totals={totals}"
     )
+
+    # Refresh per-condo DOM aggregates so the site can sort/filter without a
+    # request-time GROUP BY across the listings table.
+    try:
+        client.rpc("recompute_condo_dom").execute()
+        logger.info("condo DOM aggregates recomputed")
+    except Exception as e:
+        logger.warning(f"recompute_condo_dom RPC raised: {e}")
     return 0 if n_fail == 0 else 1
 
 

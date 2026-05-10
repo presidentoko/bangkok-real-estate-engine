@@ -336,6 +336,13 @@ const dict = {
     perSqm: "/sqm",
     perMonth: "/mo",
     perMonthShort: "mo",
+    marketActivityTitle: "Listing activity",
+    activeListings: "Active listings",
+    medianDom: "Median days listed",
+    maxDom: "Longest listed",
+    domDays: (n: number) => (n === 1 ? "1 day" : `${n} days`),
+    domNew: "Just listed",
+    domBuilding: "Tracking begins now — RealData stamps each listing's first appearance so you'll see real days-on-market within 1–2 weeks.",
   },
 };
 

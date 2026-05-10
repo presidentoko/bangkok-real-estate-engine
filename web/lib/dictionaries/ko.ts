@@ -335,6 +335,13 @@ const dict: Dict = {
     perSqm: "/sqm",
     perMonth: "/월",
     perMonthShort: "월",
+    marketActivityTitle: "매물 활동",
+    activeListings: "활성 매물",
+    medianDom: "매물 게시 기간(중간값)",
+    maxDom: "가장 오래된 매물",
+    domDays: (n: number) => `${n}일`,
+    domNew: "방금 등록",
+    domBuilding: "추적 시작 — RealData가 매물별 첫 등록 시점을 기록합니다. 1~2주 후 실제 days-on-market 시그널이 나옵니다.",
   },
 };
 

@@ -255,7 +255,8 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
         for i in range(0, len(chart_rows), 200):
             client.table("condo_market_chart").insert(chart_rows[i:i+200]).execute()
 
-    # --- listings (upsert per unit)
+    # --- listings (UPSERT per unit, days-on-market preserved)
+    captured_iso = datetime.now(timezone.utc).isoformat()
     listing_rows: list[dict] = []
     for u in units:
         if not u.get("source_unit_id"):
@@ -276,6 +277,14 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
             "floor_level": u.get("floor_level"),
             "publisher": u.get("publisher"),
             "listing_url": u.get("listing_url"),
+            # Mark this listing as active in the current scrape and stamp
+            # last_seen_at. first_seen_at is intentionally omitted: the DB
+            # default (now()) fires on INSERT, but PostgREST's UPSERT only
+            # touches columns present in the payload, so the original
+            # first_seen_at on existing rows is preserved → real DOM signal.
+            "is_active": True,
+            "last_seen_at": captured_iso,
+            "scraped_at": captured_iso,
         })
     if listing_rows:
         # Hipflat's rent + sale tabs occasionally share the same source_unit_id
@@ -290,15 +299,19 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
             seen_ids.add(sid)
             deduped.append(r)
 
-        # PostgREST ON CONFLICT can't reference our PARTIAL unique index, so
-        # use the same delete-then-insert idiom as amenities/transit. Listings
-        # are a current-snapshot view in this pipeline; price_history is the
-        # time-series store.
-        client.table("listings").delete().eq("condo_id", condo_id).eq(
-            "source", "hipflat"
-        ).execute()
+        # Mark every existing row for this condo inactive first; the upsert
+        # below flips back the ones we still see. Rows not in the new scrape
+        # remain is_active=false but keep their first_seen_at (= we know
+        # exactly when they entered AND when they disappeared).
+        client.table("listings").update({"is_active": False}).eq(
+            "condo_id", condo_id
+        ).eq("source", "hipflat").execute()
+
         for i in range(0, len(deduped), 200):
-            client.table("listings").insert(deduped[i:i+200]).execute()
+            client.table("listings").upsert(
+                deduped[i:i+200],
+                on_conflict="condo_id,source,source_unit_id",
+            ).execute()
         listing_rows = deduped  # so the returned count reflects what was written
 
     return {

@@ -335,6 +335,13 @@ const dict: Dict = {
     perSqm: "/ตร.ม.",
     perMonth: "/เดือน",
     perMonthShort: "ด.",
+    marketActivityTitle: "กิจกรรมประกาศ",
+    activeListings: "ประกาศที่ใช้งาน",
+    medianDom: "ระยะเวลาประกาศ (มัธยฐาน)",
+    maxDom: "ประกาศนานที่สุด",
+    domDays: (n: number) => `${n} วัน`,
+    domNew: "เพิ่งประกาศ",
+    domBuilding: "เริ่มติดตามแล้ว — RealData บันทึกเวลาที่แต่ละประกาศปรากฏครั้งแรก สัญญาณ days-on-market จริงจะเห็นชัดใน 1-2 สัปดาห์",
   },
 };
 

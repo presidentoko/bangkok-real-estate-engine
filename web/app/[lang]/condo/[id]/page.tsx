@@ -105,7 +105,8 @@ export default async function CondoPage({
         "floors, total_units, completion_year, description, hero_image_url, " +
         "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
         "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
-        "market_summary_currency, available_units_count"
+        "market_summary_currency, available_units_count, " +
+        "active_listings_count, median_listing_dom_days, max_listing_dom_days"
       )
       .eq("id", id)
       .maybeSingle(),
@@ -175,6 +176,9 @@ export default async function CondoPage({
     market_sale_yoy_pct: number | null;
     market_summary_currency: string | null;
     available_units_count: number | null;
+    active_listings_count: number | null;
+    median_listing_dom_days: number | null;
+    max_listing_dom_days: number | null;
   };
   const regions = Array.isArray(condoRaw.regions)
     ? condoRaw.regions[0] ?? null
@@ -355,6 +359,44 @@ export default async function CondoPage({
           </p>
         )}
       </section>
+
+      {/* Listing activity (days-on-market) */}
+      {condoRaw.active_listings_count != null && condoRaw.active_listings_count > 0 && (
+        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-300 mb-3">
+            {tCondo.marketActivityTitle}
+          </h2>
+          <dl className="grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <dt className="text-zinc-500 text-xs">{tCondo.activeListings}</dt>
+              <dd className="text-zinc-100 font-semibold tabular-nums">
+                {condoRaw.active_listings_count}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-zinc-500 text-xs">{tCondo.medianDom}</dt>
+              <dd className="text-zinc-100 font-semibold tabular-nums">
+                {condoRaw.median_listing_dom_days != null && condoRaw.median_listing_dom_days > 0
+                  ? tCondo.domDays(condoRaw.median_listing_dom_days)
+                  : tCondo.domNew}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-zinc-500 text-xs">{tCondo.maxDom}</dt>
+              <dd className="text-zinc-100 font-semibold tabular-nums">
+                {condoRaw.max_listing_dom_days != null && condoRaw.max_listing_dom_days > 0
+                  ? tCondo.domDays(condoRaw.max_listing_dom_days)
+                  : tCondo.domNew}
+              </dd>
+            </div>
+          </dl>
+          {(condoRaw.median_listing_dom_days ?? 0) < 7 && (
+            <p className="text-zinc-500 text-xs mt-3 italic">
+              {tCondo.domBuilding}
+            </p>
+          )}
+        </section>
+      )}
 
       {/* Market summary */}
       {(condoRaw.market_rent_median || condoRaw.market_sale_median) && (
