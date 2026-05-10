@@ -75,6 +75,9 @@ export function BuildingCard({
             src={condo.hero_image_url}
             alt={condo.name}
             loading="lazy"
+            decoding="async"
+            width={400}
+            height={240}
             className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
           />
         ) : (
