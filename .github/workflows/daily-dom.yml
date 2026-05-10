@@ -1,0 +1,42 @@
+name: Daily DOM tick
+
+# Daily 02:30 Asia/Bangkok = 19:30 UTC. Lightweight: just recomputes
+# the per-condo days-on-market aggregates (now() - first_seen_at). The
+# numeric DOM values shift by +1 day each run even without a new scrape,
+# so the site shows accurate "X days listed" without waiting for the
+# weekly Tier B run.
+
+on:
+  schedule:
+    - cron: "30 19 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: daily-dom-tick
+  cancel-in-progress: true
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      PYTHONUNBUFFERED: "1"
+      PYTHONIOENCODING: "utf-8"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install supabase python-dotenv loguru
+      - name: Recompute DOM
+        run: |
+          python - <<'PY'
+          import os
+          from supabase import create_client
+          c = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
+          c.rpc("recompute_condo_dom").execute()
+          print("DOM aggregates recomputed")
+          PY
