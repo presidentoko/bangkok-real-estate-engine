@@ -1,7 +1,15 @@
 // Non-Bangkok cities currently in the DB (province column on `condos`).
 // Each entry drives a /[lang]/city/[slug] landing page when published.
 
-export type CitySlug = "pattaya" | "chonburi" | "huahin" | "phuket" | "chiangmai";
+export type CitySlug =
+  | "pattaya"
+  | "chonburi"
+  | "huahin"
+  | "phuket"
+  | "chiangmai"
+  | "krabi"
+  | "samui"
+  | "chiangrai";
 
 export type City = {
   slug: CitySlug;
@@ -90,6 +98,51 @@ export const CITIES: City[] = [
       en: "Best for: industrial-corridor investors, EEC-related work-stay buyers",
       ko: "타겟: 산업 corridor 투자자, EEC 관련 직장 체류 매수자",
       th: "เหมาะสำหรับ: นักลงทุนแนว EEC ผู้ซื้อที่ทำงานในเขตอุตสาหกรรม",
+    },
+  },
+  {
+    slug: "krabi",
+    name: { en: "Krabi", ko: "끄라비", th: "กระบี่" },
+    tagline: {
+      en: "Limestone-cliff beach market — Ao Nang, Railay. Smaller inventory, foreign-tourist demand.",
+      ko: "석회암 절벽 해변 시장 — 아오낭, 라일레이. 인벤토리 작고 외국인 관광 수요.",
+      th: "ตลาดชายหาดหน้าผาหินปูน — อ่าวนาง ไร่เลย์ อินเวนทอรีเล็ก ดีมานด์นักท่องเที่ยวต่างชาติ",
+    },
+    center: [98.9189, 8.0863],
+    audience: {
+      en: "Best for: vacation-rental operators, lifestyle buyers, Ao Nang regulars",
+      ko: "타겟: 휴양 임대 운영자, 라이프스타일 매수자, 아오낭 단골",
+      th: "เหมาะสำหรับ: ผู้ดำเนินการเช่ารายวัน ผู้ซื้อแนวไลฟ์สไตล์ ลูกค้าประจำอ่าวนาง",
+    },
+  },
+  {
+    slug: "samui",
+    name: { en: "Koh Samui (Surat Thani)", ko: "코사무이 (수랏타니)", th: "เกาะสมุย (สุราษฎร์ธานี)" },
+    tagline: {
+      en: "Gulf-side resort island. Pool-villa-heavy market with limited condo supply but premium pricing.",
+      ko: "걸프 만 리조트 섬. 풀빌라 중심 시장, 콘도 공급 제한적이지만 프리미엄 가격대.",
+      th: "เกาะรีสอร์ทฝั่งอ่าวไทย ตลาดพูลวิลล่าเป็นหลัก คอนโดน้อยแต่ราคาพรีเมียม",
+    },
+    center: [99.9695, 9.5018],
+    audience: {
+      en: "Best for: holiday-rental yield seekers, second-home buyers from Hong Kong/Singapore",
+      ko: "타겟: 휴양 임대 수익 추구자, 홍콩·싱가포르발 세컨드홈 매수자",
+      th: "เหมาะสำหรับ: ผู้แสวงหาผลตอบแทนเช่ารายวัน ผู้ซื้อบ้านที่สองจากฮ่องกง/สิงคโปร์",
+    },
+  },
+  {
+    slug: "chiangrai",
+    name: { en: "Chiang Rai", ko: "치앙라이", th: "เชียงราย" },
+    tagline: {
+      en: "Far north — quieter, cheaper, still-emerging condo scene. Border-trade and retiree exposure.",
+      ko: "최북단 — 더 조용하고 저렴, 신흥 콘도 시장. 국경 무역 + 은퇴자.",
+      th: "เหนือสุด — เงียบ ราคาถูก ตลาดคอนโดยังเกิดใหม่ การค้าชายแดน + ผู้เกษียณ",
+    },
+    center: [99.8326, 19.9105],
+    audience: {
+      en: "Best for: deep-budget retirees, frontier-market hobbyists",
+      ko: "타겟: 저예산 은퇴자, 변경 시장 매니아",
+      th: "เหมาะสำหรับ: ผู้เกษียณงบจำกัด ผู้สนใจตลาดชายขอบ",
     },
   },
 ];

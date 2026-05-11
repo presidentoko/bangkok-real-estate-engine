@@ -6,6 +6,8 @@ import type { CondoSummary, PropertyType } from "@/lib/queries/condos";
 
 type SortKey = "default" | "bubble_low" | "bubble_high" | "year" | "name";
 type TypeFilter = "all" | PropertyType;
+type CityFilter = "all" | "bangkok" | "phuket" | "chiangmai" | "pattaya" | "huahin" | "chonburi";
+type BubbleBucket = "all" | "under" | "market" | "premium" | "bubble";
 
 const SORT_LABELS: Record<SortKey, string> = {
   default: "Featured",
@@ -22,6 +24,24 @@ const TYPE_LABELS: Record<TypeFilter, string> = {
   "serviced-apartment": "Serviced",
 };
 
+const CITY_LABELS: Record<CityFilter, string> = {
+  all: "All cities",
+  bangkok: "Bangkok",
+  phuket: "Phuket",
+  chiangmai: "Chiang Mai",
+  pattaya: "Pattaya",
+  huahin: "Hua Hin",
+  chonburi: "Chonburi",
+};
+
+const BUBBLE_LABELS: Record<BubbleBucket, string> = {
+  all: "Any price",
+  under: "Underpriced (<90)",
+  market: "At market (90–130)",
+  premium: "Premium (131–200)",
+  bubble: "Bubble (>200)",
+};
+
 export function InventoryGrid({
   condos,
   hrefPrefix,
@@ -36,6 +56,8 @@ export function InventoryGrid({
   const [sort, setSort] = useState<SortKey>("default");
   const [photoOnly, setPhotoOnly] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [cityFilter, setCityFilter] = useState<CityFilter>("all");
+  const [bubble, setBubble] = useState<BubbleBucket>("all");
 
   // Only render type chips for types that actually exist in the dataset.
   const availableTypes = useMemo(() => {
@@ -45,13 +67,29 @@ export function InventoryGrid({
     return order.filter((t) => t === "all" || set.has(t as PropertyType));
   }, [condos]);
 
+  const availableCities = useMemo(() => {
+    const set = new Set<string>();
+    for (const c of condos) set.add(c.province);
+    const order: CityFilter[] = ["all", "bangkok", "phuket", "chiangmai", "pattaya", "huahin", "chonburi"];
+    return order.filter((c) => c === "all" || set.has(c));
+  }, [condos]);
+
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     let arr = condos.filter((c) => {
       if (typeFilter !== "all" && c.property_type !== typeFilter) return false;
+      if (cityFilter !== "all" && c.province !== cityFilter) return false;
       if (district && c.region !== district) return false;
       if (photoOnly && !c.hero_image_url) return false;
       if (needle && !c.name.toLowerCase().includes(needle)) return false;
+      if (bubble !== "all") {
+        const b = c.bubble_index;
+        if (b == null) return false;
+        if (bubble === "under" && b >= 90) return false;
+        if (bubble === "market" && (b < 90 || b > 130)) return false;
+        if (bubble === "premium" && (b < 131 || b > 200)) return false;
+        if (bubble === "bubble" && b <= 200) return false;
+      }
       return true;
     });
     switch (sort) {
@@ -85,10 +123,28 @@ export function InventoryGrid({
         });
     }
     return arr;
-  }, [condos, q, district, sort, photoOnly, typeFilter]);
+  }, [condos, q, district, sort, photoOnly, typeFilter, cityFilter, bubble]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
+      {availableCities.length > 2 && (
+        <div className="flex flex-wrap gap-1.5">
+          {availableCities.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCityFilter(c)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
+                cityFilter === c
+                  ? "bg-blue-500 text-white"
+                  : "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-zinc-600"
+              }`}
+            >
+              {CITY_LABELS[c]}
+            </button>
+          ))}
+        </div>
+      )}
+
       {availableTypes.length > 1 && (
         <div className="flex flex-wrap gap-1.5">
           {availableTypes.map((t) => (
@@ -106,6 +162,30 @@ export function InventoryGrid({
           ))}
         </div>
       )}
+
+      <div className="flex flex-wrap gap-1.5">
+        {(["all", "under", "market", "premium", "bubble"] as BubbleBucket[]).map((b) => {
+          const active = bubble === b;
+          const tint =
+            b === "under" ? "bg-emerald-500/20 text-emerald-200 border-emerald-500/40"
+            : b === "premium" ? "bg-orange-500/20 text-orange-200 border-orange-500/40"
+            : b === "bubble" ? "bg-rose-500/20 text-rose-200 border-rose-500/40"
+            : "bg-zinc-900 text-zinc-300 border-zinc-800";
+          return (
+            <button
+              key={b}
+              onClick={() => setBubble(b)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition border ${
+                active
+                  ? "bg-zinc-100 text-zinc-900 border-zinc-100"
+                  : `${tint} hover:border-zinc-500`
+              }`}
+            >
+              {BUBBLE_LABELS[b]}
+            </button>
+          );
+        })}
+      </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center gap-2">
         <input

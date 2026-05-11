@@ -215,6 +215,38 @@ const dict = {
     superValueBadge: "★ Super Value",
     pageCTA: "Click any building → full RealData report",
   },
+  stale: {
+    title: "Stale Listings",
+    lead: "Buildings whose listings have sat unsold for the longest. Long days-on-market without a price reduction = priced too high vs market interest. RealData stamps each listing's first appearance, so we can show this signal hipflat doesn't expose.",
+    note: "Days-on-Market data accumulates from each weekly Tier B re-scrape. The longer this site runs, the sharper the signal.",
+    table: { rank: "#", condo: "Building", city: "City", listings: "Active", dom: "Median DOM", maxDom: "Longest" },
+    domDays: (n: number) => (n === 1 ? "1 day" : `${n} days`),
+    empty: "No stale buildings yet — DOM data is still accumulating. Check back next week.",
+  },
+  press: {
+    title: "Press kit",
+    lead: "RealData covers 1,800+ Thai condos with independent measurement. Below are the assets we share when journalists or analysts ask about specific markets.",
+    sections: [
+      {
+        title: "What RealData is",
+        body: "Independent data engine measuring every listed condo across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, Chonburi, Krabi, Koh Samui, Chiang Rai. Bubble Index per building, BMA flood risk per Bangkok district, OSM-derived livability, days-on-market accumulating since 2026-05.",
+      },
+      {
+        title: "What we don't do",
+        body: "No referral fees, no influencer placement, no sponsored data. The Marketing-vs-Reality slot is the only paid surface and it never softens the data column.",
+      },
+    ],
+    contactsHeader: "Contact for interviews / data licensing",
+    contactsBody: "Email umma@xx.gg or use the contact form. We respond within 2 business days.",
+    statsHeader: "Headline numbers (live)",
+    factsheet: [
+      { k: "Buildings tracked", v: "1,800+" },
+      { k: "Cities covered", v: "9 (incl. Bangkok, Phuket, Chiang Mai)" },
+      { k: "Languages", v: "EN / KO / TH" },
+      { k: "Data refresh", v: "Weekly listings, daily DOM tick" },
+      { k: "License", v: "Cite RealData with link to source page" },
+    ],
+  },
   about: {
     title: "Methodology",
     lead: "How RealData measures every Thai condo. Sources, formulas, refresh cadence, and what we deliberately don't do.",

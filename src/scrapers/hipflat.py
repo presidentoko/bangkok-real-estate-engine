@@ -49,6 +49,9 @@ REGION_ROOTS: dict[str, str] = {
     "huahin": "prachuap-khiri-khan-pk",
     "phuket": "phuket-pu",
     "chiangmai": "chiang-mai-cm",
+    "krabi": "krabi-kr",
+    "samui": "surat-thani-st",
+    "chiangrai": "chiang-rai-cr",
 }
 DEFAULT_REGION = "bangkok"
 

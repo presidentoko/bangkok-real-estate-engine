@@ -153,6 +153,26 @@ export default async function LangLayout({
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href={`/${lang}/stale`} className="hover:text-zinc-300">
+                  Stale Listings
+                </Link>
+              </li>
+              <li>
+                <Link href={`/${lang}/press`} className="hover:text-zinc-300">
+                  Press kit
+                </Link>
+              </li>
+              <li>
+                <Link href="/alerts" className="hover:text-zinc-300">
+                  Underpriced alerts
+                </Link>
+              </li>
+              <li>
+                <Link href="/rss.xml" className="hover:text-zinc-300">
+                  RSS feed
+                </Link>
+              </li>
             </ul>
           </div>
           <div>

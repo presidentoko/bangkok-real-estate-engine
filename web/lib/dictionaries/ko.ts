@@ -214,6 +214,38 @@ const dict: Dict = {
     superValueBadge: "★ Super Value",
     pageCTA: "빌딩 클릭 → 풀 RealData 리포트",
   },
+  stale: {
+    title: "오래된 매물",
+    lead: "매물이 가장 오래 안 팔린 빌딩들. 오랜 기간 가격 인하 없이 떠있는 매물 = 시장 관심 대비 과도한 호가. RealData는 각 매물의 첫 등록 시점을 기록하기에 hipflat이 노출 안 하는 이 시그널을 보여줄 수 있음.",
+    note: "DOM 데이터는 매주 Tier B 재크롤마다 누적됨. 사이트 운영 기간이 길수록 시그널 정밀해짐.",
+    table: { rank: "#", condo: "빌딩", city: "도시", listings: "활성", dom: "DOM 중간값", maxDom: "최장" },
+    domDays: (n: number) => `${n}일`,
+    empty: "아직 stale 빌딩 없음 — DOM 데이터 누적 중. 다음 주 다시 확인.",
+  },
+  press: {
+    title: "Press kit",
+    lead: "RealData는 1,800+ 태국 콘도를 독립적으로 측정합니다. 기자/애널리스트가 특정 시장에 대해 문의할 때 공유하는 자료들.",
+    sections: [
+      {
+        title: "RealData가 뭐냐",
+        body: "방콕·푸켓·치앙마이·파타야·후아힌·촌부리·끄라비·코사무이·치앙라이의 모든 등재 콘도를 측정하는 독립 데이터 엔진. 빌딩별 Bubble Index, 방콕 구별 BMA 침수 위험, OSM 기반 생활편의 점수, 2026-05부터 누적 중인 days-on-market.",
+      },
+      {
+        title: "안 하는 것",
+        body: "추천 수수료 없음, 인플루언서 PPL 없음, 스폰서 데이터 없음. Marketing-vs-Reality 슬롯이 유일한 유료 surface이며 데이터 칸은 절대 완화 안 함.",
+      },
+    ],
+    contactsHeader: "인터뷰 / 데이터 라이선스 문의",
+    contactsBody: "이메일 umma@xx.gg 또는 contact 폼. 영업일 2일 내 답변.",
+    statsHeader: "Headline 숫자 (라이브)",
+    factsheet: [
+      { k: "추적 빌딩", v: "1,800+" },
+      { k: "커버 도시", v: "9 (방콕·푸켓·치앙마이 포함)" },
+      { k: "언어", v: "EN / KO / TH" },
+      { k: "갱신 주기", v: "주간 매물, 일간 DOM tick" },
+      { k: "라이선스", v: "출처 페이지 링크와 함께 인용 가능" },
+    ],
+  },
   about: {
     title: "방법론",
     lead: "RealData가 태국 콘도를 어떻게 측정하는지 — 데이터 출처, 공식, 갱신 주기, 그리고 우리가 의도적으로 안 하는 것.",
