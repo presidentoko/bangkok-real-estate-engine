@@ -34,6 +34,15 @@ alter table condos
     add column if not exists max_listing_dom_days integer,
     add column if not exists dom_computed_at timestamptz;
 
+-- 4a. Postgres pins a view's column list at creation time, so adding
+--     columns to `condos` does not propagate to `condos_published`. Re-run
+--     the view definition so the new DOM columns are queryable through it.
+create or replace view condos_published
+    with (security_invoker = on)
+    as select * from condos where published = true;
+
+grant select on condos_published to anon, authenticated, service_role;
+
 -- 5. Helper: recompute the per-condo DOM aggregates from currently-active
 --    listings. Run after each Tier B pass.
 create or replace function recompute_condo_dom() returns void
