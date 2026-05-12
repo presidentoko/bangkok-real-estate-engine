@@ -69,40 +69,6 @@ jobs:
             --disable-gpu --disable-dev-shm-usage --dump-dom https://example.com \
             > /dev/null && echo "chrome smoke-test OK"
 
-      - name: Diagnose nodriver launch
-        # Previous diag proved: chrome launches & CDP works with our own flags.
-        # So nodriver passes something different. Enable its INFO logger to
-        # see the exact args, and monkey-patch the subprocess call to NOT
-        # capture stderr so chrome's startup errors land in workflow logs.
-        run: |
-          xvfb-run -a --server-args="-screen 0 1280x720x24" python - <<'PY'
-          import logging, asyncio, os, sys
-          logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
-                              format="%(levelname)s %(name)s: %(message)s")
-          # Monkey-patch asyncio.create_subprocess_exec so chrome's stderr
-          # streams live to our stdout instead of being PIPE'd & hidden.
-          import asyncio as _aio
-          _orig = _aio.create_subprocess_exec
-          async def _patched(*args, **kwargs):
-              kwargs["stderr"] = None  # inherit -> shows in workflow logs
-              kwargs["stdout"] = None
-              print(">>> chrome cmdline:", " ".join(str(a) for a in args), flush=True)
-              return await _orig(*args, **kwargs)
-          _aio.create_subprocess_exec = _patched
-          import nodriver as uc
-          async def main():
-              try:
-                  b = await uc.start(headless=False, sandbox=False,
-                                     browser_args=["--disable-dev-shm-usage", "--lang=en-US"],
-                                     user_data_dir="/tmp/cr-nd")
-                  print(">>> nodriver started OK, browser:", b)
-                  await asyncio.sleep(1)
-                  b.stop()
-              except Exception as e:
-                  print(">>> nodriver failed:", type(e).__name__, repr(e)[:500])
-          uc.loop().run_until_complete(main())
-          PY
-
       - name: Tier B refresh (limited)
         # xvfb-run gives us a virtual display so nodriver's headless=False
         # init still works on a server without a real X display.

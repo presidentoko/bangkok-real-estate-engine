@@ -141,12 +141,16 @@ async def _run(limit: int | None, force: bool) -> int:
 
     os.makedirs(PROFILE_DIR, exist_ok=True)
     browser_args = ["--lang=en-US"]
-    # GitHub Actions runs in a container-like environment where Chrome's
-    # setuid sandbox can't initialize and /dev/shm is often <64MB.
-    # Passing sandbox=False is nodriver's idiomatic way to disable the
-    # sandbox (just --no-sandbox in browser_args is not enough — nodriver
-    # also adds --disable-setuid-sandbox and adjusts its own launch flow).
+    # GH Actions runs in a container-like env: small /dev/shm, setuid
+    # sandbox can't initialize. sandbox=False is nodriver's idiomatic
+    # switch (also adds --disable-setuid-sandbox).
     sandbox = not os.environ.get("CI")
+    # On Ubuntu 24.04 nodriver's candidate scan happily picks
+    # /bin/chromium — but that path is a snap transitional shim that
+    # never launches. We must point it at our google-chrome-stable
+    # symlink explicitly or it will pick the broken one and hang on
+    # "Failed to connect to browser".
+    exe = "/usr/local/bin/chrome" if os.environ.get("CI") else None
     if os.environ.get("CI"):
         browser_args.append("--disable-dev-shm-usage")
     browser = await uc.start(
@@ -154,6 +158,7 @@ async def _run(limit: int | None, force: bool) -> int:
         user_data_dir=PROFILE_DIR,
         browser_args=browser_args,
         sandbox=sandbox,
+        browser_executable_path=exe,
     )
     client = get_client()
 
