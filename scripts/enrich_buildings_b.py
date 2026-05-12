@@ -146,6 +146,42 @@ async def _fetch_html(url: str, browser, label: str) -> str | None:
     return html
 
 
+DUMP_DIR = Path(os.getcwd()) / "tier_b_dumps"
+DUMP_CAP = 3  # only keep the first few — the rest are noise once we know the cause
+
+
+def _dump_failed_html(row: dict, html: str | None, label: str, fail_idx: int) -> None:
+    if not html:
+        return
+    # Inline fingerprint first — cheap and always useful in logs.
+    head = html[:4096].lower()
+    markers = []
+    if "just a moment" in head:
+        markers.append("CF:just-a-moment")
+    if "challenge-platform" in head or "/cdn-cgi/challenge-platform" in head:
+        markers.append("CF:challenge-platform")
+    if "attention required" in head:
+        markers.append("CF:attention-required")
+    if "cf-mitigated" in head or "cf-ray" in head:
+        markers.append("CF:cf-marker")
+    if "cloudflare" in head and not markers:
+        markers.append("CF:generic")
+    import re as _re
+    m = _re.search(r"<title[^>]*>([^<]{0,200})</title>", html, _re.I)
+    title = (m.group(1).strip() if m else "")[:120]
+    logger.warning(
+        f"{label} dump: len={len(html)} title={title!r} markers={markers or 'none'}"
+    )
+    if fail_idx > DUMP_CAP:
+        return
+    try:
+        DUMP_DIR.mkdir(parents=True, exist_ok=True)
+        slug = (row.get("url") or "").rsplit("/", 1)[-1] or row.get("id", "unknown")
+        (DUMP_DIR / f"{fail_idx:02d}-{slug}.html").write_text(html, encoding="utf-8")
+    except Exception as e:
+        logger.warning(f"  dump write failed: {e}")
+
+
 async def _run(limit: int | None, force: bool) -> int:
     targets = _load_targets(force)
     if limit:
@@ -203,6 +239,10 @@ async def _run(limit: int | None, force: bool) -> int:
             except Exception as e:
                 n_fail += 1
                 logger.error(f"{label} parse/persist failed: {e}")
+                # Diagnostic: dump first few failing HTMLs + log a fingerprint
+                # so we can tell at a glance whether GH Actions is getting a
+                # Cloudflare interstitial vs something else entirely.
+                _dump_failed_html(row, html, label, n_fail)
             else:
                 n_ok += 1
                 consecutive_ok += 1

@@ -108,5 +108,6 @@ jobs:
           path: |
             tier_b.log
             compute.log
+            tier_b_dumps/
           if-no-files-found: ignore
           retention-days: 30
