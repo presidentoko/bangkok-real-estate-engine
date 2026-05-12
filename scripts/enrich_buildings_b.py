@@ -26,19 +26,21 @@ sys.path.insert(0, str(ROOT))
 import nodriver as uc  # noqa: E402
 from loguru import logger  # noqa: E402
 
-# In CI: surface nodriver's INFO logs and let chrome's stderr stream live
-# (nodriver normally captures it via PIPE and never reads it).
+# In CI: nodriver spawns chrome with stdout/stderr=PIPE and never drains
+# them. On Ubuntu 24.04 chrome floods stderr with dbus + GPU warnings
+# during startup; the 64KB pipe buffer fills, chrome blocks on the write,
+# and CDP init deadlocks — surfacing as "Failed to connect to browser"
+# ~3s in. Patching create_subprocess_exec to let stdio inherit our fds
+# instead of being PIPE'd makes chrome write to the workflow log freely
+# and the deadlock disappears.
 if os.environ.get("CI"):
-    import logging
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     import asyncio as _aio
-    _orig = _aio.create_subprocess_exec
-    async def _patched(*args, **kwargs):
+    _orig_spawn = _aio.create_subprocess_exec
+    async def _spawn_inheriting_stdio(*args, **kwargs):
         kwargs.pop("stdout", None)
         kwargs.pop("stderr", None)
-        print(">>> chrome cmdline:", " ".join(str(a) for a in args), flush=True)
-        return await _orig(*args, **kwargs)
-    _aio.create_subprocess_exec = _patched
+        return await _orig_spawn(*args, **kwargs)
+    _aio.create_subprocess_exec = _spawn_inheriting_stdio
 
 from src.db import get_client, persist_detail_b  # noqa: E402
 from src.scrapers.hipflat_detail import fetch_detail  # noqa: E402
