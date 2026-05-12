@@ -56,6 +56,12 @@ jobs:
           sudo apt-get install -y xvfb dbus-x11
           # nodriver looks for `chrome` first; symlink so the lookup hits.
           sudo ln -sf "$(which google-chrome-stable)" /usr/local/bin/chrome
+          # Sanity: prove the binary actually launches under xvfb before the
+          # scraper. If this fails, the scraper would just give nodriver's
+          # less-helpful "Failed to connect to browser".
+          xvfb-run -a google-chrome-stable --no-sandbox --headless=new \
+            --disable-gpu --disable-dev-shm-usage --dump-dom https://example.com \
+            > /dev/null && echo "chrome smoke-test OK"
 
       - name: Tier B refresh (limited)
         # xvfb-run gives us a virtual display so nodriver's headless=False
