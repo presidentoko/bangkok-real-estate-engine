@@ -56,13 +56,18 @@ jobs:
           pip install -r requirements.txt
 
       - name: Tier B refresh (limited)
+        # cmd.exe handles the 2>&1: Windows PowerShell 5.1 wraps native-cmd
+        # stderr lines into ErrorRecord objects (NativeCommandError), which
+        # makes the script exit 1 even though python ran fine. Letting cmd
+        # do the redirect avoids that wrapping.
         run: |
-          python scripts/enrich_buildings_b.py --limit $env:TIER_B_LIMIT 2>&1 | Tee-Object -FilePath tier_b.log
+          $limit = $env:TIER_B_LIMIT
+          cmd /c "python scripts\enrich_buildings_b.py --limit $limit 2>&1" | Tee-Object -FilePath tier_b.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Recompute bubble_index + region averages
         run: |
-          python scripts/compute_value_scores.py 2>&1 | Tee-Object -FilePath compute.log
+          cmd /c "python scripts\compute_value_scores.py 2>&1" | Tee-Object -FilePath compute.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Notify on success
