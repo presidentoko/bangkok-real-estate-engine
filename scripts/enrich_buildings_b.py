@@ -26,6 +26,20 @@ sys.path.insert(0, str(ROOT))
 import nodriver as uc  # noqa: E402
 from loguru import logger  # noqa: E402
 
+# In CI: surface nodriver's INFO logs and let chrome's stderr stream live
+# (nodriver normally captures it via PIPE and never reads it).
+if os.environ.get("CI"):
+    import logging
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    import asyncio as _aio
+    _orig = _aio.create_subprocess_exec
+    async def _patched(*args, **kwargs):
+        kwargs.pop("stdout", None)
+        kwargs.pop("stderr", None)
+        print(">>> chrome cmdline:", " ".join(str(a) for a in args), flush=True)
+        return await _orig(*args, **kwargs)
+    _aio.create_subprocess_exec = _patched
+
 from src.db import get_client, persist_detail_b  # noqa: E402
 from src.scrapers.hipflat_detail import fetch_detail  # noqa: E402
 from src.scrapers.hipflat_detail_b import parse_detail_html_b  # noqa: E402
