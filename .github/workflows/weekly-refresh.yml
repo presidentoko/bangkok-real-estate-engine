@@ -46,19 +46,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # nodriver drives a real Chrome via CDP. ubuntu-latest doesn't ship
-      # one, so install chromium and the headful display nodriver expects.
-      - name: Install Chromium + xvfb
+      # nodriver drives a real Chrome via CDP. ubuntu-latest ships
+      # google-chrome-stable preinstalled; we avoid `chromium-browser`
+      # because on Ubuntu 24.04 (noble) it's a transitional snap shim
+      # that doesn't launch in GH Actions runners.
+      - name: Setup Chrome + xvfb
         run: |
           sudo apt-get update
-          sudo apt-get install -y chromium-browser xvfb dbus-x11
+          sudo apt-get install -y xvfb dbus-x11
           # nodriver looks for `chrome` first; symlink so the lookup hits.
-          sudo ln -sf "$(which chromium-browser)" /usr/local/bin/chrome
+          sudo ln -sf "$(which google-chrome-stable)" /usr/local/bin/chrome
 
       - name: Tier B refresh (limited)
         # xvfb-run gives us a virtual display so nodriver's headless=False
         # init still works on a server without a real X display.
+        # pipefail so a python crash is not masked by tee's exit 0.
         run: |
+          set -eo pipefail
           xvfb-run -a --server-args="-screen 0 1280x720x24" \
             python scripts/enrich_buildings_b.py --limit "$TIER_B_LIMIT" 2>&1 | tee tier_b.log
 

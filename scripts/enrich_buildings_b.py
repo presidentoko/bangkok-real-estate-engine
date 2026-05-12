@@ -140,10 +140,16 @@ async def _run(limit: int | None, force: bool) -> int:
     logger.info(f"Tier B enriching {len(targets)} buildings (force={force}, limit={limit})")
 
     os.makedirs(PROFILE_DIR, exist_ok=True)
+    browser_args = ["--lang=en-US"]
+    # GitHub Actions runs as a non-root user inside a container-like sandbox
+    # where Chrome's own setuid sandbox fails to initialize; nodriver then
+    # can't connect to CDP and raises "Failed to connect to browser".
+    if os.environ.get("CI"):
+        browser_args.append("--no-sandbox")
     browser = await uc.start(
         headless=False,
         user_data_dir=PROFILE_DIR,
-        browser_args=["--lang=en-US"],
+        browser_args=browser_args,
     )
     client = get_client()
 
