@@ -69,6 +69,53 @@ jobs:
             --disable-gpu --disable-dev-shm-usage --dump-dom https://example.com \
             > /dev/null && echo "chrome smoke-test OK"
 
+      - name: Diagnose chrome+CDP launch
+        # nodriver swallows chrome's stderr and times out at 2.75s, so the
+        # "Failed to connect to browser" error gives no hint why chrome died.
+        # Reproduce nodriver's launch pattern with stderr exposed.
+        run: |
+          xvfb-run -a --server-args="-screen 0 1280x720x24" python - <<'PY'
+          import subprocess, time, urllib.request, os, sys
+          cmd = [
+              "/usr/local/bin/chrome",
+              "--no-sandbox", "--disable-setuid-sandbox",
+              "--disable-dev-shm-usage",
+              "--remote-debugging-port=9222",
+              "--user-data-dir=/tmp/cr-diag",
+              "--no-first-run", "--no-default-browser-check",
+              "--lang=en-US",
+              "about:blank",
+          ]
+          print("DISPLAY=", os.environ.get("DISPLAY"))
+          print("launching:", " ".join(cmd))
+          p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+          time.sleep(3)
+          alive = p.poll() is None
+          print("alive after 3s?", alive, "pid", p.pid)
+          if not alive:
+              print("---STDERR---"); print(p.stderr.read().decode("utf8", "replace"))
+              print("---STDOUT---"); print(p.stdout.read().decode("utf8", "replace"))
+              sys.exit(0)  # don't fail the workflow on this diag step
+          try:
+              v = urllib.request.urlopen("http://127.0.0.1:9222/json/version", timeout=2).read()
+              print("CDP version endpoint OK:", v[:200])
+          except Exception as e:
+              print("CDP fetch failed:", e)
+          p.terminate()
+          try:
+              p.wait(timeout=3)
+          except Exception:
+              p.kill()
+          # Last 80 lines of chrome stderr so we see late-startup errors too
+          try:
+              err = p.stderr.read().decode("utf8", "replace").splitlines()
+              print("---chrome stderr tail---")
+              for line in err[-80:]:
+                  print(line)
+          except Exception as e:
+              print("stderr read err:", e)
+          PY
+
       - name: Tier B refresh (limited)
         # xvfb-run gives us a virtual display so nodriver's headless=False
         # init still works on a server without a real X display.
