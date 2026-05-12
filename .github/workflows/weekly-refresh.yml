@@ -54,6 +54,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb dbus-x11
+          # Ubuntu 24.04 restricts unprivileged user namespaces via AppArmor by
+          # default; Chrome's multi-process / CDP setup uses user namespaces
+          # internally so even --no-sandbox isn't enough — nodriver can't
+          # establish the CDP socket and reports "Failed to connect to browser".
+          # Disabling this restriction is the standard workaround on noble.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           # nodriver looks for `chrome` first; symlink so the lookup hits.
           sudo ln -sf "$(which google-chrome-stable)" /usr/local/bin/chrome
           # Sanity: prove the binary actually launches under xvfb before the
