@@ -178,6 +178,20 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
     charts = tier_b.get("price_charts") or []
     neighbours = tier_b.get("neighbours") or []
 
+    # Refuse to write when every section is empty. A real hipflat project page
+    # always carries at least market_summary + price_charts + neighbours
+    # (verified across all live fixtures). If we got nothing, the fetcher
+    # almost certainly returned a Cloudflare interstitial / soft-block — the
+    # HTML is large enough to pass _fetch_html's size guard but our selectors
+    # don't match. Persisting would: (a) DELETE existing parking_facts /
+    # neighbours / amenities, (b) bump tier_b_fetched_at, hiding the building
+    # from retry for days. Raise so the caller counts it as fail() and moves on.
+    if not (units or facilities or parking or market or charts or neighbours):
+        raise ValueError(
+            "Tier B parse returned no signals — refusing to overwrite existing rows "
+            "(likely Cloudflare interstitial)"
+        )
+
     # --- condo market summary columns
     market_cols: dict[str, Any] = {
         "tier_b_fetched_at": datetime.now(timezone.utc).isoformat(),
