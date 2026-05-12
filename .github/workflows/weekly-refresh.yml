@@ -5,6 +5,12 @@ name: Weekly Tier B + score refresh
 # listings preserves across UPSERTs, so days-on-market accumulates over
 # weeks. compute_value_scores recomputes bubble_index. RPC recomputes
 # per-condo DOM aggregates so the site reads them O(1).
+#
+# Runs on a self-hosted Windows runner: GH Actions ubuntu IPs get served
+# Cloudflare interstitials by hipflat (verified 2026-05-12: 100% of
+# fetched pages returned <title>Just a moment...</title> with the
+# challenge-platform marker). A residential IP from a home connection
+# passes through transparently.
 
 on:
   schedule:
@@ -21,9 +27,12 @@ concurrency:
 
 jobs:
   refresh:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, windows, x64]
     # Tier B = ~10–15s/building × 250 ≈ 60min. Compute steps add ~5min.
     timeout-minutes: 240
+    defaults:
+      run:
+        shell: pwsh
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -46,59 +55,32 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # nodriver drives a real Chrome via CDP. ubuntu-latest ships
-      # google-chrome-stable preinstalled; we avoid `chromium-browser`
-      # because on Ubuntu 24.04 (noble) it's a transitional snap shim
-      # that doesn't launch in GH Actions runners.
-      - name: Setup Chrome + xvfb
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb dbus-x11
-          # Ubuntu 24.04 restricts unprivileged user namespaces via AppArmor by
-          # default; Chrome's multi-process / CDP setup uses user namespaces
-          # internally so even --no-sandbox isn't enough — nodriver can't
-          # establish the CDP socket and reports "Failed to connect to browser".
-          # Disabling this restriction is the standard workaround on noble.
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          # nodriver looks for `chrome` first; symlink so the lookup hits.
-          sudo ln -sf "$(which google-chrome-stable)" /usr/local/bin/chrome
-          # Sanity: prove the binary actually launches under xvfb before the
-          # scraper. If this fails, the scraper would just give nodriver's
-          # less-helpful "Failed to connect to browser".
-          xvfb-run -a google-chrome-stable --no-sandbox --headless=new \
-            --disable-gpu --disable-dev-shm-usage --dump-dom https://example.com \
-            > /dev/null && echo "chrome smoke-test OK"
-
       - name: Tier B refresh (limited)
-        # xvfb-run gives us a virtual display so nodriver's headless=False
-        # init still works on a server without a real X display.
-        # pipefail so a python crash is not masked by tee's exit 0.
         run: |
-          set -eo pipefail
-          xvfb-run -a --server-args="-screen 0 1280x720x24" \
-            python scripts/enrich_buildings_b.py --limit "$TIER_B_LIMIT" 2>&1 | tee tier_b.log
+          python scripts/enrich_buildings_b.py --limit $env:TIER_B_LIMIT 2>&1 | Tee-Object -FilePath tier_b.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Recompute bubble_index + region averages
-        run: python scripts/compute_value_scores.py 2>&1 | tee compute.log
+        run: |
+          python scripts/compute_value_scores.py 2>&1 | Tee-Object -FilePath compute.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Notify on success
         if: success() && env.TELEGRAM_BOT_TOKEN != ''
         run: |
-          OK=$(grep -oE "ok=[0-9]+" tier_b.log | tail -1 | cut -d= -f2)
-          FAIL=$(grep -oE "fail=[0-9]+" tier_b.log | tail -1 | cut -d= -f2)
-          UPSERTED=$(grep -oE "upserted [0-9]+ value_scores rows" compute.log | tail -1)
-          MSG="✅ RealData weekly refresh — Tier B ok=${OK:-?} fail=${FAIL:-?}; ${UPSERTED:-no value_scores upserted}"
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=${MSG}" > /dev/null
+          $ok = (Select-String -Path tier_b.log -Pattern 'ok=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
+          $fail = (Select-String -Path tier_b.log -Pattern 'fail=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
+          $upserted = (Select-String -Path compute.log -Pattern 'upserted \d+ value_scores rows' | Select-Object -Last 1).Line
+          $msg = "OK RealData weekly refresh - Tier B ok=$ok fail=$fail; $upserted"
+          $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $msg }
+          Invoke-RestMethod -Uri "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage" -Method Post -Body $body | Out-Null
 
       - name: Notify on failure
         if: failure() && env.TELEGRAM_BOT_TOKEN != ''
         run: |
-          MSG="🚨 RealData weekly refresh FAILED — see GitHub Actions run ${{ github.run_id }}"
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=${MSG}" > /dev/null
+          $msg = "FAIL RealData weekly refresh - see GitHub Actions run ${{ github.run_id }}"
+          $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $msg }
+          Invoke-RestMethod -Uri "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage" -Method Post -Body $body | Out-Null
 
       - name: Upload logs
         if: always()

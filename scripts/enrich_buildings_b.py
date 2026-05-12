@@ -26,14 +26,15 @@ sys.path.insert(0, str(ROOT))
 import nodriver as uc  # noqa: E402
 from loguru import logger  # noqa: E402
 
-# In CI: nodriver spawns chrome with stdout/stderr=PIPE and never drains
-# them. On Ubuntu 24.04 chrome floods stderr with dbus + GPU warnings
-# during startup; the 64KB pipe buffer fills, chrome blocks on the write,
-# and CDP init deadlocks — surfacing as "Failed to connect to browser"
-# ~3s in. Patching create_subprocess_exec to let stdio inherit our fds
-# instead of being PIPE'd makes chrome write to the workflow log freely
-# and the deadlock disappears.
-if os.environ.get("CI"):
+# Linux-CI-only: nodriver spawns chrome with stdout/stderr=PIPE and never
+# drains them. On Ubuntu 24.04 chrome floods stderr with dbus + GPU
+# warnings during startup; the 64KB pipe buffer fills, chrome blocks on
+# the write, and CDP init deadlocks — surfacing as "Failed to connect to
+# browser" ~3s in. Patching create_subprocess_exec to let stdio inherit
+# our fds makes chrome write freely and the deadlock disappears.
+# Self-hosted Windows runners don't hit this so we gate on platform too.
+LINUX_CI = sys.platform == "linux" and bool(os.environ.get("CI"))
+if LINUX_CI:
     import asyncio as _aio
     _orig_spawn = _aio.create_subprocess_exec
     async def _spawn_inheriting_stdio(*args, **kwargs):
@@ -193,17 +194,16 @@ async def _run(limit: int | None, force: bool) -> int:
 
     os.makedirs(PROFILE_DIR, exist_ok=True)
     browser_args = ["--lang=en-US"]
-    # GH Actions runs in a container-like env: small /dev/shm, setuid
-    # sandbox can't initialize. sandbox=False is nodriver's idiomatic
-    # switch (also adds --disable-setuid-sandbox).
-    sandbox = not os.environ.get("CI")
-    # On Ubuntu 24.04 nodriver's candidate scan happily picks
-    # /bin/chromium — but that path is a snap transitional shim that
-    # never launches. We must point it at our google-chrome-stable
-    # symlink explicitly or it will pick the broken one and hang on
-    # "Failed to connect to browser".
-    exe = "/usr/local/bin/chrome" if os.environ.get("CI") else None
-    if os.environ.get("CI"):
+    # All three patches below are Linux-CI-only. On a self-hosted Windows
+    # runner they'd break things (the /usr/local/bin/chrome path doesn't
+    # exist on Windows) or be no-ops.
+    #   - sandbox=False: GH Actions ubuntu can't init setuid sandbox.
+    #   - browser_executable_path: nodriver on Ubuntu 24.04 otherwise picks
+    #     /bin/chromium (snap shim) which never launches.
+    #   - --disable-dev-shm-usage: small /dev/shm in container-like env.
+    sandbox = not LINUX_CI
+    exe = "/usr/local/bin/chrome" if LINUX_CI else None
+    if LINUX_CI:
         browser_args.append("--disable-dev-shm-usage")
     browser = await uc.start(
         headless=False,
