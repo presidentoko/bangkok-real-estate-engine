@@ -69,51 +69,38 @@ jobs:
             --disable-gpu --disable-dev-shm-usage --dump-dom https://example.com \
             > /dev/null && echo "chrome smoke-test OK"
 
-      - name: Diagnose chrome+CDP launch
-        # nodriver swallows chrome's stderr and times out at 2.75s, so the
-        # "Failed to connect to browser" error gives no hint why chrome died.
-        # Reproduce nodriver's launch pattern with stderr exposed.
+      - name: Diagnose nodriver launch
+        # Previous diag proved: chrome launches & CDP works with our own flags.
+        # So nodriver passes something different. Enable its INFO logger to
+        # see the exact args, and monkey-patch the subprocess call to NOT
+        # capture stderr so chrome's startup errors land in workflow logs.
         run: |
           xvfb-run -a --server-args="-screen 0 1280x720x24" python - <<'PY'
-          import subprocess, time, urllib.request, os, sys
-          cmd = [
-              "/usr/local/bin/chrome",
-              "--no-sandbox", "--disable-setuid-sandbox",
-              "--disable-dev-shm-usage",
-              "--remote-debugging-port=9222",
-              "--user-data-dir=/tmp/cr-diag",
-              "--no-first-run", "--no-default-browser-check",
-              "--lang=en-US",
-              "about:blank",
-          ]
-          print("DISPLAY=", os.environ.get("DISPLAY"))
-          print("launching:", " ".join(cmd))
-          p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-          time.sleep(3)
-          alive = p.poll() is None
-          print("alive after 3s?", alive, "pid", p.pid)
-          if not alive:
-              print("---STDERR---"); print(p.stderr.read().decode("utf8", "replace"))
-              print("---STDOUT---"); print(p.stdout.read().decode("utf8", "replace"))
-              sys.exit(0)  # don't fail the workflow on this diag step
-          try:
-              v = urllib.request.urlopen("http://127.0.0.1:9222/json/version", timeout=2).read()
-              print("CDP version endpoint OK:", v[:200])
-          except Exception as e:
-              print("CDP fetch failed:", e)
-          p.terminate()
-          try:
-              p.wait(timeout=3)
-          except Exception:
-              p.kill()
-          # Last 80 lines of chrome stderr so we see late-startup errors too
-          try:
-              err = p.stderr.read().decode("utf8", "replace").splitlines()
-              print("---chrome stderr tail---")
-              for line in err[-80:]:
-                  print(line)
-          except Exception as e:
-              print("stderr read err:", e)
+          import logging, asyncio, os, sys
+          logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
+                              format="%(levelname)s %(name)s: %(message)s")
+          # Monkey-patch asyncio.create_subprocess_exec so chrome's stderr
+          # streams live to our stdout instead of being PIPE'd & hidden.
+          import asyncio as _aio
+          _orig = _aio.create_subprocess_exec
+          async def _patched(*args, **kwargs):
+              kwargs["stderr"] = None  # inherit -> shows in workflow logs
+              kwargs["stdout"] = None
+              print(">>> chrome cmdline:", " ".join(str(a) for a in args), flush=True)
+              return await _orig(*args, **kwargs)
+          _aio.create_subprocess_exec = _patched
+          import nodriver as uc
+          async def main():
+              try:
+                  b = await uc.start(headless=False, sandbox=False,
+                                     browser_args=["--disable-dev-shm-usage", "--lang=en-US"],
+                                     user_data_dir="/tmp/cr-nd")
+                  print(">>> nodriver started OK, browser:", b)
+                  await asyncio.sleep(1)
+                  b.stop()
+              except Exception as e:
+                  print(">>> nodriver failed:", type(e).__name__, repr(e)[:500])
+          uc.loop().run_until_complete(main())
           PY
 
       - name: Tier B refresh (limited)
