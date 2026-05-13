@@ -281,7 +281,7 @@ async def _run(limit: int | None, force: bool) -> int:
         logger.info("condo DOM aggregates recomputed")
     except Exception as e:
         logger.warning(f"recompute_condo_dom RPC raised: {e}")
-    return 0 if n_fail == 0 else 1
+    return 0 if n_ok > 0 else 1
 
 
 def main() -> int:

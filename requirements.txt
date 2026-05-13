@@ -10,6 +10,7 @@ loguru==0.7.3
 fake-useragent==1.5.1
 feedparser==6.0.11
 beautifulsoup4==4.12.3
+opencv-python==4.10.0.84
 
 # Used by scripts/fetch_district_geojson.py only (not by the runtime pipeline).
 requests==2.32.3
