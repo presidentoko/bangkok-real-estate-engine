@@ -103,6 +103,125 @@ def upsert_condo(client: Client, condo: dict[str, Any]) -> str:
     return found.data[0]["id"]
 
 
+def _normalize_project_name(name: str | None) -> str:
+    """Lowercase, strip punctuation/spaces — for cross-source name matching."""
+    if not name:
+        return ""
+    import re as _re
+    s = name.lower()
+    s = _re.sub(r"[^\w]+", "", s)  # drop spaces, dashes, dots, parens
+    return s.strip()
+
+
+def build_hipflat_name_index(client: Client) -> dict[str, str]:
+    """Return {normalized_name: condo_id} across all hipflat condos.
+
+    Used by ingest_dotproperty.py to match a DotProperty project to an
+    existing hipflat condo, so cross-source listings share a condo_id.
+    """
+    out: dict[str, str] = {}
+    offset = 0
+    while True:
+        chunk = (
+            client.table("condos")
+            .select("id, name")
+            .eq("source", "hipflat")
+            .range(offset, offset + 999)
+            .execute()
+            .data
+        ) or []
+        for r in chunk:
+            key = _normalize_project_name(r.get("name"))
+            if key and key not in out:
+                out[key] = r["id"]
+        if len(chunk) < 1000:
+            break
+        offset += 1000
+    return out
+
+
+def upsert_dotproperty_condo(
+    client: Client,
+    project_name: str,
+    sample: dict[str, Any],
+) -> str:
+    """Create or fetch a condos row for an UNMATCHED DotProperty project.
+
+    Uses the normalized project name as source_listing_id so re-ingesting
+    the same project is idempotent. sample provides geo + address fallbacks.
+    """
+    sid = _normalize_project_name(project_name)[:120] or "unknown"
+    province = (sample.get("address_region") or "bangkok").strip().lower()
+    canonical = extract_district(sample.get("address_locality")) or (
+        sample.get("address_locality") or ""
+    ).strip() or None
+    region_id = upsert_region(client, canonical, province=province) if canonical else None
+
+    payload: dict[str, Any] = {
+        "source": "dotproperty",
+        "source_listing_id": sid,
+        "name": project_name,
+        "region_id": region_id,
+        "province": province,
+        "address": sample.get("street_address"),
+        "latitude": sample.get("latitude"),
+        "longitude": sample.get("longitude"),
+        "last_seen_at": datetime.now(timezone.utc).isoformat(),
+    }
+    # Non-Bangkok stays unpublished, same convention as hipflat.
+    if province != "bangkok":
+        payload["published"] = False
+    payload = {k: v for k, v in payload.items() if v is not None}
+    res = (
+        client.table("condos")
+        .upsert(payload, on_conflict="source,source_listing_id")
+        .execute()
+    )
+    if res.data:
+        return res.data[0]["id"]
+    found = (
+        client.table("condos")
+        .select("id")
+        .eq("source", "dotproperty")
+        .eq("source_listing_id", sid)
+        .limit(1)
+        .execute()
+    )
+    return found.data[0]["id"]
+
+
+def upsert_dotproperty_listing(
+    client: Client,
+    condo_id: str,
+    item: dict[str, Any],
+) -> None:
+    """Upsert a single DotProperty listing row.
+
+    Uses (condo_id, source, source_unit_id) as the conflict key; source_unit_id
+    is the DotProperty listing UUID we parsed from the URL. is_active is
+    flipped to True every time we see the listing in a scrape; the caller is
+    responsible for marking absent listings inactive at the end of a run.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    payload: dict[str, Any] = {
+        "condo_id": condo_id,
+        "source": "dotproperty",
+        "source_unit_id": item["source_listing_id"],
+        "listing_type": item.get("listing_type") or "sale",
+        "price": item.get("price"),
+        "currency": item.get("price_currency") or "THB",
+        "bedrooms": item.get("bedrooms"),
+        "listing_url": item.get("url"),
+        "is_active": True,
+        "last_seen_at": now,
+        "scraped_at": now,
+    }
+    payload = {k: v for k, v in payload.items() if v is not None}
+    client.table("listings").upsert(
+        payload, on_conflict="condo_id,source,source_unit_id"
+    ).execute()
+
+
 def persist_detail(client: Client, condo_id: str, detail: dict[str, Any]) -> None:
     """Apply Phase 2 Tier A enrichment to an existing condo row.
 
