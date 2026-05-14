@@ -70,13 +70,20 @@ jobs:
           cmd /c "python scripts\compute_value_scores.py 2>&1" | Tee-Object -FilePath compute.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Analysis pipeline (risk + super_value + alerts + reports)
+        run: |
+          cmd /c "python scripts\run_analysis.py 2>&1" | Tee-Object -FilePath analysis.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Notify on success
         if: success() && env.TELEGRAM_BOT_TOKEN != ''
         run: |
           $ok = (Select-String -Path tier_b.log -Pattern 'ok=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
           $fail = (Select-String -Path tier_b.log -Pattern 'fail=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
           $upserted = (Select-String -Path compute.log -Pattern 'upserted \d+ value_scores rows' | Select-Object -Last 1).Line
-          $msg = "OK RealData weekly refresh - Tier B ok=$ok fail=$fail; $upserted"
+          $alerts = (Select-String -Path analysis.log -Pattern 'underpriced: (\d+) new alerts' | Select-Object -Last 1).Matches.Groups[1].Value
+          $super = (Select-String -Path analysis.log -Pattern 'super_value: (\d+) condos' | Select-Object -Last 1).Matches.Groups[1].Value
+          $msg = "OK RealData weekly refresh - Tier B ok=$ok fail=$fail; $upserted; alerts=$alerts; super=$super"
           $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $msg }
           Invoke-RestMethod -Uri "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage" -Method Post -Body $body | Out-Null
 
@@ -95,6 +102,7 @@ jobs:
           path: |
             tier_b.log
             compute.log
+            analysis.log
             tier_b_dumps/
           if-no-files-found: ignore
           retention-days: 30

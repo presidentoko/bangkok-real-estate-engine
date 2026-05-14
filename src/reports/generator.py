@@ -1,6 +1,8 @@
 """Per-condo strength/weakness summary for developer outreach (Sansiri, AP, etc.)."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from loguru import logger
 from supabase import Client
 
@@ -61,6 +63,7 @@ def _summarise(condo: dict, score: dict, liv: dict | None, risk: dict | None) ->
         "summary_strengths": strengths,
         "summary_weaknesses": weaknesses,
         "recommendations": rec,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -78,6 +81,8 @@ def generate_reports(supabase: Client) -> int:
         payloads.append(_summarise(c, s, livs.get(c["id"]), risks.get(c["id"])))
 
     for i in range(0, len(payloads), 200):
-        supabase.table("developer_reports").insert(payloads[i:i + 200]).execute()
+        supabase.table("developer_reports").upsert(
+            payloads[i:i + 200], on_conflict="condo_id"
+        ).execute()
     logger.info(f"developer_reports: {len(payloads)} generated")
     return len(payloads)
