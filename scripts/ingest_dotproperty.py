@@ -66,7 +66,7 @@ def main() -> int:
 
     for item in scrape(city=args.city, max_listings=args.limit, delay_s=args.delay_s):
         stats["seen"] += 1
-        project_name = item.get("project_name") or item.get("name")
+        project_name = item.get("project_name")
         if not project_name:
             stats["no_project_name"] += 1
             continue

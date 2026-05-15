@@ -104,12 +104,13 @@ def upsert_condo(client: Client, condo: dict[str, Any]) -> str:
 
 
 def _normalize_project_name(name: str | None) -> str:
-    """Lowercase, strip punctuation/spaces — for cross-source name matching."""
+    """Lowercase, strip punctuation/spaces, and strip leading 'the' — for cross-source name matching."""
     if not name:
         return ""
     import re as _re
     s = name.lower()
     s = _re.sub(r"[^\w]+", "", s)  # drop spaces, dashes, dots, parens
+    s = _re.sub(r"^the", "", s)    # "The X" vs "X" differ between sources
     return s.strip()
 
 
