@@ -44,14 +44,18 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=None,
                     help="Stop after this many listings (default: full city)")
     ap.add_argument("--city", default="bangkok")
+    ap.add_argument("--listing-type", choices=["sale", "rent", "both"], default="sale",
+                    help="sale=condos-for-sale, rent=condos-for-rent, both=run sale then rent")
     ap.add_argument("--delay-s", type=float, default=1.0)
-    # Until the condos_source_check CHECK constraint is widened to include
-    # 'dotproperty', the upsert for unmatched projects will fail. Default to
-    # skipping them so we still get cross-source listings on matched hipflat
-    # condos without spamming the log.
     ap.add_argument("--ingest-unmatched", action="store_true",
                     help="Also create new condos rows for unmatched DotProperty projects")
     args = ap.parse_args()
+
+    listing_type_keys = {
+        "sale": ["sale_condo"],
+        "rent": ["rent_condo"],
+        "both": ["sale_condo", "rent_condo"],
+    }[args.listing_type]
 
     client = get_client()
     logger.info("Building hipflat condo name index...")
@@ -64,7 +68,13 @@ def main() -> int:
     stats = Counter()
     started = time.time()
 
-    for item in scrape(city=args.city, max_listings=args.limit, delay_s=args.delay_s):
+    def _items():
+        for ltk in listing_type_keys:
+            logger.info(f"Starting {ltk} scrape for city={args.city}")
+            yield from scrape(city=args.city, listing_type_key=ltk,
+                              max_listings=args.limit, delay_s=args.delay_s)
+
+    for item in _items():
         stats["seen"] += 1
         project_name = item.get("project_name")
         if not project_name:

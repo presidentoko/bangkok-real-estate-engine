@@ -26,10 +26,10 @@ USER_AGENT = (
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
 
-# Listing-type × city URL templates. Only the sale_condo / Bangkok combo is
-# verified so far; add more after probing.
+# Listing-type × city URL templates.
 PATH_TEMPLATES = {
     "sale_condo": "/en/condos-for-sale/{city}",
+    "rent_condo": "/en/condos-for-rent/{city}",
 }
 
 _JSONLD_RE = re.compile(
@@ -74,7 +74,7 @@ def _normalize(elem: dict[str, Any]) -> dict[str, Any] | None:
     return {
         "source": "dotproperty",
         "source_listing_id": sid,
-        "listing_type": "sale",  # search URL is sale-only for now
+        "listing_type": "sale",  # overridden by scrape() via _LISTING_TYPE_MAP
         "url": url,
         "project_name": contained.get("name") or None,
         "name": item.get("name") or None,
@@ -95,6 +95,12 @@ def _normalize(elem: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+_LISTING_TYPE_MAP = {
+    "sale_condo": "sale",
+    "rent_condo": "rent",
+}
+
+
 def scrape(
     city: str = "bangkok",
     listing_type_key: str = "sale_condo",
@@ -106,10 +112,12 @@ def scrape(
 
     Args:
       city: slug used in the URL (e.g. "bangkok", "phuket").
+      listing_type_key: key into PATH_TEMPLATES ("sale_condo" or "rent_condo").
       max_listings: stop after yielding this many (None = unbounded).
       max_pages: hard ceiling on pagination (safety).
       delay_s: pause between page fetches.
     """
+    listing_type = _LISTING_TYPE_MAP[listing_type_key]
     path = PATH_TEMPLATES[listing_type_key].format(city=city)
     with httpx.Client(
         headers={"User-Agent": USER_AGENT},
@@ -149,6 +157,7 @@ def scrape(
                 norm = _normalize(elem)
                 if not norm:
                     continue
+                norm["listing_type"] = listing_type
                 yield norm
                 yielded += 1
                 page_yielded += 1
