@@ -65,6 +65,13 @@ jobs:
           cmd /c "python scripts\enrich_buildings_b.py --limit $limit 2>&1" | Tee-Object -FilePath tier_b.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Snapshot prices + compute yields
+        run: |
+          cmd /c "python scripts\snapshot_prices.py 2>&1" | Tee-Object -FilePath snapshot.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmd /c "python scripts\compute_yields.py 2>&1" | Tee-Object -FilePath yields.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Recompute bubble_index + region averages
         run: |
           cmd /c "python scripts\compute_value_scores.py 2>&1" | Tee-Object -FilePath compute.log
@@ -101,6 +108,8 @@ jobs:
           name: weekly-refresh-${{ github.run_id }}
           path: |
             tier_b.log
+            snapshot.log
+            yields.log
             compute.log
             analysis.log
             tier_b_dumps/
