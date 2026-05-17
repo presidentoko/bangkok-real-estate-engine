@@ -164,7 +164,7 @@ export default async function YieldsPage({
             <Link
               key={p.slug}
               href={p.slug === "all" ? `/${lang}/yields` : `/${lang}/yields?province=${p.slug}`}
-              className={`px-3 py-1.5 rounded-full border transition ${
+              className={`px-3.5 py-2 rounded-full border transition ${
                 active
                   ? "bg-emerald-500/15 border-emerald-500 text-emerald-300"
                   : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200"

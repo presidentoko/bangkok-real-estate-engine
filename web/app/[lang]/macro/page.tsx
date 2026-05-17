@@ -82,8 +82,43 @@ export default async function MacroPage({
   // Latest period across the data — used to label "as of".
   const latestPeriod = rows.length > 0 ? rows[0].period : null;
 
+  // JSON-LD Dataset schema — helps AI Overviews / Perplexity quote our
+  // page as "structured data from BOT". The temporal coverage + creator
+  // attribution makes it cite-worthy.
+  const periodYears = Array.from(new Set(rows.map((r) => r.period.slice(0, 4))));
+  const minYear = periodYears.length ? periodYears.reduce((a, b) => (a < b ? a : b)) : null;
+  const maxYear = periodYears.length ? periodYears.reduce((a, b) => (a > b ? a : b)) : null;
+  const datasetJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Thailand mortgage + macro rates",
+    description:
+      "Bank of Thailand benchmark rates (Policy, MRR, MLR, MOR, deposit) sourced " +
+      "from BTWS_STAT and surfaced per-condo alongside RealData yield measurements.",
+    creator: { "@type": "Organization", name: "Bank of Thailand", url: "https://www.bot.or.th/" },
+    publisher: { "@type": "Organization", name: "RealData", url: SEO_SITE_URL },
+    license: "https://www.bot.or.th/en/about-us/conditions-of-use.html",
+    spatialCoverage: { "@type": "Country", name: "Thailand" },
+    temporalCoverage: minYear && maxYear ? `${minYear}/${maxYear}` : undefined,
+    keywords: [
+      "Thailand mortgage rate", "MRR", "MLR", "MOR", "Policy rate",
+      "Bank of Thailand", "BOT", "household debt", "real estate macro",
+    ],
+    variableMeasured: FEATURED.map((f) => ({
+      "@type": "PropertyValue",
+      name: f.label,
+      description: f.name,
+    })),
+    url: `${SEO_SITE_URL}/${lang}/macro`,
+    isAccessibleForFree: true,
+  };
+
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJsonLd) }}
+      />
       <header className="space-y-2">
         <h1 className="text-3xl font-bold">Thailand mortgage + macro rates</h1>
         <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">

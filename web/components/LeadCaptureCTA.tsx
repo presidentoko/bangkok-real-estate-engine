@@ -149,7 +149,7 @@ export function LeadCaptureCTA({ condoId, condoName, headline }: Props) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={200}
-                className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500"
                 placeholder="Optional"
               />
             </label>
@@ -163,7 +163,7 @@ export function LeadCaptureCTA({ condoId, condoName, headline }: Props) {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 maxLength={200}
-                className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500"
                 placeholder="you@example.com"
               />
             </label>
@@ -176,7 +176,7 @@ export function LeadCaptureCTA({ condoId, condoName, headline }: Props) {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 maxLength={50}
-                className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500"
                 placeholder="Optional"
               />
             </label>
@@ -187,7 +187,7 @@ export function LeadCaptureCTA({ condoId, condoName, headline }: Props) {
               <select
                 value={timeline}
                 onChange={(e) => setTimeline(e.target.value)}
-                className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500"
               >
                 <option value="">—</option>
                 {TIMELINES.map((t) => (
@@ -207,7 +207,7 @@ export function LeadCaptureCTA({ condoId, condoName, headline }: Props) {
                   type="button"
                   key={r.label}
                   onClick={() => setBudget(i)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                  className={`text-sm px-3.5 py-2 rounded-full border transition ${
                     budget === i
                       ? "bg-emerald-500 border-emerald-500 text-zinc-950 font-semibold"
                       : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
@@ -229,7 +229,7 @@ export function LeadCaptureCTA({ condoId, condoName, headline }: Props) {
                   type="button"
                   key={p.value}
                   onClick={() => setPurpose(p.value)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                  className={`text-sm px-3.5 py-2 rounded-full border transition ${
                     purpose === p.value
                       ? "bg-emerald-500 border-emerald-500 text-zinc-950 font-semibold"
                       : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200"
@@ -250,7 +250,7 @@ export function LeadCaptureCTA({ condoId, condoName, headline }: Props) {
               onChange={(e) => setMessage(e.target.value)}
               maxLength={2000}
               rows={3}
-              className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+              className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500"
               placeholder="Optional"
             />
           </label>

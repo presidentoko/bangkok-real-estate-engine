@@ -139,21 +139,29 @@ export function AskChat() {
         <div ref={endRef} />
       </div>
 
-      <form onSubmit={onSubmit} className="sticky bottom-0 bg-zinc-950 pt-4 -mx-6 px-6 border-t border-zinc-900">
+      <form
+        onSubmit={onSubmit}
+        className="sticky bottom-0 bg-zinc-950 pt-4 -mx-6 px-6 border-t border-zinc-900"
+        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+      >
         <div className="flex gap-2">
           <input
             type="text"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Ask about a condo, district, yield, mortgage…"
+            placeholder="Ask about a condo, district, yield…"
             disabled={busy}
             maxLength={1000}
-            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+            enterKeyHint="send"
+            autoCapitalize="off"
+            autoCorrect="off"
+            // Prevent iOS auto-zoom when input font is < 16px
+            className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-base sm:text-sm placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500 disabled:opacity-50 min-w-0"
           />
           <button
             type="submit"
             disabled={busy || draft.trim().length === 0}
-            className="px-5 py-3 bg-emerald-500 text-zinc-950 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-400 transition"
+            className="shrink-0 px-5 py-3 bg-emerald-500 text-zinc-950 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-400 transition"
           >
             {busy ? "…" : "Ask"}
           </button>

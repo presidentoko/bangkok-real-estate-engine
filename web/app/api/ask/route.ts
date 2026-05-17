@@ -1,10 +1,49 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { createHash } from "crypto";
 import { NextResponse } from "next/server";
 import { formatContext, retrieveContext } from "@/lib/queries/rag";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+// In-memory token-bucket per IP hash. Resets on serverless cold-start.
+// At Vercel scale a single IP can briefly slip past this when hitting
+// multiple regions / instances, but it cuts off the obvious abuse case
+// (a single client spamming hundreds of requests in seconds) cheaply.
+const RATE_LIMIT_MAX = 12;            // requests per window
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;  // 1 hour
+const ipBuckets = new Map<string, number[]>();
+
+function ipHash(req: Request): string {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    req.headers.get("cf-connecting-ip") ||
+    "unknown";
+  return createHash("sha1").update(ip).digest("hex");
+}
+
+function isRateLimited(hash: string): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_LIMIT_WINDOW_MS;
+  const recent = (ipBuckets.get(hash) ?? []).filter((t) => t > cutoff);
+  if (recent.length >= RATE_LIMIT_MAX) {
+    ipBuckets.set(hash, recent);
+    return true;
+  }
+  recent.push(now);
+  ipBuckets.set(hash, recent);
+  // light GC — drop oldest entries when map grows
+  if (ipBuckets.size > 5000) {
+    const oldest = Array.from(ipBuckets.entries())
+      .map(([k, v]) => [k, Math.max(...v)] as [string, number])
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 1000);
+    for (const [k] of oldest) ipBuckets.delete(k);
+  }
+  return false;
+}
 
 const MODEL = "claude-haiku-4-5";  // fast + cheap; switch to claude-sonnet-4-6 for higher quality
 const MAX_TOKENS = 1500;
@@ -35,6 +74,19 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: "ANTHROPIC_API_KEY not configured on the server" },
       { status: 503 },
+    );
+  }
+
+  // Rate limit before doing any retrieval or model work — the whole point
+  // is to keep abusers from burning Claude credits or DB egress.
+  const hash = ipHash(req);
+  if (isRateLimited(hash)) {
+    return NextResponse.json(
+      {
+        error:
+          "Rate limit hit — too many questions in the past hour. Try again later.",
+      },
+      { status: 429, headers: { "Retry-After": "3600" } },
     );
   }
 
