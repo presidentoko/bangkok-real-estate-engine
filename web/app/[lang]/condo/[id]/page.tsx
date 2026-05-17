@@ -7,6 +7,7 @@ import { PriceChart } from "@/components/PriceChart";
 import { ReportCard } from "@/components/ReportCard";
 import { AirQualityCard } from "@/components/AirQualityCard";
 import { CostOfOwnershipCard } from "@/components/CostOfOwnershipCard";
+import { ForeignQuotaCard } from "@/components/ForeignQuotaCard";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { MultiPortalCard } from "@/components/MultiPortalCard";
 import { YieldCard } from "@/components/YieldCard";
@@ -119,7 +120,10 @@ export default async function CondoPage({
         "market_summary_currency, available_units_count, " +
         "active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
         "cam_fee_per_month, sinking_fund, building_ownership, " +
-        "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at"
+        "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at, " +
+        "foreign_quota_listings_available, thai_quota_listings_available, " +
+        "total_quota_listings_observed, foreign_quota_inventory_pct, " +
+        "foreign_quota_fetched_at"
       )
       .eq("id", id)
       .maybeSingle(),
@@ -202,6 +206,11 @@ export default async function CondoPage({
     pm25_value: number | null;
     aqi_station_name: string | null;
     aqi_fetched_at: string | null;
+    foreign_quota_listings_available: number | null;
+    thai_quota_listings_available: number | null;
+    total_quota_listings_observed: number | null;
+    foreign_quota_inventory_pct: number | null;
+    foreign_quota_fetched_at: string | null;
   };
   const regions = Array.isArray(condoRaw.regions)
     ? condoRaw.regions[0] ?? null
@@ -490,6 +499,14 @@ export default async function CondoPage({
         sinkingFund={condoRaw.sinking_fund}
         ownership={condoRaw.building_ownership}
         avgMonthlyRent={yieldData?.avg_monthly_rent ?? null}
+      />
+
+      <ForeignQuotaCard
+        foreignListings={condoRaw.foreign_quota_listings_available}
+        thaiListings={condoRaw.thai_quota_listings_available}
+        totalListings={condoRaw.total_quota_listings_observed}
+        foreignPct={condoRaw.foreign_quota_inventory_pct}
+        fetchedAt={condoRaw.foreign_quota_fetched_at}
       />
 
       <AirQualityCard
