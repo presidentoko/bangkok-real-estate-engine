@@ -11,6 +11,7 @@ Steps
 5. generate_reports       — per-condo strength/weakness → developer_reports
 6. yield_digest           — ops-chat digest of top gross-yield condos
 7. price_movers_digest    — ops-chat digest of biggest weekly price moves
+8. yield_spread_digest    — ops-chat digest of top yield-over-MRR spreads
 
 Usage:
   python scripts/run_analysis.py
@@ -32,6 +33,7 @@ from src.analysis.risk import compute_risk  # noqa: E402
 from src.analysis.super_value import compute_super_value  # noqa: E402
 from src.analysis.underpriced import detect_underpriced  # noqa: E402
 from src.analysis.yield_digest import send_yield_digest  # noqa: E402
+from src.analysis.yield_spread import send_spread_digest  # noqa: E402
 from src.db import get_client  # noqa: E402
 from src.notifiers.dispatcher import dispatch_alerts  # noqa: E402
 from src.reports.generator import generate_reports  # noqa: E402
@@ -79,6 +81,9 @@ def main() -> int:
 
     logger.info("=== STEP 7: price movers digest (top drops + jumps) ===")
     send_price_movers_digest(client)
+
+    logger.info("=== STEP 8: yield-spread digest (yield vs MRR) ===")
+    send_spread_digest(client)
 
     logger.info("analysis pipeline complete")
     return 0
