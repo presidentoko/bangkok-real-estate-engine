@@ -20,6 +20,7 @@ import {
   getCurrentMortgageRate,
 } from "@/lib/queries/yield";
 import { langAlternates } from "@/lib/seo";
+import { buildBreadcrumbsJsonLd, buildCondoJsonLd } from "@/lib/seo/condoJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
@@ -245,95 +246,30 @@ export default async function CondoPage({
   const currency = condoRaw.market_summary_currency || "USD";
   const tCondo = getDictionary(isLang(lang) ? lang : "en").condoPage;
 
-  // JSON-LD — describes the condo as ApartmentComplex (Schema.org) but with
-  // our analytical fields (bubble_index, flood_risk_level) attached as
-  // additionalProperty. Designed so AI Overviews and Perplexity can cite the
-  // numeric verdicts.
   const region = regions?.name ?? "Bangkok";
-  const additionalProps: Array<{ "@type": string; name: string; value: string | number }> = [];
-  if (scoreRes.data?.bubble_index != null) {
-    additionalProps.push({
-      "@type": "PropertyValue",
-      name: "RealData Bubble Index (district avg = 100)",
-      value: scoreRes.data.bubble_index,
-    });
-  }
-  if (riskRes.data?.flood_risk_level != null) {
-    additionalProps.push({
-      "@type": "PropertyValue",
-      name: "RealData Flood Risk (0-5)",
-      value: riskRes.data.flood_risk_level,
-    });
-  }
-  if (livRes.data?.nearest_bts_distance_m != null) {
-    additionalProps.push({
-      "@type": "PropertyValue",
-      name: "Distance to nearest BTS (m)",
-      value: livRes.data.nearest_bts_distance_m,
-    });
-  }
-  if (livRes.data?.hospitals_within_1km != null) {
-    additionalProps.push({
-      "@type": "PropertyValue",
-      name: "Hospitals within 1km",
-      value: livRes.data.hospitals_within_1km,
-    });
-  }
-
-  const jsonLd: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "ApartmentComplex",
-    name: condoRaw.name,
-    url: `${SITE_URL}/${lang}/condo/${condoRaw.id}`,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: region,
-      addressRegion: "Bangkok",
-      addressCountry: "TH",
+  const jsonLd = buildCondoJsonLd({
+    condo: condoRaw,
+    region,
+    amenities,
+    signals: {
+      bubble_index: scoreRes.data?.bubble_index,
+      flood_risk_level: riskRes.data?.flood_risk_level,
+      nearest_bts_distance_m: livRes.data?.nearest_bts_distance_m,
+      hospitals_within_1km: livRes.data?.hospitals_within_1km,
+      gross_yield_pct: yieldData?.gross_yield_pct,
+      aqi_score: condoRaw.aqi_score,
+      foreign_quota_inventory_pct: condoRaw.foreign_quota_inventory_pct,
     },
-    ...(condoRaw.latitude != null && condoRaw.longitude != null
-      ? {
-          geo: {
-            "@type": "GeoCoordinates",
-            latitude: condoRaw.latitude,
-            longitude: condoRaw.longitude,
-          },
-        }
-      : {}),
-    ...(condoRaw.total_units != null
-      ? {
-          numberOfAccommodationUnits: {
-            "@type": "QuantitativeValue",
-            value: condoRaw.total_units,
-          },
-        }
-      : {}),
-    ...(condoRaw.available_units_count != null
-      ? {
-          numberOfAvailableAccommodationUnits: {
-            "@type": "QuantitativeValue",
-            value: condoRaw.available_units_count,
-          },
-        }
-      : {}),
-    ...(amenities.length
-      ? { amenityFeature: amenities.map((a) => ({ "@type": "LocationFeatureSpecification", name: a })) }
-      : {}),
-    ...(additionalProps.length ? { additionalProperty: additionalProps } : {}),
-  };
-
-  // Breadcrumbs help SERP show RealData → Bangkok → {region} → {condo} as a
-  // path. Big CTR win for AI Overviews and rich results.
-  const breadcrumbsJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "RealData", item: `${SITE_URL}/${lang}` },
-      { "@type": "ListItem", position: 2, name: "Inventory", item: `${SITE_URL}/${lang}/inventory` },
-      { "@type": "ListItem", position: 3, name: region, item: `${SITE_URL}/${lang}/inventory` },
-      { "@type": "ListItem", position: 4, name: condoRaw.name, item: `${SITE_URL}/${lang}/condo/${condoRaw.id}` },
-    ],
-  };
+    siteUrl: SITE_URL,
+    lang,
+  });
+  const breadcrumbsJsonLd = buildBreadcrumbsJsonLd({
+    siteUrl: SITE_URL,
+    lang,
+    condoId: condoRaw.id,
+    condoName: condoRaw.name,
+    region,
+  });
 
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-8">

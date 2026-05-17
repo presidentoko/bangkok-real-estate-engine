@@ -36,6 +36,7 @@ from src.db import (  # noqa: E402
     build_hipflat_name_index,
     get_client,
 )
+from src.matching import bucket_by_first_char, fuzzy_lookup  # noqa: E402
 
 
 def _load_orphan_condos(client, sources: list[str]) -> list[dict]:
@@ -140,6 +141,11 @@ def main() -> int:
                     help="Write changes. Without this, dry-run only.")
     ap.add_argument("--limit", type=int, default=None,
                     help="Cap the number of merges (useful for staged rollout)")
+    ap.add_argument("--fuzzy", action="store_true",
+                    help="Also try Levenshtein ≤2 matching for orphans not "
+                         "covered by base+aggressive normalizers")
+    ap.add_argument("--fuzzy-max-dist", type=int, default=2,
+                    help="Max edit distance for --fuzzy (default 2)")
     args = ap.parse_args()
 
     client = get_client()
@@ -151,6 +157,9 @@ def main() -> int:
     logger.info(f"Loading orphan condos from sources={args.sources}...")
     orphans = _load_orphan_condos(client, args.sources)
     logger.info(f"  {len(orphans)} orphan candidates")
+
+    # Pre-bucket once if we're going to do fuzzy lookups
+    fuzzy_buckets = bucket_by_first_char(idx.keys()) if args.fuzzy else None
 
     # Plan the merges
     merges: list[tuple[dict, str, str]] = []  # (orphan, match_type, hipflat_id)
@@ -167,6 +176,19 @@ def main() -> int:
             merges.append((c, "base", idx[base]))
         elif agg and agg != base and agg in idx:
             merges.append((c, "aggressive", idx[agg]))
+        elif args.fuzzy:
+            # Last resort — Levenshtein on the aggressive key. False-positive
+            # risk is real on short, generic names ("S Condo", "The Madison")
+            # so we tighten max_dist with length: d=2 only for ≥10-char keys,
+            # d=1 for 6-9 chars, no fuzzy for <6.
+            key = agg or base
+            if key and len(key) >= 6:
+                cap = args.fuzzy_max_dist if len(key) >= 10 else 1
+                hit = fuzzy_lookup(key, idx, max_dist=cap, buckets=fuzzy_buckets)
+                if hit:
+                    merges.append((c, f"fuzzy(d={hit[1]})", idx[hit[0]]))
+                    continue
+            no_match += 1
         else:
             no_match += 1
 
