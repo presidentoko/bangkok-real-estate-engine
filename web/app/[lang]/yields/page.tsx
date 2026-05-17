@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
@@ -249,6 +250,10 @@ export default async function YieldsPage({
           today.
         </p>
       </section>
+
+      <LeadCaptureCTA
+        headline="Pick one of these and want a deeper read?"
+      />
     </main>
   );
 }

@@ -7,6 +7,7 @@ import { PriceChart } from "@/components/PriceChart";
 import { ReportCard } from "@/components/ReportCard";
 import { AirQualityCard } from "@/components/AirQualityCard";
 import { CostOfOwnershipCard } from "@/components/CostOfOwnershipCard";
+import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { MultiPortalCard } from "@/components/MultiPortalCard";
 import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
@@ -509,6 +510,8 @@ export default async function CondoPage({
       )}
 
       {neighbours.length > 0 && <CondoNeighbours neighbours={neighbours} />}
+
+      <LeadCaptureCTA condoId={condoRaw.id} condoName={condoRaw.name} />
 
       {condoRaw.url && (
         <div className="text-xs text-zinc-500">
