@@ -62,16 +62,31 @@ function regionLabel(r: YieldRow): string {
   return (r.province ?? "").replace(/-/g, " ") || "—";
 }
 
+const SORT_OPTIONS = [
+  { key: "yield",       column: "gross_yield_pct",   asc: false, label: "Highest yield"  },
+  { key: "sale-asc",    column: "avg_sale_price",    asc: true,  label: "Cheapest sale"  },
+  { key: "sale-desc",   column: "avg_sale_price",    asc: false, label: "Premium sale"   },
+  { key: "rent-desc",   column: "avg_monthly_rent",  asc: false, label: "Highest rent"   },
+  { key: "samples",     column: "yield_sample_sale", asc: false, label: "Most data"      },
+] as const;
+
 export default async function YieldsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ lang: string }>;
-  searchParams: Promise<{ province?: string }>;
+  searchParams: Promise<{ province?: string; sort?: string; min_yield?: string }>;
 }) {
   const { lang } = await params;
-  const { province: provFilter } = await searchParams;
+  const { province: provFilter, sort: sortKey, min_yield: minYieldParam } = await searchParams;
   if (!isLang(lang)) notFound();
+
+  const sortOpt =
+    SORT_OPTIONS.find((s) => s.key === sortKey) ?? SORT_OPTIONS[0];
+  const minYield = Math.max(
+    3,
+    Math.min(15, Number.isFinite(Number(minYieldParam)) ? Number(minYieldParam) : 3),
+  );
 
   const supabase = getServerSupabase();
 
@@ -84,13 +99,13 @@ export default async function YieldsPage({
       "gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
       "yield_sample_sale, yield_sample_rent, regions(name)",
     )
-    .gte("gross_yield_pct", 3)
+    .gte("gross_yield_pct", minYield)
     .lte("gross_yield_pct", 25)
     .gte("avg_sale_price", 500_000)
     .gte("yield_sample_sale", 2)
     .gte("yield_sample_rent", 2)
     .eq("is_active", true)
-    .order("gross_yield_pct", { ascending: false })
+    .order(sortOpt.column, { ascending: sortOpt.asc })
     .limit(100);
 
   if (provFilter && provFilter !== "all") {
@@ -152,24 +167,55 @@ export default async function YieldsPage({
         </p>
       </header>
 
-      <nav className="flex flex-wrap gap-2 text-sm">
-        {PROVINCES.map((p) => {
-          const active =
-            (provFilter ?? "all") === p.slug;
-          return (
-            <Link
-              key={p.slug}
-              href={p.slug === "all" ? `/${lang}/yields` : `/${lang}/yields?province=${p.slug}`}
-              className={`px-3.5 py-2 rounded-full border transition ${
-                active
-                  ? "bg-emerald-500/15 border-emerald-500 text-emerald-300"
-                  : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              {p.label}
-            </Link>
-          );
-        })}
+      <nav className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-xs text-zinc-500 uppercase tracking-wider mr-1">Province</span>
+          {PROVINCES.map((p) => {
+            const active = (provFilter ?? "all") === p.slug;
+            const qs = new URLSearchParams();
+            if (p.slug !== "all") qs.set("province", p.slug);
+            if (sortOpt.key !== "yield") qs.set("sort", sortOpt.key);
+            if (minYield !== 3) qs.set("min_yield", String(minYield));
+            const q = qs.toString();
+            return (
+              <Link
+                key={p.slug}
+                href={q ? `/${lang}/yields?${q}` : `/${lang}/yields`}
+                className={`px-3.5 py-2 rounded-full border transition ${
+                  active
+                    ? "bg-emerald-500/15 border-emerald-500 text-emerald-300"
+                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {p.label}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-xs text-zinc-500 uppercase tracking-wider mr-1">Sort</span>
+          {SORT_OPTIONS.map((s) => {
+            const active = sortOpt.key === s.key;
+            const qs = new URLSearchParams();
+            if (provFilter && provFilter !== "all") qs.set("province", provFilter);
+            if (s.key !== "yield") qs.set("sort", s.key);
+            if (minYield !== 3) qs.set("min_yield", String(minYield));
+            const q = qs.toString();
+            return (
+              <Link
+                key={s.key}
+                href={q ? `/${lang}/yields?${q}` : `/${lang}/yields`}
+                className={`px-3.5 py-2 rounded-full border text-xs transition ${
+                  active
+                    ? "bg-emerald-500/15 border-emerald-500 text-emerald-300"
+                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {s.label}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
       {yields.length === 0 ? (

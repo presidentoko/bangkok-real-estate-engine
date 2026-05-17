@@ -1,0 +1,65 @@
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { NextResponse } from "next/server";
+
+export const runtime = "nodejs";
+
+const COOKIE_NAME = "admin_session";
+const COOKIE_MAX_AGE_S = 60 * 60 * 24 * 30; // 30 days
+
+/**
+ * Validate a constant-time secret comparison without leaking timing info.
+ * Both inputs are SHA256-hashed first so length differences don't matter.
+ */
+function constantTimeEqual(a: string, b: string): boolean {
+  const ah = createHash("sha256").update(a).digest();
+  const bh = createHash("sha256").update(b).digest();
+  if (ah.length !== bh.length) return false;
+  return timingSafeEqual(ah, bh);
+}
+
+export async function POST(req: Request) {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (!adminSecret) {
+    return NextResponse.json(
+      { error: "ADMIN_SECRET not configured on the server" },
+      { status: 503 },
+    );
+  }
+
+  let body: { secret?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
+  }
+  const provided = (body.secret ?? "").trim();
+  if (!provided) {
+    return NextResponse.json({ error: "secret required" }, { status: 400 });
+  }
+
+  if (!constantTimeEqual(provided, adminSecret)) {
+    // Don't leak why — just say wrong. Add a token-bucket if abuse appears.
+    return NextResponse.json({ error: "incorrect secret" }, { status: 401 });
+  }
+
+  // Session token — random per-login, stored as cookie. The token itself
+  // is verified by the middleware reading-only (we accept any non-empty
+  // value since the secret was just validated). For multi-server setups
+  // upgrade to a signed JWT.
+  const token = randomBytes(32).toString("hex");
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: COOKIE_MAX_AGE_S,
+  });
+  return res;
+}
+
+export async function DELETE() {
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(COOKIE_NAME, "", { path: "/", maxAge: 0 });
+  return res;
+}

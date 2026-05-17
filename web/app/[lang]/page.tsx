@@ -150,6 +150,26 @@ export default async function Home({
               </div>
             ))}
           </div>
+
+          {/* Live-data strip: cross-portal coverage + macro depth */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 max-w-3xl">
+            {[
+              { n: stats.totalCondos.toLocaleString(), l: "condos across 4 portals" },
+              { n: stats.totalListings.toLocaleString(), l: "active listings" },
+              { n: stats.withYield.toLocaleString(), l: "yield-measured condos" },
+              { n: stats.macroPoints.toLocaleString(), l: "BOT macro datapoints" },
+            ].map((s) => (
+              <div
+                key={s.l}
+                className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3 backdrop-blur"
+              >
+                <div className="text-xl sm:text-2xl font-black tabular-nums bg-gradient-to-b from-emerald-200 to-emerald-500 bg-clip-text text-transparent">
+                  {s.n}
+                </div>
+                <div className="text-[11px] sm:text-xs text-emerald-300/60 mt-0.5">{s.l}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

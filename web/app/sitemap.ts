@@ -19,6 +19,10 @@ const STATIC_PATHS = [
   { path: "/stale", changeFrequency: "daily" as const, priority: 0.7 },
   { path: "/press", changeFrequency: "monthly" as const, priority: 0.5 },
   { path: "/contact", changeFrequency: "yearly" as const, priority: 0.5 },
+  { path: "/yields", changeFrequency: "weekly" as const, priority: 0.9 },
+  { path: "/macro", changeFrequency: "weekly" as const, priority: 0.7 },
+  { path: "/ask", changeFrequency: "monthly" as const, priority: 0.7 },
+  { path: "/compare", changeFrequency: "monthly" as const, priority: 0.6 },
   { path: "/blog/bangkok-overpriced-top10", changeFrequency: "weekly" as const, priority: 0.6 },
   { path: "/blog/bangkok-foreigner-best-value", changeFrequency: "weekly" as const, priority: 0.6 },
   { path: "/blog/bangkok-flood-risky-popular", changeFrequency: "weekly" as const, priority: 0.6 },
@@ -64,8 +68,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Condo report pages — only geo-located ones (rest have no real data).
+  // District landing pages — one per region with at least 3 active condos.
+  // We don't want to surface tiny single-condo regions or stale slugs.
   const supabase = getServerSupabase();
+  const { data: regionData } = await supabase
+    .from("regions")
+    .select("name, condos(id)")
+    .limit(500);
+  type RegionWithCondos = { name: string; condos: { id: string }[] | null };
+  const regions = (regionData ?? []) as RegionWithCondos[];
+  for (const r of regions) {
+    const count = (r.condos ?? []).length;
+    if (count < 3 || !r.name) continue;
+    const districtPath = `/district/${r.name}`;
+    for (const lang of LANGS) {
+      out.push({
+        url: `${SITE_URL}/${lang}${districtPath}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.7,
+        alternates: { languages: langAlternates(districtPath) },
+      });
+    }
+  }
+
+  // Condo report pages — only geo-located ones (rest have no real data).
   const PAGE = 1000;
   let offset = 0;
   while (true) {

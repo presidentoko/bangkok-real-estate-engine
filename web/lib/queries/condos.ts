@@ -139,6 +139,10 @@ export type SiteStats = {
   geoLocated: number;
   withBubble: number;
   superValue: number;
+  withYield: number;
+  totalCondos: number;
+  totalListings: number;
+  macroPoints: number;
 };
 
 async function _fetchSiteStats(): Promise<SiteStats> {
@@ -156,7 +160,7 @@ async function _fetchSiteStats(): Promise<SiteStats> {
     return r.count ?? 0;
   }
 
-  const [b, l, c, g, bi, sv] = await Promise.all([
+  const [b, l, c, g, bi, sv, y, tc, tl, mi] = await Promise.all([
     condosCount(),
     supabase.from("listings").select("id", { count: "exact", head: true })
       .eq("source", "hipflat").then((r) => r.count ?? 0),
@@ -167,6 +171,14 @@ async function _fetchSiteStats(): Promise<SiteStats> {
       .then((r) => r.count ?? 0),
     supabase.from("value_scores").select("condo_id", { count: "exact", head: true })
       .eq("is_super_value", true).then((r) => r.count ?? 0),
+    supabase.from("condos").select("id", { count: "exact", head: true })
+      .not("gross_yield_pct", "is", null).then((r) => r.count ?? 0),
+    supabase.from("condos").select("id", { count: "exact", head: true })
+      .then((r) => r.count ?? 0),
+    supabase.from("listings").select("id", { count: "exact", head: true })
+      .eq("is_active", true).then((r) => r.count ?? 0),
+    supabase.from("macro_indicators").select("id", { count: "exact", head: true })
+      .then((r) => r.count ?? 0),
   ]);
   return {
     buildings: b,
@@ -175,6 +187,10 @@ async function _fetchSiteStats(): Promise<SiteStats> {
     geoLocated: g,
     withBubble: bi,
     superValue: sv,
+    withYield: y,
+    totalCondos: tc,
+    totalListings: tl,
+    macroPoints: mi,
   };
 }
 

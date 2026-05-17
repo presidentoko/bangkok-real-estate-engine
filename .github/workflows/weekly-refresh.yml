@@ -72,6 +72,16 @@ jobs:
           cmd /c "python scripts\compute_yields.py 2>&1" | Tee-Object -FilePath yields.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Data quality cleanup + fuzzy rematch
+        # Catches new yield outliers from this scrape + tries Levenshtein
+        # ≤2 matching for orphans the base+aggressive normalizers missed.
+        # Both idempotent — safe weekly.
+        run: |
+          cmd /c "python scripts\cleanup_data_quality.py --apply 2>&1" | Tee-Object -FilePath cleanup.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmd /c "python scripts\rematch_listings.py --fuzzy --apply 2>&1" | Tee-Object -FilePath rematch.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Recompute bubble_index + region averages
         run: |
           cmd /c "python scripts\compute_value_scores.py 2>&1" | Tee-Object -FilePath compute.log
@@ -110,6 +120,8 @@ jobs:
             tier_b.log
             snapshot.log
             yields.log
+            cleanup.log
+            rematch.log
             compute.log
             analysis.log
             tier_b_dumps/
