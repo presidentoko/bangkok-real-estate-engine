@@ -142,13 +142,23 @@ def fetch_report(
         if t:
             title = re.sub(r"\s*[-|]\s*REIC.*$", "", t.get_text(" ", strip=True)).strip()
 
-    # Body: combine all paragraph-ish text
-    body_parts: list[str] = []
-    for tag in soup.find_all(["p", "li", "td", "div"]):
-        txt = tag.get_text(" ", strip=True)
-        if txt and 10 < len(txt) < 2000 and any(c.isalpha() for c in txt):
-            body_parts.append(txt)
-    summary = "\n".join(dict.fromkeys(body_parts[:30]))[:5000]  # dedup + cap
+    # Body: REIC wraps article content in <div class="content-editor">.
+    # There are usually TWO such divs on a report page — the first is a
+    # small breadcrumb/category link (~100 chars), the second is the actual
+    # article body (~1-3k chars). Pick the longest.
+    summary = ""
+    content_divs = soup.select(".content-editor")
+    if content_divs:
+        best = max(content_divs, key=lambda d: len(d.get_text(" ", strip=True)))
+        summary = best.get_text(" ", strip=True)[:5000]
+    if not summary or len(summary) < 200:
+        # Fallback to old behavior if .content-editor structure changes
+        body_parts: list[str] = []
+        for tag in soup.find_all(["p", "li", "td", "div"]):
+            txt = tag.get_text(" ", strip=True)
+            if txt and 10 < len(txt) < 2000 and any(c.isalpha() for c in txt):
+                body_parts.append(txt)
+        summary = "\n".join(dict.fromkeys(body_parts[:30]))[:5000]
 
     pub_date = _parse_date(r.text)
     region = _classify_region(title or "")
