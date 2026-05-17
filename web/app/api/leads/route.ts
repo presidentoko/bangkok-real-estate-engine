@@ -166,13 +166,11 @@ export async function POST(req: Request) {
       referrer,
       user_agent,
       ip_hash,
-      // Pre-existing leads table on some Supabase projects has an
-      // 'inquiry_type' NOT NULL column from earlier scaffolding. Send a
-      // sensible default so the insert doesn't trip — harmless if the
-      // column doesn't exist (PostgREST ignores unknown columns when
-      // 'Prefer: missing=ignore' isn't set... but Supabase rejects extra
-      // columns by default). The migration below also relaxes it.
-      inquiry_type: condo_id ? "condo_consultation" : "general_consultation",
+      // Pre-existing leads schemas use 'general' as the safe inquiry_type
+      // value (confirmed via constraint probe). Use it for both condo and
+      // general consults — migration 012 also drops the CHECK so any
+      // future value works.
+      inquiry_type: "general",
     })
     .select("id")
     .single();
