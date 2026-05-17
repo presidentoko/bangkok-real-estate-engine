@@ -5,6 +5,8 @@ import { CondoNeighbours } from "@/components/CondoNeighbours";
 import { CondoUnitsTable } from "@/components/CondoUnitsTable";
 import { PriceChart } from "@/components/PriceChart";
 import { ReportCard } from "@/components/ReportCard";
+import { AirQualityCard } from "@/components/AirQualityCard";
+import { CostOfOwnershipCard } from "@/components/CostOfOwnershipCard";
 import { MultiPortalCard } from "@/components/MultiPortalCard";
 import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
@@ -114,7 +116,9 @@ export default async function CondoPage({
         "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
         "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
         "market_summary_currency, available_units_count, " +
-        "active_listings_count, median_listing_dom_days, max_listing_dom_days"
+        "active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
+        "cam_fee_per_month, sinking_fund, building_ownership, " +
+        "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at"
       )
       .eq("id", id)
       .maybeSingle(),
@@ -190,6 +194,13 @@ export default async function CondoPage({
     active_listings_count: number | null;
     median_listing_dom_days: number | null;
     max_listing_dom_days: number | null;
+    cam_fee_per_month: number | null;
+    sinking_fund: number | null;
+    building_ownership: string | null;
+    aqi_score: number | null;
+    pm25_value: number | null;
+    aqi_station_name: string | null;
+    aqi_fetched_at: string | null;
   };
   const regions = Array.isArray(condoRaw.regions)
     ? condoRaw.regions[0] ?? null
@@ -472,6 +483,20 @@ export default async function CondoPage({
       )}
 
       <YieldCard yieldData={yieldData} mortgageRate={mortgageRate} />
+
+      <CostOfOwnershipCard
+        camFeePerMonth={condoRaw.cam_fee_per_month}
+        sinkingFund={condoRaw.sinking_fund}
+        ownership={condoRaw.building_ownership}
+        avgMonthlyRent={yieldData?.avg_monthly_rent ?? null}
+      />
+
+      <AirQualityCard
+        aqi={condoRaw.aqi_score}
+        pm25={condoRaw.pm25_value}
+        stationName={condoRaw.aqi_station_name}
+        fetchedAt={condoRaw.aqi_fetched_at}
+      />
 
       <MultiPortalCard stats={portalStats} />
 

@@ -342,6 +342,14 @@ def upsert_fazwaz_condo(
     }
     if sample.get("year_built"):
         payload["completion_year"] = sample["year_built"]
+    # Building-level cost-of-ownership (migration 006). Only set when present
+    # to avoid clobbering existing values with NULL on later passes.
+    if sample.get("cam_fee_per_month") is not None:
+        payload["cam_fee_per_month"] = sample["cam_fee_per_month"]
+    if sample.get("sinking_fund") is not None:
+        payload["sinking_fund"] = sample["sinking_fund"]
+    if sample.get("ownership"):
+        payload["building_ownership"] = sample["ownership"]
     if province != "bangkok":
         payload["published"] = False
     payload = {k: v for k, v in payload.items() if v is not None}
@@ -385,6 +393,10 @@ def upsert_fazwaz_listing(
         "bedrooms": item.get("bedrooms"),
         "bathrooms": item.get("bathrooms"),
         "listing_url": item.get("url"),
+        # FazWaz-pre-computed signals (migration 006). Stored separately from
+        # our own gross_yield_pct so we can compare ours vs theirs.
+        "est_rent_per_month": item.get("est_rent_per_month"),
+        "provided_yield_pct": item.get("provided_yield_pct"),
         "is_active": True,
         "last_seen_at": now,
         "scraped_at": now,
