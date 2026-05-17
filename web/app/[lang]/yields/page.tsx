@@ -54,11 +54,7 @@ export async function generateMetadata({
   };
 }
 
-function formatTHB(v: number | null): string {
-  if (v == null) return "—";
-  if (v >= 1_000_000) return `฿${(v / 1_000_000).toFixed(2)}M`;
-  return `฿${Math.round(v).toLocaleString()}`;
-}
+import { fmtTHB } from "@/lib/fmt";
 
 function regionLabel(r: YieldRow): string {
   const region = Array.isArray(r.regions) ? r.regions[0] : r.regions;
@@ -227,8 +223,8 @@ export default async function YieldsPage({
                           : "—"}
                       </td>
                     )}
-                    <td className="px-4 py-3 text-right tabular-nums">{formatTHB(r.avg_sale_price)}</td>
-                    <td className="px-4 py-3 text-right tabular-nums">{formatTHB(r.avg_monthly_rent)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{fmtTHB(r.avg_sale_price)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{fmtTHB(r.avg_monthly_rent)}</td>
                     <td className="px-4 py-3 text-right text-zinc-500 text-xs hidden sm:table-cell">
                       {r.yield_sample_sale ?? 0}/{r.yield_sample_rent ?? 0}
                     </td>

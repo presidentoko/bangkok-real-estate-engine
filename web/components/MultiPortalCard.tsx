@@ -6,6 +6,8 @@ type PortalStat = {
   rentMedian: number | null;
 };
 
+import { fmtTHB } from "@/lib/fmt";
+
 type Props = {
   stats: PortalStat[];
 };
@@ -16,12 +18,6 @@ const SOURCE_LABEL: Record<PortalStat["source"], string> = {
   dotproperty: "DotProperty",
   ddproperty: "DDProperty",
 };
-
-function fmtTHB(v: number | null): string {
-  if (v == null) return "—";
-  if (v >= 1_000_000) return `฿${(v / 1_000_000).toFixed(2)}M`;
-  return `฿${Math.round(v).toLocaleString()}`;
-}
 
 /**
  * Multi-portal price comparison — same condo across our 4 sources.

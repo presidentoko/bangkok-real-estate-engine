@@ -1,3 +1,4 @@
+import { fmtTHB } from "@/lib/fmt";
 import type { CondoYield, MortgageRate } from "@/lib/queries/yield";
 
 type Props = {
@@ -5,12 +6,6 @@ type Props = {
   mortgageRate: MortgageRate | null;
   currency?: string;
 };
-
-function fmtThb(v: number | null): string {
-  if (v == null) return "—";
-  if (v >= 1_000_000) return `฿${(v / 1_000_000).toFixed(2)}M`;
-  return `฿${Math.round(v).toLocaleString()}`;
-}
 
 /**
  * Per-condo gross-yield card with spread against current Thai MRR.
@@ -56,7 +51,7 @@ export function YieldCard({ yieldData, mortgageRate }: Props) {
             Avg sale price
           </div>
           <div className="text-2xl font-bold tabular-nums">
-            {fmtThb(y.avg_sale_price)}
+            {fmtTHB(y.avg_sale_price)}
           </div>
         </div>
 
@@ -65,7 +60,7 @@ export function YieldCard({ yieldData, mortgageRate }: Props) {
             Avg monthly rent
           </div>
           <div className="text-2xl font-bold tabular-nums">
-            {fmtThb(y.avg_monthly_rent)}
+            {fmtTHB(y.avg_monthly_rent)}
           </div>
         </div>
       </div>

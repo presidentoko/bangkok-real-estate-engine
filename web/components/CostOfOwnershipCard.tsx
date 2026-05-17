@@ -1,15 +1,11 @@
+import { fmtTHB } from "@/lib/fmt";
+
 type Props = {
   camFeePerMonth: number | null;
   sinkingFund: number | null;
   ownership: string | null;
   avgMonthlyRent: number | null;
 };
-
-function fmtTHB(v: number | null): string {
-  if (v == null) return "—";
-  if (v >= 1_000_000) return `฿${(v / 1_000_000).toFixed(2)}M`;
-  return `฿${Math.round(v).toLocaleString()}`;
-}
 
 /**
  * Cost-of-ownership card — surfaces FazWaz-extracted CAM fee + sinking fund
