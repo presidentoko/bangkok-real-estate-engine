@@ -103,6 +103,12 @@ def upsert_condo(client: Client, condo: dict[str, Any]) -> str:
     return found.data[0]["id"]
 
 
+_AGGRESSIVE_SUFFIXES = (
+    "bangkok", "bkk", "condominium", "condo",
+    "residences", "residence", "tower", "towers", "project",
+)
+
+
 def _normalize_project_name(name: str | None) -> str:
     """Lowercase, strip punctuation/spaces, and strip leading 'the' — for cross-source name matching."""
     if not name:
@@ -114,11 +120,38 @@ def _normalize_project_name(name: str | None) -> str:
     return s.strip()
 
 
-def build_hipflat_name_index(client: Client) -> dict[str, str]:
+def _normalize_project_name_aggressive(name: str | None) -> str:
+    """Like _normalize_project_name, but also strips common trailing words
+    that frequently differ between sources ('Sukhumvit 23 Condominium' vs
+    'Sukhumvit 23'). Only stripped when the remainder is long enough that
+    we're not over-matching a tiny token ('the residences' shouldn't collapse
+    to '').
+    """
+    s = _normalize_project_name(name)
+    if not s:
+        return ""
+    # Strip multiple suffixes greedily — 'X Residences Bangkok' → 'X'.
+    changed = True
+    while changed:
+        changed = False
+        for suffix in _AGGRESSIVE_SUFFIXES:
+            if s.endswith(suffix) and len(s) > len(suffix) + 3:
+                s = s[: -len(suffix)]
+                changed = True
+    return s
+
+
+def build_hipflat_name_index(
+    client: Client, *, include_aggressive: bool = True
+) -> dict[str, str]:
     """Return {normalized_name: condo_id} across all hipflat condos.
 
-    Used by ingest_dotproperty.py to match a DotProperty project to an
-    existing hipflat condo, so cross-source listings share a condo_id.
+    Used by ingest_dotproperty.py / ingest_ddproperty.py to match a project
+    to an existing hipflat condo, so cross-source listings share a condo_id.
+
+    With include_aggressive=True (default) the index also carries the
+    suffix-stripped variants — callers don't need to do two lookups, and the
+    extra keys don't cost much memory (~1.9k buildings).
     """
     out: dict[str, str] = {}
     offset = 0
@@ -132,9 +165,16 @@ def build_hipflat_name_index(client: Client) -> dict[str, str]:
             .data
         ) or []
         for r in chunk:
+            condo_id = r["id"]
             key = _normalize_project_name(r.get("name"))
             if key and key not in out:
-                out[key] = r["id"]
+                out[key] = condo_id
+            if include_aggressive:
+                akey = _normalize_project_name_aggressive(r.get("name"))
+                # only insert aggressive variant if it's not already claimed —
+                # prefer the more specific (base) match when both exist
+                if akey and akey != key and akey not in out:
+                    out[akey] = condo_id
         if len(chunk) < 1000:
             break
         offset += 1000
@@ -212,6 +252,171 @@ def upsert_dotproperty_listing(
         "price": item.get("price"),
         "currency": item.get("price_currency") or "THB",
         "bedrooms": item.get("bedrooms"),
+        "listing_url": item.get("url"),
+        "is_active": True,
+        "last_seen_at": now,
+        "scraped_at": now,
+    }
+    payload = {k: v for k, v in payload.items() if v is not None}
+    client.table("listings").upsert(
+        payload, on_conflict="condo_id,source,source_unit_id"
+    ).execute()
+
+
+def upsert_ddproperty_condo(
+    client: Client,
+    project_name: str,
+    sample: dict[str, Any],
+) -> str:
+    """Create or fetch a condos row for a DDProperty project.
+
+    Mirrors upsert_dotproperty_condo: uses the normalized project name as
+    source_listing_id, so re-ingesting the same project is idempotent across
+    runs (rather than creating a new condo per listing SID).
+    """
+    sid = _normalize_project_name(project_name)[:120] or "unknown"
+    province = (sample.get("province") or "bangkok").strip().lower()
+    canonical = extract_district(sample.get("region")) or (
+        sample.get("region") or ""
+    ).strip() or None
+    region_id = upsert_region(client, canonical, province=province) if canonical else None
+
+    payload: dict[str, Any] = {
+        "source": "ddproperty",
+        "source_listing_id": sid,
+        "name": project_name,
+        "region_id": region_id,
+        "province": province,
+        "address": sample.get("address"),
+        "latitude": sample.get("latitude"),
+        "longitude": sample.get("longitude"),
+        "last_seen_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if province != "bangkok":
+        payload["published"] = False
+    payload = {k: v for k, v in payload.items() if v is not None}
+    res = (
+        client.table("condos")
+        .upsert(payload, on_conflict="source,source_listing_id")
+        .execute()
+    )
+    if res.data:
+        return res.data[0]["id"]
+    found = (
+        client.table("condos")
+        .select("id")
+        .eq("source", "ddproperty")
+        .eq("source_listing_id", sid)
+        .limit(1)
+        .execute()
+    )
+    return found.data[0]["id"]
+
+
+def upsert_fazwaz_condo(
+    client: Client,
+    project_name: str,
+    sample: dict[str, Any],
+) -> str:
+    """Create or fetch a condos row for a FazWaz project.
+
+    source_listing_id uses the normalized project name so re-ingest is
+    idempotent. district/province come from FazWaz's parsed address triple.
+    """
+    sid = _normalize_project_name(project_name)[:120] or "unknown"
+    province = (sample.get("province") or "bangkok").strip().lower()
+    canonical = extract_district(sample.get("district")) or (
+        sample.get("district") or ""
+    ).strip() or None
+    region_id = upsert_region(client, canonical, province=province) if canonical else None
+
+    payload: dict[str, Any] = {
+        "source": "fazwaz",
+        "source_listing_id": sid,
+        "name": project_name,
+        "region_id": region_id,
+        "province": province,
+        "address": sample.get("address"),
+        "url": sample.get("project_url") or sample.get("url"),
+        "last_seen_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if sample.get("year_built"):
+        payload["completion_year"] = sample["year_built"]
+    if province != "bangkok":
+        payload["published"] = False
+    payload = {k: v for k, v in payload.items() if v is not None}
+    res = (
+        client.table("condos")
+        .upsert(payload, on_conflict="source,source_listing_id")
+        .execute()
+    )
+    if res.data:
+        return res.data[0]["id"]
+    found = (
+        client.table("condos")
+        .select("id")
+        .eq("source", "fazwaz")
+        .eq("source_listing_id", sid)
+        .limit(1)
+        .execute()
+    )
+    return found.data[0]["id"]
+
+
+def upsert_fazwaz_listing(
+    client: Client,
+    condo_id: str,
+    item: dict[str, Any],
+) -> None:
+    """Upsert a FazWaz listing. Same conflict key pattern as the other portals.
+
+    price_per_sqm is intentionally omitted — it's a generated column in
+    Supabase (price / area_sqm) and PostgREST rejects inserts into it.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    payload: dict[str, Any] = {
+        "condo_id": condo_id,
+        "source": "fazwaz",
+        "source_unit_id": item["source_listing_id"],
+        "listing_type": item.get("listing_type") or "sale",
+        "price": item.get("price"),
+        "currency": "THB",
+        "area_sqm": item.get("area_sqm"),
+        "bedrooms": item.get("bedrooms"),
+        "bathrooms": item.get("bathrooms"),
+        "listing_url": item.get("url"),
+        "is_active": True,
+        "last_seen_at": now,
+        "scraped_at": now,
+    }
+    payload = {k: v for k, v in payload.items() if v is not None}
+    client.table("listings").upsert(
+        payload, on_conflict="condo_id,source,source_unit_id"
+    ).execute()
+
+
+def upsert_ddproperty_listing(
+    client: Client,
+    condo_id: str,
+    item: dict[str, Any],
+) -> None:
+    """Upsert a single DDProperty listing row.
+
+    Conflict key (condo_id, source, source_unit_id); source_unit_id is the
+    DDProperty listing SID parsed from the card. Carries area/beds/baths,
+    which DDProperty cards expose directly (DotProperty cards don't).
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    payload: dict[str, Any] = {
+        "condo_id": condo_id,
+        "source": "ddproperty",
+        "source_unit_id": item["source_listing_id"],
+        "listing_type": item.get("listing_type") or "sale",
+        "price": item.get("price"),
+        "currency": item.get("price_currency") or "THB",
+        "area_sqm": item.get("area_sqm"),
+        "bedrooms": item.get("bedrooms"),
+        "bathrooms": item.get("bathrooms"),
         "listing_url": item.get("url"),
         "is_active": True,
         "last_seen_at": now,

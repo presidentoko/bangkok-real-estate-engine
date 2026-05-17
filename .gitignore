@@ -16,8 +16,14 @@ logs/
 
 # Browser automation profiles (huge, contain cookies/cache)
 .nodriver-profile/
+.nodriver-profile-*/
 .playwright-profile/
+.playwright-profile-*/
 .playwright/
+
+# Scraper debug dumps (raw HTML, regenerated on demand)
+dd_debug.html
+fz_debug.html
 
 # Node / Next.js
 node_modules/

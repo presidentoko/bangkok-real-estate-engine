@@ -4,13 +4,13 @@ Runs after compute_value_scores.py has written fresh bubble_index values.
 
 Steps
 -----
-1. compute_risk      — flood (static district lookup) + construction (Google News RSS)
-                       → writes risk_factors per condo
-2. compute_super_value — top 5% by asset value AND livability (after risk penalty)
-                         → writes is_super_value + rank columns to value_scores
-3. detect_underpriced  — bubble_index ≤ 80 → enqueues underpriced_alerts rows
-4. dispatch_alerts     — sends queued alerts to Telegram subscribers (skips if no token)
-5. generate_reports    — per-condo strength/weakness → developer_reports table
+1. compute_risk           — flood + Google News construction signals → risk_factors
+2. compute_super_value    — top 5% by asset value AND livability → value_scores flags
+3. detect_underpriced     — bubble_index ≤ 80 → enqueue underpriced_alerts
+4. dispatch_alerts        — push queued alerts to Telegram subscribers
+5. generate_reports       — per-condo strength/weakness → developer_reports
+6. yield_digest           — ops-chat digest of top gross-yield condos
+7. price_movers_digest    — ops-chat digest of biggest weekly price moves
 
 Usage:
   python scripts/run_analysis.py
@@ -27,9 +27,11 @@ sys.path.insert(0, str(ROOT))
 
 from loguru import logger  # noqa: E402
 
+from src.analysis.price_movers import send_price_movers_digest  # noqa: E402
 from src.analysis.risk import compute_risk  # noqa: E402
 from src.analysis.super_value import compute_super_value  # noqa: E402
 from src.analysis.underpriced import detect_underpriced  # noqa: E402
+from src.analysis.yield_digest import send_yield_digest  # noqa: E402
 from src.db import get_client  # noqa: E402
 from src.notifiers.dispatcher import dispatch_alerts  # noqa: E402
 from src.reports.generator import generate_reports  # noqa: E402
@@ -71,6 +73,12 @@ def main() -> int:
     logger.info("=== STEP 5: developer reports ===")
     n_reports = generate_reports(client)
     logger.info(f"reports: {n_reports} generated")
+
+    logger.info("=== STEP 6: yield digest (top yields → ops Telegram) ===")
+    send_yield_digest(client)
+
+    logger.info("=== STEP 7: price movers digest (top drops + jumps) ===")
+    send_price_movers_digest(client)
 
     logger.info("analysis pipeline complete")
     return 0

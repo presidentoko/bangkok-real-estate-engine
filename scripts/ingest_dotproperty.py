@@ -35,6 +35,7 @@ from src.db import (  # noqa: E402
     upsert_dotproperty_condo,
     upsert_dotproperty_listing,
     _normalize_project_name,
+    _normalize_project_name_aggressive,
 )
 from src.scrapers.dotproperty import scrape  # noqa: E402
 
@@ -82,9 +83,13 @@ def main() -> int:
             continue
 
         key = _normalize_project_name(project_name)
+        akey = _normalize_project_name_aggressive(project_name)
         if key in name_idx:
             condo_id = name_idx[key]
             stats["matched_hipflat"] += 1
+        elif akey and akey != key and akey in name_idx:
+            condo_id = name_idx[akey]
+            stats["matched_hipflat_aggressive"] += 1
         elif key in dp_condo_cache:
             condo_id = dp_condo_cache[key]
             stats["unmatched_existing_dp"] += 1
