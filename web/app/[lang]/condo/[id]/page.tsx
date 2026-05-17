@@ -5,9 +5,16 @@ import { CondoNeighbours } from "@/components/CondoNeighbours";
 import { CondoUnitsTable } from "@/components/CondoUnitsTable";
 import { PriceChart } from "@/components/PriceChart";
 import { ReportCard } from "@/components/ReportCard";
+import { MultiPortalCard } from "@/components/MultiPortalCard";
+import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
+import { getPortalStats } from "@/lib/queries/portals";
+import {
+  getCondoYield,
+  getCurrentMortgageRate,
+} from "@/lib/queries/yield";
 import { langAlternates } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
@@ -97,6 +104,7 @@ export default async function CondoPage({
   const [
     condoRes, scoreRes, livRes, riskRes, latestRes,
     listingsRes, chartRes, amenitiesRes, parkingRes, neighboursRes,
+    yieldData, mortgageRate, portalStats,
   ] = await Promise.all([
     supabase
       .from("condos_published")
@@ -150,6 +158,9 @@ export default async function CondoPage({
       .select("neighbour_slug, neighbour_url, neighbour_name")
       .eq("condo_id", id)
       .range(0, 19),
+    getCondoYield(supabase, id),
+    getCurrentMortgageRate(supabase),
+    getPortalStats(supabase, id),
   ]);
 
   if (!condoRes.data) notFound();
@@ -459,6 +470,10 @@ export default async function CondoPage({
           </div>
         </section>
       )}
+
+      <YieldCard yieldData={yieldData} mortgageRate={mortgageRate} />
+
+      <MultiPortalCard stats={portalStats} />
 
       {chart.length > 0 && <PriceChart points={chart} />}
 
