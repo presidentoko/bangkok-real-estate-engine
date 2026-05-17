@@ -68,6 +68,18 @@ def _commafloat(s: str | None) -> float | None:
         return None
 
 
+def _to_smallint(v: Any) -> int | None:
+    """Coerce a possibly-fractional room count to int — listings.bathrooms
+    is `smallint` in Postgres and rejects 1.5. Round half-baths down so
+    1.5 → 1, matching the conventional 'whole bathrooms' interpretation."""
+    if v is None:
+        return None
+    try:
+        return int(float(v))
+    except (TypeError, ValueError):
+        return None
+
+
 def _extract_json_from_card(card) -> dict[str, Any] | None:
     """Pull the bridgeSearchMouseOver JSON payload out of the card's
     onmouseenter attribute. Returns dict or None.
@@ -213,8 +225,8 @@ def parse_cards(html: str, listing_type: str = "sale") -> list[dict[str, Any]]:
             "price": price,
             "price_per_sqm": extras.get("price_per_sqm"),
             "area_sqm": area,
-            "bedrooms": payload.get("bedrooms"),
-            "bathrooms": payload.get("bathrooms"),
+            "bedrooms": _to_smallint(payload.get("bedrooms")),
+            "bathrooms": _to_smallint(payload.get("bathrooms")),
             "property_type": (payload.get("propertyType") or "Condo"),
             "address": payload.get("formatted_address"),
             "subdistrict": sub,

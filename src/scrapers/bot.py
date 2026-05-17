@@ -75,6 +75,18 @@ def _parse_period(s: str) -> tuple[date, bool] | None:
     return None
 
 
+_GENERIC_LABEL_RE = re.compile(
+    r"^(?:O/N|\d+\s*(?:day|days|week|weeks|month|months|year|years|Year))\s*$",
+    re.IGNORECASE,
+)
+
+
+def _is_generic_label(s: str) -> bool:
+    """True when the label looks like a tenor ('1 week', 'O/N', '3 months')
+    that only makes sense paired with its parent section."""
+    return bool(_GENERIC_LABEL_RE.match(s.strip()))
+
+
 def _to_float(s: str) -> float | None:
     v = (s or "").strip()
     if not v or v.lower() in ("n.a.", "n/a", "-", "..", ""):
@@ -116,6 +128,8 @@ def fetch_bot_report(report_id: int) -> list[dict[str, Any]]:
         periods.append(_parse_period(c))
 
     out: list[dict[str, Any]] = []
+    current_section: str | None = None
+    seen_keys: set[tuple[str, str]] = set()  # (indicator_name, period_iso)
     for tr in rows[1:]:
         cells = [td.get_text(strip=True) for td in tr.find_all(["td", "th"])]
         if len(cells) < 3:
@@ -126,6 +140,21 @@ def fetch_bot_report(report_id: int) -> list[dict[str, Any]]:
         # Trim trailing footnote markers like ' 1/', ' 2/', etc.
         indicator = re.sub(r"\s+\d+/$", "", indicator).strip()
 
+        # Rows with no numeric values are section headers
+        # (e.g. "Bilateral repurchase rate", "BIBOR"). Track the most recent
+        # one and prefix subsequent child rows so children with the same
+        # short label ("1 week", "1 month") don't collide on the unique key.
+        has_values = any(_to_float(v) is not None for v in cells[2:])
+        if not has_values:
+            current_section = indicator
+            continue
+
+        # Short generic labels need their parent section prefixed.
+        if current_section and _is_generic_label(indicator):
+            full_indicator = f"{current_section}: {indicator}"
+        else:
+            full_indicator = indicator
+
         for i, raw in enumerate(cells[2:]):
             if i >= len(periods) or not periods[i]:
                 continue
@@ -134,9 +163,15 @@ def fetch_bot_report(report_id: int) -> list[dict[str, Any]]:
                 continue
             period, period_provisional = periods[i]
             cell_provisional = raw.strip().endswith(("p", "P"))
+            key = (full_indicator, period.isoformat())
+            if key in seen_keys:
+                # Same indicator+period appeared earlier in this report —
+                # keep the first occurrence to stay idempotent.
+                continue
+            seen_keys.add(key)
             out.append({
                 "series_code": series_code,
-                "indicator_name": indicator,
+                "indicator_name": full_indicator,
                 "period": period.isoformat(),
                 "value": value,
                 "is_provisional": period_provisional or cell_provisional,
