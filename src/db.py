@@ -292,6 +292,14 @@ def upsert_ddproperty_condo(
         "longitude": sample.get("longitude"),
         "last_seen_at": datetime.now(timezone.utc).isoformat(),
     }
+    # Per-card extras captured by the post-2026-redesign DD parser
+    if sample.get("year_built"):
+        payload["completion_year"] = sample["year_built"]
+    if sample.get("ownership"):
+        # Freehold / Leasehold — building_ownership column was added in
+        # migration 006_listing_extras.sql. Safe to send even if older
+        # DB hasn't been migrated (PostgREST silently drops unknown cols).
+        payload["building_ownership"] = sample["ownership"]
     if province != "bangkok":
         payload["published"] = False
     payload = {k: v for k, v in payload.items() if v is not None}

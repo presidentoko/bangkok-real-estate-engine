@@ -103,17 +103,34 @@ def _extract_name(title_attr: str | None) -> str | None:
 
 
 def _parse_cards(html: str, listing_type: str) -> list[dict]:
+    """Parse DDProperty search-result cards into our common dict shape.
+
+    DDProperty redesigned the search page in early 2026 — the old
+    `parent-listing-card-v2-regular` data-attribute container disappeared
+    and was replaced with a class-based card `div.listing-card-v2`. The
+    inner field markers (`da-id='listing-card-v2-bedrooms'` etc.) survived
+    the redesign. Listing-id is no longer on the card itself — extract it
+    from the trailing `-for-sale-<NUMERIC>` token in the property URL.
+    """
     soup = BeautifulSoup(html, "html.parser")
     out: list[dict] = []
     seen: set[str] = set()
 
-    cards = soup.select("[da-id='parent-listing-card-v2-regular']")
-
+    cards = soup.select("div.listing-card-v2")
     for card in cards:
         try:
-            sid = card.get("da-listing-id")
+            link = card.select_one("a[href*='/en/property/']")
+            if not link:
+                continue
+            href = link.get("href", "")
+            url = href if href.startswith("http") else BASE_URL + href
+            m = SID_RE.search(url)
+            sid = m.group(1) if m else None
+            if not sid or sid in seen:
+                continue
 
-            title_el = card.select_one("[da-id='listing-card-v2-title']")
+            # Title — title da-id may have a suffix; use wildcard match.
+            title_el = card.select_one("[da-id*='listing-card-v2-title']")
             if not title_el:
                 continue
             raw_title = title_el.get_text(strip=True)
@@ -124,34 +141,40 @@ def _parse_cards(html: str, listing_type: str) -> list[dict]:
                 flags=re.IGNORECASE,
             ).strip() or None
 
-            price_el = card.select_one("[da-id='listing-card-v2-price']")
-            price_text = price_el.get_text(strip=True) if price_el else ""
+            # Price — the v2 price element wraps multiple spans
+            # ('฿11,450,000' + '฿107,988/sqm' tooltip). Take the headline
+            # which lives in the first numeric token.
+            price_el = card.select_one("[da-id*='listing-card-v2-price']")
+            price_text = price_el.get_text(" ", strip=True) if price_el else ""
             price = _parse_price(price_text) if price_text else None
-
-            link = card.select_one("a[href*='/en/property/']")
-            if not link:
-                continue
-            href = link.get("href", "")
-            url = href if href.startswith("http") else BASE_URL + href
-
-            if not sid:
-                m = SID_RE.search(url)
-                sid = m.group(1) if m else None
-            if not sid or sid in seen:
-                continue
 
             def _int_el(da_id: str) -> int | None:
                 el = card.select_one(f"[da-id='{da_id}']")
-                try:
-                    return int(el.get_text(strip=True)) if el else None
-                except (ValueError, TypeError):
+                if not el:
                     return None
+                # Be tolerant of '2+1' bedroom layouts (treat as 2)
+                txt = el.get_text(strip=True)
+                m = re.match(r"\d+", txt)
+                return int(m.group(0)) if m else None
 
             beds = _int_el("listing-card-v2-bedrooms")
             baths = _int_el("listing-card-v2-bathrooms")
 
             area_el = card.select_one("[da-id='listing-card-v2-area']")
             area = _parse_area(area_el.get_text(strip=True) if area_el else "")
+
+            # New in the redesign: per-card ownership tenure (Freehold /
+            # Leasehold). Surface it so foreign-quota analysis improves.
+            tenure_el = card.select_one("[da-id='listing-card-v2-tenure']")
+            tenure = tenure_el.get_text(strip=True) if tenure_el else None
+
+            year_el = card.select_one("[da-id='listing-card-v2-build-year']")
+            year_built = None
+            if year_el:
+                ytxt = year_el.get_text(strip=True)
+                m = re.search(r"(\d{4})", ytxt)
+                if m:
+                    year_built = int(m.group(1))
 
             if not (name and price):
                 continue
@@ -166,6 +189,8 @@ def _parse_cards(html: str, listing_type: str) -> list[dict]:
                 "area_sqm": area,
                 "bedrooms": beds,
                 "bathrooms": baths,
+                "ownership": tenure,
+                "year_built": year_built,
             })
         except Exception as e:
             logger.debug(f"[ddproperty] card parse error: {e}")
