@@ -119,16 +119,22 @@ export default async function Home({
           </p>
           <div className="flex flex-wrap gap-3 mt-7">
             <Link
-              href={`/${lang}/flood`}
-              className="bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-400 transition shadow-lg shadow-blue-500/20"
+              href={`/${lang}/ask`}
+              className="bg-emerald-500 text-zinc-950 font-semibold px-5 py-2.5 rounded-xl hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20"
             >
               {t.home.ctaFlood}
             </Link>
             <Link
-              href={`/${lang}/inventory`}
-              className="bg-zinc-800 text-zinc-100 font-semibold px-5 py-2.5 rounded-xl hover:bg-zinc-700 transition"
+              href={`/${lang}/yields`}
+              className="bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-400 transition shadow-lg shadow-blue-500/20"
             >
               {t.home.ctaInventory}
+            </Link>
+            <Link
+              href={`/${lang}/flood`}
+              className="bg-zinc-800 text-zinc-100 font-semibold px-5 py-2.5 rounded-xl hover:bg-zinc-700 transition"
+            >
+              Flood map →
             </Link>
           </div>
 

@@ -256,7 +256,61 @@ export default async function YieldsPage({
           matched sale + rent listings on the same building.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-950">
+        <>
+          {/* Mobile: stacked cards. Below sm the table overflows badly. */}
+          <ul className="sm:hidden space-y-2">
+            {yields.map((r, i) => {
+              const spread = mrr != null ? r.gross_yield_pct - mrr : null;
+              return (
+                <li
+                  key={r.id}
+                  className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3"
+                >
+                  <Link
+                    href={`/${lang}/condo/${r.id}`}
+                    className="block space-y-2"
+                  >
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-zinc-600 tabular-nums text-xs w-6 shrink-0">
+                        {i + 1}
+                      </span>
+                      <span className="text-zinc-100 font-medium leading-snug">
+                        {r.name}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-3 pl-8 flex-wrap">
+                      <span className="text-zinc-400 capitalize text-xs">
+                        {regionLabel(r)}
+                      </span>
+                      <span className="font-semibold tabular-nums text-base">
+                        {r.gross_yield_pct.toFixed(2)}%
+                      </span>
+                      {spread != null && (
+                        <span
+                          className={`text-xs font-semibold tabular-nums ${
+                            spread >= 0 ? "text-emerald-400" : "text-rose-400"
+                          }`}
+                        >
+                          {spread >= 0 ? "+" : ""}
+                          {spread.toFixed(2)}pp
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-baseline gap-3 pl-8 text-xs text-zinc-500 tabular-nums">
+                      <span>Sale {fmtTHB(r.avg_sale_price)}</span>
+                      <span>· Rent {fmtTHB(r.avg_monthly_rent)}/mo</span>
+                      <span>
+                        · n={r.yield_sample_sale ?? 0}/{r.yield_sample_rent ?? 0}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Tablet+: full table. */}
+          <div className="hidden sm:block rounded-2xl border border-zinc-800 bg-zinc-950 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-xs uppercase tracking-wider text-zinc-500 bg-zinc-900 border-b border-zinc-800">
               <tr>
@@ -311,7 +365,8 @@ export default async function YieldsPage({
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
       <section className="text-xs text-zinc-500 leading-relaxed max-w-2xl">

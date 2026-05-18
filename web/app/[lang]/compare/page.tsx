@@ -134,11 +134,11 @@ export default async function ComparePage({
           </p>
         </div>
       ) : (
-        <section className="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-950">
-          <table className="w-full text-sm">
+        <section className="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-950 [&_tr>:first-child]:sticky [&_tr>:first-child]:left-0 [&_tr>:first-child]:z-10 [&_tbody_tr>:first-child]:bg-zinc-950 [&_thead_tr>:first-child]:bg-zinc-900 [&_tr>:first-child]:shadow-[1px_0_0_rgba(63,63,70,0.4)]">
+          <table className="w-full text-sm min-w-[600px]">
             <thead className="text-xs uppercase tracking-wider text-zinc-500 bg-zinc-900 border-b border-zinc-800">
               <tr>
-                <th className="text-left px-4 py-3 w-40">Metric</th>
+                <th className="text-left px-4 py-3 w-32 sm:w-40">Metric</th>
                 {condos.map((c) => (
                   <th key={c.id} className="text-left px-4 py-3">
                     <Link

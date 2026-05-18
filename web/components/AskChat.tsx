@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -10,6 +10,18 @@ const SUGGESTIONS = [
   "Which Phuket condos beat MRR by 2 percentage points?",
   "Show me underpriced condos near BTS",
 ] as const;
+
+// Trigger the email-capture CTA once an assistant message names this
+// many or more distinct condo links — that's when the answer has
+// shortlist-shaped value worth keeping.
+const SHORTLIST_TRIGGER_COUNT = 3;
+const CONDO_LINK_RE = /\/condo\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
+
+function distinctCondoIds(text: string): string[] {
+  const seen = new Set<string>();
+  for (const m of text.matchAll(CONDO_LINK_RE)) seen.add(m[1].toLowerCase());
+  return [...seen];
+}
 
 export function AskChat() {
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -119,23 +131,47 @@ export function AskChat() {
       )}
 
       <div className="space-y-3">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`rounded-2xl p-4 ${
-              m.role === "user"
-                ? "bg-emerald-500/10 border border-emerald-500/30"
-                : "bg-zinc-900 border border-zinc-800"
-            }`}
-          >
-            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-2">
-              {m.role === "user" ? "You" : "RealData"}
+        {messages.map((m, i) => {
+          const isAssistant = m.role === "assistant";
+          const isLastAssistant = isAssistant && i === messages.length - 1;
+          const isStreamingHere = isLastAssistant && streaming;
+          // Only show the shortlist CTA on a completed assistant message
+          // that names at least N distinct condos. The previous user msg
+          // is the question to attach to the lead.
+          const condoIds = isAssistant && !isStreamingHere ? distinctCondoIds(m.content) : [];
+          const showShortlistCta = condoIds.length >= SHORTLIST_TRIGGER_COUNT;
+          const priorUserMsg = isAssistant ? messages[i - 1]?.content ?? "" : "";
+          return (
+            <div key={i} className="space-y-2">
+              <div
+                className={`rounded-2xl p-4 ${
+                  m.role === "user"
+                    ? "bg-emerald-500/10 border border-emerald-500/30"
+                    : "bg-zinc-900 border border-zinc-800"
+                }`}
+              >
+                <div className="text-xs text-zinc-500 uppercase tracking-wider mb-2">
+                  {m.role === "user" ? "You" : "RealData"}
+                </div>
+                <div className="text-sm leading-relaxed whitespace-pre-wrap prose-invert">
+                  <SimpleMarkdown
+                    content={
+                      m.content || (isStreamingHere ? "…" : "")
+                    }
+                  />
+                </div>
+              </div>
+              {showShortlistCta && (
+                <ShortlistCapture
+                  key={`cta-${i}`}
+                  question={priorUserMsg}
+                  answer={m.content}
+                  condoCount={condoIds.length}
+                />
+              )}
             </div>
-            <div className="text-sm leading-relaxed whitespace-pre-wrap prose-invert">
-              <SimpleMarkdown content={m.content || (streaming && i === messages.length - 1 ? "…" : "")} />
-            </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={endRef} />
       </div>
 
@@ -171,6 +207,117 @@ export function AskChat() {
         </p>
       </form>
     </div>
+  );
+}
+
+/**
+ * Inline lead-magnet CTA shown directly under an assistant message that
+ * produced a shortlist of >=3 condos. One field (email). On submit we
+ * post to /api/leads with the question + answer attached as the message
+ * body — broker picking the lead up gets the full context.
+ */
+function ShortlistCapture({
+  question,
+  answer,
+  condoCount,
+}: {
+  question: string;
+  answer: string;
+  condoCount: number;
+}) {
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "ok" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  // De-duplicate identical CTAs that might re-render across messages —
+  // once a user submits in this session, hide further shortlist prompts.
+  // (Cheap session storage; resets on tab close.)
+  const submittedThisSession = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.sessionStorage.getItem("askShortlistSubmitted") === "1";
+  }, []);
+  if (submittedThisSession) return null;
+
+  if (state === "ok") {
+    return (
+      <div className="bg-emerald-500/10 border border-emerald-500/40 rounded-xl px-4 py-3 text-sm text-emerald-300">
+        Got it — we&apos;ll email this shortlist and have a vetted broker reach out
+        within 24 hours. No spam.
+      </div>
+    );
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.includes("@")) {
+      setError("Enter a valid email.");
+      return;
+    }
+    setState("sending");
+    setError(null);
+    try {
+      const message =
+        `Shortlist saved from /ask (${condoCount} condos).\n\n` +
+        `Question:\n${question.slice(0, 600)}\n\n` +
+        `Answer:\n${answer.slice(0, 1800)}`;
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          message,
+          source_url:
+            typeof window !== "undefined" ? window.location.href : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(j.error ?? "Submission failed");
+      }
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("askShortlistSubmitted", "1");
+      }
+      setState("ok");
+    } catch (err) {
+      setState("error");
+      setError(err instanceof Error ? err.message : "Network error");
+    }
+  }
+
+  return (
+    <form
+      onSubmit={submit}
+      className="bg-emerald-500/5 border border-emerald-500/30 rounded-xl p-3 sm:p-4 space-y-2"
+    >
+      <div className="text-sm text-emerald-200/90">
+        Email me this shortlist + have a vetted broker follow up. No spam — free.
+      </div>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          disabled={state === "sending"}
+          maxLength={200}
+          className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-60"
+        />
+        <button
+          type="submit"
+          disabled={state === "sending" || email.length === 0}
+          className="shrink-0 px-4 py-2.5 bg-emerald-500 text-zinc-950 rounded-lg text-sm font-semibold hover:bg-emerald-400 transition disabled:opacity-50"
+        >
+          {state === "sending" ? "Sending…" : "Send to my email"}
+        </button>
+      </div>
+      {error && <p className="text-xs text-rose-400">{error}</p>}
+      <p className="text-[11px] text-emerald-300/60 leading-snug">
+        By submitting, you agree we may share your contact with one vetted
+        broker who knows these buildings. Broker pays a flat referral if they
+        close — you pay nothing extra.
+      </p>
+    </form>
   );
 }
 
