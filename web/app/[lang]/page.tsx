@@ -277,6 +277,38 @@ export default async function Home({
         <p className="text-xs text-zinc-500 mt-2">{t.home.inventoryHelp}</p>
       </section>
 
+      {/* Curated yield slices — entry points to /best/[city]/[slug] */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-900">
+        <div className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+            Curated yield slices
+          </h2>
+          <p className="text-zinc-400 text-sm mt-1 max-w-xl">
+            Hand-curated cuts — by city and budget — ranked against the current Thai mortgage rate.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-sm">
+          {[
+            { city: "bangkok",    slug: "top-yield",            label: "Top yield · Bangkok" },
+            { city: "bangkok",    slug: "under-5m-top-yield",   label: "Best yield under ฿5M · Bangkok" },
+            { city: "bangkok",    slug: "under-10m",            label: "Bangkok under ฿10M" },
+            { city: "phuket",     slug: "top-yield",            label: "Top yield · Phuket" },
+            { city: "phuket",     slug: "under-10m-top-yield",  label: "Best yield under ฿10M · Phuket" },
+            { city: "chiang-mai", slug: "under-5m",             label: "Chiang Mai under ฿5M" },
+            { city: "pattaya",    slug: "top-yield",            label: "Top yield · Pattaya" },
+            { city: "hua-hin",    slug: "under-10m",            label: "Hua Hin under ฿10M" },
+          ].map((s) => (
+            <Link
+              key={`${s.city}-${s.slug}`}
+              href={`/${lang}/best/${s.city}/${s.slug}`}
+              className="bg-zinc-900 border border-zinc-800 rounded-full px-3.5 py-2 text-zinc-300 hover:text-emerald-400 hover:border-zinc-600 transition"
+            >
+              {s.label}
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Other cities */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-900">
         <div className="mb-4">

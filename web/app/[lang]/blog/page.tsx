@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { listWeeklyPosts } from "@/lib/weeklyPost";
+
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,
@@ -142,13 +145,45 @@ export default async function BlogIndex({
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
+  const weeklyPosts = await listWeeklyPosts();
 
   return (
-    <main className="max-w-3xl mx-auto p-6">
-      <header className="mb-8">
+    <main className="max-w-3xl mx-auto p-6 space-y-8">
+      <header className="mb-2">
         <h1 className="text-3xl font-black mb-2">{t.blogIndex.title}</h1>
         <p className="text-zinc-400 text-sm max-w-xl">{t.blogIndex.lead}</p>
       </header>
+
+      {weeklyPosts.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+            Weekly auto-recap
+          </h2>
+          <ul className="space-y-3">
+            {weeklyPosts.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  href={`/${lang}/blog/weekly/${p.slug}`}
+                  className="block p-5 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition border border-emerald-500/30"
+                >
+                  <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                    <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">
+                      Weekly{p.topic ? ` · ${p.topic}` : ""}
+                    </span>
+                    <time className="text-zinc-500 text-xs tabular-nums">
+                      {p.published_at}
+                    </time>
+                  </div>
+                  <h3 className="text-lg font-bold mt-1">{p.title}</h3>
+                  <p className="text-zinc-400 text-sm mt-2 leading-relaxed">
+                    {p.description}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <ul className="space-y-3">
         {POSTS.map((p) => {

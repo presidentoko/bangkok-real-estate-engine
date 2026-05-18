@@ -25,6 +25,10 @@ concurrency:
   group: weekly-refresh
   cancel-in-progress: false
 
+permissions:
+  # Auto-blog step pushes a new commit with the generated post JSON.
+  contents: write
+
 jobs:
   refresh:
     runs-on: [self-hosted, windows, x64]
@@ -40,6 +44,8 @@ jobs:
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
       PYTHONUNBUFFERED: "1"
       PYTHONIOENCODING: "utf-8"
       TIER_B_LIMIT: ${{ inputs.tier_b_limit || '250' }}
@@ -134,6 +140,18 @@ jobs:
           cmd /c "python scripts\run_analysis.py 2>&1" | Tee-Object -FilePath analysis.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Auto-blog — generate + verify + push
+        # Pulls a story off the rotating topic dial (yield-spread,
+        # foreign-quota, city-spotlight), generates a JSON post via
+        # Claude Sonnet, re-verifies every numeric claim against the DB,
+        # writes web/content/weekly/{slug}.json, then commits & pushes.
+        # continue-on-error: a missing ANTHROPIC_API_KEY or a thin-data
+        # week skips the post cleanly without failing the whole refresh.
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\generate_weekly_post.py 2>&1" | Tee-Object -FilePath autoblog.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::generate_weekly_post exited $LASTEXITCODE" }
+
       - name: Notify on success
         if: success() && env.TELEGRAM_BOT_TOKEN != ''
         run: |
@@ -196,6 +214,7 @@ jobs:
             rematch.log
             compute.log
             analysis.log
+            autoblog.log
             tier_b_dumps/
           if-no-files-found: ignore
           retention-days: 30

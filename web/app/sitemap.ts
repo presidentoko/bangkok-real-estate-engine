@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
+import { BEST_CITIES, BEST_FILTERS } from "@/lib/bestSlugs";
 import { CITIES } from "@/lib/cities";
 import { LANGS } from "@/lib/i18n";
 import { getServerSupabase } from "@/lib/supabase";
+import { listWeeklyPosts } from "@/lib/weeklyPost";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -68,6 +70,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Programmatic /best/[city]/[slug] landings — 9 cities × 7 filters × N langs.
+  for (const lang of LANGS) {
+    for (const city of BEST_CITIES) {
+      for (const filter of BEST_FILTERS) {
+        const path = `/best/${city.slug}/${filter.slug}`;
+        out.push({
+          url: `${SITE_URL}/${lang}${path}`,
+          lastModified: now,
+          changeFrequency: "weekly",
+          priority: 0.65,
+          alternates: { languages: langAlternates(path) },
+        });
+      }
+    }
+  }
+
   // District landing pages — one per region with at least 3 active condos.
   // We don't want to surface tiny single-condo regions or stale slugs.
   const supabase = getServerSupabase();
@@ -88,6 +106,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
         alternates: { languages: langAlternates(districtPath) },
+      });
+    }
+  }
+
+  // Auto-generated weekly blog posts. Each entry sits at /blog/weekly/{slug}
+  // and the JSON files in web/content/weekly/ are the source of truth.
+  const weeklyPosts = await listWeeklyPosts();
+  for (const post of weeklyPosts) {
+    const wp = `/blog/weekly/${post.slug}`;
+    for (const lang of LANGS) {
+      out.push({
+        url: `${SITE_URL}/${lang}${wp}`,
+        lastModified: new Date(post.published_at),
+        changeFrequency: "monthly",
+        priority: 0.6,
+        alternates: { languages: langAlternates(wp) },
       });
     }
   }
