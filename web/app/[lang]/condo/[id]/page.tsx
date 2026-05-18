@@ -20,7 +20,8 @@ import {
   getCurrentMortgageRate,
 } from "@/lib/queries/yield";
 import { langAlternates } from "@/lib/seo";
-import { buildBreadcrumbsJsonLd, buildCondoJsonLd } from "@/lib/seo/condoJsonLd";
+import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
@@ -270,6 +271,108 @@ export default async function CondoPage({
     condoName: condoRaw.name,
     region,
   });
+  const speakableJsonLd = buildCondoSpeakableJsonLd({
+    siteUrl: SITE_URL,
+    lang,
+    condoId: condoRaw.id,
+    condoName: condoRaw.name,
+  });
+
+  // Per-condo FAQ — concrete numbers wherever we have them so the answer
+  // is quotable as-is by Google AI Overviews / Perplexity / ChatGPT.
+  const yieldVal = yieldData?.gross_yield_pct;
+  const bubbleVal = scoreRes.data?.bubble_index;
+  const floodVal = riskRes.data?.flood_risk_level;
+  const quotaVal = condoRaw.foreign_quota_inventory_pct;
+  const aqiVal = condoRaw.aqi_score;
+  const mrr = mortgageRate?.rate ?? null;
+
+  const faqItems: Array<{ q: string; a: string }> = [];
+  if (yieldVal != null) {
+    const spreadLine =
+      mrr != null
+        ? ` Versus the current Thai MRR of ${mrr.toFixed(2)}%, that is a ${yieldVal - mrr >= 0 ? "+" : ""}${(yieldVal - mrr).toFixed(2)}pp spread.`
+        : "";
+    faqItems.push({
+      q: `What is the gross rental yield at ${condoRaw.name}?`,
+      a:
+        `Gross rental yield at ${condoRaw.name} is ${yieldVal.toFixed(2)}%, computed as ` +
+        `(12 × median monthly rent) ÷ median sale price across our active listings.` +
+        spreadLine +
+        " This is a pre-tax, pre-vacancy figure — net yield is typically 1.5–3pp lower.",
+    });
+  }
+  if (bubbleVal != null) {
+    const dist = Math.round(bubbleVal - 100);
+    const verdict =
+      bubbleVal >= 130
+        ? "bubble suspect"
+        : bubbleVal < 80
+          ? "underpriced"
+          : "at-market";
+    faqItems.push({
+      q: `Is ${condoRaw.name} overpriced compared to the rest of ${region}?`,
+      a:
+        `${condoRaw.name} has a RealData Bubble Index of ${bubbleVal.toFixed(0)} — that is ` +
+        `${Math.abs(dist)}% ${dist >= 0 ? "above" : "below"} the median price-per-sqm of the ${region} district, ` +
+        `which we classify as ${verdict}.`,
+    });
+  }
+  if (quotaVal != null) {
+    faqItems.push({
+      q: `Can foreigners buy a unit at ${condoRaw.name}?`,
+      a:
+        `Across the for-sale inventory we currently observe at ${condoRaw.name}, ` +
+        `${quotaVal.toFixed(0)}% of the units are flagged "Foreign Quota" — meaning legally eligible for a non-Thai buyer. ` +
+        `A higher share = more foreign-eligible inventory still available. Thai law caps foreign ownership at 49% of a building's total floor area, ` +
+        `so foreign-quota units sell out faster than Thai-quota units in popular buildings.`,
+    });
+  }
+  if (floodVal != null) {
+    const floodLabel =
+      floodVal >= 5
+        ? "severe"
+        : floodVal >= 4
+          ? "waist-deep recurring"
+          : floodVal >= 3
+            ? "neighborhood-level common"
+            : floodVal >= 2
+              ? "occasional puddling"
+              : floodVal >= 1
+                ? "very low"
+                : "none observed";
+    faqItems.push({
+      q: `What is the monsoon flood risk at ${condoRaw.name}?`,
+      a:
+        `${condoRaw.name} sits in a district with a RealData Flood Risk Level of ${floodVal}/5 — ${floodLabel}. ` +
+        `Risk is district-level, drawn from Bangkok Metropolitan Administration Drainage Department records, JICA reports, ` +
+        `and the 2011 great-flood inundation map. Individual buildings may still flood ground-level parking even in lower-risk districts.`,
+    });
+  }
+  if (aqiVal != null) {
+    const aqiVerdict =
+      aqiVal >= 150
+        ? "Unhealthy (PM2.5 elevated)"
+        : aqiVal >= 100
+          ? "Unhealthy for sensitive groups"
+          : aqiVal >= 50
+            ? "Moderate"
+            : "Good";
+    faqItems.push({
+      q: `How is the air quality at ${condoRaw.name}?`,
+      a:
+        `Latest WAQI air quality reading near ${condoRaw.name} is ${aqiVal} — ${aqiVerdict}. ` +
+        `This is the index value from the closest World Air Quality Index station; PM2.5 levels in Bangkok swing seasonally and can spike during burn season (Feb–April).`,
+    });
+  }
+  faqItems.push({
+    q: `How does RealData verify the numbers on this page?`,
+    a:
+      `Every figure is computed from live listing data we re-crawl across hipflat, dotproperty, ddproperty, and fazwaz (daily for Bangkok, weekly for the full Thailand sweep). ` +
+      `District medians come from the same dataset, the mortgage benchmark is Bank of Thailand BTWS_STAT, and flood / livability layers are pinned to government and OpenStreetMap sources. ` +
+      `We accept no payment from developers — the only revenue path is a flat referral if a reader hires a vetted broker through us.`,
+  });
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-8">
@@ -281,17 +384,27 @@ export default async function CondoPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
       />
-      <ReportCard
-        condo={{ ...condoRaw, regions }}
-        score={scoreRes.data}
-        liv={livRes.data}
-        risk={riskRes.data}
-        latest={latestRes.data}
-        lang={lang}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableJsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <div data-speakable="report-card">
+        <ReportCard
+          condo={{ ...condoRaw, regions }}
+          score={scoreRes.data}
+          liv={livRes.data}
+          risk={riskRes.data}
+          latest={latestRes.data}
+          lang={lang}
+        />
+      </div>
 
       {/* Building facts */}
-      <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+      <section data-speakable="building-facts" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
         <h2 className="text-sm font-semibold text-zinc-300 mb-3">
           {tCondo.buildingFacts}
         </h2>

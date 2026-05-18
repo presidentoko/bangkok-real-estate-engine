@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
@@ -149,11 +150,49 @@ export default async function DistrictPage({
     ],
   };
 
+  const spreadLine =
+    medianYield != null && mrr != null
+      ? `Median yield ${medianYield.toFixed(2)}% means a ${(medianYield - mrr >= 0 ? "+" : "")}${(medianYield - mrr).toFixed(2)}pp spread versus the current Thai MRR of ${mrr.toFixed(2)}%.`
+      : medianYield != null
+        ? `Median yield is ${medianYield.toFixed(2)}%.`
+        : "Most buildings in this district don't have enough matched sale + rent listings yet to compute a yield.";
+
+  const faqJsonLd = buildFaqJsonLd([
+    {
+      q: `How many condo buildings does RealData track in ${display}?`,
+      a: `${condos.length} buildings across the ${display} district of ${provinceDisplay}, drawn from hipflat, dotproperty, ddproperty, and fazwaz listings.`,
+    },
+    {
+      q: `What is the median gross rental yield in ${display}?`,
+      a: spreadLine,
+    },
+    ...(medianSale != null
+      ? [{
+          q: `What is the median sale price for a condo in ${display}?`,
+          a: `Median sale price is ฿${Math.round(medianSale).toLocaleString()} based on active listings across the four portals we track. Each individual condo page shows its own price evidence, including per-portal divergence where it exists.`,
+        }]
+      : []),
+    ...(medianRent != null
+      ? [{
+          q: `What is the median monthly rent in ${display}?`,
+          a: `Median monthly rent is ฿${Math.round(medianRent).toLocaleString()} per month for active listings in ${display}.`,
+        }]
+      : []),
+    {
+      q: `Is ${display} a good area for foreign buyers?`,
+      a: `RealData doesn't editorialise — instead, the per-building pages surface the legally-binding signal: foreign-quota inventory share (the % of for-sale units in a building that are flagged Foreign Quota and therefore eligible for non-Thai ownership). Use the building list below to find condos with measured foreign-quota availability in ${display}.`,
+    },
+  ]);
+
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <header className="space-y-2">

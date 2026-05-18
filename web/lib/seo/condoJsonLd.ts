@@ -162,3 +162,36 @@ export function buildBreadcrumbsJsonLd(args: {
     ],
   };
 }
+
+/**
+ * WebPage schema with SpeakableSpecification pointing at the sections of
+ * the condo report most suitable for a voice readout (and therefore most
+ * likely to be quoted by ChatGPT/Claude voice + Google Assistant).
+ *
+ * Selectors target stable `data-speakable` attributes added to the page —
+ * the ReportCard's verdict tiles and the headline fact bullets. Keep the
+ * markup attribute names in sync.
+ */
+export function buildCondoSpeakableJsonLd(args: {
+  siteUrl: string;
+  lang: string;
+  condoId: string;
+  condoName: string;
+}): Record<string, unknown> {
+  const { siteUrl, lang, condoId, condoName } = args;
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `${condoName} — RealData report`,
+    url: `${siteUrl}/${lang}/condo/${condoId}`,
+    inLanguage: lang,
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: [
+        "[data-speakable='report-card']",
+        "[data-speakable='building-facts']",
+        "[data-speakable='headline-signals']",
+      ],
+    },
+  };
+}

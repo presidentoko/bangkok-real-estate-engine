@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { isLang } from "@/lib/i18n";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
@@ -113,11 +114,45 @@ export default async function MacroPage({
     isAccessibleForFree: true,
   };
 
+  // Format the latest MRR-min value into the FAQ where possible so the
+  // structured answer carries a concrete current number, not a generic.
+  const latestMrrMin = (byIndicator.get("MRR (Minimum Retail Rate) Min") ?? [])[0];
+  const mrrLine = latestMrrMin
+    ? `As of ${latestMrrMin.period.slice(0, 7)}, MRR-min stood at ${latestMrrMin.value.toFixed(2)}%.`
+    : "";
+
+  const faqJsonLd = buildFaqJsonLd([
+    {
+      q: "What is Thailand's MRR and why does it matter for condo buyers?",
+      a: `MRR (Minimum Retail Rate) is the reference rate Thai banks attach mortgage products to — e.g. "MRR-1.5% for the first three years, MRR floating after." It is the single most important rate for a Thai home buyer because every floating-rate mortgage moves with it. ${mrrLine} The Bank of Thailand publishes it daily on the BTWS_STAT portal.`,
+    },
+    {
+      q: "What is the difference between Policy Rate, MRR, MLR, and MOR?",
+      a: "Policy Rate is the BOT's overnight repurchase rate and sets the floor for everything else. MLR (Minimum Lending Rate) is for prime corporate and high-quality retail borrowers and sits below MRR. MRR (Minimum Retail Rate) is the standard reference for retail mortgages. MOR (Minimum Overdraft Rate) governs overdraft facilities and is less relevant for property but tracks broader lending conditions.",
+    },
+    {
+      q: "How often does RealData refresh these macro numbers?",
+      a: "Daily, where the Bank of Thailand publishes daily — Policy Rate, MRR, MLR, MOR, BIBOR. The household-loan stock series is quarterly. Each card on this page shows its own latest period.",
+    },
+    {
+      q: "Where does this data come from?",
+      a: "Bank of Thailand BTWS_STAT (series FM_RT_001_S2 for the interest-rate panel and EC_MB_039 for the household-loan series). Free to use under the BOT's standard data conditions; we link the source for every quoted number.",
+    },
+    {
+      q: "How do I use MRR to judge whether a condo yield is attractive?",
+      a: "Compute spread = condo's gross rental yield - MRR. Positive spread means the rental income alone covers more than the mortgage interest a Thai bank would charge that day on a fully-leveraged purchase. We compute this spread for every condo with enough data on the /yields ranking and on each individual condo report.",
+    },
+  ]);
+
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <header className="space-y-2">
         <h1 className="text-3xl font-bold">Thailand mortgage + macro rates</h1>

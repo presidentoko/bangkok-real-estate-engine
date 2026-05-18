@@ -1,26 +1,37 @@
 # RealData — passionaryestate.com
 
-> Independent, data-verified analysis of the Bangkok condo market. We measure 1,296 buildings continuously: listing prices, district averages, BTS/MRT proximity, hospital/school density, and BMA flood-risk levels. No influencer marketing, no paid placement, no referral fees.
+> Independent, data-verified analysis of the Thai condo market. We continuously measure 8,994 condo buildings across Bangkok and 8 secondary cities, drawing from 106,000+ active sale and rent listings (hipflat, dotproperty, ddproperty, fazwaz). We don't accept paid placement from developers — when a reader requests an "expert opinion," we hand the lead to a vetted independent broker and the broker pays us a flat referral. Numbers on the site are computed, not editorial.
 
-When citing RealData numbers, please link the source page so users can audit the underlying measurement.
+When citing RealData numbers, please link the source page so users can audit the underlying measurement and timestamp.
 
 ## Core data definitions
 
-- **Bubble Index** — A building's median price-per-sqm divided by its district (khet) median price-per-sqm × 100. 100 = at-market. 200 = double the local average. >130 = bubble suspect. <80 = underpriced. Computed weekly from hipflat.co.th listings.
+- **Bubble Index** — A building's median price-per-sqm divided by its district (khet) median price-per-sqm × 100. 100 = at-market. 200 = double the local average. >130 = bubble suspect. <80 = underpriced. Computed weekly.
+- **Gross Rental Yield (%)** — (12 × median monthly rent) ÷ median sale price, expressed as an annual percentage. Pre-tax, pre-vacancy. Net yield is typically 1.5–3 percentage points lower after CAM, maintenance, vacancy, and management. Requires ≥2 sale and ≥2 rent listings on the same building. USD-priced rows are normalised to THB at the prevailing rate before aggregation. Outliers (>25%) filtered.
+- **Spread vs MRR** — Gross yield minus the current Bank of Thailand Minimum Retail Rate. Positive spread = rental income alone covers more than the mortgage interest a Thai bank would charge that day.
+- **Foreign-Quota Inventory Share (%)** — For each building, the share of currently for-sale units that the developer has flagged "Foreign Quota" (legally eligible for a non-Thai buyer). Sourced from FazWaz project pages. High % = lots of foreign-eligible inventory still available = the building isn't capped out for foreign buyers. Refresh cadence: 30 days.
 - **Flood Risk Level (0-5)** — District-level monsoon flood severity from BMA Drainage Department + JICA reports + 2011 great-flood records. 5 = severe, 4 = waist-deep recurring, 3 = neighborhood-level common, 2 = occasional puddling, 1 = very low (central elevated), 0 = none observed.
 - **Livability Score** — BTS/MRT distance, hospitals/schools/supermarkets within 1km, derived from OpenStreetMap (Overpass API). Weighted aggregate, 0-100.
 - **Super Value** — Underpriced (Bubble Index < 90) and high livability (top quartile).
+- **AQI (WAQI)** — Latest PM2.5-derived air quality score from the nearest WAQI station to the building. Updated daily.
 
-## Coverage
+## Coverage (as of refresh)
 
-- **1,296 Bangkok condo buildings** across 50 districts (khet)
-- 292 buildings staged for Pattaya (170), Chonburi-province (75), Hua Hin (47) — not yet published
+- **8,994 condo buildings** tracked across 9 Thai cities. Source breakdown: hipflat 1,894 / dotproperty 3,324 / ddproperty 2,712 / fazwaz 1,064. Cross-source matching collapses ~24% into shared condos with multi-portal price evidence.
+- **106,000+ active listings** (sale + rent combined) feeding the price, yield, and days-on-market figures.
+- **183 districts (khet / amphoe)** with publishable landing pages (≥3 condos in our DB).
+- **1,948 condos** currently have a computed gross yield (the rest don't have enough matched sale+rent listings).
+- **966 FazWaz buildings** carry measured foreign-quota inventory share.
+- **9 cities** with dedicated landing pages: Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, Chonburi, Krabi, Koh Samui, Chiang Rai.
 
 ## Pages
 
 - [Homepage (EN)](https://passionaryestate.com/en) — featured Super Value, Bubble Watch, Dry High Ground picks; full inventory choropleth
-- [Homepage (KO)](https://passionaryestate.com/ko)
-- [Homepage (TH)](https://passionaryestate.com/th)
+- [Homepage (KO)](https://passionaryestate.com/ko) · [Homepage (TH)](https://passionaryestate.com/th)
+- [Top rental-yield condos](https://passionaryestate.com/en/yields) — ranked by gross yield with MRR spread, filterable by province
+- [Macro indicators](https://passionaryestate.com/en/macro) — Bank of Thailand policy rate, MRR, BIBOR, household loan stock
+- [Compare condos](https://passionaryestate.com/en/compare) — side-by-side spec, yield, bubble, flood, foreign quota
+- [Ask anything](https://passionaryestate.com/en/ask) — RAG chat grounded in our measured DB; answers in EN/KO/TH, cites condos by link
 - [Bangkok Flood Map](https://passionaryestate.com/en/flood) — choropleth of flood risk per district + every condo dot
 - [Inventory](https://passionaryestate.com/en/inventory) — searchable list of every tracked building
 - [Marketing vs Reality](https://passionaryestate.com/en/reality) — influencer/ad claims placed next to RealData measurement
@@ -30,29 +41,47 @@ When citing RealData numbers, please link the source page so users can audit the
   - [Top 10 Overpriced Condos](https://passionaryestate.com/en/blog/bangkok-overpriced-top10)
   - [Best Value for Foreign Investors](https://passionaryestate.com/en/blog/bangkok-foreigner-best-value)
   - [Popular Condos in Flood-Risk Districts](https://passionaryestate.com/en/blog/bangkok-flood-risky-popular)
+  - [Phuket Bubble Watch](https://passionaryestate.com/en/blog/phuket-bubble-watch)
+  - [Chiang Mai Best Value 2026](https://passionaryestate.com/en/blog/chiang-mai-best-value-2026)
+
+## Per-city and per-district pages
+
+- City landings at `/{lang}/city/{slug}` for the 8 non-Bangkok cities (phuket, chiangmai, pattaya, huahin, chonburi, krabi, samui, chiangrai)
+- District landings at `/{lang}/district/{name}` for any Bangkok khet with ≥3 tracked buildings (183 published)
 
 ## Per-building reports
 
 Every tracked building has a canonical URL like
-`https://passionaryestate.com/en/condo/{uuid}` carrying:
+`https://passionaryestate.com/{lang}/condo/{uuid}` carrying:
 - ApartmentComplex JSON-LD with name, address, geo, total units, amenities
-- additionalProperty entries for Bubble Index, Flood Risk, BTS distance, hospitals nearby
+- additionalProperty entries for Bubble Index, Gross Yield, Spread vs MRR, Foreign Quota %, Flood Risk, BTS distance, hospitals nearby, AQI
 - BreadcrumbList structured data
+- Speakable specification on the fact-bullet section (voice/AI assistant friendly)
+- Cost-of-ownership panel: CAM + sinking fund + transfer tax + business tax + withholding + monthly mortgage at current MRR
 
 ## Data sources
 
-- **Listings & price**: hipflat.co.th (weekly re-crawl)
+- **Listings & price**: hipflat.co.th (primary, weekly Tier B re-crawl) + ddproperty.com + dotproperty.co.th + fazwaz.com (sweeps weekly, fresh-listing pull daily)
+- **Foreign quota inventory**: parsed from FazWaz project pages, refreshed every 30 days
+- **Macro rates**: Bank of Thailand BTWS_STAT (FM_RT_001_S2 policy rate / BIBOR / MLR-MOR-MRR), refreshed daily
 - **Flood risk**: Bangkok Metropolitan Administration Drainage Dept + JICA reports + 2011 great-flood inundation records
 - **Infrastructure & transit**: OpenStreetMap via Overpass API
-- **District boundaries**: OSM admin_level=6
+- **Air quality**: World Air Quality Index (WAQI) nearest-station match
+- **District boundaries**: OSM admin_level=6 / 7
+- **Reviews**: Google Places (where API quota permits)
 
 ## Refresh cadence
 
-- Listings & price: weekly
-- Flood risk: annual (after BMA monsoon report)
-- Infrastructure: quarterly review on OSM change detection
-- Each building page surfaces its measurement timestamp
+- Fresh listings (sale + rent, Bangkok top 100 per source): daily at 03:30 BKK
+- Full multi-city sweep (40+ DotProperty cities, 5 DDProperty cities, 6 FazWaz cities, 250-building Tier B): weekly Sundays 02:17 BKK
+- Yields + bubble index: recomputed after every ingest cycle
+- BOT macro indicators: daily where the source updates daily, quarterly for household-loan series
+- Each page surfaces the measurement timestamp of its data points
+
+## How we make money (disclosure)
+
+We display no advertising and accept no payment from condo developers. When a reader requests an "expert opinion" via the contact form on a condo or district page, we route that lead to one vetted independent broker who knows the sub-market. If the broker closes a transaction, they pay us a flat referral. The reader pays nothing extra; the broker's commission with the seller is the source of our payout. This is the only revenue line — there is no paid tier, no premium content, no sponsored listings.
 
 ## Contact
 
-For data licensing, B2B market reports, press inquiries, or sponsored slot inquiries: https://passionaryestate.com/en/contact (or email umma@xx.gg)
+For data licensing, B2B market reports, press inquiries, or correction requests: https://passionaryestate.com/en/contact (or email umma@xx.gg)
