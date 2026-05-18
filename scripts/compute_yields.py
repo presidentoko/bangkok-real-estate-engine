@@ -1,18 +1,27 @@
 """Compute gross rental yield for every condo that has both sale and rent listings.
 
-gross_yield_pct = (avg_monthly_rent * 12) / avg_sale_price * 100
+gross_yield_pct = (median_monthly_rent * 12) / median_sale_price * 100
 
 Updates condos.avg_sale_price, avg_monthly_rent, gross_yield_pct,
 yield_sample_sale, yield_sample_rent, yield_computed_at.
 
+Currency normalisation: hipflat stores prices in USD (their page defaults to
+"Price display: USD"), while dotproperty/ddproperty/fazwaz store THB. We
+multiply non-THB rows by --thb-per-usd before aggregating so they're all on
+the same scale.
+
+Aggregation uses median, not mean, so a single mis-encoded listing (e.g. a
+penthouse rent in a sea of studios) can't tilt the result.
+
 Usage:
-  python scripts/compute_yields.py [--min-samples 2] [--dry-run]
+  python scripts/compute_yields.py [--min-samples 2] [--max-yield-pct 15] [--thb-per-usd 34] [--dry-run]
 """
 from __future__ import annotations
 
 import argparse
 import io
 import os
+import statistics
 import sys
 from datetime import datetime, timezone
 
@@ -26,72 +35,114 @@ from src.db import get_client
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--min-samples", type=int, default=1,
+    ap.add_argument("--min-samples", type=int, default=2,
                     help="Min listings required per type before computing yield")
+    ap.add_argument("--max-yield-pct", type=float, default=15.0,
+                    help="Drop computed yields above this (likely data error)")
+    ap.add_argument("--thb-per-usd", type=float, default=34.0,
+                    help="FX rate used to normalise USD-denominated rows (hipflat)")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
     client = get_client()
     now = datetime.now(timezone.utc).isoformat()
 
-    logger.info("Loading sale listings (avg price per condo)...")
-    sale_rows = (
-        client.table("listings")
-        .select("condo_id, price")
-        .eq("listing_type", "sale")
-        .eq("is_active", True)
-        .not_.is_("price", "null")
-        .execute()
-        .data
-    ) or []
+    def load_listings(listing_type: str) -> list[dict]:
+        # PostgREST caps a single response at 1000 rows; paginate explicitly.
+        out: list[dict] = []
+        page_size = 1000
+        offset = 0
+        while True:
+            batch = (
+                client.table("listings")
+                .select("condo_id, price, currency")
+                .eq("listing_type", listing_type)
+                .eq("is_active", True)
+                .not_.is_("price", "null")
+                .range(offset, offset + page_size - 1)
+                .execute()
+                .data
+            ) or []
+            out.extend(batch)
+            if len(batch) < page_size:
+                return out
+            offset += page_size
 
-    logger.info("Loading rent listings (avg price per condo)...")
-    rent_rows = (
-        client.table("listings")
-        .select("condo_id, price")
-        .eq("listing_type", "rent")
-        .eq("is_active", True)
-        .not_.is_("price", "null")
-        .execute()
-        .data
-    ) or []
+    logger.info("Loading sale listings...")
+    sale_rows = load_listings("sale")
+    logger.info(f"  loaded {len(sale_rows)} sale rows")
 
-    # Aggregate by condo_id
+    logger.info("Loading rent listings...")
+    rent_rows = load_listings("rent")
+    logger.info(f"  loaded {len(rent_rows)} rent rows")
+
+    def to_thb(row: dict) -> float:
+        price = float(row["price"])
+        if row.get("currency") == "USD":
+            price *= args.thb_per_usd
+        return price
+
     from collections import defaultdict
     sale_map: dict[str, list[float]] = defaultdict(list)
     rent_map: dict[str, list[float]] = defaultdict(list)
 
     for r in sale_rows:
-        sale_map[r["condo_id"]].append(float(r["price"]))
+        sale_map[r["condo_id"]].append(to_thb(r))
     for r in rent_rows:
-        rent_map[r["condo_id"]].append(float(r["price"]))
+        rent_map[r["condo_id"]].append(to_thb(r))
 
-    # Find condos with both
     both = set(sale_map) & set(rent_map)
     logger.info(f"  {len(sale_map)} condos with sale | {len(rent_map)} condos with rent | {len(both)} with both")
 
     updates = []
+    dropped_outlier = 0
     for condo_id in both:
         s_prices = sale_map[condo_id]
         r_prices = rent_map[condo_id]
         if len(s_prices) < args.min_samples or len(r_prices) < args.min_samples:
             continue
-        avg_sale = sum(s_prices) / len(s_prices)
-        avg_rent = sum(r_prices) / len(r_prices)
-        if avg_sale <= 0:
+        med_sale = statistics.median(s_prices)
+        med_rent = statistics.median(r_prices)
+        if med_sale <= 0:
             continue
-        gross_yield = round((avg_rent * 12) / avg_sale * 100, 2)
+        gross_yield = round((med_rent * 12) / med_sale * 100, 2)
+        if gross_yield > args.max_yield_pct:
+            dropped_outlier += 1
+            continue
         updates.append({
             "id": condo_id,
-            "avg_sale_price": round(avg_sale, 2),
-            "avg_monthly_rent": round(avg_rent, 2),
+            "avg_sale_price": round(med_sale, 2),
+            "avg_monthly_rent": round(med_rent, 2),
             "gross_yield_pct": gross_yield,
             "yield_sample_sale": len(s_prices),
             "yield_sample_rent": len(r_prices),
             "yield_computed_at": now,
         })
 
-    logger.info(f"  {len(updates)} condos will get yield computed")
+    logger.info(f"  {len(updates)} condos will get yield computed ({dropped_outlier} dropped as > {args.max_yield_pct}% outlier)")
+
+    if not args.dry_run:
+        # Clear stale yields first so re-runs with tighter criteria don't leave old values behind.
+        new_ids = {u["id"] for u in updates}
+        existing = (
+            client.table("condos")
+            .select("id")
+            .not_.is_("gross_yield_pct", "null")
+            .execute()
+            .data
+        ) or []
+        stale_ids = [e["id"] for e in existing if e["id"] not in new_ids]
+        if stale_ids:
+            logger.info(f"  clearing {len(stale_ids)} stale yield rows...")
+            for sid in stale_ids:
+                client.table("condos").update({
+                    "avg_sale_price": None,
+                    "avg_monthly_rent": None,
+                    "gross_yield_pct": None,
+                    "yield_sample_sale": None,
+                    "yield_sample_rent": None,
+                    "yield_computed_at": None,
+                }).eq("id", sid).execute()
 
     if args.dry_run:
         # Show distribution
