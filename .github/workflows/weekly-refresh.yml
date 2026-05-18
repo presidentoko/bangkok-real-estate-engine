@@ -28,8 +28,10 @@ concurrency:
 jobs:
   refresh:
     runs-on: [self-hosted, windows, x64]
-    # Tier B = ~10–15s/building × 250 ≈ 60min. Compute steps add ~5min.
-    timeout-minutes: 240
+    # Ingest steps (DotProperty 40+ cities + DDProperty 5 cities + FazWaz
+    # 6 cities + foreign quota) dominate runtime: budget ~6h. Tier B itself
+    # is ~60min, compute steps ~5min, plus inter-city settle delays.
+    timeout-minutes: 540
     defaults:
       run:
         shell: powershell
@@ -54,6 +56,46 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      # ─────────────────────────────────────────────────────────────
+      # Fresh-listing ingestion. continue-on-error per source so one
+      # site's CF block or layout change doesn't kill the macro/Tier-B
+      # steps below. Telegram summary at the bottom flags failures.
+      # ─────────────────────────────────────────────────────────────
+
+      - name: Ingest BOT macro indicators
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\ingest_bot.py 2>&1" | Tee-Object -FilePath ingest_bot.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::ingest_bot exited $LASTEXITCODE" }
+
+      - name: Sweep DotProperty (Thailand-wide)
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\sweep_dotproperty_thailand.py 2>&1" | Tee-Object -FilePath ingest_dotproperty.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::sweep_dotproperty exited $LASTEXITCODE" }
+
+      - name: Sweep DDProperty (priority cities, sale)
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\sweep_ddproperty_sale_only.py 2>&1" | Tee-Object -FilePath ingest_ddproperty.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::sweep_ddproperty exited $LASTEXITCODE" }
+
+      - name: Ingest FazWaz (priority cities, sale)
+        continue-on-error: true
+        run: |
+          $cities = @("bangkok", "phuket", "pattaya", "chiang-mai", "hua-hin", "chonburi")
+          foreach ($city in $cities) {
+            Write-Output "=== FazWaz sale: $city ==="
+            cmd /c "python scripts\ingest_fazwaz.py --city $city --listing-type sale 2>&1" | Tee-Object -FilePath "ingest_fazwaz_$city.log"
+            if ($LASTEXITCODE -ne 0) { Write-Output "::warning::ingest_fazwaz $city exited $LASTEXITCODE" }
+          }
+
+      - name: Ingest FazWaz foreign quota (stale only)
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\ingest_foreign_quota.py --refresh-days 30 2>&1" | Tee-Object -FilePath ingest_foreign_quota.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::ingest_foreign_quota exited $LASTEXITCODE" }
 
       - name: Tier B refresh (limited)
         # cmd.exe handles the 2>&1: Windows PowerShell 5.1 wraps native-cmd
@@ -95,12 +137,37 @@ jobs:
       - name: Notify on success
         if: success() && env.TELEGRAM_BOT_TOKEN != ''
         run: |
-          $ok = (Select-String -Path tier_b.log -Pattern 'ok=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
-          $fail = (Select-String -Path tier_b.log -Pattern 'fail=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
+          # Per-source ingest status. continue-on-error means a missing log
+          # implies the step never started; "::warning::" lines in a log
+          # imply the step exited non-zero.
+          function Get-IngestStatus($path, $label) {
+            if (-not (Test-Path $path)) { return "$label=skip" }
+            $warn = Select-String -Path $path -Pattern '^::warning::' -ErrorAction SilentlyContinue
+            if ($warn) { return "$label=FAIL" }
+            return "$label=ok"
+          }
+          $bot   = Get-IngestStatus 'ingest_bot.log'           'bot'
+          $dp    = Get-IngestStatus 'ingest_dotproperty.log'   'dp'
+          $dd    = Get-IngestStatus 'ingest_ddproperty.log'    'dd'
+          $fq    = Get-IngestStatus 'ingest_foreign_quota.log' 'fq'
+          $fazwaz = (Get-ChildItem -Path 'ingest_fazwaz_*.log' -ErrorAction SilentlyContinue |
+                     ForEach-Object {
+                       $city = $_.BaseName -replace '^ingest_fazwaz_',''
+                       if (Select-String -Path $_.FullName -Pattern '^::warning::' -Quiet) { "fz-$city=FAIL" } else { "fz-$city=ok" }
+                     }) -join ' '
+
+          $ok       = (Select-String -Path tier_b.log -Pattern 'ok=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
+          $fail     = (Select-String -Path tier_b.log -Pattern 'fail=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
           $upserted = (Select-String -Path compute.log -Pattern 'upserted \d+ value_scores rows' | Select-Object -Last 1).Line
-          $alerts = (Select-String -Path analysis.log -Pattern 'underpriced: (\d+) new alerts' | Select-Object -Last 1).Matches.Groups[1].Value
-          $super = (Select-String -Path analysis.log -Pattern 'super_value: (\d+) condos' | Select-Object -Last 1).Matches.Groups[1].Value
-          $msg = "OK RealData weekly refresh - Tier B ok=$ok fail=$fail; $upserted; alerts=$alerts; super=$super"
+          $alerts   = (Select-String -Path analysis.log -Pattern 'underpriced: (\d+) new alerts' | Select-Object -Last 1).Matches.Groups[1].Value
+          $super    = (Select-String -Path analysis.log -Pattern 'super_value: (\d+) condos' | Select-Object -Last 1).Matches.Groups[1].Value
+
+          $msg = @(
+            "OK RealData weekly refresh",
+            "Ingest: $bot $dp $dd $fq $fazwaz",
+            "Tier B ok=$ok fail=$fail; $upserted; alerts=$alerts; super=$super"
+          ) -join "`n"
+
           $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $msg }
           Invoke-RestMethod -Uri "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage" -Method Post -Body $body | Out-Null
 
@@ -117,6 +184,11 @@ jobs:
         with:
           name: weekly-refresh-${{ github.run_id }}
           path: |
+            ingest_bot.log
+            ingest_dotproperty.log
+            ingest_ddproperty.log
+            ingest_fazwaz_*.log
+            ingest_foreign_quota.log
             tier_b.log
             snapshot.log
             yields.log

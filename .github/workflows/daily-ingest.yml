@@ -1,0 +1,126 @@
+name: Daily fresh-listing ingest
+
+# Daily 03:30 Asia/Bangkok = 20:30 UTC previous day.
+# Light catch-pass: hits only ~100 newest sale + ~100 newest rent listings
+# per source for Bangkok. Catches new inventory within a day so the site
+# stays fresh between weekly full sweeps. Updates yields + price snapshots
+# off the fresh data.
+#
+# Runs on the self-hosted Windows runner (same one as weekly-refresh) so
+# the persistent nodriver profiles (.nodriver-profile-ddproperty/ and
+# .nodriver-profile-fazwaz/) with their cleared Turnstile cookies are
+# reused. GitHub-hosted ubuntu IPs get CF-challenged on these sites.
+#
+# continue-on-error per source: one site's CF block or layout shift
+# shouldn't kill the rest. Telegram summary flags failures.
+
+on:
+  schedule:
+    - cron: "30 20 * * *"
+  workflow_dispatch:
+    inputs:
+      limit_per_source:
+        description: "Max listings per source per type"
+        default: "100"
+
+concurrency:
+  group: daily-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: [self-hosted, windows, x64]
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: powershell
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      PYTHONUNBUFFERED: "1"
+      PYTHONIOENCODING: "utf-8"
+      LIMIT: ${{ inputs.limit_per_source || '100' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: DotProperty Bangkok (sale + rent, light)
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\ingest_dotproperty.py --city bangkok --listing-type both --limit $env:LIMIT 2>&1" | Tee-Object -FilePath ingest_dotproperty.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::dotproperty exited $LASTEXITCODE" }
+
+      - name: DDProperty Bangkok (sale, light)
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\ingest_ddproperty.py --city bangkok --listing-type sale --limit $env:LIMIT 2>&1" | Tee-Object -FilePath ingest_ddproperty.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::ddproperty exited $LASTEXITCODE" }
+
+      - name: FazWaz Bangkok (sale, light)
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\ingest_fazwaz.py --city bangkok --listing-type sale --limit $env:LIMIT 2>&1" | Tee-Object -FilePath ingest_fazwaz.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::fazwaz exited $LASTEXITCODE" }
+
+      - name: Snapshot prices + recompute yields
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\snapshot_prices.py 2>&1" | Tee-Object -FilePath snapshot.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::snapshot_prices exited $LASTEXITCODE" }
+          cmd /c "python scripts\compute_yields.py 2>&1" | Tee-Object -FilePath yields.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::compute_yields exited $LASTEXITCODE" }
+
+      - name: Recompute DOM aggregates
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import os
+          from supabase import create_client
+          c = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
+          c.rpc("recompute_condo_dom").execute()
+          print("DOM aggregates recomputed")
+          PY
+
+      - name: Notify summary
+        if: always() && env.TELEGRAM_BOT_TOKEN != ''
+        run: |
+          function Get-IngestStatus($path, $label) {
+            if (-not (Test-Path $path)) { return "$label=skip" }
+            $warn = Select-String -Path $path -Pattern '^::warning::' -ErrorAction SilentlyContinue
+            if ($warn) { return "$label=FAIL" }
+            return "$label=ok"
+          }
+          $dp = Get-IngestStatus 'ingest_dotproperty.log' 'dp'
+          $dd = Get-IngestStatus 'ingest_ddproperty.log'  'dd'
+          $fz = Get-IngestStatus 'ingest_fazwaz.log'      'fz'
+          $sn = Get-IngestStatus 'snapshot.log'           'snap'
+          $yl = Get-IngestStatus 'yields.log'             'yld'
+          $msg = "Daily ingest: $dp $dd $fz $sn $yl"
+          $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $msg }
+          Invoke-RestMethod -Uri "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage" -Method Post -Body $body | Out-Null
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-ingest-${{ github.run_id }}
+          path: |
+            ingest_dotproperty.log
+            ingest_ddproperty.log
+            ingest_fazwaz.log
+            snapshot.log
+            yields.log
+          if-no-files-found: ignore
+          retention-days: 14
