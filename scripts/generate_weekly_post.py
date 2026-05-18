@@ -272,7 +272,7 @@ You write ONE weekly post per call. Constraints:
 - Tone: confident, numbers-first, sharp. The reader is a serious foreign or local buyer skimming for an edge, not a casual browser. No sales fluff, no exclamation marks, no "discover the best!" copy.
 - Length: lead = 2–3 sentences. 2 sections of 1–2 short paragraphs each. Tight.
 - Numbers: every numeric claim in the post must come from the FACTS object you are given. Never invent a building name, yield, price, or rate. If you need an aggregate, derive it from the listed condos only.
-- fact_bullets: 3–6 bullets. Each MUST set condo_id (use the UUID from FACTS), metric (the DB column name as given), and expected (the rounded number you claimed). The verifier will re-query the DB and refuse to publish if any drifts >2%.
+- fact_bullets: 3–6 bullets. Each MUST set condo_id (use the UUID from FACTS) and expected (the rounded number you claimed). metric MUST be one of: gross_yield_pct, avg_sale_price, avg_monthly_rent, foreign_quota_inventory_pct, foreign_quota_listings_available, total_quota_listings_observed, spread_pp (derived: gross_yield - current MRR). Nothing else — the verifier will refuse to publish on unknown metrics or >2% drift.
 - Markdown: plain. Bold via **text**, links via [text](/condo/UUID). No headings inside body — those come from the `heading` field on each section.
 - Output: a single JSON object matching the WeeklyPost schema. NO prose before or after. NO code fences.
 
@@ -330,28 +330,68 @@ TOLERANCE_PCT = 0.02  # 2% drift allowed (rounding + cron lag)
 
 
 def _fetch_metric(client, condo_id: str, metric: str) -> Any:
-    row = (
-        client.table("condos")
-        .select(metric)
-        .eq("id", condo_id)
-        .maybe_single()
-        .execute()
-        .data
-    )
-    if row is None:
+    # NOTE: supabase-py's .maybe_single() raises APIError on a 204 No
+    # Content response (instead of returning None), which happens when
+    # the id doesn't match. Use .limit(1) and handle the empty list
+    # ourselves so verification can flag "row missing" cleanly.
+    try:
+        rows = (
+            client.table("condos")
+            .select(metric)
+            .eq("id", condo_id)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+    except Exception as e:
+        logger.warning("[weekly] fetch_metric failed for {} {}: {}", condo_id, metric, e)
         return None
-    return row.get(metric)
+    if not rows:
+        return None
+    return rows[0].get(metric)
+
+
+# Whitelisted metrics — anything else is rejected as a model hallucination.
+# spread_pp is derived (yield - MRR) so the verifier looks it up live.
+DIRECT_METRICS = {
+    "gross_yield_pct",
+    "avg_sale_price",
+    "avg_monthly_rent",
+    "foreign_quota_inventory_pct",
+    "foreign_quota_listings_available",
+    "total_quota_listings_observed",
+}
+DERIVED_METRICS = {"spread_pp"}
+
+
+def _resolve_metric(client, condo_id: str, metric: str, mrr: float | None) -> Any:
+    if metric in DIRECT_METRICS:
+        return _fetch_metric(client, condo_id, metric)
+    if metric == "spread_pp":
+        if mrr is None:
+            return None
+        yield_val = _fetch_metric(client, condo_id, "gross_yield_pct")
+        if yield_val is None:
+            return None
+        return float(yield_val) - mrr
+    return None  # unknown metric
 
 
 def verify_post(client, post: dict) -> tuple[bool, list[str]]:
     errors: list[str] = []
+    # MRR cached once per verify run — spread_pp resolutions need it.
+    mrr = _current_mrr(client)
     for i, bullet in enumerate(post.get("fact_bullets", [])):
         condo_id = bullet.get("condo_id")
         metric = bullet.get("metric")
         expected = bullet.get("expected")
         if not (condo_id and metric and expected is not None):
             continue  # bullets without verifiable claims are allowed
-        actual = _fetch_metric(client, condo_id, metric)
+        if metric not in DIRECT_METRICS and metric not in DERIVED_METRICS:
+            errors.append(f"bullet#{i}: metric {metric!r} not in whitelist")
+            continue
+        actual = _resolve_metric(client, condo_id, metric, mrr)
         if actual is None:
             errors.append(f"bullet#{i}: condo {condo_id} or metric {metric} not found")
             continue
@@ -429,6 +469,16 @@ def telegram_notify(text: str) -> None:
         pass
 
 
+def _gh_run_url() -> str:
+    """If running inside GH Actions, returns the canonical URL of this run.
+    Empty string when run locally."""
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    rid = os.environ.get("GITHUB_RUN_ID")
+    if repo and rid:
+        return f"https://github.com/{repo}/actions/runs/{rid}"
+    return ""
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────────────────────────────
@@ -455,8 +505,19 @@ def main() -> int:
     try:
         post = call_model(facts)
     except Exception as e:
-        logger.error("[weekly] model call failed: {}", e)
-        telegram_notify(f"FAIL weekly post: model call failed ({e})")
+        # Log the full exception locally / to GH Actions logs (visible to ops only)
+        logger.exception("[weekly] model call failed")
+        # Telegram message stays high-level: type of error + topic + run link.
+        # Exception text intentionally omitted — could leak headers/keys.
+        msg_lines = [
+            f"⚠️ Weekly post FAILED — model call error",
+            f"Topic: {topic}",
+            f"Error type: {type(e).__name__}",
+        ]
+        run_url = _gh_run_url()
+        if run_url:
+            msg_lines.append(f"Logs: {run_url}")
+        telegram_notify("\n".join(msg_lines))
         return 1
 
     # Slug collision guard — never overwrite an existing post.
@@ -469,9 +530,19 @@ def main() -> int:
         logger.warning("[weekly] verify failed, refusing to publish:")
         for e in errors:
             logger.warning("  - {}", e)
-        telegram_notify(
-            "SKIP weekly post — verify failed:\n" + "\n".join(errors[:5])
-        )
+        # Telegram summary: topic + how many bullets failed + run link.
+        # The detailed UUIDs / column names stay in GH Actions logs only.
+        total = len(post.get("fact_bullets", []))
+        msg_lines = [
+            f"⏭️  Weekly post SKIPPED — fact verification failed",
+            f"Topic: {topic} ({post.get('title', '?')})",
+            f"{len(errors)} of {total} fact bullets didn't match the DB.",
+            "The model's numbers drifted from the live data — refused to publish.",
+        ]
+        run_url = _gh_run_url()
+        if run_url:
+            msg_lines.append(f"Logs: {run_url}")
+        telegram_notify("\n".join(msg_lines))
         return 0  # exit clean — silence over noise
 
     if args.dry_run:
@@ -482,12 +553,27 @@ def main() -> int:
     logger.info("[weekly] wrote {}", fp)
 
     if not git_commit_and_push(fp, post["title"]):
-        telegram_notify(f"FAIL weekly post: git push failed for {post['slug']}")
+        msg_lines = [
+            "⚠️ Weekly post FAILED — git push error",
+            f"Topic: {topic}",
+            f"Slug: {post['slug']} (JSON written but not pushed)",
+        ]
+        run_url = _gh_run_url()
+        if run_url:
+            msg_lines.append(f"Logs: {run_url}")
+        telegram_notify("\n".join(msg_lines))
         return 1
 
     site = os.environ.get("NEXT_PUBLIC_SITE_URL", "https://passionaryestate.com")
     url = f"{site}/en/blog/weekly/{post['slug']}"
-    telegram_notify(f"OK weekly post published: {post['title']}\n{url}")
+    n_bullets = len(post.get("fact_bullets", []))
+    msg_lines = [
+        f"✅ Weekly post published",
+        f"{post['title']}",
+        f"Topic: {topic} · {n_bullets} verified facts",
+        url,
+    ]
+    telegram_notify("\n".join(msg_lines))
     return 0
 
 
