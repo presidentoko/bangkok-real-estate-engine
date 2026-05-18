@@ -204,34 +204,46 @@ def _page_url(base_path: str, page_num: int) -> str:
     return f"{BASE_URL}{base_path}/{page_num}"
 
 
-async def _fetch_page_html(browser, url: str) -> str | None:
-    try:
-        tab = await asyncio.wait_for(browser.get(url), timeout=GOTO_TIMEOUT_S)
-    except asyncio.TimeoutError:
-        logger.warning(f"[ddproperty] goto timed out: {url}")
-        return None
-    except Exception as e:
-        logger.warning(f"[ddproperty] goto failed: {e}")
-        return None
-    try:
-        await asyncio.wait_for(tab.verify_cf(), timeout=VERIFY_CF_TIMEOUT_S)
-    except asyncio.TimeoutError:
-        logger.error("[ddproperty] CF challenge not cleared in time — stopping")
-        return None
-    except Exception as e:
-        logger.debug(f"[ddproperty] verify_cf: {e}")
-    await asyncio.sleep(3.0)
-    try:
-        html = _unwrap(
-            await asyncio.wait_for(
-                tab.evaluate("document.documentElement.outerHTML"),
-                timeout=EVALUATE_TIMEOUT_S,
+async def _fetch_page_html(browser, url: str, retries: int = 2) -> str | None:
+    """Fetch one page, retrying transient nodriver/eval glitches a couple of
+    times so a single tab-disconnect doesn't kill the whole city sweep."""
+    last_err: str = ""
+    for attempt in range(retries + 1):
+        try:
+            tab = await asyncio.wait_for(browser.get(url), timeout=GOTO_TIMEOUT_S)
+        except asyncio.TimeoutError:
+            last_err = "goto timed out"
+            logger.warning(f"[ddproperty] {last_err}: {url} (attempt {attempt + 1})")
+            await asyncio.sleep(5.0)
+            continue
+        except Exception as e:
+            last_err = f"goto failed: {e!r}"
+            logger.warning(f"[ddproperty] {last_err} (attempt {attempt + 1})")
+            await asyncio.sleep(5.0)
+            continue
+        try:
+            await asyncio.wait_for(tab.verify_cf(), timeout=VERIFY_CF_TIMEOUT_S)
+        except asyncio.TimeoutError:
+            logger.error("[ddproperty] CF challenge not cleared in time — stopping")
+            return None
+        except Exception as e:
+            logger.debug(f"[ddproperty] verify_cf: {e}")
+        await asyncio.sleep(3.0)
+        try:
+            html = _unwrap(
+                await asyncio.wait_for(
+                    tab.evaluate("document.documentElement.outerHTML"),
+                    timeout=EVALUATE_TIMEOUT_S,
+                )
             )
-        )
-        return html
-    except Exception as e:
-        logger.warning(f"[ddproperty] outerHTML failed: {e}")
-        return None
+            return html
+        except Exception as e:
+            last_err = f"outerHTML failed: {e!r}"
+            logger.warning(f"[ddproperty] {last_err} (attempt {attempt + 1})")
+            await asyncio.sleep(5.0)
+            continue
+    logger.error(f"[ddproperty] giving up on {url} after {retries + 1} attempts ({last_err})")
+    return None
 
 
 async def _save_debug_html(browser, url: str, path: str) -> None:

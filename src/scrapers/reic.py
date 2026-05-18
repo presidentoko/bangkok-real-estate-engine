@@ -79,13 +79,23 @@ def _classify_region(title: str) -> str | None:
         return "Bangkok"
     if "ปริมณฑล" in title:
         return "Bangkok Metropolitan"
+    if "ประเทศไทย" in title or "thailand" in t:
+        return "National"
     if "จังหวัด" in title or "ภูมิภาค" in title:
         return "Provincial"
+    # National-scope indices (construction costs, new-condo price index, aggregate market)
+    # never carry a regional qualifier in the title — they're inherently Thailand-wide.
+    if "ดัชนีราคาค่าก่อสร้าง" in title or "ดัชนีราคาห้องชุดใหม่" in title or "ดัชนีรวม" in title:
+        return "National"
     return None
 
 
 def _classify_category(title: str) -> str | None:
     t = title.lower()
+    if "ดัชนีความเชื่อมั่น" in title or "sentiment" in t or "confidence" in t:
+        return "Developer Sentiment"
+    if "ดัชนีรวม" in title or "aggregate" in t:
+        return "Aggregate Market Index"
     if "ดัชนีราคา" in title or "price index" in t:
         return "Price Index"
     if "อุปทาน" in title or "supply" in t or "หน่วยใหม่" in title:

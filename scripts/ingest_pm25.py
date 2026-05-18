@@ -36,9 +36,32 @@ from src.scrapers.waqi import fetch_aqi  # noqa: E402
 
 
 def _candidates(client, limit: int | None, refresh_days: int) -> list[dict]:
-    """Pick condos with lat/lng that haven't been fetched recently."""
+    """Pick condos with lat/lng that haven't been fetched recently.
+
+    PostgREST caps a single response at 1000 rows regardless of .range() —
+    paginate explicitly when no --limit is set.
+    """
     cutoff = (datetime.now(timezone.utc) - timedelta(days=refresh_days)).isoformat()
-    # Never-fetched first
+
+    def _paginate(base_query, cap: int | None) -> list[dict]:
+        out: list[dict] = []
+        offset = 0
+        page_size = 1000
+        while True:
+            if cap is not None and len(out) >= cap:
+                return out[:cap]
+            this_page = page_size
+            if cap is not None:
+                this_page = min(page_size, cap - len(out))
+            batch = (
+                base_query.range(offset, offset + this_page - 1).execute().data
+            ) or []
+            out.extend(batch)
+            if len(batch) < this_page:
+                return out
+            offset += this_page
+
+    # Never-fetched first.
     never_q = (
         client.table("condos")
         .select("id, name, latitude, longitude, province")
@@ -48,16 +71,12 @@ def _candidates(client, limit: int | None, refresh_days: int) -> list[dict]:
         .eq("is_active", True)
         .order("last_seen_at", desc=True)
     )
-    if limit:
-        never_q = never_q.limit(limit)
-    else:
-        never_q = never_q.range(0, 9999)
-    never = never_q.execute().data or []
+    never = _paginate(never_q, limit)
 
     if limit and len(never) >= limit:
         return never[:limit]
 
-    remaining = (limit - len(never)) if limit else 5000
+    remaining = (limit - len(never)) if limit else None
     stale_q = (
         client.table("condos")
         .select("id, name, latitude, longitude, province")
@@ -66,9 +85,8 @@ def _candidates(client, limit: int | None, refresh_days: int) -> list[dict]:
         .lt("aqi_fetched_at", cutoff)
         .eq("is_active", True)
         .order("aqi_fetched_at", desc=False)
-        .limit(remaining)
     )
-    stale = stale_q.execute().data or []
+    stale = _paginate(stale_q, remaining)
 
     return never + stale
 

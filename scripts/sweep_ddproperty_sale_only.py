@@ -19,6 +19,7 @@ import asyncio
 import io
 import os
 import sys
+import traceback
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -42,7 +43,10 @@ async def sweep(cities: list[str], delay_s: float) -> None:
         try:
             await ingest_run("sale", delay_s, max_listings=None, city=city)
         except Exception as e:
-            logger.error(f"[sweep] {city} sale failed: {e}")
+            logger.error(
+                f"[sweep] {city} sale failed: {type(e).__name__}: {e!r}\n"
+                + traceback.format_exc()
+            )
         if i < total:
             logger.info(f"[sweep] sleeping {INTER_CITY_DELAY_S}s before next city...")
             await asyncio.sleep(INTER_CITY_DELAY_S)
