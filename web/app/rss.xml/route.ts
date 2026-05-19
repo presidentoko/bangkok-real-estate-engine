@@ -37,12 +37,17 @@ const DESCRIPTIONS: Record<string, string> = {
 };
 
 function escapeXml(s: string): string {
+  // Use numeric character references instead of named entities for both
+  // the single-quote and double-quote — &apos; / &quot; are valid XML 1.0
+  // but HTML-style parsers (including Naver Webmaster Tools' RSS
+  // validator) sometimes reject &apos; specifically. &#39; / &#34; are
+  // universally accepted.
   return s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replace(/"/g, "&#34;")
+    .replace(/'/g, "&#39;");
 }
 
 export const revalidate = 3600;
