@@ -37,6 +37,10 @@ export default function RootLayout({
             on first card paint. */}
         <link rel="preconnect" href="https://img.hipcdn.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://img.hipcdn.com" />
+        {/* Agoda Partner Hub site verification — meta-tag method (redundant
+            with /AgodaPartnerVerification.html so Agoda passes regardless
+            of which check they actually run). */}
+        <meta name="agd-partner-manual-verification" />
       </head>
       <body className="bg-zinc-950 text-zinc-100 min-h-screen antialiased flex flex-col">
         {children}
