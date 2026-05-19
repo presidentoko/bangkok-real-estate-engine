@@ -154,47 +154,61 @@ jobs:
 
       - name: Notify on success
         if: success() && env.TELEGRAM_BOT_TOKEN != ''
+        shell: bash
+        # Use curl + bash. The earlier PowerShell + Invoke-RestMethod
+        # pattern returned 404 from Telegram on daily-ingest runs —
+        # almost certainly URL/string-interpolation flakiness in
+        # `https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/...`.
+        # curl with --data-urlencode is the path that's confirmed
+        # working from overnight shell scripts.
         run: |
-          # Per-source ingest status. continue-on-error means a missing log
-          # implies the step never started; "::warning::" lines in a log
-          # imply the step exited non-zero.
-          function Get-IngestStatus($path, $label) {
-            if (-not (Test-Path $path)) { return "$label=skip" }
-            $warn = Select-String -Path $path -Pattern '^::warning::' -ErrorAction SilentlyContinue
-            if ($warn) { return "$label=FAIL" }
-            return "$label=ok"
+          status() {
+            local path="$1" label="$2"
+            [ ! -f "$path" ] && { echo "${label}=skip"; return; }
+            grep -q '^::warning::' "$path" && { echo "${label}=FAIL"; return; }
+            echo "${label}=ok"
           }
-          $bot   = Get-IngestStatus 'ingest_bot.log'           'bot'
-          $dp    = Get-IngestStatus 'ingest_dotproperty.log'   'dp'
-          $dd    = Get-IngestStatus 'ingest_ddproperty.log'    'dd'
-          $fq    = Get-IngestStatus 'ingest_foreign_quota.log' 'fq'
-          $fazwaz = (Get-ChildItem -Path 'ingest_fazwaz_*.log' -ErrorAction SilentlyContinue |
-                     ForEach-Object {
-                       $city = $_.BaseName -replace '^ingest_fazwaz_',''
-                       if (Select-String -Path $_.FullName -Pattern '^::warning::' -Quiet) { "fz-$city=FAIL" } else { "fz-$city=ok" }
-                     }) -join ' '
+          BOT=$(status ingest_bot.log bot)
+          DP=$(status ingest_dotproperty.log dp)
+          DD=$(status ingest_ddproperty.log  dd)
+          FQ=$(status ingest_foreign_quota.log fq)
+          FAZWAZ=""
+          for f in ingest_fazwaz_*.log; do
+            [ ! -f "$f" ] && continue
+            city=$(basename "$f" .log | sed 's/^ingest_fazwaz_//')
+            if grep -q '^::warning::' "$f"; then
+              FAZWAZ="${FAZWAZ} fz-${city}=FAIL"
+            else
+              FAZWAZ="${FAZWAZ} fz-${city}=ok"
+            fi
+          done
 
-          $ok       = (Select-String -Path tier_b.log -Pattern 'ok=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
-          $fail     = (Select-String -Path tier_b.log -Pattern 'fail=(\d+)' -AllMatches | Select-Object -Last 1).Matches.Groups[1].Value
-          $upserted = (Select-String -Path compute.log -Pattern 'upserted \d+ value_scores rows' | Select-Object -Last 1).Line
-          $alerts   = (Select-String -Path analysis.log -Pattern 'underpriced: (\d+) new alerts' | Select-Object -Last 1).Matches.Groups[1].Value
-          $super    = (Select-String -Path analysis.log -Pattern 'super_value: (\d+) condos' | Select-Object -Last 1).Matches.Groups[1].Value
+          OK_N=$(grep -oE 'ok=[0-9]+' tier_b.log | tail -1)
+          FAIL_N=$(grep -oE 'fail=[0-9]+' tier_b.log | tail -1)
+          UPSERTED=$(grep -oE 'upserted [0-9]+ value_scores rows' compute.log | tail -1)
+          ALERTS=$(grep -oE 'underpriced: [0-9]+ new alerts' analysis.log | tail -1)
+          SUPER=$(grep -oE 'super_value: [0-9]+ condos' analysis.log | tail -1)
 
-          $msg = @(
-            "OK RealData weekly refresh",
-            "Ingest: $bot $dp $dd $fq $fazwaz",
-            "Tier B ok=$ok fail=$fail; $upserted; alerts=$alerts; super=$super"
-          ) -join "`n"
+          MSG="OK RealData weekly refresh
+          Ingest: ${BOT} ${DP} ${DD} ${FQ}${FAZWAZ}
+          Tier B ${OK_N} ${FAIL_N}; ${UPSERTED}; ${ALERTS}; ${SUPER}"
 
-          $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $msg }
-          Invoke-RestMethod -Uri "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage" -Method Post -Body $body | Out-Null
+          curl -s --max-time 15 \
+            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MSG}" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Notify on failure
         if: failure() && env.TELEGRAM_BOT_TOKEN != ''
+        shell: bash
         run: |
-          $msg = "FAIL RealData weekly refresh - see GitHub Actions run ${{ github.run_id }}"
-          $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $msg }
-          Invoke-RestMethod -Uri "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage" -Method Post -Body $body | Out-Null
+          MSG="FAIL RealData weekly refresh - see https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s --max-time 15 \
+            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MSG}" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Upload logs
         if: always()

@@ -95,21 +95,31 @@ jobs:
 
       - name: Notify summary
         if: always() && env.TELEGRAM_BOT_TOKEN != ''
+        shell: bash
+        # Use curl + bash for the notify step — the earlier PowerShell +
+        # Invoke-RestMethod combo got 404s in production, almost
+        # certainly URL/string-interpolation flakiness when the token
+        # has special chars. curl with --data-urlencode is the same
+        # pattern that's been confirmed working from the overnight
+        # shell scripts.
         run: |
-          function Get-IngestStatus($path, $label) {
-            if (-not (Test-Path $path)) { return "$label=skip" }
-            $warn = Select-String -Path $path -Pattern '^::warning::' -ErrorAction SilentlyContinue
-            if ($warn) { return "$label=FAIL" }
-            return "$label=ok"
+          status() {
+            local path="$1" label="$2"
+            [ ! -f "$path" ] && { echo "${label}=skip"; return; }
+            grep -q '^::warning::' "$path" && { echo "${label}=FAIL"; return; }
+            echo "${label}=ok"
           }
-          $dp = Get-IngestStatus 'ingest_dotproperty.log' 'dp'
-          $dd = Get-IngestStatus 'ingest_ddproperty.log'  'dd'
-          $fz = Get-IngestStatus 'ingest_fazwaz.log'      'fz'
-          $sn = Get-IngestStatus 'snapshot.log'           'snap'
-          $yl = Get-IngestStatus 'yields.log'             'yld'
-          $msg = "Daily ingest: $dp $dd $fz $sn $yl"
-          $body = @{ chat_id = $env:TELEGRAM_CHAT_ID; text = $msg }
-          Invoke-RestMethod -Uri "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage" -Method Post -Body $body | Out-Null
+          DP=$(status ingest_dotproperty.log dp)
+          DD=$(status ingest_ddproperty.log  dd)
+          FZ=$(status ingest_fazwaz.log      fz)
+          SN=$(status snapshot.log           snap)
+          YL=$(status yields.log             yld)
+          MSG="Daily ingest: $DP $DD $FZ $SN $YL"
+          curl -s --max-time 15 \
+            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MSG}" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Upload logs
         if: always()
