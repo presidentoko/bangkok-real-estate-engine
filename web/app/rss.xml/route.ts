@@ -52,7 +52,17 @@ function escapeXml(s: string): string {
 
 export const revalidate = 3600;
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Resolve the host the request actually came in on so the
+  // <atom:link rel="self"> matches the URL the caller hit. Naver's RSS
+  // validator (and many others) reject feeds where the self-link host
+  // differs from the document location, even though W3C's validator
+  // treats it as a warning. Falls back to NEXT_PUBLIC_SITE_URL when
+  // headers don't carry a host (build-time / dry-run).
+  const requestHost = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  const requestProto = request.headers.get("x-forwarded-proto") || "https";
+  const FEED_BASE = requestHost ? `${requestProto}://${requestHost}` : SITE_URL;
+
   const supabase = getServerSupabase();
   const buildBldgs = await supabase
     .from("condos_published")
@@ -104,10 +114,10 @@ export async function GET() {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>RealData — Thailand condo data analysis</title>
-    <link>${SITE_URL}</link>
+    <link>${FEED_BASE}</link>
     <description>Independent measurement of every Thai condo. No influencer marketing.</description>
     <language>en</language>
-    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="${FEED_BASE}/rss.xml" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${itemsXml}
   </channel>
 </rss>`;
