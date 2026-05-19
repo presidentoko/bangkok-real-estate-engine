@@ -9,6 +9,7 @@ import { AirQualityCard } from "@/components/AirQualityCard";
 import { CostOfOwnershipCard } from "@/components/CostOfOwnershipCard";
 import { ForeignQuotaCard } from "@/components/ForeignQuotaCard";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
+import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
 import { MultiPortalCard } from "@/components/MultiPortalCard";
 import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
@@ -578,6 +579,13 @@ export default async function CondoPage({
       {neighbours.length > 0 && <CondoNeighbours neighbours={neighbours} />}
 
       <LeadCaptureCTA condoId={condoRaw.id} condoName={condoRaw.name} />
+
+      <TravelAffiliateCard
+        surface={`condo-${condoRaw.id.slice(0, 8)}`}
+        destination={region}
+        framing={`Planning to inspect ${condoRaw.name} in person? Book a hotel + flight in one search — ${region} stays are usually cheaper than the condo's own short-let pricing.`}
+        ctaText="Find a hotel near this building →"
+      />
 
       {condoRaw.url && (
         <div className="text-xs text-zinc-500">

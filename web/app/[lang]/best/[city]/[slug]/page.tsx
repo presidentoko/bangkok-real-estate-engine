@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
+import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
 import {
   BEST_CITIES,
   BEST_FILTERS,
@@ -418,6 +419,11 @@ export default async function BestSlicePage({
 
       <LeadCaptureCTA
         headline={`See one you like in ${cityObj.display}? Get an expert read.`}
+      />
+
+      <TravelAffiliateCard
+        surface={`best-${city}-${slug}`}
+        destination={cityObj.display}
       />
     </main>
   );

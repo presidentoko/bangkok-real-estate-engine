@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
 import { CityMapSvg, type CityPoint } from "@/components/CityMapSvg";
+import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
 import { CITIES, getCity, type City, type CitySlug } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
@@ -346,6 +347,14 @@ export default async function CityPage({
             ))}
           </div>
         )}
+      </section>
+
+      {/* Travel affiliate — viewing trip booking */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <TravelAffiliateCard
+          surface={`city-${slug}`}
+          destination={city.name[lang as Lang]}
+        />
       </section>
 
       {/* Other cities */}
