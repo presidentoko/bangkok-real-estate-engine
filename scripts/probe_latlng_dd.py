@@ -17,7 +17,7 @@ import nodriver as uc
 from loguru import logger
 from src.scrapers.hipflat import _unwrap
 
-URL = "https://www.ddproperty.com/en/property/sindhorn-residence-for-sale-500318245"
+URL = "https://www.ddproperty.com/en/property/the-view-cozy-beach-residence-for-sale-500240252"
 OUT = os.path.join(ROOT, "dd_detail_probe.html")
 PROFILE = os.path.join(ROOT, ".nodriver-profile-ddproperty")
 

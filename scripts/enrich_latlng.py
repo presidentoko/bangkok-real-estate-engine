@@ -54,9 +54,13 @@ FAZWAZ_RE = re.compile(
     re.IGNORECASE,
 )
 
-# DDProperty: first explicit latitude/longitude JSON pair.
-DD_LAT_RE = re.compile(r'"latitude"\s*:\s*(-?\d+\.\d+)')
-DD_LNG_RE = re.compile(r'"longitude"\s*:\s*(-?\d+\.\d+)')
+# DDProperty: first explicit latitude/longitude JSON pair. Bangkok listings
+# use the long form ("latitude"/"longitude"); Pattaya/Chon Buri listings use
+# the short form ("lat"/"lng"). Try long first, fall back to short.
+DD_LAT_LONG_RE = re.compile(r'"latitude"\s*:\s*(-?\d+\.\d+)')
+DD_LNG_LONG_RE = re.compile(r'"longitude"\s*:\s*(-?\d+\.\d+)')
+DD_LAT_SHORT_RE = re.compile(r'"lat"\s*:\s*(-?\d+\.\d+)')
+DD_LNG_SHORT_RE = re.compile(r'"lng"\s*:\s*(-?\d+\.\d+)')
 
 
 def _is_thai_coord(lat: float, lng: float) -> bool:
@@ -75,8 +79,8 @@ def extract_latlng(html: str, mode: str) -> tuple[float, float] | None:
         return (lat, lng) if _is_thai_coord(lat, lng) else None
 
     if mode == "ddproperty_json":
-        lat_m = DD_LAT_RE.search(html)
-        lng_m = DD_LNG_RE.search(html)
+        lat_m = DD_LAT_LONG_RE.search(html) or DD_LAT_SHORT_RE.search(html)
+        lng_m = DD_LNG_LONG_RE.search(html) or DD_LNG_SHORT_RE.search(html)
         if not (lat_m and lng_m):
             return None
         try:
