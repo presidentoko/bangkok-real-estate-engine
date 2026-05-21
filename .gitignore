@@ -24,6 +24,9 @@ logs/
 # Scraper debug dumps (raw HTML, regenerated on demand)
 dd_debug.html
 fz_debug.html
+dd_detail_probe.html
+fz_detail_probe.html
+fz_project_debug.html
 
 # Node / Next.js
 node_modules/
