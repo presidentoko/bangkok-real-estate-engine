@@ -48,6 +48,42 @@ export default async function ContactPage({
         <p className="text-zinc-400 text-sm">{t.contact.lead}</p>
       </header>
 
+      <div className="grid sm:grid-cols-2 gap-3 mb-6">
+        <a
+          href="mailto:thaiconnect33@gmail.com"
+          className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 transition"
+        >
+          <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">Email</div>
+          <div className="font-bold text-zinc-100 break-all text-sm">thaiconnect33@gmail.com</div>
+        </a>
+        <a
+          href="https://line.me/ti/p/~838wyfih"
+          target="_blank"
+          rel="noopener"
+          className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 transition"
+        >
+          <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">LINE</div>
+          <div className="font-bold text-zinc-100 text-sm">@838wyfih</div>
+        </a>
+        <a
+          href="https://wa.me/66610934014"
+          target="_blank"
+          rel="noopener"
+          className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 transition"
+        >
+          <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">WhatsApp / Phone</div>
+          <div className="font-bold text-zinc-100 text-sm">+66 61 093 4014</div>
+        </a>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+          <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">Bangkok office</div>
+          <div className="text-zinc-200 text-xs leading-snug">
+            3rd floor, 272 Than Thip 3 Alley<br />
+            Phlabphla, Wang Thonglang<br />
+            Bangkok 10310
+          </div>
+        </div>
+      </div>
+
       <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-5">
         <ContactForm strings={t.contact.form} />
       </div>

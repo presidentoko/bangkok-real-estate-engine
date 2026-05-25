@@ -122,6 +122,27 @@ export default async function AboutPage({
         </p>
       </header>
 
+      <section className="mb-10 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+        <div className="flex flex-col sm:flex-row gap-6 items-start">
+          <img
+            src="/founder.jpg"
+            alt="Shin Yunmin — Founder"
+            className="w-32 h-32 rounded-full object-cover border border-zinc-800 shrink-0"
+            loading="lazy"
+          />
+          <div>
+            <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">Founder</div>
+            <h2 className="text-2xl font-bold mb-2">Shin Yunmin (신윤민)</h2>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-3">
+              Data architect, 12+ years. Korean founder based in Bangkok, building products for the Thai market.
+            </p>
+            <p className="text-sm text-zinc-300 leading-relaxed">
+              <strong>Why RealData exists:</strong> &ldquo;Top 10 Bangkok condos for foreigners&rdquo; videos on YouTube are almost always paid placements by developer sales agents. Influencers walk a showroom, mention &ldquo;great yield potential,&rdquo; never mention the building&rsquo;s sales velocity, the district&rsquo;s flood risk, or the realistic rent. So I built the opposite: <strong>1,894 buildings, 23,552 units, weekly portal sweeps, BOT mortgage rates, BMA flood layers</strong>. Buy on evidence, not influencers.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="mb-10">
         <h2 className="text-xl font-bold mb-3">{t.sectionMission.title}</h2>
         <p className="text-zinc-300 leading-relaxed">{t.sectionMission.body}</p>
