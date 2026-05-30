@@ -421,6 +421,45 @@ const dict: Dict = {
     domNew: "방금 등록",
     domBuilding: "추적 시작 — RealData가 매물별 첫 등록 시점을 기록합니다. 1~2주 후 실제 days-on-market 시그널이 나옵니다.",
   },
+  near: {
+    breadcrumb: "역",
+    titleSuffix: "역 주변 콘도",
+    metaSuffix: "{station} 주변 콘도 — 가격, 수익률, 침수 위험, 평점 | RealData",
+    summaryLead: "{station} 반경 1km 내",
+    statCondos: "콘도",
+    statMedianPsm: "중위 ฿/sqm",
+    statMedianYield: "중위 총수익률",
+    statAvgFlood: "평균 침수 위험",
+    statAvgRating: "평균 구글 평점",
+    listTitle: "{station} 주변 콘도",
+    faqTitle: "자주 묻는 질문",
+    emptyNote: "이 역 주변에 위치 정보가 있는 콘도가 아직 부족합니다.",
+    relatedHubs: "관련 가이드",
+  },
+  guide: {
+    breadcrumb: "가이드",
+    foreign: {
+      title: "외국인의 태국 콘도 구매 가능 여부 (2026 가이드)",
+      lead: "가능합니다 — 외국인은 한도 내에서 방콕 콘도를 자유 보유(freehold)할 수 있습니다. 49% 쿼터, freehold와 leasehold, 송금, 세금까지 정확히 정리합니다.",
+    },
+    investment: {
+      title: "방콕 콘도 투자 가이드 2026",
+      lead: "어디 수익률이 높은지, 어느 지역이 고평가인지, 금융 비용과 매수 판단의 근거 데이터 — 매주 갱신.",
+      yieldTableTitle: "지역별 총 임대 수익률",
+      colArea: "지역",
+      colCondos: "콘도 수",
+      colYield: "중위 총수익률",
+      colPsm: "중위 ฿/sqm",
+    },
+  },
+  glossary: {
+    breadcrumb: "용어집",
+    title: "방콕 부동산 용어집",
+    lead: "RealData가 발표하는 모든 지표의 쉬운 정의 — 그리고 우리가 정확히 어떻게 계산하는지.",
+    howWeCalculate: "계산 방식",
+    relatedTitle: "관련 용어",
+    backToIndex: "전체 용어",
+  },
 };
 
 export default dict;
