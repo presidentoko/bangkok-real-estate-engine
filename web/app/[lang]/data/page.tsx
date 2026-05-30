@@ -159,26 +159,41 @@ export default async function DataShowcase({
   }
   const histMax = Math.max(...histogram, 1);
 
-  // 4. Top 10 most expensive
+  // 4. Top 10 most expensive — by sale per-sqm rather than sale median
+  //    (the median field is capped at $671,360 in upstream Hipflat data,
+  //    which makes the top 10 a single tied bucket with no signal).
+  //    per-sqm gives a real spread; we de-dup by (name, region) so the
+  //    same project doesn't take 5 of the 10 slots.
   const { data: expensiveData } = await supabase
     .from("condos_published")
-    .select("id, name, regions(name), province, market_sale_median")
-    .not("market_sale_median", "is", null)
-    .order("market_sale_median", { ascending: false })
-    .limit(10);
+    .select("id, name, regions(name), province, market_sale_per_sqm, market_sale_median")
+    .not("market_sale_per_sqm", "is", null)
+    .gt("market_sale_per_sqm", 0)
+    .order("market_sale_per_sqm", { ascending: false })
+    .limit(100);
+  const seenName = new Set<string>();
   const topExpensive: TopCondo[] = ((expensiveData ?? []) as unknown as Array<{
     id: string;
     name: string;
     regions: { name: string } | { name: string }[] | null;
     province: string;
+    market_sale_per_sqm: number | null;
     market_sale_median: number | null;
-  }>).map((c) => ({
-    id: c.id,
-    name: c.name,
-    region: (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? null,
-    province: c.province,
-    metric: c.market_sale_median,
-  }));
+  }>)
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      region: (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? null,
+      province: c.province,
+      metric: c.market_sale_per_sqm,
+    }))
+    .filter((c) => {
+      const key = c.name.trim().toLowerCase();
+      if (seenName.has(key)) return false;
+      seenName.add(key);
+      return true;
+    })
+    .slice(0, 10);
 
   // 5. Top 10 Super Value
   const { data: svData } = await supabase
@@ -421,13 +436,19 @@ export default async function DataShowcase({
                       {provLabel(c.province)} · {c.region ?? "—"}
                     </span>
                   </span>
-                  <span className="text-zinc-200 font-bold tabular-nums">
+                  <span className="text-zinc-200 font-bold tabular-nums whitespace-nowrap">
                     {fmtMoney(c.metric)}
+                    <span className="text-[10px] text-zinc-500 font-normal ml-1">/sqm</span>
                   </span>
                 </Link>
               </li>
             ))}
           </ol>
+          <p className="text-[11px] text-zinc-500 mt-3">
+            Ranked by sale price per sqm (the per-project median field
+            saturates at $671k, so per-sqm gives a true spread). Duplicates by
+            project name are collapsed.
+          </p>
         </section>
       )}
 

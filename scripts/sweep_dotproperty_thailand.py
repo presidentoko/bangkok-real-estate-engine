@@ -36,8 +36,9 @@ CITIES = [
     # Central / Greater Bangkok
     "nonthaburi", "pathum-thani", "samut-prakan", "nakhon-pathom",
     "samut-sakhon", "samut-songkhram",
-    # East
-    "rayong", "chanthaburi", "trat",
+    # East (chonburi = Sriracha/Bang Saen/Bang Lamung, NOT Pattaya — Pattaya is a
+    # standalone slug handled by full_city_sweep main-city ingest)
+    "chonburi", "rayong", "chanthaburi", "trat",
     # West
     "kanchanaburi", "ratchaburi",
     # North

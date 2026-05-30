@@ -49,8 +49,13 @@ CITY_PATHS = {
     "bangkok":    "/property-for-{lt}/thailand/bangkok",
     "phuket":     "/property-for-{lt}/thailand/phuket",
     "chiang-mai": "/property-for-{lt}/thailand/chiang-mai",
-    "pattaya":    "/property-for-{lt}/thailand/chonburi/pattaya",
+    "pattaya":    "/property-for-{lt}/thailand/chon-buri/pattaya",
     "hua-hin":    "/property-for-{lt}/thailand/prachuap-khiri-khan/hua-hin",
+    # Secondary cities — FazWaz exposes these too, lower inventory.
+    "chonburi":   "/property-for-{lt}/thailand/chon-buri",
+    "krabi":      "/property-for-{lt}/thailand/krabi",
+    "samui":      "/property-for-{lt}/thailand/surat-thani/koh-samui",
+    "chiang-rai": "/property-for-{lt}/thailand/chiang-rai",
 }
 LISTING_TYPE_KEY = {"sale": "sale", "rent": "rent"}
 
@@ -101,10 +106,20 @@ async def run(listing_type: str, city: str, delay_s: float, max_listings: int | 
     stats = Counter()
     started = time.time()
 
+    # Bail-out logic
+    #   empty_pages  — N consecutive pages with 0 cards parsed
+    #   stale_pages  — N consecutive pages where every card was already seen
+    #                  this run (Fazwaz's pagination loops past the real end
+    #                  with duplicate cards, so the empty-page check alone
+    #                  doesn't catch it — we'd grind for hours otherwise).
+    EMPTY_BAIL = 2
+    STALE_BAIL = 5
+    seen_sids: set[str] = set()
     browser = await uc.start(headless=False, user_data_dir=PROFILE_DIR, sandbox=True)
     try:
         page_num = 1
         empty_pages = 0
+        stale_pages = 0
         while True:
             if max_listings and stats["seen"] >= max_listings:
                 break
@@ -119,11 +134,28 @@ async def run(listing_type: str, city: str, delay_s: float, max_listings: int | 
 
             if not items:
                 empty_pages += 1
-                if empty_pages >= 2:
-                    logger.info("[fazwaz] 2 empty pages — done")
+                if empty_pages >= EMPTY_BAIL:
+                    logger.info(f"[fazwaz] {EMPTY_BAIL} empty pages — done")
                     break
             else:
                 empty_pages = 0
+
+            # Did this page contribute any unseen source_listing_id? If not,
+            # we're looping. Count consecutive stale pages and bail at the cap.
+            page_sids = {it.get("source_listing_id") for it in items if it.get("source_listing_id")}
+            new_sids = page_sids - seen_sids
+            seen_sids |= page_sids
+            if items and not new_sids:
+                stale_pages += 1
+                logger.info(
+                    f"[fazwaz] page {page_num}: all {len(items)} cards already seen "
+                    f"({stale_pages}/{STALE_BAIL} stale)"
+                )
+                if stale_pages >= STALE_BAIL:
+                    logger.info(f"[fazwaz] {STALE_BAIL} stale pages — pagination looped, done")
+                    break
+            else:
+                stale_pages = 0
 
             for item in items:
                 if max_listings and stats["seen"] >= max_listings:

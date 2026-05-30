@@ -3,6 +3,7 @@ import { getCity } from "@/lib/cities";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const runtime = "edge";
+export const revalidate = 86400;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "RealData — independent condo data report";

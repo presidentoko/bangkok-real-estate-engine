@@ -6,14 +6,13 @@ import type { CondoSummary, PropertyType } from "@/lib/queries/condos";
 
 type SortKey = "default" | "bubble_low" | "bubble_high" | "year" | "name";
 type TypeFilter = "all" | PropertyType;
-type CityFilter = "all" | "bangkok" | "phuket" | "chiangmai" | "pattaya" | "huahin" | "chonburi";
 type BubbleBucket = "all" | "under" | "market" | "premium" | "bubble";
 
 const SORT_LABELS: Record<SortKey, string> = {
   default: "Featured",
   bubble_low: "Bubble — low first",
   bubble_high: "Bubble — high first",
-  year: "Newest built",
+  year: "Most units",
   name: "Name (A→Z)",
 };
 
@@ -24,16 +23,6 @@ const TYPE_LABELS: Record<TypeFilter, string> = {
   "serviced-apartment": "Serviced",
 };
 
-const CITY_LABELS: Record<CityFilter, string> = {
-  all: "All cities",
-  bangkok: "Bangkok",
-  phuket: "Phuket",
-  chiangmai: "Chiang Mai",
-  pattaya: "Pattaya",
-  huahin: "Hua Hin",
-  chonburi: "Chonburi",
-};
-
 const BUBBLE_LABELS: Record<BubbleBucket, string> = {
   all: "Any price",
   under: "Underpriced (<90)",
@@ -42,22 +31,44 @@ const BUBBLE_LABELS: Record<BubbleBucket, string> = {
   bubble: "Bubble (>200)",
 };
 
+function median(arr: number[]): number | null {
+  if (arr.length === 0) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function mean(arr: number[]): number | null {
+  if (arr.length === 0) return null;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function fmtMoney(n: number | null, currency: string | null | undefined): string {
+  if (n == null) return "—";
+  const sym = currency === "THB" ? "฿" : currency === "USD" ? "$" : `${currency ?? ""} `;
+  if (n >= 1_000_000) return `${sym}${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${sym}${(n / 1_000).toFixed(0)}k`;
+  return `${sym}${Math.round(n).toLocaleString()}`;
+}
+
 export function InventoryGrid({
   condos,
   hrefPrefix,
   districts,
+  cityLabel,
 }: {
   condos: CondoSummary[];
   hrefPrefix: string;
   districts: string[];
+  cityLabel: string;
 }) {
   const [q, setQ] = useState("");
   const [district, setDistrict] = useState<string>("");
   const [sort, setSort] = useState<SortKey>("default");
   const [photoOnly, setPhotoOnly] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
-  const [cityFilter, setCityFilter] = useState<CityFilter>("all");
   const [bubble, setBubble] = useState<BubbleBucket>("all");
+  const [revealAll, setRevealAll] = useState(false);
 
   // Only render type chips for types that actually exist in the dataset.
   const availableTypes = useMemo(() => {
@@ -67,18 +78,42 @@ export function InventoryGrid({
     return order.filter((t) => t === "all" || set.has(t as PropertyType));
   }, [condos]);
 
-  const availableCities = useMemo(() => {
-    const set = new Set<string>();
-    for (const c of condos) set.add(c.province);
-    const order: CityFilter[] = ["all", "bangkok", "phuket", "chiangmai", "pattaya", "huahin", "chonburi"];
-    return order.filter((c) => c === "all" || set.has(c));
+  // ---- Dashboard stats (computed from the city-scoped condos prop) ----
+  const stats = useMemo(() => {
+    const currency = condos.find((c) => c.market_summary_currency)?.market_summary_currency ?? "THB";
+    const saleMedians = condos
+      .map((c) => c.market_sale_median)
+      .filter((x): x is number => typeof x === "number" && x > 0);
+    const rentMedians = condos
+      .map((c) => c.market_rent_median)
+      .filter((x): x is number => typeof x === "number" && x > 0);
+    const bubbles = condos
+      .map((c) => c.bubble_index)
+      .filter((x): x is number => typeof x === "number");
+    const superValue = condos.filter((c) => c.is_super_value).length;
+    const geoLocated = condos.filter((c) => c.latitude != null && c.longitude != null).length;
+    return {
+      currency,
+      saleMedian: median(saleMedians),
+      rentMedian: median(rentMedians),
+      bubbleAvg: mean(bubbles),
+      bubbleSampleSize: bubbles.length,
+      superValue,
+      geoLocated,
+    };
   }, [condos]);
+
+  const isFiltering =
+    q.trim().length > 0 ||
+    district !== "" ||
+    typeFilter !== "all" ||
+    bubble !== "all" ||
+    photoOnly;
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     let arr = condos.filter((c) => {
       if (typeFilter !== "all" && c.property_type !== typeFilter) return false;
-      if (cityFilter !== "all" && c.province !== cityFilter) return false;
       if (district && c.region !== district) return false;
       if (photoOnly && !c.hero_image_url) return false;
       if (needle && !c.name.toLowerCase().includes(needle)) return false;
@@ -107,12 +142,9 @@ export function InventoryGrid({
         arr = [...arr].sort((a, b) => a.name.localeCompare(b.name));
         break;
       case "year":
-        // total_units doesn't carry year; this is a placeholder for completion_year
-        // when we wire it through queries. Falls back to default order.
         arr = [...arr].sort((a, b) => (b.total_units ?? 0) - (a.total_units ?? 0));
         break;
       default:
-        // Featured: super value first, then with photo, then with bubble data.
         arr = [...arr].sort((a, b) => {
           const score = (c: CondoSummary) =>
             (c.is_super_value ? 1000 : 0) +
@@ -123,119 +155,249 @@ export function InventoryGrid({
         });
     }
     return arr;
-  }, [condos, q, district, sort, photoOnly, typeFilter, cityFilter, bubble]);
+  }, [condos, q, district, sort, photoOnly, typeFilter, bubble]);
+
+  // Top picks: shown by default (when no filter applied) so the page isn't empty.
+  const topPicks = useMemo(() => {
+    return [...condos]
+      .filter((c) => c.is_super_value && c.hero_image_url)
+      .sort((a, b) => (a.bubble_index ?? 100) - (b.bubble_index ?? 100))
+      .slice(0, 6);
+  }, [condos]);
+
+  function clearFilters() {
+    setQ("");
+    setDistrict("");
+    setTypeFilter("all");
+    setBubble("all");
+    setPhotoOnly(false);
+    setRevealAll(false);
+  }
+
+  // How many cards to render? Filtered = show all matches. Otherwise show
+  // nothing until the user types/filters OR clicks "show all".
+  const showGrid = isFiltering || revealAll;
+  const gridSource = showGrid ? filtered : [];
 
   return (
-    <div className="space-y-3">
-      {availableCities.length > 2 && (
-        <div className="flex flex-wrap gap-1.5">
-          {availableCities.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCityFilter(c)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
-                cityFilter === c
-                  ? "bg-blue-500 text-white"
-                  : "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-zinc-600"
-              }`}
-            >
-              {CITY_LABELS[c]}
-            </button>
-          ))}
+    <div className="space-y-6">
+      {/* ---- Stats dashboard ---- */}
+      <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-2xl p-5">
+        <div className="text-xs uppercase tracking-widest text-zinc-500 mb-2">
+          {cityLabel} · inventory snapshot
         </div>
-      )}
-
-      {availableTypes.length > 1 && (
-        <div className="flex flex-wrap gap-1.5">
-          {availableTypes.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTypeFilter(t)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
-                typeFilter === t
-                  ? "bg-zinc-100 text-zinc-900"
-                  : "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-zinc-600"
-              }`}
-            >
-              {TYPE_LABELS[t]}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="flex flex-wrap gap-1.5">
-        {(["all", "under", "market", "premium", "bubble"] as BubbleBucket[]).map((b) => {
-          const active = bubble === b;
-          const tint =
-            b === "under" ? "bg-emerald-500/20 text-emerald-200 border-emerald-500/40"
-            : b === "premium" ? "bg-orange-500/20 text-orange-200 border-orange-500/40"
-            : b === "bubble" ? "bg-rose-500/20 text-rose-200 border-rose-500/40"
-            : "bg-zinc-900 text-zinc-300 border-zinc-800";
-          return (
-            <button
-              key={b}
-              onClick={() => setBubble(b)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition border ${
-                active
-                  ? "bg-zinc-100 text-zinc-900 border-zinc-100"
-                  : `${tint} hover:border-zinc-500`
-              }`}
-            >
-              {BUBBLE_LABELS[b]}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center gap-2">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search building name…"
-          className="flex-1 min-w-[200px] bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
-        />
-        <select
-          value={district}
-          onChange={(e) => setDistrict(e.target.value)}
-          className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200"
-        >
-          <option value="">All districts ({districts.length})</option>
-          {districts.map((d) => (
-            <option key={d} value={d}>{d}</option>
-          ))}
-        </select>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as SortKey)}
-          className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200"
-        >
-          {Object.entries(SORT_LABELS).map(([k, v]) => (
-            <option key={k} value={k}>{v}</option>
-          ))}
-        </select>
-        <label className="flex items-center gap-1.5 text-xs text-zinc-300 px-2">
-          <input
-            type="checkbox"
-            checked={photoOnly}
-            onChange={(e) => setPhotoOnly(e.target.checked)}
-            className="accent-blue-500"
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Stat
+            label="Buildings"
+            value={condos.length.toLocaleString()}
           />
-          Photo only
-        </label>
-        <span className="text-xs text-zinc-500 ml-auto tabular-nums">
-          {filtered.length.toLocaleString()} / {condos.length.toLocaleString()}
-        </span>
+          <Stat
+            label="Districts"
+            value={districts.length.toLocaleString()}
+          />
+          <Stat
+            label="Geo-located"
+            value={stats.geoLocated.toLocaleString()}
+            sub={`${condos.length ? Math.round((stats.geoLocated / condos.length) * 100) : 0}%`}
+          />
+          <Stat
+            label="Median sale"
+            value={fmtMoney(stats.saleMedian, stats.currency)}
+          />
+          <Stat
+            label="Median rent / mo"
+            value={fmtMoney(stats.rentMedian, stats.currency)}
+          />
+          <Stat
+            label="Bubble avg"
+            value={stats.bubbleAvg != null ? stats.bubbleAvg.toFixed(0) : "—"}
+            sub={stats.bubbleSampleSize > 0 ? `${stats.bubbleSampleSize.toLocaleString()} scored` : undefined}
+            tint={
+              stats.bubbleAvg == null
+                ? "text-zinc-400"
+                : stats.bubbleAvg > 130
+                ? "text-rose-300"
+                : stats.bubbleAvg < 90
+                ? "text-emerald-300"
+                : "text-zinc-200"
+            }
+          />
+        </div>
+        {stats.superValue > 0 && (
+          <div className="mt-3 text-xs text-emerald-300">
+            ★ {stats.superValue.toLocaleString()} super-value picks · scored under market
+          </div>
+        )}
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="text-center text-zinc-500 py-16 text-sm">No matches.</div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((c) => (
-            <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} />
-          ))}
+      {/* ---- Filters ---- */}
+      <div className="space-y-3">
+        {availableTypes.length > 1 && (
+          <div className="flex flex-wrap gap-1.5">
+            {availableTypes.map((t) => (
+              <button
+                key={t}
+                onClick={() => setTypeFilter(t)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${
+                  typeFilter === t
+                    ? "bg-zinc-100 text-zinc-900"
+                    : "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-zinc-600"
+                }`}
+              >
+                {TYPE_LABELS[t]}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-1.5">
+          {(["all", "under", "market", "premium", "bubble"] as BubbleBucket[]).map((b) => {
+            const active = bubble === b;
+            const tint =
+              b === "under" ? "bg-emerald-500/20 text-emerald-200 border-emerald-500/40"
+              : b === "premium" ? "bg-orange-500/20 text-orange-200 border-orange-500/40"
+              : b === "bubble" ? "bg-rose-500/20 text-rose-200 border-rose-500/40"
+              : "bg-zinc-900 text-zinc-300 border-zinc-800";
+            return (
+              <button
+                key={b}
+                onClick={() => setBubble(b)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full transition border ${
+                  active
+                    ? "bg-zinc-100 text-zinc-900 border-zinc-100"
+                    : `${tint} hover:border-zinc-500`
+                }`}
+              >
+                {BUBBLE_LABELS[b]}
+              </button>
+            );
+          })}
         </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center gap-2">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search building name…"
+            className="flex-1 min-w-[200px] bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
+          />
+          <select
+            value={district}
+            onChange={(e) => setDistrict(e.target.value)}
+            className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200"
+          >
+            <option value="">All districts ({districts.length})</option>
+            {districts.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200"
+          >
+            {Object.entries(SORT_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
+          </select>
+          <label className="flex items-center gap-1.5 text-xs text-zinc-300 px-2">
+            <input
+              type="checkbox"
+              checked={photoOnly}
+              onChange={(e) => setPhotoOnly(e.target.checked)}
+              className="accent-blue-500"
+            />
+            Photo only
+          </label>
+          {isFiltering && (
+            <button
+              onClick={clearFilters}
+              className="text-xs text-zinc-400 hover:text-zinc-100 underline underline-offset-2"
+            >
+              Clear
+            </button>
+          )}
+          <span className="text-xs text-zinc-500 ml-auto tabular-nums">
+            {showGrid
+              ? `${filtered.length.toLocaleString()} / ${condos.length.toLocaleString()}`
+              : `${condos.length.toLocaleString()} total`}
+          </span>
+        </div>
+      </div>
+
+      {/* ---- Default state: top picks + invitation to filter ---- */}
+      {!showGrid && (
+        <>
+          {topPicks.length > 0 && (
+            <section>
+              <div className="flex items-baseline justify-between mb-3">
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+                    Super-value picks
+                  </div>
+                  <h2 className="text-lg font-semibold text-zinc-100">
+                    Scored under market — best yields right now
+                  </h2>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {topPicks.map((c) => (
+                  <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div className="bg-zinc-900/50 border border-dashed border-zinc-800 rounded-2xl p-8 text-center">
+            <div className="text-zinc-400 text-sm mb-3">
+              {condos.length.toLocaleString()} buildings in {cityLabel}.
+              <br />
+              Search by name or pick a filter above to drill in.
+            </div>
+            <button
+              onClick={() => setRevealAll(true)}
+              className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium px-4 py-2 rounded-lg transition"
+            >
+              Show all {condos.length.toLocaleString()} →
+            </button>
+          </div>
+        </>
       )}
+
+      {/* ---- Filtered or full grid ---- */}
+      {showGrid && (
+        filtered.length === 0 ? (
+          <div className="text-center text-zinc-500 py-16 text-sm">No matches.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {gridSource.map((c) => (
+              <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} />
+            ))}
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  sub,
+  tint,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tint?: string;
+}) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wider text-zinc-500">{label}</div>
+      <div className={`text-2xl font-black tabular-nums ${tint ?? "text-zinc-100"}`}>
+        {value}
+      </div>
+      {sub && <div className="text-[10px] text-zinc-500 tabular-nums">{sub}</div>}
     </div>
   );
 }

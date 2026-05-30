@@ -6,7 +6,7 @@ const dict: Dict = {
     tagline: "powered by data, not influencers",
   },
   nav: {
-    flood: "방콕 침수",
+    flood: "침수",
     inventory: "인벤토리",
     reality: "Marketing vs Reality",
     data: "데이터",
@@ -133,7 +133,7 @@ const dict: Dict = {
     ],
   },
   flood: {
-    title: "🌊 방콕 침수 지도",
+    title: "🌊 침수 지도",
     lead: "어느 구가 우기마다 잠기는지, 어느 구가 안전한지. 콘도 사기 전에 반드시 확인. 2011년 대홍수 + BMA 배수국 + JICA 보고서 기반.",
     whyDistrict: "왜 구 단위인가?",
     whyDistrictBody:
@@ -195,7 +195,7 @@ const dict: Dict = {
   },
   dataShowcase: {
     title: "데이터 — 진짜 스케일",
-    lead: "6개 도시, 1,709개 빌딩, 6개월 weekly 크롤이 실제로 어떻게 생겼는지. 아래 숫자는 매시간 갱신.",
+    lead: "9개 도시 + 6개월 weekly 크롤이 실제로 어떻게 생겼는지. 아래 숫자는 페이지 로드마다 재계산. 매물은 매일, 태국 전국 sweep 은 주 1회 갱신.",
     statsHeader: "커버리지",
     statBuildings: "추적 빌딩",
     statListings: "활성 매물",

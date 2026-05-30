@@ -7,7 +7,7 @@ const dict = {
     tagline: "powered by data, not influencers",
   },
   nav: {
-    flood: "Bangkok Flood",
+    flood: "Flood",
     inventory: "Inventory",
     reality: "Marketing vs Reality",
     data: "Data",
@@ -134,7 +134,7 @@ const dict = {
     ],
   },
   flood: {
-    title: "🌊 Bangkok Flood Map",
+    title: "🌊 Flood Map",
     lead: "Which districts flood every monsoon, which stay dry. Verify before you buy. Built from BMA Drainage Department + JICA reports + 2011 great flood records.",
     whyDistrict: "Why district-level?",
     whyDistrictBody:
@@ -196,7 +196,7 @@ const dict = {
   },
   dataShowcase: {
     title: "The data — at scale",
-    lead: "What 6 cities, 1,709 buildings, and 6 months of weekly crawls actually look like. Numbers below refresh hourly.",
+    lead: "What 9 cities and 6 months of weekly crawls actually look like. Counts below recompute on every page load; listings refresh daily, full Thailand sweep weekly.",
     statsHeader: "Coverage",
     statBuildings: "buildings tracked",
     statListings: "active listings",

@@ -143,7 +143,11 @@ export default async function Home({
               { n: stats.buildings.toLocaleString(), l: t.home.statsLabels.buildings },
               { n: stats.listings.toLocaleString(), l: t.home.statsLabels.listings },
               { n: stats.chartPoints.toLocaleString(), l: t.home.statsLabels.chartPts },
-              { n: "50 / 50", l: t.home.statsLabels.floodMapping },
+              // Bangkok flood map = all 50 khet covered. Stat is hardcoded
+              // because the flood layer is a single curated dataset, not a
+              // scraped count. Label makes the scope explicit so it doesn't
+              // get confused with the all-9-cities sub-areas total on /data.
+              { n: "50 / 50", l: "Bangkok khet mapped (flood)" },
             ].map((s) => (
               <div
                 key={s.l}

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
 import { CityMapSvg, type CityPoint } from "@/components/CityMapSvg";
 import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
-import { CITIES, getCity, type City, type CitySlug } from "@/lib/cities";
+import { CITIES, cityProvinceSlugs, getCity, type City, type CitySlug } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
 import { type CondoSummary, type PropertyType } from "@/lib/queries/condos";
@@ -75,6 +75,8 @@ async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
   const out: CondoSummary[] = [];
   const PAGE = 1000;
   let offset = 0;
+  // Accept both compact and kebab province values for the same UI city.
+  const provinces = cityProvinceSlugs(province);
   while (true) {
     // City pages query the base table directly, so an unpublished city can
     // still be previewed at /[lang]/city/{slug} before we flip published=true.
@@ -82,7 +84,7 @@ async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
       .from("condos")
       .select(SELECT)
       .eq("source", "hipflat")
-      .eq("province", province)
+      .in("province", provinces)
       .range(offset, offset + PAGE - 1);
     if (error) throw new Error(`city condo fetch failed: ${error.message}`);
     const rows = (data ?? []) as unknown as Joined[];

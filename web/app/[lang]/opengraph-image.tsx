@@ -2,6 +2,9 @@ import { ImageResponse } from "next/og";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const runtime = "edge";
+// Cache the generated PNG for 24h on the edge; the underlying count moves
+// slowly and a stale OG image is fine for social previews.
+export const revalidate = 86400;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt =

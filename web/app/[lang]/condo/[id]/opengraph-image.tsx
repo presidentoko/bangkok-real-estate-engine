@@ -5,6 +5,7 @@ import { getServerSupabase } from "@/lib/supabase";
 // font path bug ("Invalid URL: .\file:\...noto-sans...ttf"). Documented in
 // PROJECTS.md and the bangkok engine memos.
 export const runtime = "edge";
+export const revalidate = 86400;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "RealData — Bangkok condo report card";

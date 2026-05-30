@@ -27,6 +27,23 @@ import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
 
+// Prebuild the 50 most-listed condos × 3 langs = 150 pages at build time.
+// These are the pages most likely to be hit by search/social/AI crawlers —
+// serving them as static HTML keeps function invocations off the free-plan
+// budget. The long tail still falls back to on-demand ISR.
+export async function generateStaticParams() {
+  const supabase = getServerSupabase();
+  const { data } = await supabase
+    .from("condos_published")
+    .select("id, active_listings_count")
+    .order("active_listings_count", { ascending: false, nullsFirst: false })
+    .limit(50);
+  const ids = (data ?? []).map((r) => String(r.id));
+  return ids.flatMap((id) =>
+    (["en", "ko", "th"] as const).map((lang) => ({ id, lang }))
+  );
+}
+
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -121,7 +138,7 @@ export default async function CondoPage({
         "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
         "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
         "market_summary_currency, available_units_count, " +
-        "active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
+        "active_active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
         "cam_fee_per_month, sinking_fund, building_ownership, " +
         "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at, " +
         "foreign_quota_listings_available, thai_quota_listings_available, " +
@@ -199,7 +216,7 @@ export default async function CondoPage({
     market_sale_yoy_pct: number | null;
     market_summary_currency: string | null;
     available_units_count: number | null;
-    active_listings_count: number | null;
+    active_active_listings_count: number | null;
     median_listing_dom_days: number | null;
     max_listing_dom_days: number | null;
     cam_fee_per_month: number | null;
@@ -443,7 +460,7 @@ export default async function CondoPage({
       </section>
 
       {/* Listing activity (days-on-market) */}
-      {condoRaw.active_listings_count != null && condoRaw.active_listings_count > 0 && (
+      {condoRaw.active_active_listings_count != null && condoRaw.active_active_listings_count > 0 && (
         <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
           <h2 className="text-sm font-semibold text-zinc-300 mb-3">
             {tCondo.marketActivityTitle}
@@ -452,7 +469,7 @@ export default async function CondoPage({
             <div>
               <dt className="text-zinc-500 text-xs">{tCondo.activeListings}</dt>
               <dd className="text-zinc-100 font-semibold tabular-nums">
-                {condoRaw.active_listings_count}
+                {condoRaw.active_active_listings_count}
               </dd>
             </div>
             <div>
