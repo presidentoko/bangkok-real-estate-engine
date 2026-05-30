@@ -20,7 +20,7 @@ export function generateStaticParams() {
 const SELECT =
   "id, name, url, latitude, longitude, hero_image_url, total_units, " +
   "available_units_count, market_sale_median, market_rent_median, " +
-  "market_summary_currency, property_type, province, regions(name), " +
+  "market_summary_currency, property_type, province, source, regions(name), " +
   "value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
 
 type Joined = {
@@ -37,6 +37,7 @@ type Joined = {
   market_summary_currency: string | null;
   property_type?: string | null;
   province?: string | null;
+  source?: string | null;
   regions: { name: string } | { name: string }[] | null;
   value_scores: { bubble_index: number | null; is_super_value: boolean | null } | null
     | { bubble_index: number | null; is_super_value: boolean | null }[];
@@ -67,6 +68,7 @@ function flatten(r: Joined): CondoSummary {
     market_rent_median: r.market_rent_median,
     market_summary_currency: r.market_summary_currency,
     property_type: pt,
+    source: r.source ?? "hipflat",
   };
 }
 

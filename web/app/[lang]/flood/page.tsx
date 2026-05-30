@@ -121,7 +121,7 @@ export default async function FloodPage({
   // a district geojson yet — we still fetch points and color them by the
   // per-condo risk_factors.flood_risk_level where present, falling back to
   // unknown otherwise.
-  const condoSelect = isBangkok
+  const condoSelect: string = isBangkok
     ? "id, name, url, latitude, longitude, region_id, regions(name)"
     : "id, name, url, latitude, longitude, region_id, regions(name), risk_factors(flood_risk_level)";
 
@@ -149,7 +149,7 @@ export default async function FloodPage({
       : Promise.resolve({ features: [] }),
   ]);
 
-  const condos = (condosRes.data ?? []) as CondoRow[];
+  const condos = (condosRes.data ?? []) as unknown as CondoRow[];
   const features = (geoRes.features ?? []) as GeoFeature[];
   const levelByKhet = new Map<string, number>();
   for (const f of features) {
