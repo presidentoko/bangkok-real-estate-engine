@@ -67,6 +67,11 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Run on all paths; the early returns above filter out static/API.
-  matcher: "/((?!_next/static|_next/image|favicon).*)",
+  // Exclude static assets, /api, and anything with a file extension at the
+  // matcher level so middleware is never invoked for them (Vercel free plan
+  // bills edge-middleware invocations). /admin still flows through so the
+  // admin cookie gate above can run.
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon|robots.txt|sitemap.xml|rss.xml|.*\\..*).*)",
+  ],
 };

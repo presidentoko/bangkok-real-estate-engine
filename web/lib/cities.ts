@@ -152,3 +152,40 @@ export function getCity(slug: string): City | null {
 }
 
 export const CITY_SLUGS = CITIES.map((c) => c.slug);
+
+// DB `province` column has accumulated two slug conventions over time:
+//   1. compact form used by the original hipflat ingest + this UI ("chiangmai",
+//      "huahin", "chonburi", "samui", "chiangrai")
+//   2. kebab form used by every newer scraper (DotProperty, DDProperty, FazWaz,
+//      and recent hipflat runs): "chiang-mai", "hua-hin", "chon-buri",
+//      "ko-samui", "chiang-rai"
+// Frontend keeps the compact form as the canonical URL slug; this helper
+// maps a UI slug to the set of DB values that should be considered the
+// "same city" so queries can use `province IN (...)`.
+const CITY_PROVINCE_ALIASES: Record<string, string[]> = {
+  bangkok:   ["bangkok"],
+  pattaya:   ["pattaya"],
+  phuket:    ["phuket"],
+  krabi:     ["krabi"],
+  chiangmai: ["chiangmai", "chiang-mai"],
+  huahin:    ["huahin", "hua-hin"],
+  chonburi:  ["chonburi", "chon-buri"],
+  samui:     ["samui", "ko-samui", "surat-thani"],
+  chiangrai: ["chiangrai", "chiang-rai"],
+};
+
+/** Return the set of DB province values matching this UI city slug.
+ *  Unknown slugs fall back to `[slug]` so a typo still produces a valid IN clause. */
+export function cityProvinceSlugs(uiSlug: string): string[] {
+  return CITY_PROVINCE_ALIASES[uiSlug] ?? [uiSlug];
+}
+
+/** Reverse mapping: given any DB province value, return the canonical UI slug.
+ *  Useful when grouping/filtering an already-loaded condo set by UI slug. */
+export function canonicalCitySlug(dbProvince: string | null | undefined): string {
+  if (!dbProvince) return "bangkok";
+  for (const [uiSlug, aliases] of Object.entries(CITY_PROVINCE_ALIASES)) {
+    if (aliases.includes(dbProvince)) return uiSlug;
+  }
+  return dbProvince;
+}

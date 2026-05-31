@@ -7,7 +7,7 @@ const dict = {
     tagline: "powered by data, not influencers",
   },
   nav: {
-    flood: "Bangkok Flood",
+    flood: "Flood",
     inventory: "Inventory",
     reality: "Marketing vs Reality",
     data: "Data",
@@ -134,7 +134,7 @@ const dict = {
     ],
   },
   flood: {
-    title: "🌊 Bangkok Flood Map",
+    title: "🌊 Flood Map",
     lead: "Which districts flood every monsoon, which stay dry. Verify before you buy. Built from BMA Drainage Department + JICA reports + 2011 great flood records.",
     whyDistrict: "Why district-level?",
     whyDistrictBody:
@@ -196,7 +196,7 @@ const dict = {
   },
   dataShowcase: {
     title: "The data — at scale",
-    lead: "What 6 cities, 1,709 buildings, and 6 months of weekly crawls actually look like. Numbers below refresh hourly.",
+    lead: "What 9 cities and 6 months of weekly crawls actually look like. Counts below recompute on every page load; listings refresh daily, full Thailand sweep weekly.",
     statsHeader: "Coverage",
     statBuildings: "buildings tracked",
     statListings: "active listings",
@@ -421,6 +421,45 @@ const dict = {
     domDays: (n: number) => (n === 1 ? "1 day" : `${n} days`),
     domNew: "Just listed",
     domBuilding: "Tracking begins now — RealData stamps each listing's first appearance so you'll see real days-on-market within 1–2 weeks.",
+  },
+  near: {
+    breadcrumb: "Stations",
+    titleSuffix: "condos near",
+    metaSuffix: "Condos near {station} — prices, yield, flood risk & ratings | RealData",
+    summaryLead: "Within 1 km of {station} we track",
+    statCondos: "condos",
+    statMedianPsm: "median ฿/sqm",
+    statMedianYield: "median gross yield",
+    statAvgFlood: "avg flood risk",
+    statAvgRating: "avg Google rating",
+    listTitle: "Condos near {station}",
+    faqTitle: "FAQ",
+    emptyNote: "Not enough geo-located condos near this station yet.",
+    relatedHubs: "Related guides",
+  },
+  guide: {
+    breadcrumb: "Guides",
+    foreign: {
+      title: "Can Foreigners Buy a Condo in Thailand? (2026 Guide)",
+      lead: "Yes — foreigners can own Bangkok condos freehold, within limits. Here is exactly how the 49% quota, freehold vs leasehold, money transfer, and taxes work.",
+    },
+    investment: {
+      title: "Bangkok Condo Investment Guide 2026",
+      lead: "Where the yields are, which areas look overpriced, financing costs, and the data behind a Bangkok buy-to-let decision — refreshed weekly.",
+      yieldTableTitle: "Gross rental yield by area",
+      colArea: "Area",
+      colCondos: "Condos",
+      colYield: "Median gross yield",
+      colPsm: "Median ฿/sqm",
+    },
+  },
+  glossary: {
+    breadcrumb: "Glossary",
+    title: "Bangkok Real-Estate Glossary",
+    lead: "Plain-English definitions of every metric RealData publishes — and exactly how we calculate each one.",
+    howWeCalculate: "How we calculate it",
+    relatedTitle: "Related terms",
+    backToIndex: "All terms",
   },
 };
 

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
 import { CityMapSvg, type CityPoint } from "@/components/CityMapSvg";
 import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
-import { CITIES, getCity, type City, type CitySlug } from "@/lib/cities";
+import { CITIES, cityProvinceSlugs, getCity, type City, type CitySlug } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
 import { type CondoSummary, type PropertyType } from "@/lib/queries/condos";
@@ -20,7 +20,7 @@ export function generateStaticParams() {
 const SELECT =
   "id, name, url, latitude, longitude, hero_image_url, total_units, " +
   "available_units_count, market_sale_median, market_rent_median, " +
-  "market_summary_currency, property_type, province, regions(name), " +
+  "market_summary_currency, property_type, province, source, regions(name), " +
   "value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
 
 type Joined = {
@@ -37,6 +37,7 @@ type Joined = {
   market_summary_currency: string | null;
   property_type?: string | null;
   province?: string | null;
+  source?: string | null;
   regions: { name: string } | { name: string }[] | null;
   value_scores: { bubble_index: number | null; is_super_value: boolean | null } | null
     | { bubble_index: number | null; is_super_value: boolean | null }[];
@@ -67,6 +68,7 @@ function flatten(r: Joined): CondoSummary {
     market_rent_median: r.market_rent_median,
     market_summary_currency: r.market_summary_currency,
     property_type: pt,
+    source: r.source ?? "hipflat",
   };
 }
 
@@ -75,6 +77,8 @@ async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
   const out: CondoSummary[] = [];
   const PAGE = 1000;
   let offset = 0;
+  // Accept both compact and kebab province values for the same UI city.
+  const provinces = cityProvinceSlugs(province);
   while (true) {
     // City pages query the base table directly, so an unpublished city can
     // still be previewed at /[lang]/city/{slug} before we flip published=true.
@@ -82,7 +86,7 @@ async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
       .from("condos")
       .select(SELECT)
       .eq("source", "hipflat")
-      .eq("province", province)
+      .in("province", provinces)
       .range(offset, offset + PAGE - 1);
     if (error) throw new Error(`city condo fetch failed: ${error.message}`);
     const rows = (data ?? []) as unknown as Joined[];

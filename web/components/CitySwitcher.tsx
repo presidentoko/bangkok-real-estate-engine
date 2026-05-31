@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CITIES } from "@/lib/cities";
 import type { Lang } from "@/lib/i18n";
@@ -11,15 +11,28 @@ const BANGKOK = {
   name: { en: "Bangkok", ko: "방콕", th: "กรุงเทพ" },
 } as const;
 
+// Pages that should accept ?city=<slug> instead of switching to /city/<slug>.
+// On these pages, switching cities keeps the user on the same page (flood map
+// stays a flood map, inventory stays inventory) — only the city scope changes.
+const CITY_SCOPED_PAGES = ["flood", "inventory"] as const;
+
 export function CitySwitcher({ lang }: { lang: Lang }) {
   const pathname = usePathname() ?? "";
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  // Detect current city from pathname. /[lang]/city/{slug} → that slug;
-  // anything else under /[lang] → Bangkok (the default market).
+  // Which kind of route are we on?
+  //   - /[lang]/city/<slug>     → city landing
+  //   - /[lang]/flood           → scoped page (uses ?city=)
+  //   - /[lang]/inventory       → scoped page (uses ?city=)
+  //   - everything else         → assume Bangkok
   const cityMatch = pathname.match(/^\/[a-z]{2}\/city\/([a-z]+)/i);
-  const currentSlug = cityMatch?.[1] ?? "bangkok";
+  const scopedMatch = pathname.match(/^\/[a-z]{2}\/(flood|inventory)\b/i);
+  const scopedPage = scopedMatch?.[1] as (typeof CITY_SCOPED_PAGES)[number] | undefined;
+
+  const currentSlug = cityMatch?.[1]
+    ?? (scopedPage ? searchParams?.get("city") ?? "bangkok" : "bangkok");
   const current =
     currentSlug === "bangkok"
       ? BANGKOK
@@ -39,12 +52,22 @@ export function CitySwitcher({ lang }: { lang: Lang }) {
     setOpen(false);
   }, [pathname]);
 
+  function hrefFor(slug: string): string {
+    if (scopedPage) {
+      // Stay on flood/inventory; just swap the ?city= scope.
+      return slug === "bangkok"
+        ? `/${lang}/${scopedPage}`
+        : `/${lang}/${scopedPage}?city=${slug}`;
+    }
+    return slug === "bangkok" ? `/${lang}` : `/${lang}/city/${slug}`;
+  }
+
   const cities: Array<{ slug: string; name: { en: string; ko: string; th: string }; href: string }> = [
-    { slug: BANGKOK.slug, name: BANGKOK.name, href: `/${lang}` },
+    { slug: BANGKOK.slug, name: BANGKOK.name, href: hrefFor("bangkok") },
     ...CITIES.map((c) => ({
       slug: c.slug,
       name: c.name,
-      href: `/${lang}/city/${c.slug}`,
+      href: hrefFor(c.slug),
     })),
   ];
 

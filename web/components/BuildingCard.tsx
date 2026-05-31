@@ -49,6 +49,29 @@ function bubbleArrow(b: number | null): string {
   return "·";
 }
 
+// Surface where the row originates. Hipflat is the trusted scoring source;
+// other portals contribute listings (and standalone condos when nothing
+// matched), so we mark them so a reader can see "this card came from
+// DotProperty, not from our scored set."
+const SOURCE_BADGE: Record<string, { label: string; classes: string; title: string } | null> = {
+  hipflat: null, // canonical — no badge needed
+  dotproperty: {
+    label: "dotproperty",
+    classes: "bg-cyan-500/15 text-cyan-200 ring-cyan-500/30",
+    title: "Sourced from dotproperty.co.th — not yet cross-verified by RealData",
+  },
+  ddproperty: {
+    label: "ddproperty",
+    classes: "bg-violet-500/15 text-violet-200 ring-violet-500/30",
+    title: "Sourced from ddproperty.com — not yet cross-verified by RealData",
+  },
+  fazwaz: {
+    label: "fazwaz",
+    classes: "bg-amber-500/15 text-amber-200 ring-amber-500/30",
+    title: "Sourced from fazwaz.com — not yet cross-verified by RealData",
+  },
+};
+
 export function BuildingCard({
   condo,
   hrefPrefix = "/condo/",
@@ -62,6 +85,8 @@ export function BuildingCard({
   const compact = size === "sm";
   const isRentalOnly = condo.property_type !== "condo";
   const typeBadge = TYPE_BADGE[condo.property_type] ?? TYPE_BADGE.condo;
+  const sourceBadge = SOURCE_BADGE[condo.source] ?? null;
+  const noScore = condo.bubble_index == null && !isRentalOnly;
 
   return (
     <Link
@@ -88,14 +113,22 @@ export function BuildingCard({
         {/* gradient for legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
 
-        {/* top-left: property type badge */}
-        <div className="absolute top-2 left-2">
+        {/* top-left: property type badge + (optional) source badge */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
           <span
             className={`text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5 ring-1 backdrop-blur ${typeBadge.classes}`}
             title={typeBadge.title}
           >
             {typeBadge.label}
           </span>
+          {sourceBadge && (
+            <span
+              className={`text-[9px] font-semibold lowercase tracking-wide rounded-full px-1.5 py-0.5 ring-1 backdrop-blur ${sourceBadge.classes}`}
+              title={sourceBadge.title}
+            >
+              {sourceBadge.label}
+            </span>
+          )}
         </div>
 
         {/* top-right: signal badges */}
@@ -150,10 +183,19 @@ export function BuildingCard({
           <>
             <div className="flex flex-col">
               <div className="text-[10px] uppercase tracking-wider text-zinc-500">Bubble</div>
-              <div className={`text-sm font-bold tabular-nums px-2 py-0.5 rounded-md ring-1 inline-flex items-center gap-1 ${bubbleTint(condo.bubble_index)}`}>
-                <span>{bubbleArrow(condo.bubble_index)}</span>
-                <span>{above == null ? "—" : above > 0 ? `+${above}%` : `${above}%`}</span>
-              </div>
+              {noScore ? (
+                <div
+                  className="text-[11px] font-semibold text-zinc-500 px-2 py-0.5 rounded-md ring-1 ring-zinc-700/40 bg-zinc-800/40 inline-flex items-center gap-1"
+                  title="No bubble score yet — this building was found on a portal but hasn't been cross-verified by RealData's scoring pipeline."
+                >
+                  no score
+                </div>
+              ) : (
+                <div className={`text-sm font-bold tabular-nums px-2 py-0.5 rounded-md ring-1 inline-flex items-center gap-1 ${bubbleTint(condo.bubble_index)}`}>
+                  <span>{bubbleArrow(condo.bubble_index)}</span>
+                  <span>{above == null ? "—" : above > 0 ? `+${above}%` : `${above}%`}</span>
+                </div>
+              )}
             </div>
             <div className="flex flex-col items-end">
               <div className="text-[10px] uppercase tracking-wider text-zinc-500">

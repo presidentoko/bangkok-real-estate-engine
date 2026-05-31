@@ -136,7 +136,7 @@ export default async function LangLayout({
       <main className="flex-1">{children}</main>
 
       <footer className="mt-12 border-t border-zinc-900 bg-zinc-950">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid sm:grid-cols-3 gap-6 text-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
           <div>
             <div className="font-black tracking-tight mb-2">
               <span className="text-blue-400">Real</span>Data
@@ -179,6 +179,14 @@ export default async function LangLayout({
             <div className="text-zinc-300 font-semibold mb-2">{t.footer.sourcesTitle}</div>
             <ul className="space-y-1 text-zinc-500 text-xs leading-relaxed">
               {t.footer.sources.map((s) => <li key={s}>{s}</li>)}
+            </ul>
+          </div>
+          <div>
+            <div className="text-zinc-300 font-semibold mb-2">Guides</div>
+            <ul className="space-y-1 text-zinc-500">
+              <li><Link href={`/${lang}/guide/foreign-ownership`} className="hover:text-zinc-300">Foreign ownership</Link></li>
+              <li><Link href={`/${lang}/guide/investment`} className="hover:text-zinc-300">Investment guide</Link></li>
+              <li><Link href={`/${lang}/glossary`} className="hover:text-zinc-300">Glossary</Link></li>
             </ul>
           </div>
         </div>

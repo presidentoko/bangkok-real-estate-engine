@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type RefObject } from "react";
-import { toPng } from "html-to-image";
 
 type Props = {
   targetRef: RefObject<HTMLElement | null>;
@@ -17,6 +16,8 @@ export function ShareButton({ targetRef, filename }: Props) {
     setBusy(true);
     setErr(null);
     try {
+      // Lazy-load html-to-image (~70 KB) only when the user actually clicks.
+      const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(targetRef.current, {
         pixelRatio: 3,           // ~1080+ for typical card size
         cacheBust: true,

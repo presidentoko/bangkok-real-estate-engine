@@ -67,6 +67,29 @@ def _is_thai_coord(lat: float, lng: float) -> bool:
     return 5.0 <= lat <= 21.0 and 97.0 <= lng <= 106.0
 
 
+def _update_latlng(client, condo_id, lat: float, lng: float) -> bool:
+    """Write lat/lng with bounded retries — Supabase HTTPS connections drop
+    sporadically on long runs (WinError 10054 / RemoteProtocolError). Three
+    tries with backoff is enough to absorb the blip without taking the whole
+    backfill down."""
+    delays = (1, 4, 10)
+    for attempt, backoff in enumerate(delays, 1):
+        try:
+            client.table("condos").update({
+                "latitude": lat,
+                "longitude": lng,
+            }).eq("id", condo_id).execute()
+            return True
+        except Exception as e:
+            logger.warning(
+                f"  supabase write retry {attempt}/{len(delays)} "
+                f"({type(e).__name__}: {e})"
+            )
+            time.sleep(backoff)
+    logger.error(f"  supabase write gave up on condo {condo_id}")
+    return False
+
+
 def extract_latlng(html: str, mode: str) -> tuple[float, float] | None:
     if mode == "fazwaz_viewpoint":
         m = FAZWAZ_RE.search(html)
@@ -183,11 +206,10 @@ async def run(source: str, limit: int | None, delay_s: float, dry_run: bool) -> 
                 f"  [{i}/{len(cands)}] '{cd['name'][:40]}' → {lat:.6f}, {lng:.6f}"
             )
             if not dry_run:
-                client.table("condos").update({
-                    "latitude": lat,
-                    "longitude": lng,
-                }).eq("id", cd["id"]).execute()
-                written += 1
+                if _update_latlng(client, cd["id"], lat, lng):
+                    written += 1
+                else:
+                    failed += 1
             await asyncio.sleep(delay_s)
     finally:
         try:

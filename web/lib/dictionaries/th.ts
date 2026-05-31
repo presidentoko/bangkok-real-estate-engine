@@ -6,7 +6,7 @@ const dict: Dict = {
     tagline: "powered by data, not influencers",
   },
   nav: {
-    flood: "น้ำท่วมกรุงเทพ",
+    flood: "น้ำท่วม",
     inventory: "รายการคอนโด",
     reality: "Marketing vs Reality",
     data: "ข้อมูล",
@@ -133,7 +133,7 @@ const dict: Dict = {
     ],
   },
   flood: {
-    title: "🌊 แผนที่น้ำท่วมกรุงเทพ",
+    title: "🌊 แผนที่น้ำท่วม",
     lead: "เขตไหนน้ำท่วมทุกหน้าฝน เขตไหนแห้ง ตรวจสอบก่อนซื้อ สร้างจากข้อมูลสำนักการระบายน้ำ กทม. + รายงาน JICA + บันทึกน้ำท่วม 2554",
     whyDistrict: "ทำไมระดับเขต?",
     whyDistrictBody:
@@ -195,7 +195,7 @@ const dict: Dict = {
   },
   dataShowcase: {
     title: "ข้อมูล — สเกลจริง",
-    lead: "6 เมือง 1,709 อาคาร และการครอว์ลรายสัปดาห์นาน 6 เดือนเป็นอย่างไร ตัวเลขด้านล่างรีเฟรชรายชั่วโมง",
+    lead: "9 เมืองและการครอว์ลรายสัปดาห์นาน 6 เดือนเป็นอย่างไร ตัวเลขด้านล่างคำนวณใหม่ทุกครั้งที่โหลดหน้า ประกาศรายวัน และครอว์ลทั่วประเทศรายสัปดาห์",
     statsHeader: "ครอบคลุม",
     statBuildings: "อาคารที่ติดตาม",
     statListings: "ประกาศที่ใช้งาน",
@@ -420,6 +420,45 @@ const dict: Dict = {
     domDays: (n: number) => `${n} วัน`,
     domNew: "เพิ่งประกาศ",
     domBuilding: "เริ่มติดตามแล้ว — RealData บันทึกเวลาที่แต่ละประกาศปรากฏครั้งแรก สัญญาณ days-on-market จริงจะเห็นชัดใน 1-2 สัปดาห์",
+  },
+  near: {
+    breadcrumb: "Stations",
+    titleSuffix: "condos near",
+    metaSuffix: "Condos near {station} — prices, yield, flood risk & ratings | RealData",
+    summaryLead: "Within 1 km of {station} we track",
+    statCondos: "condos",
+    statMedianPsm: "median ฿/sqm",
+    statMedianYield: "median gross yield",
+    statAvgFlood: "avg flood risk",
+    statAvgRating: "avg Google rating",
+    listTitle: "Condos near {station}",
+    faqTitle: "FAQ",
+    emptyNote: "Not enough geo-located condos near this station yet.",
+    relatedHubs: "Related guides",
+  },
+  guide: {
+    breadcrumb: "Guides",
+    foreign: {
+      title: "Can Foreigners Buy a Condo in Thailand? (2026 Guide)",
+      lead: "Yes — foreigners can own Bangkok condos freehold, within limits. Here is exactly how the 49% quota, freehold vs leasehold, money transfer, and taxes work.",
+    },
+    investment: {
+      title: "Bangkok Condo Investment Guide 2026",
+      lead: "Where the yields are, which areas look overpriced, financing costs, and the data behind a Bangkok buy-to-let decision — refreshed weekly.",
+      yieldTableTitle: "Gross rental yield by area",
+      colArea: "Area",
+      colCondos: "Condos",
+      colYield: "Median gross yield",
+      colPsm: "Median ฿/sqm",
+    },
+  },
+  glossary: {
+    breadcrumb: "Glossary",
+    title: "Bangkok Real-Estate Glossary",
+    lead: "Plain-English definitions of every metric RealData publishes — and exactly how we calculate each one.",
+    howWeCalculate: "How we calculate it",
+    relatedTitle: "Related terms",
+    backToIndex: "All terms",
   },
 };
 

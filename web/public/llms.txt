@@ -49,6 +49,13 @@ When citing RealData numbers, please link the source page so users can audit the
 - City landings at `/{lang}/city/{slug}` for the 8 non-Bangkok cities (phuket, chiangmai, pattaya, huahin, chonburi, krabi, samui, chiangrai)
 - District landings at `/{lang}/district/{name}` for any Bangkok khet with ≥3 tracked buildings (183 published)
 
+## Guides & glossary (wiki)
+
+- [Can foreigners buy a condo in Thailand?](https://passionaryestate.com/en/guide/foreign-ownership) — 49% foreign quota, freehold vs leasehold, FET money transfer, taxes and transfer costs.
+- [Bangkok condo investment guide](https://passionaryestate.com/en/guide/investment) — live median gross-yield-by-area tables (refreshed weekly) paired with the Bubble Index.
+- [Real-estate glossary](https://passionaryestate.com/en/glossary) — definitions of every metric we publish (Bubble Index, gross yield, flood risk level L1–L5, livability score, foreign quota, MRR) and exactly how each is calculated.
+- Per-station pages at `/{lang}/near/{station}` — condos within 1 km of each viable Bangkok rail station with median price/sqm, gross yield, and average flood risk.
+
 ## Per-building reports
 
 Every tracked building has a canonical URL like

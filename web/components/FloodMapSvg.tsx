@@ -51,16 +51,24 @@ export function FloodMapSvg({
   districts,
   points = [],
   condoLinkPrefix = "/condo/",
+  fallbackCenter,
+  ariaLabel = "Bangkok flood risk choropleth",
 }: {
   districts: DistrictsGeoJson;
   points?: FloodPoint[];
   condoLinkPrefix?: string;
+  /** Used when districts is empty (non-Bangkok cities) — falls back to point
+   *  bbox, then to a small box around this center coordinate [lng, lat]. */
+  fallbackCenter?: [number, number];
+  ariaLabel?: string;
 }) {
   const features = (districts.features ?? []) as unknown as DistrictFeature[];
 
   // Compute bounding box from all district polygons; project lat/lng linearly
   // to the SVG viewport. Bangkok is small enough that simple equirectangular
   // projection with lat/lng aspect correction looks correct.
+  // When districts is empty (non-Bangkok cities), fall back to the point bbox
+  // and finally to a 0.4°-wide box around `fallbackCenter`.
   const { project, paths, dots } = useMemo(() => {
     let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
     for (const f of features) {
@@ -78,6 +86,32 @@ export function FloodMapSvg({
           }
         }
       }
+    }
+    if (!Number.isFinite(minLng)) {
+      for (const p of points) {
+        if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) continue;
+        if (p.lng < minLng) minLng = p.lng;
+        if (p.lng > maxLng) maxLng = p.lng;
+        if (p.lat < minLat) minLat = p.lat;
+        if (p.lat > maxLat) maxLat = p.lat;
+      }
+      // Pad point bbox by ~5% so dots don't sit on the edge.
+      if (Number.isFinite(minLng)) {
+        const padLng = Math.max(0.01, (maxLng - minLng) * 0.05);
+        const padLat = Math.max(0.01, (maxLat - minLat) * 0.05);
+        minLng -= padLng; maxLng += padLng;
+        minLat -= padLat; maxLat += padLat;
+      }
+    }
+    if (!Number.isFinite(minLng) && fallbackCenter) {
+      const [clng, clat] = fallbackCenter;
+      minLng = clng - 0.2; maxLng = clng + 0.2;
+      minLat = clat - 0.2; maxLat = clat + 0.2;
+    }
+    if (!Number.isFinite(minLng)) {
+      // Final fallback: Bangkok bbox so we never NaN-out the SVG.
+      minLng = 100.3; maxLng = 100.9;
+      minLat = 13.5;  maxLat = 14.0;
     }
     // Aspect-correct: at Bangkok ~13.7° lat, lng° spans ~0.97× lat°.
     const midLat = (minLat + maxLat) / 2;
@@ -144,7 +178,7 @@ export function FloodMapSvg({
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         className="w-full h-auto block"
         role="img"
-        aria-label="Bangkok flood risk choropleth"
+        aria-label={ariaLabel}
       >
         <rect width={VIEW_W} height={VIEW_H} fill="#0f172a" />
         {paths.map((p) => (
