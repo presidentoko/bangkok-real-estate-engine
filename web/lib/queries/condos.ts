@@ -10,6 +10,7 @@
 // to the call site (or use the `noCache` variant).
 
 import { unstable_cache } from "next/cache";
+import { cityProvinceSlugs } from "@/lib/cities";
 import { getServerSupabase } from "@/lib/supabase";
 
 const PAGE = 1000; // PostgREST per-request cap.
@@ -118,6 +119,83 @@ async function _fetchAllCondos(): Promise<CondoSummary[]> {
 export const fetchAllCondos = unstable_cache(
   _fetchAllCondos,
   ["condos:all"],
+  { revalidate: 3600, tags: ["condos"] }
+);
+
+// ---------------------------------------------------------------------------
+// City-scoped inventory feed
+// ---------------------------------------------------------------------------
+// The inventory page + /api/condos/inventory previously called fetchAllCondos()
+// (every row, every source, ~6.4MB) and filtered to one city in JS. That blew
+// past the 2MB unstable_cache ceiling — so nothing cached and every request
+// re-pulled the whole table from Supabase (page TTFB ~2.4s, API ~39s).
+//
+// These two helpers scope the fetch to a single city *at the DB level* and drop
+// the `url` + `available_units_count` columns the inventory UI never reads. That
+// roughly halves the bytes vs. the all-cities pull and lets smaller cities cache
+// cleanly; Bangkok may still exceed 2MB (hero-image URLs dominate), so the API
+// route additionally leans on its CDN `s-maxage` header for the edge cache.
+
+// Lean projection: no `url`, no `available_units_count` (unused by the grid /
+// cards / dashboard stats). Keeps lat/lng for the geo-located stat.
+const SELECT_LEAN =
+  "id, name, latitude, longitude, hero_image_url, total_units, " +
+  "market_sale_median, market_rent_median, market_summary_currency, " +
+  "property_type, province, source, regions(name), " +
+  "value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
+
+async function _fetchCondoSummariesByCity(citySlug: string): Promise<CondoSummary[]> {
+  const supabase = getServerSupabase();
+  const provinces = cityProvinceSlugs(citySlug);
+  const out: CondoSummary[] = [];
+  let offset = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select(SELECT_LEAN)
+      .in("province", provinces)
+      .range(offset, offset + PAGE - 1);
+    if (error) throw new Error(`city condo fetch failed: ${error.message}`);
+    const rows = (data ?? []) as unknown as Joined[];
+    out.push(...rows.map(flatten));
+    if (rows.length < PAGE) break;
+    offset += PAGE;
+  }
+  return out;
+}
+
+// `citySlug` is part of the cache key automatically — Next.js includes the
+// function arguments alongside the keyParts.
+export const fetchCondoSummariesByCity = unstable_cache(
+  _fetchCondoSummariesByCity,
+  ["condos:by-city"],
+  { revalidate: 3600, tags: ["condos"] }
+);
+
+// Cheap province-only pull (no joins, no long strings) used to render the
+// per-city count chips without loading every condo's full payload. ~14k rows of
+// a single short string ≈ 170KB → caches comfortably under the 2MB ceiling.
+async function _fetchCondoProvinces(): Promise<string[]> {
+  const supabase = getServerSupabase();
+  const out: string[] = [];
+  let offset = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select("province")
+      .range(offset, offset + PAGE - 1);
+    if (error) throw new Error(`province fetch failed: ${error.message}`);
+    const rows = (data ?? []) as Array<{ province: string | null }>;
+    out.push(...rows.map((r) => r.province ?? "bangkok"));
+    if (rows.length < PAGE) break;
+    offset += PAGE;
+  }
+  return out;
+}
+
+export const fetchCondoProvinces = unstable_cache(
+  _fetchCondoProvinces,
+  ["condos:provinces"],
   { revalidate: 3600, tags: ["condos"] }
 );
 

@@ -10,7 +10,10 @@ import {
   extractDistricts,
   topPicks,
 } from "@/lib/inventory";
-import { fetchAllCondos } from "@/lib/queries/condos";
+import {
+  fetchCondoProvinces,
+  fetchCondoSummariesByCity,
+} from "@/lib/queries/condos";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -78,22 +81,23 @@ export default async function InventoryPage({
   const { city: cityParam } = await searchParams;
   if (!isLang(lang)) notFound();
 
-  const allCondos = await fetchAllCondos();
   const city = resolveCity(cityParam);
 
-  // City scoping: filter the published condo set down to the active city.
-  // DB `province` has both compact ("chiangmai") and kebab ("chiang-mai")
-  // forms — canonicalCitySlug() normalises every row back to the UI slug so
-  // filters/chips work regardless of which scraper wrote the row.
-  const condos = allCondos.filter(
-    (c) => canonicalCitySlug(c.province) === city.slug
-  );
+  // Fetch only the active city's condos (scoped at the DB level) plus a cheap
+  // province-only pull for the chip counts. Previously this loaded every condo
+  // from every city (~6.4MB) and filtered in JS, which never cached.
+  const [condos, allProvinces] = await Promise.all([
+    fetchCondoSummariesByCity(city.slug),
+    fetchCondoProvinces(),
+  ]);
 
-  // Per-city counts for the chip row at the top — drawn from the in-memory
-  // dataset so we don't need extra Supabase round-trips.
+  // Per-city counts for the chip row at the top. DB `province` has both compact
+  // ("chiangmai") and kebab ("chiang-mai") forms — canonicalCitySlug()
+  // normalises every value back to the UI slug so counts line up regardless of
+  // which scraper wrote the row.
   const counts = new Map<string, number>();
-  for (const c of allCondos) {
-    const key = canonicalCitySlug(c.province);
+  for (const p of allProvinces) {
+    const key = canonicalCitySlug(p);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   const cityChips: Array<{ slug: string; name: string; count: number; href: string }> = [

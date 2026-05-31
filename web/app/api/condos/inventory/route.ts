@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { canonicalCitySlug } from "@/lib/cities";
-import { fetchAllCondos } from "@/lib/queries/condos";
+import { fetchCondoSummariesByCity } from "@/lib/queries/condos";
 
 // City-scoped condo list for the inventory grid. The page used to ship the
 // entire city-scoped array to the browser as an RSC prop (thousands of objects
@@ -8,8 +8,10 @@ import { fetchAllCondos } from "@/lib/queries/condos";
 // hits "Show all". This route lets the client lazy-fetch that set on demand so
 // the initial page payload stays tiny.
 //
-// Backed by the same `fetchAllCondos` unstable_cache the page uses, so this is
-// a cheap in-memory filter once the cache is warm.
+// The fetch is scoped to the city at the DB level (lean column projection, no
+// `url`), so smaller cities cache via unstable_cache; Bangkok exceeds the 2MB
+// unstable_cache ceiling, so this CDN `s-maxage` header is what keeps repeat
+// requests fast (served from the edge for an hour, stale-while-revalidate a day).
 const CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
 };
@@ -19,8 +21,7 @@ export async function GET(req: Request) {
   const cityParam = (url.searchParams.get("city") ?? "bangkok").trim() || "bangkok";
   const target = canonicalCitySlug(cityParam);
 
-  const all = await fetchAllCondos();
-  const condos = all.filter((c) => canonicalCitySlug(c.province) === target);
+  const condos = await fetchCondoSummariesByCity(target);
 
   return NextResponse.json({ condos }, { headers: CACHE_HEADERS });
 }
