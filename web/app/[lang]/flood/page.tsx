@@ -220,7 +220,7 @@ export default async function FloodPage({
         <h1 className="text-3xl font-bold mb-2">
           🌊 {cityName}{" "}
           <span className="text-zinc-500 font-semibold">
-            {t.flood.title.replace(/^🌊\s*/, "")}
+            {isBangkok ? t.flood.title.replace(/^🌊\s*/, "") : "flood risk"}
           </span>
         </h1>
         <p className="text-zinc-400 text-sm max-w-2xl">{t.flood.lead}</p>
@@ -244,19 +244,32 @@ export default async function FloodPage({
         </div>
       </header>
 
-      {!isBangkok && points.length === 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 text-sm rounded-2xl p-4 mb-4">
-          No geo-located condos yet for {cityName}. The scrapers populate
-          lat/lng over time — check back after the next sweep.
-        </div>
-      )}
-
       {!isBangkok && (
-        <div className="bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs rounded-2xl p-3 mb-4">
-          District-level flood polygons currently only exist for Bangkok.
-          For {cityName}, condo dots are colored by their per-building flood-risk score
-          (where available) — district choropleth coming soon.
-        </div>
+        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-4 max-w-2xl">
+          <h2 className="text-lg font-semibold text-zinc-100 mb-2">
+            Flood risk for {cityName} is coming soon
+          </h2>
+          <p className="text-zinc-400 text-sm leading-relaxed">
+            We currently map district-level monsoon flood risk for <strong>Bangkok only</strong>.
+            BMA (Bangkok Metropolitan Administration) is the only authority publishing
+            per-district flood records granular enough to score individual buildings — we’re
+            researching equivalent sources for {cityName}.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2 text-sm">
+            <Link
+              href={`/${lang}/flood`}
+              className="px-3 py-1.5 rounded-full bg-blue-500 text-white font-semibold hover:bg-blue-400 transition"
+            >
+              View Bangkok flood map
+            </Link>
+            <Link
+              href={`/${lang}/inventory?city=${city.slug}`}
+              className="px-3 py-1.5 rounded-full border border-zinc-700 text-zinc-300 hover:border-zinc-500 transition"
+            >
+              Browse {cityName} inventory
+            </Link>
+          </div>
+        </section>
       )}
 
       {isBangkok && districtRanking.length > 0 && (
@@ -289,35 +302,39 @@ export default async function FloodPage({
         </section>
       )}
 
-      <div className="mb-4">
-        <FloodStats
-          lang={lang}
-          totalGeolocated={points.length}
-          totalBuildings={condos.length}
-          byLevel={byLevel}
-          unmatched={unmatched}
-        />
-      </div>
-
-      <FloodMapSvg
-        points={points}
-        condoLinkPrefix={`/${lang}/condo/`}
-        districts={{ type: "FeatureCollection", features: features as unknown as Array<Record<string, unknown>> }}
-        fallbackCenter={city.center}
-        ariaLabel={ariaLabel}
-      />
-
-      <div className="mt-6 grid md:grid-cols-2 gap-6">
-        <FloodLegend lang={lang} />
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm space-y-2">
-          <div className="font-semibold text-zinc-200">{t.flood.whyDistrict}</div>
-          <p className="text-zinc-400 leading-relaxed">{t.flood.whyDistrictBody}</p>
-          <div className="pt-2 border-t border-zinc-800">
-            <div className="font-semibold text-zinc-200 mb-1">{t.flood.refreshTitle}</div>
-            <p className="text-zinc-400 leading-relaxed">{t.flood.refreshBody}</p>
+      {isBangkok && (
+        <>
+          <div className="mb-4">
+            <FloodStats
+              lang={lang}
+              totalGeolocated={points.length}
+              totalBuildings={condos.length}
+              byLevel={byLevel}
+              unmatched={unmatched}
+            />
           </div>
-        </div>
-      </div>
+
+          <FloodMapSvg
+            points={points}
+            condoLinkPrefix={`/${lang}/condo/`}
+            districts={{ type: "FeatureCollection", features: features as unknown as Array<Record<string, unknown>> }}
+            fallbackCenter={city.center}
+            ariaLabel={ariaLabel}
+          />
+
+          <div className="mt-6 grid md:grid-cols-2 gap-6">
+            <FloodLegend lang={lang} />
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm space-y-2">
+              <div className="font-semibold text-zinc-200">{t.flood.whyDistrict}</div>
+              <p className="text-zinc-400 leading-relaxed">{t.flood.whyDistrictBody}</p>
+              <div className="pt-2 border-t border-zinc-800">
+                <div className="font-semibold text-zinc-200 mb-1">{t.flood.refreshTitle}</div>
+                <p className="text-zinc-400 leading-relaxed">{t.flood.refreshBody}</p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </main>
   );
 }
