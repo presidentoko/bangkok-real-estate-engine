@@ -48,9 +48,16 @@ def _now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def run_step(label: str, cmd: list[str], deadline: float, dry_run: bool) -> int:
+def run_step(label: str, cmd: list[str], deadline: float, dry_run: bool,
+             timeout_s: float | None = None) -> int:
     """Run one step unless we're already past the deadline. Returns the step's
-    exit code (0 on skip/dry-run), or -1 if skipped for time."""
+    exit code (0 on skip/dry-run), or -1 if skipped for time.
+
+    A per-step `timeout_s` caps how long any single step may run, clamped to the
+    remaining budget. A scraper that hangs (stuck connection, DB write with no
+    timeout) would otherwise hold the whole loop hostage for the entire --hours
+    budget; on timeout we kill the child tree and move on. Caps are sized
+    generously so a healthy run is never cut short."""
     remaining = deadline - time.time()
     if remaining <= 0:
         print(f"[{_now()}] BUDGET EXHAUSTED — skipping: {label}", flush=True)
@@ -59,20 +66,64 @@ def run_step(label: str, cmd: list[str], deadline: float, dry_run: bool) -> int:
     print(f"[{_now()}] STEP: {label}", flush=True)
     print(f"  cmd: {' '.join(cmd)}", flush=True)
     print(f"  budget left: {remaining/3600:.2f}h", flush=True)
-    print(f"{'='*68}", flush=True)
     if dry_run:
         print("  (dry-run — not executed)", flush=True)
+        print(f"{'='*68}", flush=True)
         return 0
+    cap = remaining if timeout_s is None else min(timeout_s, remaining)
+    print(f"  step timeout: {cap/60:.0f} min", flush=True)
+    print(f"{'='*68}", flush=True)
     t0 = time.time()
+    # start_new_session so we can kill the whole child tree (sweep scripts spawn
+    # ingest subprocesses / nodriver Chrome).
     try:
-        rc = subprocess.run(cmd, cwd=ROOT).returncode
-    except Exception as e:  # never let one step kill the loop
+        proc = subprocess.Popen(cmd, cwd=ROOT, start_new_session=True)
+    except Exception as e:
+        print(f"[{_now()}] {label}: SPAWN FAILED {type(e).__name__}: {e}", flush=True)
+        return 1
+    try:
+        rc = proc.wait(timeout=cap)
+    except subprocess.TimeoutExpired:
+        print(f"[{_now()}] {label}: TIMEOUT after {cap/60:.0f} min — killing tree",
+              flush=True)
+        _kill_tree(proc)
+        return 1
+    except Exception as e:
         print(f"[{_now()}] {label}: EXCEPTION {type(e).__name__}: {e}", flush=True)
+        _kill_tree(proc)
         return 1
     mins = (time.time() - t0) / 60
     print(f"[{_now()}] {label}: {'OK' if rc == 0 else f'FAILED (exit {rc})'} "
           f"in {mins:.1f} min", flush=True)
     return rc
+
+
+def _kill_tree(proc: subprocess.Popen) -> None:
+    """Best-effort kill of a child process and everything it spawned."""
+    try:
+        if sys.platform == "win32":
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                           capture_output=True)
+        else:
+            import signal
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except Exception as e:
+        print(f"  [kill] {type(e).__name__}: {e}", flush=True)
+    try:
+        proc.wait(timeout=30)
+    except Exception:
+        pass
+
+
+# Per-step wall-clock caps (minutes). A hung step gets killed at its cap so the
+# loop keeps advancing. Sized so a healthy run never gets cut short.
+STEP_TIMEOUT_MIN = {
+    "dotproperty": 180,
+    "fazwaz": 240,
+    "ddproperty": 180,
+    "coords-fazwaz": 240,
+    "coords-ddproperty": 240,
+}
 
 
 def discovery_steps(with_dd: bool, skip: set[str]) -> list[tuple[str, str, list[str]]]:
@@ -167,8 +218,9 @@ def main() -> int:
         print(f"{'#'*68}", flush=True)
 
         touched = False
-        for _key, label, cmd in steps:
-            rc = run_step(label, cmd, deadline, args.dry_run)
+        for key, label, cmd in steps:
+            cap_s = STEP_TIMEOUT_MIN.get(key, 180) * 60
+            rc = run_step(label, cmd, deadline, args.dry_run, timeout_s=cap_s)
             if rc == -1:
                 break  # out of time — stop starting new discovery steps
             touched = True
@@ -176,11 +228,13 @@ def main() -> int:
         if touched and not args.skip_post:
             print(f"\n[{_now()}] --- post-processing (pass {pass_n}) ---", flush=True)
             for label, cmd in POST_STEPS:
-                # Post steps are cheap and idempotent; run regardless of budget.
+                # Post steps are cheap and idempotent; cap each at 30 min so a
+                # hung DB call can't freeze the loop.
                 if args.dry_run:
                     print(f"  (dry-run) {label}", flush=True)
                 else:
-                    run_step(label, cmd, time.time() + 3600, args.dry_run)
+                    run_step(label, cmd, time.time() + 3600, args.dry_run,
+                             timeout_s=30 * 60)
 
         if args.dry_run:
             print(f"\n[{_now()}] dry-run: stopping after one planned pass", flush=True)
