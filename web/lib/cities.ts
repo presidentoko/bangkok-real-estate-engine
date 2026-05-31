@@ -148,7 +148,13 @@ export const CITIES: City[] = [
 ];
 
 export function getCity(slug: string): City | null {
-  return CITIES.find((c) => c.slug === slug) ?? null;
+  const direct = CITIES.find((c) => c.slug === slug);
+  if (direct) return direct;
+  // Accept DB/kebab aliases too (e.g. "chiang-mai" -> "chiangmai", "ko-samui"
+  // -> "samui") so a link built from a province value or the kebab form resolves
+  // to the right city instead of silently falling back to Bangkok.
+  const canonical = canonicalCitySlug(slug);
+  return CITIES.find((c) => c.slug === canonical) ?? null;
 }
 
 export const CITY_SLUGS = CITIES.map((c) => c.slug);
