@@ -141,7 +141,7 @@ export default async function CondoPage({
         "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
         "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
         "market_summary_currency, available_units_count, " +
-        "active_active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
+        "active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
         "cam_fee_per_month, sinking_fund, building_ownership, " +
         "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at, " +
         "foreign_quota_listings_available, thai_quota_listings_available, " +
@@ -219,7 +219,7 @@ export default async function CondoPage({
     market_sale_yoy_pct: number | null;
     market_summary_currency: string | null;
     available_units_count: number | null;
-    active_active_listings_count: number | null;
+    active_listings_count: number | null;
     median_listing_dom_days: number | null;
     max_listing_dom_days: number | null;
     cam_fee_per_month: number | null;
@@ -470,7 +470,7 @@ export default async function CondoPage({
       </section>
 
       {/* Listing activity (days-on-market) */}
-      {condoRaw.active_active_listings_count != null && condoRaw.active_active_listings_count > 0 && (
+      {condoRaw.active_listings_count != null && condoRaw.active_listings_count > 0 && (
         <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
           <h2 className="text-sm font-semibold text-zinc-300 mb-3">
             {tCondo.marketActivityTitle}
@@ -479,7 +479,7 @@ export default async function CondoPage({
             <div>
               <dt className="text-zinc-500 text-xs">{tCondo.activeListings}</dt>
               <dd className="text-zinc-100 font-semibold tabular-nums">
-                {condoRaw.active_active_listings_count}
+                {condoRaw.active_listings_count}
               </dd>
             </div>
             <div>
