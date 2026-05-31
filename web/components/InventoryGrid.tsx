@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BuildingCard } from "@/components/BuildingCard";
+import type { InventoryStats } from "@/lib/inventory";
 import type { CondoSummary, PropertyType } from "@/lib/queries/condos";
 
 type SortKey = "default" | "bubble_low" | "bubble_high" | "year" | "name";
@@ -31,18 +32,6 @@ const BUBBLE_LABELS: Record<BubbleBucket, string> = {
   bubble: "Bubble (>200)",
 };
 
-function median(arr: number[]): number | null {
-  if (arr.length === 0) return null;
-  const sorted = [...arr].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-function mean(arr: number[]): number | null {
-  if (arr.length === 0) return null;
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-
 function fmtMoney(n: number | null, currency: string | null | undefined): string {
   if (n == null) return "—";
   const sym = currency === "THB" ? "฿" : currency === "USD" ? "$" : `${currency ?? ""} `;
@@ -52,15 +41,23 @@ function fmtMoney(n: number | null, currency: string | null | undefined): string
 }
 
 export function InventoryGrid({
-  condos,
+  citySlug,
   hrefPrefix,
   districts,
   cityLabel,
+  totalCount,
+  stats,
+  topPicks,
+  availableTypes,
 }: {
-  condos: CondoSummary[];
+  citySlug: string;
   hrefPrefix: string;
   districts: string[];
   cityLabel: string;
+  totalCount: number;
+  stats: InventoryStats;
+  topPicks: CondoSummary[];
+  availableTypes: PropertyType[];
 }) {
   const [q, setQ] = useState("");
   const [district, setDistrict] = useState<string>("");
@@ -70,38 +67,14 @@ export function InventoryGrid({
   const [bubble, setBubble] = useState<BubbleBucket>("all");
   const [revealAll, setRevealAll] = useState(false);
 
-  // Only render type chips for types that actually exist in the dataset.
-  const availableTypes = useMemo(() => {
-    const set = new Set<PropertyType>();
-    for (const c of condos) set.add(c.property_type);
-    const order: TypeFilter[] = ["all", "condo", "apartment", "serviced-apartment"];
-    return order.filter((t) => t === "all" || set.has(t as PropertyType));
-  }, [condos]);
+  // The full city-scoped condo set is NOT passed as a prop (it would bloat the
+  // initial payload). We lazy-fetch it from the API the first time the user
+  // opens the grid, then filter/sort it on the client as before.
+  const [loaded, setLoaded] = useState<CondoSummary[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
-  // ---- Dashboard stats (computed from the city-scoped condos prop) ----
-  const stats = useMemo(() => {
-    const currency = condos.find((c) => c.market_summary_currency)?.market_summary_currency ?? "THB";
-    const saleMedians = condos
-      .map((c) => c.market_sale_median)
-      .filter((x): x is number => typeof x === "number" && x > 0);
-    const rentMedians = condos
-      .map((c) => c.market_rent_median)
-      .filter((x): x is number => typeof x === "number" && x > 0);
-    const bubbles = condos
-      .map((c) => c.bubble_index)
-      .filter((x): x is number => typeof x === "number");
-    const superValue = condos.filter((c) => c.is_super_value).length;
-    const geoLocated = condos.filter((c) => c.latitude != null && c.longitude != null).length;
-    return {
-      currency,
-      saleMedian: median(saleMedians),
-      rentMedian: median(rentMedians),
-      bubbleAvg: mean(bubbles),
-      bubbleSampleSize: bubbles.length,
-      superValue,
-      geoLocated,
-    };
-  }, [condos]);
+  const typeChips: TypeFilter[] = ["all", ...availableTypes];
 
   const isFiltering =
     q.trim().length > 0 ||
@@ -110,9 +83,39 @@ export function InventoryGrid({
     bubble !== "all" ||
     photoOnly;
 
+  // The grid is "open" once the user filters/searches OR clicks "Show all".
+  const showGrid = isFiltering || revealAll;
+
+  // Fetch the full set the first time the grid opens.
+  useEffect(() => {
+    if (!showGrid || loaded !== null || loading) return;
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(false);
+    fetch(`/api/condos/inventory?city=${encodeURIComponent(citySlug)}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data: { condos?: CondoSummary[] }) => {
+        if (cancelled) return;
+        setLoaded(data.condos ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showGrid, loaded, loading, citySlug]);
+
   const filtered = useMemo(() => {
+    if (!loaded) return [];
     const needle = q.trim().toLowerCase();
-    let arr = condos.filter((c) => {
+    let arr = loaded.filter((c) => {
       if (typeFilter !== "all" && c.property_type !== typeFilter) return false;
       if (district && c.region !== district) return false;
       if (photoOnly && !c.hero_image_url) return false;
@@ -155,15 +158,7 @@ export function InventoryGrid({
         });
     }
     return arr;
-  }, [condos, q, district, sort, photoOnly, typeFilter, bubble]);
-
-  // Top picks: shown by default (when no filter applied) so the page isn't empty.
-  const topPicks = useMemo(() => {
-    return [...condos]
-      .filter((c) => c.is_super_value && c.hero_image_url)
-      .sort((a, b) => (a.bubble_index ?? 100) - (b.bubble_index ?? 100))
-      .slice(0, 6);
-  }, [condos]);
+  }, [loaded, q, district, sort, photoOnly, typeFilter, bubble]);
 
   function clearFilters() {
     setQ("");
@@ -174,11 +169,6 @@ export function InventoryGrid({
     setRevealAll(false);
   }
 
-  // How many cards to render? Filtered = show all matches. Otherwise show
-  // nothing until the user types/filters OR clicks "show all".
-  const showGrid = isFiltering || revealAll;
-  const gridSource = showGrid ? filtered : [];
-
   return (
     <div className="space-y-6">
       {/* ---- Stats dashboard ---- */}
@@ -187,27 +177,15 @@ export function InventoryGrid({
           {cityLabel} · inventory snapshot
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Stat
-            label="Buildings"
-            value={condos.length.toLocaleString()}
-          />
-          <Stat
-            label="Districts"
-            value={districts.length.toLocaleString()}
-          />
+          <Stat label="Buildings" value={totalCount.toLocaleString()} />
+          <Stat label="Districts" value={districts.length.toLocaleString()} />
           <Stat
             label="Geo-located"
             value={stats.geoLocated.toLocaleString()}
-            sub={`${condos.length ? Math.round((stats.geoLocated / condos.length) * 100) : 0}%`}
+            sub={`${totalCount ? Math.round((stats.geoLocated / totalCount) * 100) : 0}%`}
           />
-          <Stat
-            label="Median sale"
-            value={fmtMoney(stats.saleMedian, stats.currency)}
-          />
-          <Stat
-            label="Median rent / mo"
-            value={fmtMoney(stats.rentMedian, stats.currency)}
-          />
+          <Stat label="Median sale" value={fmtMoney(stats.saleMedian, stats.currency)} />
+          <Stat label="Median rent / mo" value={fmtMoney(stats.rentMedian, stats.currency)} />
           <Stat
             label="Bubble avg"
             value={stats.bubbleAvg != null ? stats.bubbleAvg.toFixed(0) : "—"}
@@ -232,9 +210,9 @@ export function InventoryGrid({
 
       {/* ---- Filters ---- */}
       <div className="space-y-3">
-        {availableTypes.length > 1 && (
+        {typeChips.length > 1 && (
           <div className="flex flex-wrap gap-1.5">
-            {availableTypes.map((t) => (
+            {typeChips.map((t) => (
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
@@ -319,8 +297,10 @@ export function InventoryGrid({
           )}
           <span className="text-xs text-zinc-500 ml-auto tabular-nums">
             {showGrid
-              ? `${filtered.length.toLocaleString()} / ${condos.length.toLocaleString()}`
-              : `${condos.length.toLocaleString()} total`}
+              ? loaded
+                ? `${filtered.length.toLocaleString()} / ${totalCount.toLocaleString()}`
+                : "loading…"
+              : `${totalCount.toLocaleString()} total`}
           </span>
         </div>
       </div>
@@ -350,7 +330,7 @@ export function InventoryGrid({
 
           <div className="bg-zinc-900/50 border border-dashed border-zinc-800 rounded-2xl p-8 text-center">
             <div className="text-zinc-400 text-sm mb-3">
-              {condos.length.toLocaleString()} buildings in {cityLabel}.
+              {totalCount.toLocaleString()} buildings in {cityLabel}.
               <br />
               Search by name or pick a filter above to drill in.
             </div>
@@ -358,7 +338,7 @@ export function InventoryGrid({
               onClick={() => setRevealAll(true)}
               className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium px-4 py-2 rounded-lg transition"
             >
-              Show all {condos.length.toLocaleString()} →
+              Show all {totalCount.toLocaleString()} →
             </button>
           </div>
         </>
@@ -366,11 +346,33 @@ export function InventoryGrid({
 
       {/* ---- Filtered or full grid ---- */}
       {showGrid && (
-        filtered.length === 0 ? (
+        loadError ? (
+          <div className="text-center text-rose-400 py-16 text-sm">
+            Couldn’t load inventory.{" "}
+            <button
+              onClick={() => {
+                setLoadError(false);
+                setLoaded(null);
+              }}
+              className="underline underline-offset-2 hover:text-rose-300"
+            >
+              Retry
+            </button>
+          </div>
+        ) : !loaded ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-[5/3] bg-zinc-900 border border-zinc-800 rounded-2xl animate-pulse"
+              />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center text-zinc-500 py-16 text-sm">No matches.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {gridSource.map((c) => (
+            {filtered.map((c) => (
               <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} />
             ))}
           </div>

@@ -4,6 +4,12 @@ import { notFound } from "next/navigation";
 import { InventoryGrid } from "@/components/InventoryGrid";
 import { canonicalCitySlug, CITIES, getCity } from "@/lib/cities";
 import { isLang } from "@/lib/i18n";
+import {
+  availablePropertyTypes,
+  computeInventoryStats,
+  extractDistricts,
+  topPicks,
+} from "@/lib/inventory";
 import { fetchAllCondos } from "@/lib/queries/condos";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
@@ -105,20 +111,17 @@ export default async function InventoryPage({
     })),
   ];
 
-  // Distinct districts within the active city (collapse case/whitespace variants).
-  const labelByNorm = new Map<string, string>();
-  for (const c of condos) {
-    const r = c.region;
-    if (!r) continue;
-    const norm = r.toLowerCase().replace(/[\s\-_]+/g, "");
-    const existing = labelByNorm.get(norm);
-    if (!existing || (/[A-Z]/.test(r) && !/[A-Z]/.test(existing))) {
-      labelByNorm.set(norm, r);
-    }
-  }
-  const districts = [...labelByNorm.values()].sort();
-
   const cityName = city.name[lang];
+
+  // Everything the grid needs to render its default state + dashboard is
+  // computed here on the server. The full city-scoped array is NOT passed to
+  // the client — the grid lazy-fetches it from /api/condos/inventory only when
+  // the user opens the grid (filter / search / "Show all"). This keeps the
+  // initial RSC payload tiny instead of serialising thousands of condo objects.
+  const districts = extractDistricts(condos);
+  const stats = computeInventoryStats(condos);
+  const picks = topPicks(condos);
+  const availableTypes = availablePropertyTypes(condos);
 
   return (
     <main className="max-w-6xl mx-auto p-6 space-y-6">
@@ -178,10 +181,14 @@ export default async function InventoryPage({
       </header>
 
       <InventoryGrid
-        condos={condos}
+        citySlug={city.slug}
         hrefPrefix={`/${lang}/condo/`}
         districts={districts}
         cityLabel={cityName}
+        totalCount={condos.length}
+        stats={stats}
+        topPicks={picks}
+        availableTypes={availableTypes}
       />
     </main>
   );
