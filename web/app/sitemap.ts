@@ -4,6 +4,8 @@ import { CITIES } from "@/lib/cities";
 import { LANGS } from "@/lib/i18n";
 import { getServerSupabase } from "@/lib/supabase";
 import { listWeeklyPosts } from "@/lib/weeklyPost";
+import { allTermSlugs } from "@/lib/glossary";
+import { getViableStations } from "@/lib/queries/stations";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -25,6 +27,9 @@ const STATIC_PATHS = [
   { path: "/macro", changeFrequency: "weekly" as const, priority: 0.7 },
   { path: "/ask", changeFrequency: "monthly" as const, priority: 0.7 },
   { path: "/compare", changeFrequency: "monthly" as const, priority: 0.6 },
+  { path: "/glossary", changeFrequency: "monthly" as const, priority: 0.6 },
+  { path: "/guide/foreign-ownership", changeFrequency: "monthly" as const, priority: 0.7 },
+  { path: "/guide/investment", changeFrequency: "weekly" as const, priority: 0.8 },
   { path: "/blog/bangkok-overpriced-top10", changeFrequency: "weekly" as const, priority: 0.6 },
   { path: "/blog/bangkok-foreigner-best-value", changeFrequency: "weekly" as const, priority: 0.6 },
   { path: "/blog/bangkok-flood-risky-popular", changeFrequency: "weekly" as const, priority: 0.6 },
@@ -153,6 +158,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
     if (rows.length < PAGE) break;
     offset += PAGE;
+  }
+
+  // Glossary term pages.
+  for (const slug of allTermSlugs()) {
+    const gp = `/glossary/${slug}`;
+    for (const lang of LANGS) {
+      out.push({
+        url: `${SITE_URL}/${lang}${gp}`,
+        lastModified: now,
+        changeFrequency: "monthly",
+        priority: 0.5,
+        alternates: { languages: langAlternates(gp) },
+      });
+    }
+  }
+
+  // Station spoke pages (only viable stations >= threshold).
+  const stations = await getViableStations();
+  for (const s of stations) {
+    const np = `/near/${s.slug}`;
+    for (const lang of LANGS) {
+      out.push({
+        url: `${SITE_URL}/${lang}${np}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.6,
+        alternates: { languages: langAlternates(np) },
+      });
+    }
   }
 
   return out;
