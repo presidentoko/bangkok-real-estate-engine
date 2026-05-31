@@ -10,7 +10,12 @@ import {
 import { CITIES } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
-import { fetchAllCondos, fetchSiteStats, type CondoSummary } from "@/lib/queries/condos";
+import {
+  fetchCondoMapPoints,
+  fetchHomeFeatured,
+  fetchSiteStats,
+  type CondoSummary,
+} from "@/lib/queries/condos";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
 // Stale while revalidate; data only changes when scrapers run (weekly).
@@ -49,8 +54,9 @@ export default async function Home({
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
 
-  const [condos, stats, districts] = await Promise.all([
-    fetchAllCondos(),
+  const [mapPoints, featured, stats, districts] = await Promise.all([
+    fetchCondoMapPoints(),
+    fetchHomeFeatured(),
     fetchSiteStats(),
     fetch(
       `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/bangkok-districts.geojson`,
@@ -60,10 +66,10 @@ export default async function Home({
       .catch(() => ({ type: "FeatureCollection", features: [] })),
   ]);
 
-  // ---- Aggregations
+  // ---- Aggregations (from the lean map-point feed, not every full card)
   const counts = new Map<string, number>();
   const points: CondoPoint[] = [];
-  for (const c of condos) {
+  for (const c of mapPoints) {
     if (c.region) counts.set(c.region, (counts.get(c.region) ?? 0) + 1);
     if (c.latitude != null && c.longitude != null) {
       points.push({
@@ -71,7 +77,6 @@ export default async function Home({
         name: c.name,
         lat: c.latitude,
         lng: c.longitude,
-        url: c.url,
       });
     }
   }
@@ -79,20 +84,8 @@ export default async function Home({
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
 
-  // Featured picks
-  const superValue = condos
-    .filter((c) => c.is_super_value)
-    .slice(0, 3);
-  const overpriced = [...condos]
-    .filter((c) => c.bubble_index != null && c.hero_image_url)
-    .sort((a, b) => (b.bubble_index ?? 0) - (a.bubble_index ?? 0))
-    .slice(0, 3);
-  const safest = [...condos]
-    .filter(
-      (c) =>
-        c.flood_risk_level != null && c.flood_risk_level <= 1 && c.hero_image_url
-    )
-    .slice(0, 3);
+  // Featured picks (selected DB-side in fetchHomeFeatured)
+  const { superValue, overpriced, safest } = featured;
 
   return (
     <div>

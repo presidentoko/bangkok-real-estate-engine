@@ -199,6 +199,146 @@ export const fetchCondoProvinces = unstable_cache(
   { revalidate: 3600, tags: ["condos"] }
 );
 
+// ---------------------------------------------------------------------------
+// Home page feeds
+// ---------------------------------------------------------------------------
+// The home page also called fetchAllCondos() (~6.4MB) just to (a) plot map dots
+// + count buildings per khet and (b) pick 9 featured cards. The hero-image URLs
+// across all ~14k rows are what blow the 2MB cache ceiling. These two helpers
+// split that:
+//   - fetchCondoMapPoints: lean per-condo rows (id/name/lat/lng/region, no hero,
+//     no url) for the choropleth + dot layer + khet counts. Comfortably caches.
+//   - fetchHomeFeatured: pull only candidate IDs from the scoring tables, then
+//     fetch those few full cards. Tiny, and avoids PostgREST embedded-filter
+//     gymnastics.
+
+export type CondoMapPoint = {
+  id: string;
+  name: string;
+  latitude: number | null;
+  longitude: number | null;
+  region: string | null;
+};
+
+async function _fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
+  const supabase = getServerSupabase();
+  const out: CondoMapPoint[] = [];
+  let offset = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select("id, name, latitude, longitude, regions(name)")
+      .range(offset, offset + PAGE - 1);
+    if (error) throw new Error(`map points fetch failed: ${error.message}`);
+    const rows = (data ?? []) as Array<{
+      id: string;
+      name: string;
+      latitude: number | null;
+      longitude: number | null;
+      regions: { name: string } | { name: string }[] | null;
+    }>;
+    for (const r of rows) {
+      const reg = Array.isArray(r.regions) ? r.regions[0] : r.regions;
+      out.push({
+        id: r.id,
+        name: r.name,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        region: reg?.name ?? null,
+      });
+    }
+    if (rows.length < PAGE) break;
+    offset += PAGE;
+  }
+  return out;
+}
+
+export const fetchCondoMapPoints = unstable_cache(
+  _fetchCondoMapPoints,
+  ["condos:map-points"],
+  { revalidate: 3600, tags: ["condos"] }
+);
+
+export type HomeFeatured = {
+  superValue: CondoSummary[];
+  overpriced: CondoSummary[];
+  safest: CondoSummary[];
+};
+
+async function _fetchHomeFeatured(): Promise<HomeFeatured> {
+  const supabase = getServerSupabase();
+
+  // Candidate IDs from the scoring/risk tables (cheap — id + one number).
+  // Over-fetch overpriced/safest candidates so we still net 3 after the
+  // hero-image filter that the cards want.
+  const [svRes, opRes, safeRes] = await Promise.all([
+    supabase
+      .from("value_scores")
+      .select("condo_id")
+      .eq("is_super_value", true)
+      .limit(24),
+    supabase
+      .from("value_scores")
+      .select("condo_id, bubble_index")
+      .not("bubble_index", "is", null)
+      .order("bubble_index", { ascending: false })
+      .limit(60),
+    supabase
+      .from("risk_factors")
+      .select("condo_id, flood_risk_level")
+      .lte("flood_risk_level", 1)
+      .limit(60),
+  ]);
+  if (svRes.error) throw new Error(`super-value ids: ${svRes.error.message}`);
+  if (opRes.error) throw new Error(`overpriced ids: ${opRes.error.message}`);
+  if (safeRes.error) throw new Error(`safest ids: ${safeRes.error.message}`);
+
+  const svIds = (svRes.data ?? []).map((r) => r.condo_id as string);
+  const opIds = (opRes.data ?? []).map((r) => r.condo_id as string);
+  const safeIds = (safeRes.data ?? []).map((r) => r.condo_id as string);
+
+  const allIds = [...new Set([...svIds, ...opIds, ...safeIds])];
+  if (allIds.length === 0) {
+    return { superValue: [], overpriced: [], safest: [] };
+  }
+
+  // Fetch the (few) candidate cards in one round-trip, then build a lookup.
+  const byId = new Map<string, CondoSummary>();
+  for (let i = 0; i < allIds.length; i += PAGE) {
+    const slice = allIds.slice(i, i + PAGE);
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select(SELECT)
+      .in("id", slice);
+    if (error) throw new Error(`featured cards fetch failed: ${error.message}`);
+    for (const row of (data ?? []) as unknown as Joined[]) {
+      const c = flatten(row);
+      byId.set(c.id, c);
+    }
+  }
+
+  const pick = (ids: string[]) =>
+    ids.map((id) => byId.get(id)).filter((c): c is CondoSummary => !!c);
+
+  const superValue = pick(svIds).slice(0, 3);
+  // opIds already arrive sorted by bubble_index desc; keep that order, require a
+  // hero image (matches the previous home behaviour), take the top 3.
+  const overpriced = pick(opIds)
+    .filter((c) => c.hero_image_url)
+    .slice(0, 3);
+  const safest = pick(safeIds)
+    .filter((c) => c.hero_image_url)
+    .slice(0, 3);
+
+  return { superValue, overpriced, safest };
+}
+
+export const fetchHomeFeatured = unstable_cache(
+  _fetchHomeFeatured,
+  ["home:featured"],
+  { revalidate: 3600, tags: ["condos"] }
+);
+
 async function _fetchCondo(id: string): Promise<CondoSummary | null> {
   const supabase = getServerSupabase();
   const { data, error } = await supabase

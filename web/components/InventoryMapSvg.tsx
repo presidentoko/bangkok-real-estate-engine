@@ -9,7 +9,6 @@ export type CondoPoint = {
   name: string;
   lat: number;
   lng: number;
-  url?: string | null;
 };
 
 type DistrictFeature = {
@@ -132,7 +131,7 @@ export function InventoryMapSvg({
       .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
       .map((p) => {
         const [x, y] = project(p.lng, p.lat);
-        return { id: p.id, name: p.name, x, y, url: p.url ?? null };
+        return { id: p.id, name: p.name, x, y };
       });
 
     return { paths, dots };
@@ -162,8 +161,9 @@ export function InventoryMapSvg({
             style={{ cursor: "default" }}
           />
         ))}
-        {dots.map((d) => {
-          const circle = (
+        {dots.map((d) => (
+          // Every published condo has a /condo/[id] page, so always link the dot.
+          <Link key={d.id} href={`${condoLinkPrefix}${d.id}`}>
             <circle
               cx={d.x}
               cy={d.y}
@@ -173,15 +173,8 @@ export function InventoryMapSvg({
               strokeWidth={0.3}
               opacity={0.9}
             />
-          );
-          return d.url ? (
-            <Link key={d.id} href={`${condoLinkPrefix}${d.id}`}>
-              {circle}
-            </Link>
-          ) : (
-            <g key={d.id}>{circle}</g>
-          );
-        })}
+          </Link>
+        ))}
       </svg>
 
       {hover && (
