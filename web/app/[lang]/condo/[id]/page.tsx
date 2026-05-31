@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CondoFacilities } from "@/components/CondoFacilities";
 import { CondoNeighbours } from "@/components/CondoNeighbours";
@@ -24,6 +25,8 @@ import { langAlternates } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { stationSlug } from "@/lib/stations";
+import { getViableStations } from "@/lib/queries/stations";
 
 export const revalidate = 3600;
 
@@ -295,6 +298,13 @@ export default async function CondoPage({
     condoId: condoRaw.id,
     condoName: condoRaw.name,
   });
+
+  // Backlink target: this condo's nearest rail station spoke (only if viable).
+  const stationName =
+    livRes.data?.nearest_bts_station || livRes.data?.nearest_mrt_station || null;
+  const stationSpokeSlug = stationName ? stationSlug(stationName) : null;
+  const viableSlugs = new Set((await getViableStations()).map((s) => s.slug));
+  const stationLinkOk = stationSpokeSlug != null && viableSlugs.has(stationSpokeSlug);
 
   // Per-condo FAQ — concrete numbers wherever we have them so the answer
   // is quotable as-is by Google AI Overviews / Perplexity / ChatGPT.
@@ -603,6 +613,18 @@ export default async function CondoPage({
         framing={`Planning to inspect ${condoRaw.name} in person? Book a hotel + flight in one search — ${region} stays are usually cheaper than the condo's own short-let pricing.`}
         ctaText="Find a hotel near this building →"
       />
+
+      <section className="text-sm">
+        <div className="text-zinc-300 font-semibold mb-1">Nearby &amp; metrics</div>
+        <ul className="text-blue-400 space-y-1">
+          {stationLinkOk && stationName && (
+            <li><Link href={`/${lang}/near/${stationSpokeSlug}`}>Condos near {stationName} station</Link></li>
+          )}
+          <li><Link href={`/${lang}/glossary/bubble-index`}>What is the Bubble Index?</Link></li>
+          <li><Link href={`/${lang}/glossary/gross-yield`}>What is gross yield?</Link></li>
+          <li><Link href={`/${lang}/glossary/flood-risk-level`}>How we score flood risk</Link></li>
+        </ul>
+      </section>
 
       {condoRaw.url && (
         <div className="text-xs text-zinc-500">
