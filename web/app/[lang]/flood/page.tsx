@@ -184,6 +184,24 @@ export default async function FloodPage({
     });
   }
 
+  // Flood-risk ranking by district (Bangkok only) — pillar table for SEO/AEO.
+  const districtRanking: Array<{ district: string; level: number; condos: number }> = [];
+  if (isBangkok) {
+    const condosByKhet = new Map<string, number>();
+    for (const c of condos) {
+      const region = regionName(c);
+      if (!region) continue;
+      condosByKhet.set(normalize(region), (condosByKhet.get(normalize(region)) ?? 0) + 1);
+    }
+    for (const f of features) {
+      const name = f.properties?.name ?? "";
+      const lvl = f.properties?.flood_risk_level;
+      if (!name || typeof lvl !== "number") continue;
+      districtRanking.push({ district: name, level: lvl, condos: condosByKhet.get(normalize(name)) ?? 0 });
+    }
+    districtRanking.sort((a, b) => b.level - a.level || b.condos - a.condos);
+  }
+
   const cityName = city.name[lang];
   const ariaLabel = `${cityName} flood risk map`;
 
@@ -239,6 +257,36 @@ export default async function FloodPage({
           For {cityName}, condo dots are colored by their per-building flood-risk score
           (where available) — district choropleth coming soon.
         </div>
+      )}
+
+      {isBangkok && districtRanking.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Bangkok districts by flood risk</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="text-left text-zinc-400 border-b border-zinc-800">
+                  <th className="py-2 pr-4">District</th>
+                  <th className="py-2 pr-4">Flood risk</th>
+                  <th className="py-2 pr-4">Tracked condos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {districtRanking.slice(0, 20).map((d) => (
+                  <tr key={d.district} className="border-b border-zinc-900">
+                    <td className="py-2 pr-4 text-zinc-200">{d.district}</td>
+                    <td className="py-2 pr-4 text-zinc-300">L{d.level}</td>
+                    <td className="py-2 pr-4 text-zinc-400">{d.condos}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-zinc-600 mt-2">
+            Flood risk is rated L1 (lowest) to L5 (highest) from Bangkok’s district flood model. See{" "}
+            <Link className="text-blue-400" href={`/${lang}/glossary/flood-risk-level`}>how we score flood risk</Link>.
+          </p>
+        </section>
       )}
 
       <div className="mb-4">
