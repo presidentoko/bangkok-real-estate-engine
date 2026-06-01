@@ -21,7 +21,12 @@ from supabase import Client
 
 from src.config import get_settings
 
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+# Endpoint is env-overridable so a bulk backfill can point at a higher-capacity
+# mirror (e.g. OVERPASS_URL=https://overpass.kumi.systems/api/interpreter) when
+# the default public instance is throttling. Default stays the canonical one.
+OVERPASS_URL = os.environ.get(
+    "OVERPASS_URL", "https://overpass-api.de/api/interpreter"
+)
 OVERPASS_TIMEOUT = 25
 OVERPASS_RATE_LIMIT_SEC = 1.2
 

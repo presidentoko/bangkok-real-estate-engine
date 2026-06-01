@@ -183,6 +183,13 @@ def step_timeout_min(key: str) -> int:
 POST_STEPS: list[tuple[str, list[str]]] = [
     ("backfill_province (re-tag bangkok-default rows)",
      [PYTHON, "scripts/backfill_province.py"]),
+    # Capped OSM livability top-up so newly-discovered non-Bangkok condos get
+    # hospitals/transit/walkability (and thus a retiree score) over time. The
+    # 30-min POST_STEPS cap kills it mid-batch; it's incremental + resumable so
+    # the next pass continues. The initial backlog is cleared by a separate
+    # one-off `populate_livability_osm.py --sources fazwaz dotproperty ddproperty`.
+    ("populate_livability_osm (non-Bangkok coverage, capped)",
+     [PYTHON, "scripts/populate_livability_osm.py", "--limit", "400"]),
     ("compute_value_scores (bubble index)",
      [PYTHON, "scripts/compute_value_scores.py"]),
     ("compute_yields",

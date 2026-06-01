@@ -45,17 +45,20 @@ MAX_DELAY_S = 60
 RESET_AFTER_OK = 8
 
 
-def _load_targets(client, force: bool) -> list[dict]:
+def _load_targets(client, force: bool, sources: list[str] | None) -> list[dict]:
     out: list[dict] = []
     offset = 0
     while True:
-        page = (
+        q = (
             client.table("condos")
             .select("id, latitude, longitude")
-            .eq("source", "hipflat")
-            .eq("is_active", True)
+            .eq("published", True)
             .not_.is_("latitude", "null")
-            .range(offset, offset + PAGE - 1)
+        )
+        if sources:
+            q = q.in_("source", sources)
+        page = (
+            q.range(offset, offset + PAGE - 1)
             .execute()
             .data
         ) or []
@@ -87,9 +90,9 @@ def _load_targets(client, force: bool) -> list[dict]:
     return [r for r in out if r["id"] not in existing]
 
 
-async def _run(limit: int | None, force: bool) -> int:
+async def _run(limit: int | None, force: bool, sources: list[str] | None) -> int:
     client = get_client()
-    targets = _load_targets(client, force)
+    targets = _load_targets(client, force, sources)
     if limit:
         targets = targets[:limit]
     if not targets:
@@ -180,8 +183,13 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--force", action="store_true")
+    ap.add_argument(
+        "--sources", nargs="+", default=None,
+        help="Restrict to these condo sources (e.g. fazwaz dotproperty "
+             "ddproperty). Omit to target every published geo-located condo.",
+    )
     args = ap.parse_args()
-    return asyncio.run(_run(args.limit, args.force))
+    return asyncio.run(_run(args.limit, args.force, args.sources))
 
 
 if __name__ == "__main__":
