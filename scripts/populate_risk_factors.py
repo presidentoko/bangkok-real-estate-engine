@@ -1,7 +1,7 @@
-"""Populate risk_factors.flood_risk_level from condos.region.
+"""Populate risk_factors.flood_risk_level + subsidence_level from condos.region.
 
 Joins each hipflat condo's region (slug or canonical name) to the static
-FLOOD_RISK_BY_DISTRICT mapping in src/data/flood_districts.py.
+FLOOD_RISK_BY_DISTRICT and SUBSIDENCE_LEVEL_BY_DISTRICT mappings in src/data/.
 
 The regions table holds both slug ("bang-khun-thian") and canonical
 ("Bang Khun Thian") variants of the same khet — we normalise both sides
@@ -25,6 +25,7 @@ sys.path.insert(0, str(ROOT))
 from loguru import logger  # noqa: E402
 
 from src.data.flood_districts import FLOOD_RISK_BY_DISTRICT  # noqa: E402
+from src.data.subsidence_districts import SUBSIDENCE_LEVEL_BY_DISTRICT  # noqa: E402
 from src.db import get_client  # noqa: E402
 
 _NORM_RE = re.compile(r"[\s\-_]+")
@@ -39,6 +40,11 @@ def _build_lookup() -> dict[str, int]:
     return {_norm(name): lvl for name, lvl in FLOOD_RISK_BY_DISTRICT.items()}
 
 
+def _build_subsidence_lookup() -> dict[str, int]:
+    """{normalised name: subsidence level}."""
+    return {_norm(name): lvl for name, lvl in SUBSIDENCE_LEVEL_BY_DISTRICT.items()}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
@@ -46,6 +52,7 @@ def main() -> int:
 
     client = get_client()
     lookup = _build_lookup()
+    sub_lookup = _build_subsidence_lookup()
 
     # Pull all hipflat condos with a region. Supabase REST caps at 1000 per
     # request — paginate explicitly so we don't silently truncate.
@@ -75,8 +82,10 @@ def main() -> int:
     for c in condos:
         rg = c.get("regions")
         rname = (rg.get("name") if isinstance(rg, dict) else (rg[0]["name"] if rg else None))
-        level = lookup.get(_norm(rname))
-        if level is None:
+        key = _norm(rname)
+        level = lookup.get(key)
+        sub_level = sub_lookup.get(key)
+        if level is None and sub_level is None:
             n_skipped += 1
             if rname:
                 unmatched_regions[rname] = unmatched_regions.get(rname, 0) + 1
@@ -84,7 +93,9 @@ def main() -> int:
         rows.append({
             "condo_id": c["id"],
             "flood_risk_level": level,
-            "flood_risk_source": "src/data/flood_districts.py",
+            "flood_risk_source": "src/data/flood_districts.py" if level is not None else None,
+            "subsidence_level": sub_level,
+            "subsidence_source": "src/data/subsidence_districts.py" if sub_level is not None else None,
             "computed_at": now,
         })
         n_matched += 1
