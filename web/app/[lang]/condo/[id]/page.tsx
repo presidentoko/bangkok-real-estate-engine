@@ -297,6 +297,22 @@ export default async function CondoPage({
     nearestTransitM,
   });
 
+  // Developer report-card roll-up (one extra lookup, keyed by the slug we
+  // scraped). Null when this building has no developer or no stats row yet.
+  const devStats = condoRaw.developer_slug
+    ? (
+        await supabase
+          .from("developers")
+          .select("tracked_buildings, avg_gross_yield_pct, avg_foreign_quota_pct")
+          .eq("developer_slug", condoRaw.developer_slug)
+          .maybeSingle()
+      ).data as {
+        tracked_buildings: number | null;
+        avg_gross_yield_pct: number | null;
+        avg_foreign_quota_pct: number | null;
+      } | null
+    : null;
+
   const jsonLd = buildCondoJsonLd({
     condo: condoRaw,
     region,
@@ -604,6 +620,9 @@ export default async function CondoPage({
         slug={condoRaw.developer_slug}
         projectCount={condoRaw.developer_project_count}
         unitCount={condoRaw.developer_unit_count}
+        trackedBuildings={devStats?.tracked_buildings ?? null}
+        avgYield={devStats?.avg_gross_yield_pct ?? null}
+        avgForeignQuota={devStats?.avg_foreign_quota_pct ?? null}
       />
 
       {/* Listing activity (days-on-market) */}

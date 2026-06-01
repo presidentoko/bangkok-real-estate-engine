@@ -3,6 +3,10 @@ type Props = {
   slug: string | null;
   projectCount: number | null;
   unitCount: number | null;
+  /** Roll-up across the condos WE track for this developer (developers table). */
+  trackedBuildings?: number | null;
+  avgYield?: number | null;
+  avgForeignQuota?: number | null;
 };
 
 /**
@@ -11,8 +15,20 @@ type Props = {
  * print the name. We show the developer's FazWaz portfolio (projects + units)
  * as a scale/experience proxy, with a verdict. Hidden when unknown.
  */
-export function DeveloperCard({ name, slug, projectCount, unitCount }: Props) {
+export function DeveloperCard({
+  name,
+  slug,
+  projectCount,
+  unitCount,
+  trackedBuildings,
+  avgYield,
+  avgForeignQuota,
+}: Props) {
   if (!name) return null;
+
+  const showRollup =
+    (trackedBuildings ?? 0) >= 2 &&
+    (avgYield != null || avgForeignQuota != null);
 
   const verdict =
     projectCount == null
@@ -66,6 +82,32 @@ export function DeveloperCard({ name, slug, projectCount, unitCount }: Props) {
             </div>
           )}
         </dl>
+      )}
+
+      {showRollup && (
+        <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950 p-3">
+          <div className="text-xs text-zinc-400 mb-2">
+            Across {trackedBuildings} of their buildings we track:
+          </div>
+          <div className="flex gap-6 text-sm">
+            {avgYield != null && (
+              <div>
+                <div className="text-zinc-100 font-semibold tabular-nums">
+                  {avgYield.toFixed(1)}%
+                </div>
+                <div className="text-zinc-500 text-xs">avg gross yield</div>
+              </div>
+            )}
+            {avgForeignQuota != null && (
+              <div>
+                <div className="text-zinc-100 font-semibold tabular-nums">
+                  {avgForeignQuota.toFixed(0)}%
+                </div>
+                <div className="text-zinc-500 text-xs">avg foreign quota</div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       <p className="text-zinc-500 text-xs mt-3 leading-relaxed">

@@ -200,6 +200,8 @@ POST_STEPS: list[tuple[str, list[str]]] = [
      [PYTHON, "scripts/populate_risk_factors.py"]),
     ("compute_resale_liquidity (can I get my money back out?)",
      [PYTHON, "scripts/compute_resale_liquidity.py"]),
+    ("compute_developer_stats (developer report card)",
+     [PYTHON, "scripts/compute_developer_stats.py"]),
 ]
 
 
