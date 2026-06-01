@@ -8,6 +8,7 @@ import { PriceChart } from "@/components/PriceChart";
 import { ReportCard } from "@/components/ReportCard";
 import { AirQualityCard } from "@/components/AirQualityCard";
 import { CostOfOwnershipCard } from "@/components/CostOfOwnershipCard";
+import { DeveloperCard } from "@/components/DeveloperCard";
 import { GroundStabilityCard } from "@/components/GroundStabilityCard";
 import { ForeignQuotaCard } from "@/components/ForeignQuotaCard";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
@@ -150,7 +151,8 @@ export default async function CondoPage({
         "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at, " +
         "foreign_quota_listings_available, thai_quota_listings_available, " +
         "total_quota_listings_observed, foreign_quota_inventory_pct, " +
-        "foreign_quota_fetched_at"
+        "foreign_quota_fetched_at, " +
+        "developer_slug, developer_project_count, developer_unit_count"
       )
       .eq("id", id)
       .maybeSingle(),
@@ -238,6 +240,9 @@ export default async function CondoPage({
     total_quota_listings_observed: number | null;
     foreign_quota_inventory_pct: number | null;
     foreign_quota_fetched_at: string | null;
+    developer_slug: string | null;
+    developer_project_count: number | null;
+    developer_unit_count: number | null;
   };
   const regions = Array.isArray(condoRaw.regions)
     ? condoRaw.regions[0] ?? null
@@ -307,6 +312,8 @@ export default async function CondoPage({
       resale_liquidity_score: scoreRes.data?.liquidity_score,
       retiree_suitability_score: retiree?.score ?? null,
       subsidence_level: riskRes.data?.subsidence_level,
+      developer_name: condoRaw.developer,
+      developer_project_count: condoRaw.developer_project_count,
     },
     siteUrl: SITE_URL,
     lang,
@@ -492,6 +499,30 @@ export default async function CondoPage({
         ". The score weights nearby healthcare and clean air most heavily, then car-free transit access and daily errands — the priorities that matter to retirees rather than young investors.",
     });
   }
+  if (condoRaw.developer) {
+    const pc = condoRaw.developer_project_count;
+    const scaleLine =
+      pc != null
+        ? ` On FazWaz they list ${pc} project${pc === 1 ? "" : "s"}` +
+          (condoRaw.developer_unit_count != null
+            ? ` totalling ${condoRaw.developer_unit_count.toLocaleString()} units`
+            : "") +
+          (pc >= 20
+            ? " — an established developer."
+            : pc >= 5
+              ? " — an experienced developer."
+              : pc >= 2
+                ? " — a smaller portfolio."
+                : " — a new or single-project developer.")
+        : "";
+    faqItems.push({
+      q: `Who is the developer of ${condoRaw.name}?`,
+      a:
+        `${condoRaw.name} was developed by ${condoRaw.developer}.` +
+        scaleLine +
+        " Portfolio scale is an experience proxy — a longer delivery record reduces completion risk on off-plan units, though it does not guarantee build quality on any single project.",
+    });
+  }
   faqItems.push({
     q: `How does RealData verify the numbers on this page?`,
     a:
@@ -567,6 +598,13 @@ export default async function CondoPage({
           </p>
         )}
       </section>
+
+      <DeveloperCard
+        name={condoRaw.developer}
+        slug={condoRaw.developer_slug}
+        projectCount={condoRaw.developer_project_count}
+        unitCount={condoRaw.developer_unit_count}
+      />
 
       {/* Listing activity (days-on-market) */}
       {condoRaw.active_listings_count != null && condoRaw.active_listings_count > 0 && (
@@ -746,6 +784,7 @@ export default async function CondoPage({
           <li><Link href={`/${lang}/glossary/retiree-suitability`}>Is it good for retirees?</Link></li>
           <li><Link href={`/${lang}/glossary/flood-risk-level`}>How we score flood risk</Link></li>
           <li><Link href={`/${lang}/glossary/ground-stability`}>Is the ground sinking?</Link></li>
+          <li><Link href={`/${lang}/glossary/developer-track-record`}>What is a developer track record?</Link></li>
         </ul>
       </section>
 

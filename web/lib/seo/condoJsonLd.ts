@@ -28,6 +28,8 @@ type AnalyticalSignals = {
   resale_liquidity_score?: number | null;
   retiree_suitability_score?: number | null;
   subsidence_level?: number | null;
+  developer_name?: string | null;
+  developer_project_count?: number | null;
 };
 
 type Args = {
@@ -116,6 +118,20 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
       "@type": "PropertyValue",
       name: "RealData Ground Stability / land-subsidence level (0-5)",
       value: signals.subsidence_level,
+    });
+  }
+  if (signals.developer_name) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      name: "Developer",
+      value: signals.developer_name,
+    });
+  }
+  if (signals.developer_project_count != null) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      name: "Developer portfolio size (projects)",
+      value: signals.developer_project_count,
     });
   }
 

@@ -101,6 +101,17 @@ async def run(limit: int | None, refresh_days: int, delay_s: float, dry_run: boo
             if not res:
                 stats["no_data"] += 1
                 continue
+
+            # Developer fields ride along on the same page fetch (B2 backfill).
+            dev_fields = {
+                k: res[k]
+                for k in ("developer", "developer_slug",
+                          "developer_project_count", "developer_unit_count")
+                if res.get(k) is not None
+            }
+            if dev_fields:
+                stats["with_developer"] += 1
+
             if res.get("labeled", 0) == 0:
                 stats["unlabeled_only"] += 1
                 # Still record a fetched_at so we don't re-pull soon.
@@ -108,6 +119,7 @@ async def run(limit: int | None, refresh_days: int, delay_s: float, dry_run: boo
                     client.table("condos").update({
                         "total_quota_listings_observed": res.get("total"),
                         "foreign_quota_fetched_at": datetime.now(timezone.utc).isoformat(),
+                        **dev_fields,
                     }).eq("id", c["id"]).execute()
                 continue
 
@@ -130,6 +142,7 @@ async def run(limit: int | None, refresh_days: int, delay_s: float, dry_run: boo
                     "total_quota_listings_observed": res["total"],
                     "foreign_quota_inventory_pct": res["foreign_pct"],
                     "foreign_quota_fetched_at": datetime.now(timezone.utc).isoformat(),
+                    **dev_fields,
                 }).eq("id", c["id"]).execute()
                 written += 1
             except Exception as e:

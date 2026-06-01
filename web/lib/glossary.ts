@@ -70,6 +70,15 @@ export const GLOSSARY: GlossaryTerm[] = [
     related: ["livability-score", "ground-stability"],
   },
   {
+    slug: "developer-track-record",
+    term: "Developer Track Record",
+    definition:
+      "A developer's track record is the scale and history of the projects they have built — a proxy for delivery experience and completion risk, especially on off-plan condos.",
+    howCalculated:
+      "We read the developer from each building's FazWaz project page and surface their portfolio size (number of projects and total units). A larger book usually means a longer delivery record and lower completion risk, though it is not a guarantee of build quality on any single project. Stored as condos.developer / developer_project_count / developer_unit_count.",
+    related: ["resale-liquidity", "bubble-index"],
+  },
+  {
     slug: "ground-stability",
     term: "Ground Stability (Land Subsidence, L1–L5)",
     definition:

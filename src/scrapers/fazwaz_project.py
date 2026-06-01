@@ -20,12 +20,24 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 from typing import Any
 
 from bs4 import BeautifulSoup
 from loguru import logger
 
 from src.scrapers.hipflat import _unwrap
+
+# Developer block on a FazWaz project page:
+#   <div class="header-data--developer-info">
+#     <h3 class="header-data-topic">About the Developer - <NAME></h3>
+#     <a class="developer-info__developer-all"
+#        href=".../property-developers/<slug>-d<ID>">All <NAME> Projects</a>
+#   </div>
+#   <div class="developer-info"> ... <span class="developer-info-count__project">N Projects</span>
+#                                    <span class="developer-info-count__unit">N Units</span>
+_DEV_ID_RE = re.compile(r"/property-developers/([a-z0-9-]+?-d\d+)\b", re.I)
+_INT_RE = re.compile(r"([\d,]+)")
 
 PROFILE_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -68,6 +80,46 @@ def parse_quota_stats(html: str) -> dict[str, Any]:
     }
 
 
+def parse_developer(html: str) -> dict[str, Any]:
+    """Extract the developer name + FazWaz portfolio stats from a project page.
+
+    Returns a dict with any of: developer, developer_slug,
+    developer_project_count, developer_unit_count. Empty dict if no developer
+    block is present (some listings don't expose one)."""
+    soup = BeautifulSoup(html, "html.parser")
+    out: dict[str, Any] = {}
+
+    name: str | None = None
+    box = soup.select_one(".header-data--developer-info")
+    if box:
+        h3 = box.select_one(".header-data-topic")
+        if h3:
+            t = h3.get_text(" ", strip=True)
+            # "About the Developer - <NAME>"
+            name = t.split(" - ", 1)[1].strip() if " - " in t else t.strip()
+        a = box.select_one("a.developer-info__developer-all[href]")
+        if a:
+            m = _DEV_ID_RE.search(a.get("href") or "")
+            if m:
+                out["developer_slug"] = m.group(1)
+            if not name:
+                at = a.get_text(" ", strip=True)
+                name = re.sub(r"^All\s+|\s+Projects$", "", at).strip() or None
+
+    info = soup.select_one(".developer-info")
+    if info:
+        pc = info.select_one(".developer-info-count__project")
+        uc = info.select_one(".developer-info-count__unit")
+        if pc and (m := _INT_RE.search(pc.get_text())):
+            out["developer_project_count"] = int(m.group(1).replace(",", ""))
+        if uc and (m := _INT_RE.search(uc.get_text())):
+            out["developer_unit_count"] = int(m.group(1).replace(",", ""))
+
+    if name and name.lower() not in ("", "n/a", "-"):
+        out["developer"] = name
+    return out
+
+
 async def fetch_project_quota(browser, project_url: str) -> dict[str, Any] | None:
     """Fetch one FazWaz project page (must be a CF-cleared profile) and
     return the quota stats dict. None on failure."""
@@ -96,4 +148,8 @@ async def fetch_project_quota(browser, project_url: str) -> dict[str, Any] | Non
         return None
     if not html:
         return None
-    return parse_quota_stats(html)
+    stats = parse_quota_stats(html)
+    # Piggyback developer extraction on the same already-fetched HTML — no
+    # extra page load, so the foreign-quota scrape now also backfills developer.
+    stats.update(parse_developer(html))
+    return stats
