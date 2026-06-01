@@ -12,6 +12,8 @@ import { ForeignQuotaCard } from "@/components/ForeignQuotaCard";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
 import { MultiPortalCard } from "@/components/MultiPortalCard";
+import { ResaleLiquidityCard } from "@/components/ResaleLiquidityCard";
+import { RetireeSuitabilityCard } from "@/components/RetireeSuitabilityCard";
 import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
 import { getDictionary } from "@/lib/getDictionary";
@@ -21,6 +23,7 @@ import {
   getCondoYield,
   getCurrentMortgageRate,
 } from "@/lib/queries/yield";
+import { retireeSuitability } from "@/lib/retiree";
 import { langAlternates } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -269,6 +272,25 @@ export default async function CondoPage({
   const tCondo = getDictionary(isLang(lang) ? lang : "en").condoPage;
 
   const region = regions?.name ?? "Bangkok";
+
+  // Retiree suitability — computed from livability + air-quality data the page
+  // already holds (no DB column needed). Frames the building for the large
+  // Thailand retirement-visa buyer segment. Declared here so the JSON-LD below
+  // can cite the score.
+  const transitDistances = [
+    livRes.data?.nearest_bts_distance_m,
+    livRes.data?.nearest_mrt_distance_m,
+  ].filter((d): d is number => d != null);
+  const nearestTransitM = transitDistances.length
+    ? Math.min(...transitDistances)
+    : null;
+  const retiree = retireeSuitability({
+    hospitalsWithin1km: livRes.data?.hospitals_within_1km ?? null,
+    aqiScore: condoRaw.aqi_score,
+    supermarketsWithin1km: livRes.data?.supermarkets_within_1km ?? null,
+    nearestTransitM,
+  });
+
   const jsonLd = buildCondoJsonLd({
     condo: condoRaw,
     region,
@@ -281,6 +303,8 @@ export default async function CondoPage({
       gross_yield_pct: yieldData?.gross_yield_pct,
       aqi_score: condoRaw.aqi_score,
       foreign_quota_inventory_pct: condoRaw.foreign_quota_inventory_pct,
+      resale_liquidity_score: scoreRes.data?.liquidity_score,
+      retiree_suitability_score: retiree?.score ?? null,
     },
     siteUrl: SITE_URL,
     lang,
@@ -313,6 +337,9 @@ export default async function CondoPage({
   const floodVal = riskRes.data?.flood_risk_level;
   const quotaVal = condoRaw.foreign_quota_inventory_pct;
   const aqiVal = condoRaw.aqi_score;
+  const liqScore = scoreRes.data?.liquidity_score;
+  const liqAbsorb = scoreRes.data?.liquidity_absorption_rate;
+  const liqSold = scoreRes.data?.liquidity_median_sold_dom;
   const mrr = mortgageRate?.rate ?? null;
 
   const faqItems: Array<{ q: string; a: string }> = [];
@@ -391,6 +418,56 @@ export default async function CondoPage({
       a:
         `Latest WAQI air quality reading near ${condoRaw.name} is ${aqiVal} — ${aqiVerdict}. ` +
         `This is the index value from the closest World Air Quality Index station; PM2.5 levels in Bangkok swing seasonally and can spike during burn season (Feb–April).`,
+    });
+  }
+  if (liqScore != null) {
+    const liqVerdict =
+      liqScore >= 75
+        ? "highly liquid — units here tend to find buyers quickly"
+        : liqScore >= 55
+          ? "liquid — resale demand is healthy"
+          : liqScore >= 35
+            ? "moderate — expect a normal marketing period"
+            : liqScore >= 20
+              ? "slow — your exit could take a while"
+              : "illiquid — resale may be difficult";
+    const absorbLine =
+      liqAbsorb != null
+        ? ` ${liqAbsorb.toFixed(0)}% of the for-sale supply we tracked here cleared the market.`
+        : "";
+    const soldLine =
+      liqSold != null ? ` Listings that sold did so in about ${liqSold} days.` : "";
+    faqItems.push({
+      q: `Is ${condoRaw.name} easy to resell?`,
+      a:
+        `${condoRaw.name} has a RealData Resale Liquidity Score of ${liqScore.toFixed(0)}/100 — ${liqVerdict}.` +
+        absorbLine +
+        soldLine +
+        " We compute this by tracking every listing from the day it appears to the day it leaves the market, so it reflects how much supply actually clears and how fast — not just the asking price. It is an availability signal, not a guarantee of sale price.",
+    });
+  }
+  if (retiree) {
+    const retVerdict =
+      retiree.grade === "excellent"
+        ? "an excellent fit"
+        : retiree.grade === "good"
+          ? "a good fit"
+          : retiree.grade === "fair"
+            ? "a fair fit"
+            : "less suited";
+    const hosp = livRes.data?.hospitals_within_1km;
+    const hospLine =
+      hosp != null
+        ? ` There ${hosp === 1 ? "is" : "are"} ${hosp} hospital/clinic${hosp === 1 ? "" : "s"} within 1km`
+        : "";
+    const aqiLine = aqiVal != null ? `, and the latest air quality reads ${aqiVal} AQI` : "";
+    faqItems.push({
+      q: `Is ${condoRaw.name} a good place to retire?`,
+      a:
+        `${condoRaw.name} scores ${retiree.score.toFixed(0)}/100 on RealData's Retiree Suitability Score — ${retVerdict} for a retirement-visa buyer.` +
+        hospLine +
+        aqiLine +
+        ". The score weights nearby healthcare and clean air most heavily, then car-free transit access and daily errands — the priorities that matter to retirees rather than young investors.",
     });
   }
   faqItems.push({
@@ -507,6 +584,22 @@ export default async function CondoPage({
         </section>
       )}
 
+      <ResaleLiquidityCard
+        score={scoreRes.data?.liquidity_score ?? null}
+        grade={scoreRes.data?.liquidity_grade ?? null}
+        absorptionRate={scoreRes.data?.liquidity_absorption_rate ?? null}
+        medianSoldDom={scoreRes.data?.liquidity_median_sold_dom ?? null}
+        sampleSize={scoreRes.data?.liquidity_sample_size ?? null}
+      />
+
+      <RetireeSuitabilityCard
+        result={retiree}
+        hospitals={livRes.data?.hospitals_within_1km ?? null}
+        aqi={condoRaw.aqi_score}
+        supermarkets={livRes.data?.supermarkets_within_1km ?? null}
+        nearestTransitM={nearestTransitM}
+      />
+
       {/* Market summary */}
       {(condoRaw.market_rent_median || condoRaw.market_sale_median) && (
         <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
@@ -622,6 +715,8 @@ export default async function CondoPage({
           )}
           <li><Link href={`/${lang}/glossary/bubble-index`}>What is the Bubble Index?</Link></li>
           <li><Link href={`/${lang}/glossary/gross-yield`}>What is gross yield?</Link></li>
+          <li><Link href={`/${lang}/glossary/resale-liquidity`}>What is the Resale Liquidity Score?</Link></li>
+          <li><Link href={`/${lang}/glossary/retiree-suitability`}>Is it good for retirees?</Link></li>
           <li><Link href={`/${lang}/glossary/flood-risk-level`}>How we score flood risk</Link></li>
         </ul>
       </section>

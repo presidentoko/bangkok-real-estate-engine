@@ -25,6 +25,8 @@ type AnalyticalSignals = {
   gross_yield_pct?: number | null;
   aqi_score?: number | null;
   foreign_quota_inventory_pct?: number | null;
+  resale_liquidity_score?: number | null;
+  retiree_suitability_score?: number | null;
 };
 
 type Args = {
@@ -92,6 +94,20 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
       "@type": "PropertyValue",
       name: "Foreign-quota inventory share (%)",
       value: signals.foreign_quota_inventory_pct,
+    });
+  }
+  if (signals.resale_liquidity_score != null) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      name: "RealData Resale Liquidity Score (0-100)",
+      value: signals.resale_liquidity_score,
+    });
+  }
+  if (signals.retiree_suitability_score != null) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      name: "RealData Retiree Suitability Score (0-100)",
+      value: signals.retiree_suitability_score,
     });
   }
 

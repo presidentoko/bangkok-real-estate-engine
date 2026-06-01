@@ -25,6 +25,24 @@ export const GLOSSARY: GlossaryTerm[] = [
     related: ["price-per-sqm", "super-value"],
   },
   {
+    slug: "resale-liquidity",
+    term: "Resale Liquidity Score",
+    definition:
+      "RealData's Resale Liquidity Score (0–100) estimates how easily a unit in a building can be re-sold — higher means buyers are found faster and more of the supply clears.",
+    howCalculated:
+      "We track every for-sale listing in a building from the day it appears to the day it leaves the market. The score blends how much of recent supply actually cleared (absorption), how fast it cleared, and how long current unsold inventory has been sitting. Buildings with too few tracked listings show no score rather than a misleading one. Stored as value_scores.liquidity_score. It is an availability signal, not a guarantee of sale price.",
+    related: ["bubble-index", "days-on-market"],
+  },
+  {
+    slug: "retiree-suitability",
+    term: "Retiree Suitability Score",
+    definition:
+      "RealData's Retiree Suitability Score (0–100) rates how well a building's location suits a retiree, weighting nearby healthcare and clean air ahead of car-free transit and daily errands.",
+    howCalculated:
+      "We blend healthcare proximity (hospitals/clinics within 1km), air quality (WAQI AQI), distance to the nearest BTS/MRT, and supermarkets within 1km — weighted toward the factors that matter most to Thailand's retirement-visa (O-A/O-X) buyers rather than young investors. Buildings without location data show no score.",
+    related: ["livability-score", "flood-risk-level"],
+  },
+  {
     slug: "gross-yield",
     term: "Gross Rental Yield",
     definition:
