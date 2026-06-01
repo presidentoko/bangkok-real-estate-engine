@@ -147,19 +147,49 @@ const SELECT_LEAN =
 async function _fetchCondoSummariesByCity(citySlug: string): Promise<CondoSummary[]> {
   const supabase = getServerSupabase();
   const provinces = cityProvinceSlugs(citySlug);
+
+  // Count first, then fan the page fetches out in PARALLEL. Bangkok has ~6k
+  // rows = 7 sequential 1000-row round-trips the old way (~8s on a cache miss,
+  // which is what left the grid stuck on skeletons). Parallel ranges collapse
+  // that to roughly two round-trips of latency. Falls back to a sequential walk
+  // if the exact count isn't available.
+  const { count, error: countErr } = await supabase
+    .from("condos_published")
+    .select("id", { count: "exact", head: true })
+    .in("province", provinces);
+
+  if (countErr || count == null) {
+    const out: CondoSummary[] = [];
+    let offset = 0;
+    while (true) {
+      const { data, error } = await supabase
+        .from("condos_published")
+        .select(SELECT_LEAN)
+        .in("province", provinces)
+        .range(offset, offset + PAGE - 1);
+      if (error) throw new Error(`city condo fetch failed: ${error.message}`);
+      const rows = (data ?? []) as unknown as Joined[];
+      out.push(...rows.map(flatten));
+      if (rows.length < PAGE) break;
+      offset += PAGE;
+    }
+    return out;
+  }
+
+  const pages = Math.max(1, Math.ceil(count / PAGE));
+  const results = await Promise.all(
+    Array.from({ length: pages }, (_, i) =>
+      supabase
+        .from("condos_published")
+        .select(SELECT_LEAN)
+        .in("province", provinces)
+        .range(i * PAGE, i * PAGE + PAGE - 1)
+    )
+  );
   const out: CondoSummary[] = [];
-  let offset = 0;
-  while (true) {
-    const { data, error } = await supabase
-      .from("condos_published")
-      .select(SELECT_LEAN)
-      .in("province", provinces)
-      .range(offset, offset + PAGE - 1);
+  for (const { data, error } of results) {
     if (error) throw new Error(`city condo fetch failed: ${error.message}`);
-    const rows = (data ?? []) as unknown as Joined[];
-    out.push(...rows.map(flatten));
-    if (rows.length < PAGE) break;
-    offset += PAGE;
+    out.push(...((data ?? []) as unknown as Joined[]).map(flatten));
   }
   return out;
 }
