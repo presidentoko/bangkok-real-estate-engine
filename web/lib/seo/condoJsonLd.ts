@@ -27,6 +27,7 @@ type AnalyticalSignals = {
   foreign_quota_inventory_pct?: number | null;
   resale_liquidity_score?: number | null;
   retiree_suitability_score?: number | null;
+  subsidence_level?: number | null;
 };
 
 type Args = {
@@ -108,6 +109,13 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
       "@type": "PropertyValue",
       name: "RealData Retiree Suitability Score (0-100)",
       value: signals.retiree_suitability_score,
+    });
+  }
+  if (signals.subsidence_level != null) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      name: "RealData Ground Stability / land-subsidence level (0-5)",
+      value: signals.subsidence_level,
     });
   }
 

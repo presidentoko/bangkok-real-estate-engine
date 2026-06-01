@@ -21,6 +21,7 @@ from supabase import Client
 
 from src.analysis.construction import district_construction_signal
 from src.data.flood_districts import get_flood_level
+from src.data.subsidence_districts import get_subsidence_level
 from src.util.district import extract_district
 
 
@@ -106,6 +107,10 @@ def compute_risk(supabase: Client) -> int:
             if flood_level is not None:
                 flood_source = "district_static"
 
+        # ----- Subsidence (land sinking — district-level, see src/data) -----
+        subsidence_level = get_subsidence_level(district) if district else None
+        subsidence_source = "district_static" if subsidence_level is not None else None
+
         # ----- Construction -----
         bucket = "low"
         hits = 0
@@ -118,6 +123,8 @@ def compute_risk(supabase: Client) -> int:
             "condo_id": r["id"],
             "flood_risk_level": flood_level,
             "flood_risk_source": flood_source,
+            "subsidence_level": subsidence_level,
+            "subsidence_source": subsidence_source,
             "active_construction_within_500m": bucket in ("medium", "high"),
             "construction_count": _BUCKET_TO_COUNT.get(bucket, 0),
             "risk_penalty": _penalty(flood_level, bucket),

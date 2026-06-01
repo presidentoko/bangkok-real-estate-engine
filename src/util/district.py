@@ -13,7 +13,8 @@ from __future__ import annotations
 # Official 50 khet of Bangkok (English transliteration used by ddproperty/hipflat).
 BANGKOK_DISTRICTS: list[str] = [
     "Bang Bon", "Bang Kapi", "Bang Khae", "Bang Khen", "Bang Kho Laem",
-    "Bang Na", "Bang Phlat", "Bang Rak", "Bang Sue", "Bangkok Noi",
+    "Bang Khun Thian", "Bang Na", "Bang Phlat", "Bang Rak", "Bang Sue",
+    "Bangkok Noi",
     "Bangkok Yai", "Bueng Kum", "Chatuchak", "Chom Thong", "Din Daeng",
     "Don Mueang", "Dusit", "Huai Khwang", "Khan Na Yao", "Khlong San",
     "Khlong Sam Wa", "Khlong Toei", "Lak Si", "Lat Krabang", "Lat Phrao",

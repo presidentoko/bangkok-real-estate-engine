@@ -8,6 +8,7 @@ import { PriceChart } from "@/components/PriceChart";
 import { ReportCard } from "@/components/ReportCard";
 import { AirQualityCard } from "@/components/AirQualityCard";
 import { CostOfOwnershipCard } from "@/components/CostOfOwnershipCard";
+import { GroundStabilityCard } from "@/components/GroundStabilityCard";
 import { ForeignQuotaCard } from "@/components/ForeignQuotaCard";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
@@ -305,6 +306,7 @@ export default async function CondoPage({
       foreign_quota_inventory_pct: condoRaw.foreign_quota_inventory_pct,
       resale_liquidity_score: scoreRes.data?.liquidity_score,
       retiree_suitability_score: retiree?.score ?? null,
+      subsidence_level: riskRes.data?.subsidence_level,
     },
     siteUrl: SITE_URL,
     lang,
@@ -335,6 +337,7 @@ export default async function CondoPage({
   const yieldVal = yieldData?.gross_yield_pct;
   const bubbleVal = scoreRes.data?.bubble_index;
   const floodVal = riskRes.data?.flood_risk_level;
+  const subsidenceVal = riskRes.data?.subsidence_level;
   const quotaVal = condoRaw.foreign_quota_inventory_pct;
   const aqiVal = condoRaw.aqi_score;
   const liqScore = scoreRes.data?.liquidity_score;
@@ -444,6 +447,25 @@ export default async function CondoPage({
         absorbLine +
         soldLine +
         " We compute this by tracking every listing from the day it appears to the day it leaves the market, so it reflects how much supply actually clears and how fast — not just the asking price. It is an availability signal, not a guarantee of sale price.",
+    });
+  }
+  if (subsidenceVal != null) {
+    const subLabel =
+      subsidenceVal >= 5
+        ? "severe (coastal subsidence plus sea-level rise)"
+        : subsidenceVal >= 4
+          ? "high (eastern soft-clay belt, documented sinking)"
+          : subsidenceVal >= 3
+            ? "moderate (transitional zone or historical hotspot)"
+            : subsidenceVal >= 2
+              ? "low (largely stabilised)"
+              : "very low (consolidated inner core, effectively flat today)";
+    faqItems.push({
+      q: `Is the ground sinking at ${condoRaw.name}?`,
+      a:
+        `${condoRaw.name} sits in a district with a RealData Ground Stability (land-subsidence) level of ${subsidenceVal}/5 — ${subLabel}. ` +
+        `Bangkok rests on soft marine clay and sank as fast as ~120mm/year in the 1980s from groundwater over-extraction; regulation has since cut inner-city rates to near zero, but the eastern belt and coastal south keep sinking. ` +
+        `This is a district-level estimate from published InSAR and groundwater-monitoring studies, and it compounds the same areas' monsoon-flood risk over a 10–20 year horizon — not a per-building survey.`,
     });
   }
   if (retiree) {
@@ -686,6 +708,11 @@ export default async function CondoPage({
         fetchedAt={condoRaw.aqi_fetched_at}
       />
 
+      <GroundStabilityCard
+        level={riskRes.data?.subsidence_level ?? null}
+        source={riskRes.data?.subsidence_source ?? null}
+      />
+
       <MultiPortalCard stats={portalStats} />
 
       {chart.length > 0 && <PriceChart points={chart} />}
@@ -718,6 +745,7 @@ export default async function CondoPage({
           <li><Link href={`/${lang}/glossary/resale-liquidity`}>What is the Resale Liquidity Score?</Link></li>
           <li><Link href={`/${lang}/glossary/retiree-suitability`}>Is it good for retirees?</Link></li>
           <li><Link href={`/${lang}/glossary/flood-risk-level`}>How we score flood risk</Link></li>
+          <li><Link href={`/${lang}/glossary/ground-stability`}>Is the ground sinking?</Link></li>
         </ul>
       </section>
 

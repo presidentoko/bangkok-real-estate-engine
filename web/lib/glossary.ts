@@ -67,7 +67,16 @@ export const GLOSSARY: GlossaryTerm[] = [
       "Flood Risk Level rates a location's flooding exposure on a five-step scale, L1 (lowest) to L5 (highest), based on Bangkok's district flood model.",
     howCalculated:
       "Each building inherits the flood level of its district polygon from our Bangkok flood layer (risk_factors.flood_risk_level). Where a per-building score exists it overrides the district value. See the live map on the Flood page.",
-    related: ["livability-score"],
+    related: ["livability-score", "ground-stability"],
+  },
+  {
+    slug: "ground-stability",
+    term: "Ground Stability (Land Subsidence, L1–L5)",
+    definition:
+      "Ground Stability rates how much a location is sinking due to land subsidence, on a five-step scale from L1 (very low) to L5 (severe), because Bangkok sits on soft marine clay.",
+    howCalculated:
+      "We assign each building its district's subsidence level (risk_factors.subsidence_level) from published InSAR and groundwater-monitoring studies. Bangkok sank as fast as ~120mm/year in the 1980s; groundwater regulation cut inner-city rates to near zero, but the eastern soft-clay belt and coastal south keep sinking, which compounds monsoon-flood risk over a 10–20 year horizon. District-level estimate, not a per-building survey.",
+    related: ["flood-risk-level"],
   },
   {
     slug: "foreign-quota",
