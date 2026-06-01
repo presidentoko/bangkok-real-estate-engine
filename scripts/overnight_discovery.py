@@ -115,15 +115,23 @@ def _kill_tree(proc: subprocess.Popen) -> None:
         pass
 
 
+# FazWaz cities, run as SEPARATE steps. A whole-Thailand FazWaz sweep took
+# >4h on Pattaya alone, tripped the step timeout, and the loop re-ran Pattaya
+# every pass while Phuket/Chiang Mai/Hua Hin/Bangkok were never reached. One
+# step per city (each with its own cap) means a slow/blocked city is killed on
+# its own and the rest still run.
+FAZWAZ_CITIES = ["pattaya", "phuket", "chiang-mai", "hua-hin", "bangkok"]
+
 # Per-step wall-clock caps (minutes). A hung step gets killed at its cap so the
 # loop keeps advancing. Sized so a healthy run never gets cut short.
 STEP_TIMEOUT_MIN = {
     "dotproperty": 180,
-    "fazwaz": 240,
     "ddproperty": 180,
     "coords-fazwaz": 240,
     "coords-ddproperty": 240,
 }
+# Each FazWaz city step (sale+rent for one city) gets its own cap.
+FAZWAZ_CITY_TIMEOUT_MIN = 150
 
 
 def discovery_steps(with_dd: bool, skip: set[str]) -> list[tuple[str, str, list[str]]]:
@@ -136,11 +144,12 @@ def discovery_steps(with_dd: bool, skip: set[str]) -> list[tuple[str, str, list[
             [PYTHON, "scripts/sweep_dotproperty_thailand.py"],
         ))
     if "fazwaz" not in skip:
-        steps.append((
-            "fazwaz",
-            "FazWaz sweep (5 main cities, sale+rent)",
-            [PYTHON, "scripts/sweep_fazwaz_thailand.py"],
-        ))
+        for city in FAZWAZ_CITIES:
+            steps.append((
+                f"fazwaz-{city}",
+                f"FazWaz sweep — {city} (sale+rent)",
+                [PYTHON, "scripts/sweep_fazwaz_thailand.py", "--cities", city],
+            ))
     if with_dd and "ddproperty" not in skip:
         steps.append((
             "ddproperty",
@@ -159,6 +168,13 @@ def discovery_steps(with_dd: bool, skip: set[str]) -> list[tuple[str, str, list[
             [PYTHON, "scripts/enrich_latlng.py", "--source", "ddproperty"],
         ))
     return steps
+
+
+def step_timeout_min(key: str) -> int:
+    """Per-step wall-clock cap. FazWaz per-city steps share one cap."""
+    if key.startswith("fazwaz-"):
+        return FAZWAZ_CITY_TIMEOUT_MIN
+    return STEP_TIMEOUT_MIN.get(key, 180)
 
 
 # Post-processing always runs after the scrapers so new rows get scored even
@@ -219,7 +235,7 @@ def main() -> int:
 
         touched = False
         for key, label, cmd in steps:
-            cap_s = STEP_TIMEOUT_MIN.get(key, 180) * 60
+            cap_s = step_timeout_min(key) * 60
             rc = run_step(label, cmd, deadline, args.dry_run, timeout_s=cap_s)
             if rc == -1:
                 break  # out of time — stop starting new discovery steps
