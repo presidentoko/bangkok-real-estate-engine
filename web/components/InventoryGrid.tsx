@@ -32,6 +32,14 @@ const BUBBLE_LABELS: Record<BubbleBucket, string> = {
   bubble: "Bubble (>200)",
 };
 
+// How many cards to actually paint at once. The lazy-fetch pulls the full
+// city set (Bangkok = thousands), but rendering every BuildingCard in one go
+// froze the main thread for seconds (each card is a Link + <img> + badges, so
+// thousands of them = thousands of DOM image subtrees + a giant React commit)
+// — the page looked stuck on the loading skeletons. We filter/sort the full
+// set but only paint a window of it, growing on demand via "Show more".
+const PAGE_SIZE = 60;
+
 function fmtMoney(n: number | null, currency: string | null | undefined): string {
   if (n == null) return "—";
   const sym = currency === "THB" ? "฿" : currency === "USD" ? "$" : `${currency ?? ""} `;
@@ -73,6 +81,9 @@ export function InventoryGrid({
   const [loaded, setLoaded] = useState<CondoSummary[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
+
+  // How many of the filtered results are currently painted (windowed render).
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const typeChips: TypeFilter[] = ["all", ...availableTypes];
 
@@ -159,6 +170,16 @@ export function InventoryGrid({
     }
     return arr;
   }, [loaded, q, district, sort, photoOnly, typeFilter, bubble]);
+
+  // Any change to the result set (new filter/sort, or freshly loaded data)
+  // resets the window back to the first page so the user isn't scrolled past
+  // a now-shorter list.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [loaded, q, district, sort, photoOnly, typeFilter, bubble]);
+
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = filtered.length > visible.length;
 
   function clearFilters() {
     setQ("");
@@ -371,11 +392,27 @@ export function InventoryGrid({
         ) : filtered.length === 0 ? (
           <div className="text-center text-zinc-500 py-16 text-sm">No matches.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((c) => (
-              <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {visible.map((c) => (
+                <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex flex-col items-center gap-2 pt-6">
+                <div className="text-xs text-zinc-500 tabular-nums">
+                  Showing {visible.length.toLocaleString()} of{" "}
+                  {filtered.length.toLocaleString()}
+                </div>
+                <button
+                  onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+                  className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium px-5 py-2.5 rounded-lg transition"
+                >
+                  Show more →
+                </button>
+              </div>
+            )}
+          </>
         )
       )}
     </div>
