@@ -11,6 +11,7 @@
 
 import { unstable_cache } from "next/cache";
 import { cityProvinceSlugs } from "@/lib/cities";
+import { encodeCompact, type CompactCondoSummaries } from "@/lib/condo-compact";
 import { getServerSupabase } from "@/lib/supabase";
 
 const PAGE = 1000; // PostgREST per-request cap.
@@ -199,6 +200,25 @@ async function _fetchCondoSummariesByCity(citySlug: string): Promise<CondoSummar
 export const fetchCondoSummariesByCity = unstable_cache(
   _fetchCondoSummariesByCity,
   ["condos:by-city"],
+  { revalidate: 3600, tags: ["condos"] }
+);
+
+// Compact (columnar) variant of the city feed. Same rows as
+// fetchCondoSummariesByCity, but encoded struct-of-arrays so the serialised
+// payload drops under Next's 2MB unstable_cache ceiling (the array-of-objects
+// form spent ~1.1MB on repeated key names alone). Caching it means even
+// Bangkok's cold requests are memoised instead of re-running a ~4.5s Supabase
+// fetch. Both the inventory page (server) and /api/condos/inventory (client
+// lazy-fetch) consume this; callers `decodeCompact()` it back to CondoSummary[].
+async function _fetchCondoSummariesCompactByCity(
+  citySlug: string
+): Promise<CompactCondoSummaries> {
+  return encodeCompact(await _fetchCondoSummariesByCity(citySlug));
+}
+
+export const fetchCondoSummariesCompactByCity = unstable_cache(
+  _fetchCondoSummariesCompactByCity,
+  ["condos:by-city-compact"],
   { revalidate: 3600, tags: ["condos"] }
 );
 

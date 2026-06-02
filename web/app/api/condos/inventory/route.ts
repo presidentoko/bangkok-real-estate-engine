@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { canonicalCitySlug } from "@/lib/cities";
-import { fetchCondoSummariesByCity } from "@/lib/queries/condos";
+import { fetchCondoSummariesCompactByCity } from "@/lib/queries/condos";
 
 // City-scoped condo list for the inventory grid. The page used to ship the
 // entire city-scoped array to the browser as an RSC prop (thousands of objects
@@ -8,10 +8,13 @@ import { fetchCondoSummariesByCity } from "@/lib/queries/condos";
 // hits "Show all". This route lets the client lazy-fetch that set on demand so
 // the initial page payload stays tiny.
 //
-// The fetch is scoped to the city at the DB level (lean column projection, no
-// `url`), so smaller cities cache via unstable_cache; Bangkok exceeds the 2MB
-// unstable_cache ceiling, so this CDN `s-maxage` header is what keeps repeat
-// requests fast (served from the edge for an hour, stale-while-revalidate a day).
+// The payload is a compact columnar encoding (see lib/condo-compact.ts): the
+// array-of-objects form spent ~1.1MB on repeated JSON keys, which pushed even
+// the lean projection past the 2MB unstable_cache ceiling so nothing cached.
+// Columnar keeps it under 2MB → the underlying fetch is memoised by
+// unstable_cache, and this CDN `s-maxage` header keeps the edge warm on top
+// (served for an hour, stale-while-revalidate a day). The client decodes it
+// with decodeCompact().
 const CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
 };
@@ -21,7 +24,7 @@ export async function GET(req: Request) {
   const cityParam = (url.searchParams.get("city") ?? "bangkok").trim() || "bangkok";
   const target = canonicalCitySlug(cityParam);
 
-  const condos = await fetchCondoSummariesByCity(target);
+  const compact = await fetchCondoSummariesCompactByCity(target);
 
-  return NextResponse.json({ condos }, { headers: CACHE_HEADERS });
+  return NextResponse.json(compact, { headers: CACHE_HEADERS });
 }

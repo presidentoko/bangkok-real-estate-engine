@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { InventoryGrid } from "@/components/InventoryGrid";
 import { canonicalCitySlug, CITIES, getCity } from "@/lib/cities";
+import { decodeCompact } from "@/lib/condo-compact";
 import { isLang } from "@/lib/i18n";
 import {
   availablePropertyTypes,
@@ -12,7 +13,7 @@ import {
 } from "@/lib/inventory";
 import {
   fetchCondoProvinces,
-  fetchCondoSummariesByCity,
+  fetchCondoSummariesCompactByCity,
 } from "@/lib/queries/condos";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
@@ -86,10 +87,11 @@ export default async function InventoryPage({
   // Fetch only the active city's condos (scoped at the DB level) plus a cheap
   // province-only pull for the chip counts. Previously this loaded every condo
   // from every city (~6.4MB) and filtered in JS, which never cached.
-  const [condos, allProvinces] = await Promise.all([
-    fetchCondoSummariesByCity(city.slug),
+  const [condosCompact, allProvinces] = await Promise.all([
+    fetchCondoSummariesCompactByCity(city.slug),
     fetchCondoProvinces(),
   ]);
+  const condos = decodeCompact(condosCompact);
 
   // Per-city counts for the chip row at the top. DB `province` has both compact
   // ("chiangmai") and kebab ("chiang-mai") forms — canonicalCitySlug()

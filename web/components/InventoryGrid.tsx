@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BuildingCard } from "@/components/BuildingCard";
+import { decodeCompact, isCompact } from "@/lib/condo-compact";
 import type { InventoryStats } from "@/lib/inventory";
 import type { CondoSummary, PropertyType } from "@/lib/queries/condos";
 
@@ -108,9 +109,15 @@ export function InventoryGrid({
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
-      .then((data: { condos?: CondoSummary[] }) => {
+      .then((data: unknown) => {
         if (cancelled) return;
-        setLoaded(data.condos ?? []);
+        // New payload is compact (columnar); a stale CDN entry served right
+        // after deploy may still be the legacy `{ condos: [...] }` shape.
+        if (isCompact(data)) {
+          setLoaded(decodeCompact(data));
+        } else {
+          setLoaded((data as { condos?: CondoSummary[] }).condos ?? []);
+        }
       })
       .catch(() => {
         if (!cancelled) setLoadError(true);
