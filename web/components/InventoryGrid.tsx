@@ -99,8 +99,16 @@ export function InventoryGrid({
   const showGrid = isFiltering || revealAll;
 
   // Fetch the full set the first time the grid opens.
+  //
+  // `loading` is deliberately NOT in this effect's deps (nor its guard): when
+  // the effect calls setLoading(true), that state change would re-run the
+  // effect, whose cleanup flips `cancelled = true` on the *in-flight* fetch —
+  // so the response was discarded and setLoading(false) never ran, leaving the
+  // grid stuck on its skeletons forever. Keying only on [showGrid, loaded,
+  // citySlug] means the fetch starts once when the grid opens and is allowed to
+  // finish. (`loaded !== null` already prevents a re-fetch after it lands.)
   useEffect(() => {
-    if (!showGrid || loaded !== null || loading) return;
+    if (!showGrid || loaded !== null) return;
     let cancelled = false;
     setLoading(true);
     setLoadError(false);
@@ -128,7 +136,7 @@ export function InventoryGrid({
     return () => {
       cancelled = true;
     };
-  }, [showGrid, loaded, loading, citySlug]);
+  }, [showGrid, loaded, citySlug]);
 
   const filtered = useMemo(() => {
     if (!loaded) return [];
