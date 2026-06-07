@@ -45,7 +45,7 @@ function isRateLimited(hash: string): boolean {
   return false;
 }
 
-const MODEL = "claude-haiku-4-5";  // fast + cheap; switch to claude-sonnet-4-6 for higher quality
+const MODEL = "claude-haiku-4-5-20251001";  // fast + cheap; switch to claude-sonnet-4-6 for higher quality
 const MAX_TOKENS = 1500;
 
 const SYSTEM_PROMPT_PREFIX = `You are RealData's property research assistant for Thailand.
