@@ -82,10 +82,10 @@ export function ReportCard({ condo, score, liv, risk, latest, lang }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto -mx-2 px-2">
+      <div className="overflow-x-auto -mx-6 px-6">
         <div
           ref={cardRef}
-          className="mx-auto bg-zinc-950 p-6 rounded-3xl border border-zinc-800"
+          className="bg-zinc-950 p-6 rounded-3xl border border-zinc-800"
           style={{ width: 540, height: 540 }}
         >
           <div className="flex flex-col h-full">

@@ -609,9 +609,14 @@ export default async function CondoPage({
           </div>
         </dl>
         {condoRaw.description && (
-          <p className="text-zinc-400 text-sm mt-4 leading-relaxed">
-            {decodeEntities(condoRaw.description)}
-          </p>
+          <div
+            className="text-zinc-400 text-sm mt-4 leading-relaxed [&_b]:text-zinc-300 [&_strong]:text-zinc-300"
+            dangerouslySetInnerHTML={{
+              __html: decodeEntities(condoRaw.description)
+                .replace(/<(script|style|iframe|object|embed|form)[\s\S]*?<\/\1>/gi, "")
+                .replace(/<(script|style|iframe|object|embed|form)[^>]*\/?>/gi, ""),
+            }}
+          />
         )}
       </section>
 
