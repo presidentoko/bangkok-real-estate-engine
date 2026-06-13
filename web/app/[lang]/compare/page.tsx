@@ -5,6 +5,7 @@ import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
 
 export const revalidate = 3600;
 
@@ -120,6 +121,7 @@ export default async function ComparePage({
           condo page, or paste ids into the URL as{" "}
           <code className="text-zinc-300">?a=ID&amp;b=ID&amp;c=ID</code>.
         </p>
+        {condos.length >= 2 && <CopyLinkButton />}
       </header>
 
       {condos.length === 0 ? (
