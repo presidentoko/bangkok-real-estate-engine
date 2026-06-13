@@ -127,7 +127,7 @@ export async function generateMetadata({
       type: "article",
       images: [
         {
-          url: `${SITE_URL}/${lang}/condo/${id}/opengraph-image`,
+          url: `/${lang}/condo/${id}/opengraph-image`,
           width: 1200,
           height: 630,
           alt: `${c.name} — RealData Bangkok condo report`,
