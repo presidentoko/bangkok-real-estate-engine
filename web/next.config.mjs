@@ -9,7 +9,7 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: false },
   eslint: { ignoreDuringBuilds: false },
   // Slightly trim shipped JS by skipping the X-Powered-By header.
-  poweredByHeader: false,
+  poweredByHeader: false, // retrigger
   // Aggressively tree-shake barrel-style imports so unused exports don't ship.
   experimental: {
     optimizePackageImports: ["@supabase/supabase-js"],
