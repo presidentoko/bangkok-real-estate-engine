@@ -141,7 +141,7 @@ export async function retrieveContext(
     .gte("yield_sample_sale", 2)
     .gte("yield_sample_rent", 2)
     .order("gross_yield_pct", { ascending: false })
-    .limit(20);
+    .limit(10);
   const topYields = await hydrate(supabase, (yRows ?? []) as unknown as ConsoleRow[]);
 
   // 3) Underpriced (bubble_index ≤ 90 means priced below district avg)
@@ -150,10 +150,10 @@ export async function retrieveContext(
     .select("condo_id, bubble_index")
     .lte("bubble_index", 90)
     .order("bubble_index", { ascending: true })
-    .limit(40);
+    .limit(20);
   const undIds = ((undRows ?? []) as Array<{ condo_id: string; bubble_index: number }>)
     .map((r) => r.condo_id)
-    .slice(0, 20);
+    .slice(0, 10);
   let underpriced: Condo[] = [];
   if (undIds.length > 0) {
     const { data: condoRows } = await supabase
@@ -169,7 +169,7 @@ export async function retrieveContext(
     .select("condo_id, delta_pct, listing_type")
     .not("delta_pct", "is", null)
     .order("captured_at", { ascending: false })
-    .limit(2000);
+    .limit(500);
   type PHRow = { condo_id: string; delta_pct: number; listing_type: string };
   const seenPh = new Set<string>();
   const phDistinct: PHRow[] = [];
@@ -205,22 +205,34 @@ export async function retrieveContext(
       .from("condos")
       .select(SELECT)
       .or(ors)
-      .limit(15);
+      .limit(10);
     nameMatches = await hydrate(supabase, (nmRows ?? []) as unknown as ConsoleRow[]);
   }
 
-  // 6) City counts
-  const { data: provData } = await supabase
-    .from("condos")
-    .select("province")
-    .limit(10000);
-  const provCounts = new Map<string, number>();
-  for (const r of (provData ?? []) as Array<{ province: string | null }>) {
-    if (!r.province) continue;
-    provCounts.set(r.province, (provCounts.get(r.province) ?? 0) + 1);
-  }
-  const cityCounts = Array.from(provCounts.entries())
-    .map(([province, n]) => ({ province, n }))
+  // 6) City counts — use head-only count queries (zero row egress) instead of
+  // fetching 10k province strings and counting in JS.
+  const PROVINCE_GROUPS: Array<{ key: string; aliases: string[] }> = [
+    { key: "bangkok",   aliases: ["bangkok"] },
+    { key: "pattaya",   aliases: ["pattaya"] },
+    { key: "phuket",    aliases: ["phuket"] },
+    { key: "chiangmai", aliases: ["chiangmai", "chiang-mai"] },
+    { key: "huahin",    aliases: ["huahin", "hua-hin"] },
+    { key: "chonburi",  aliases: ["chonburi", "chon-buri"] },
+    { key: "samui",     aliases: ["samui", "ko-samui", "surat-thani"] },
+    { key: "chiangrai", aliases: ["chiangrai", "chiang-rai"] },
+    { key: "krabi",     aliases: ["krabi"] },
+  ];
+  const countResults = await Promise.all(
+    PROVINCE_GROUPS.map(async ({ key, aliases }) => {
+      const { count } = await supabase
+        .from("condos")
+        .select("id", { count: "exact", head: true })
+        .in("province", aliases);
+      return { province: key, n: count ?? 0 };
+    })
+  );
+  const cityCounts = countResults
+    .filter((c) => c.n > 0)
     .sort((a, b) => b.n - a.n)
     .slice(0, 12);
 
@@ -272,19 +284,19 @@ export function formatContext(ctx: RetrievalContext): string {
 
   if (ctx.nameMatches.length > 0) {
     lines.push(`\nNAME-MATCHED CONDOS (mentioned or similar to question):`);
-    ctx.nameMatches.forEach((c) => lines.push(`  · ${condoLine(c)}`));
+    ctx.nameMatches.slice(0, 8).forEach((c) => lines.push(`  · ${condoLine(c)}`));
   }
   if (ctx.topYields.length > 0) {
     lines.push(`\nTOP YIELDS (filtered for outliers):`);
-    ctx.topYields.slice(0, 10).forEach((c) => lines.push(`  · ${condoLine(c)}`));
+    ctx.topYields.slice(0, 5).forEach((c) => lines.push(`  · ${condoLine(c)}`));
   }
   if (ctx.underpriced.length > 0) {
     lines.push(`\nUNDERPRICED (bubble_index ≤ 90 = below district avg):`);
-    ctx.underpriced.slice(0, 10).forEach((c) => lines.push(`  · ${condoLine(c)}`));
+    ctx.underpriced.slice(0, 5).forEach((c) => lines.push(`  · ${condoLine(c)}`));
   }
   if (ctx.recentMovers.length > 0) {
     lines.push(`\nRECENT PRICE MOVERS (|Δ| ≥ 3% in latest snapshot):`);
-    ctx.recentMovers.slice(0, 10).forEach((c) => lines.push(`  · ${condoLine(c)}`));
+    ctx.recentMovers.slice(0, 5).forEach((c) => lines.push(`  · ${condoLine(c)}`));
   }
 
   return lines.join("\n");
