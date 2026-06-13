@@ -200,7 +200,7 @@ async function _fetchCondoSummariesByCity(citySlug: string): Promise<CondoSummar
 export const fetchCondoSummariesByCity = unstable_cache(
   _fetchCondoSummariesByCity,
   ["condos:by-city"],
-  { revalidate: 3600, tags: ["condos"] }
+  { revalidate: 86400, tags: ["condos"] }
 );
 
 // Compact (columnar) variant of the city feed. Same rows as
@@ -219,7 +219,7 @@ async function _fetchCondoSummariesCompactByCity(
 export const fetchCondoSummariesCompactByCity = unstable_cache(
   _fetchCondoSummariesCompactByCity,
   ["condos:by-city-compact"],
-  { revalidate: 3600, tags: ["condos"] }
+  { revalidate: 86400, tags: ["condos"] }
 );
 
 // Cheap province-only pull (no joins, no long strings) used to render the

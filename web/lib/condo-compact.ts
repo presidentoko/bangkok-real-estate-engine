@@ -24,8 +24,10 @@ export type CompactCondoSummaries = {
   id: string[];
   name: string[];
   region: (string | null)[];
-  lat: (number | null)[];
-  lng: (number | null)[];
+  // Optional: server-only callers (stats page) get these; the API route strips
+  // them before responding to the browser to save ~100KB on Bangkok's payload.
+  lat?: (number | null)[];
+  lng?: (number | null)[];
   hero: (string | null)[];
   bubble: (number | null)[];
   superValue: (boolean | null)[];
@@ -64,8 +66,8 @@ export function encodeCompact(rows: CondoSummary[]): CompactCondoSummaries {
     c.id[i] = r.id;
     c.name[i] = r.name;
     c.region[i] = r.region;
-    c.lat[i] = r.latitude;
-    c.lng[i] = r.longitude;
+    if (c.lat) c.lat[i] = r.latitude;
+    if (c.lng) c.lng[i] = r.longitude;
     c.hero[i] = r.hero_image_url;
     c.bubble[i] = r.bubble_index;
     c.superValue[i] = r.is_super_value;
@@ -87,8 +89,8 @@ export function decodeCompact(c: CompactCondoSummaries): CondoSummary[] {
       id: c.id[i],
       name: c.name[i],
       url: null,
-      latitude: c.lat[i],
-      longitude: c.lng[i],
+      latitude: c.lat?.[i] ?? null,
+      longitude: c.lng?.[i] ?? null,
       region: c.region[i],
       province: "",
       hero_image_url: c.hero[i],

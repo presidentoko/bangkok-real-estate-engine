@@ -15,8 +15,12 @@ import { fetchCondoSummariesCompactByCity } from "@/lib/queries/condos";
 // unstable_cache, and this CDN `s-maxage` header keeps the edge warm on top
 // (served for an hour, stale-while-revalidate a day). The client decodes it
 // with decodeCompact().
+// Browser: 1h (same user refreshing within the hour gets 0 bytes from CDN).
+// CDN (s-maxage): 24h — scrapers run weekly so data is safe stale for a day.
+// stale-while-revalidate: 7d — CDN serves the old copy while regenerating,
+// so no request ever waits on a cold revalidation.
 const CACHE_HEADERS = {
-  "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+  "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
 };
 
 export async function GET(req: Request) {
@@ -25,6 +29,8 @@ export async function GET(req: Request) {
   const target = canonicalCitySlug(cityParam);
 
   const compact = await fetchCondoSummariesCompactByCity(target);
-
-  return NextResponse.json(compact, { headers: CACHE_HEADERS });
+  // Coordinates are only used server-side (geo-located stat). Stripping them
+  // from the browser response saves ~100 KB on Bangkok's 6k-row payload.
+  const { lat: _lat, lng: _lng, ...slim } = compact;
+  return NextResponse.json(slim, { headers: CACHE_HEADERS });
 }
