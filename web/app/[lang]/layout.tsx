@@ -5,6 +5,7 @@ import { CitySwitcher } from "@/components/CitySwitcher";
 import { CondoSearch } from "@/components/CondoSearch";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { MobileMenu } from "@/components/MobileMenu";
+import { SavedNavLink } from "@/components/SavedNavLink";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
 
@@ -91,6 +92,11 @@ export default async function LangLayout({
     { href: `/${lang}/contact`, label: t.nav.contact },
   ];
 
+  const MOBILE_NAV = [
+    ...NAV,
+    { href: `/${lang}/saved`, label: "Saved" },
+  ];
+
   return (
     <>
       {/* Root layout pins <html lang="en"> at SSR. Patch it client-side so the
@@ -126,9 +132,10 @@ export default async function LangLayout({
                   {n.label}
                 </Link>
               ))}
+              <SavedNavLink lang={lang} />
             </div>
             <LangSwitcher current={lang} />
-            <MobileMenu links={NAV} lang={lang} />
+            <MobileMenu links={MOBILE_NAV} lang={lang} />
           </div>
         </nav>
       </header>
