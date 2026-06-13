@@ -32,6 +32,7 @@ import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 import { stationSlug } from "@/lib/stations";
 import { getViableStations } from "@/lib/queries/stations";
+import { LinkShareButtons } from "@/components/LinkShareButtons";
 
 export const revalidate = 3600;
 
@@ -578,6 +579,14 @@ export default async function CondoPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
+      {/* Share row — LINE deeplink + copy URL */}
+      <div className="px-4 sm:px-6 pt-4">
+        <LinkShareButtons
+          url={`${SITE_URL}/${lang}/condo/${condoRaw.id}`}
+          title={`${condoRaw.name} (${region}) — RealData report`}
+        />
+      </div>
+
       <div data-speakable="report-card">
         <ReportCard
           condo={{ ...condoRaw, regions }}
