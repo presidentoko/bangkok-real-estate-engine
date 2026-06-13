@@ -68,7 +68,7 @@ export async function generateMetadata({
   const [{ data: condo }, { data: score }, { data: risk }] = await Promise.all([
     supabase
       .from("condos_published")
-      .select("name, regions(name), market_sale_median, market_summary_currency, total_units, completion_year")
+      .select("name, regions(name), market_sale_median, market_summary_currency, total_units, completion_year, gross_yield_pct")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("value_scores").select("bubble_index").eq("condo_id", id).maybeSingle(),
@@ -82,6 +82,7 @@ export async function generateMetadata({
     market_summary_currency: string | null;
     total_units: number | null;
     completion_year: number | null;
+    gross_yield_pct: number | null;
   };
   const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
   const above = score?.bubble_index != null ? Math.round(score.bubble_index - 100) : null;
@@ -97,12 +98,15 @@ export async function generateMetadata({
     risk?.flood_risk_level != null
       ? `flood risk L${risk.flood_risk_level}/5`
       : null;
+  const yieldTxt =
+    c.gross_yield_pct != null ? `yield ${c.gross_yield_pct.toFixed(2)}%` : null;
   const title = `${c.name} (${region}) — RealData report`;
   const desc =
     `${c.name} in ${region}, Bangkok. ` +
     [
       c.completion_year ? `built ${c.completion_year}` : null,
       c.total_units ? `${c.total_units} units` : null,
+      yieldTxt,
       aboveTxt,
       floodTxt,
     ]
@@ -121,6 +125,14 @@ export async function generateMetadata({
       description: desc,
       url: `${SITE_URL}/${lang}/condo/${id}`,
       type: "article",
+      images: [
+        {
+          url: `${SITE_URL}/${lang}/condo/${id}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: `${c.name} — RealData Bangkok condo report`,
+        },
+      ],
     },
   };
 }
