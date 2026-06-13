@@ -5,6 +5,7 @@ import { CitySwitcher } from "@/components/CitySwitcher";
 import { CondoSearch } from "@/components/CondoSearch";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { MobileMenu } from "@/components/MobileMenu";
+import { CompareTray } from "@/components/CompareTray";
 import { SavedNavLink } from "@/components/SavedNavLink";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
@@ -141,6 +142,8 @@ export default async function LangLayout({
       </header>
 
       <main className="flex-1">{children}</main>
+
+      <CompareTray />
 
       <footer className="mt-12 border-t border-zinc-900 bg-zinc-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
