@@ -34,6 +34,7 @@ import { stationSlug } from "@/lib/stations";
 import { getViableStations } from "@/lib/queries/stations";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { SaveButton } from "@/components/SaveButton";
+import { CompareButton } from "@/components/CompareButton";
 
 export const revalidate = 3600;
 
@@ -584,7 +585,7 @@ export default async function CondoPage({
       <div className="px-4 sm:px-6 pt-4 space-y-2">
         <div className="flex gap-2">
           <SaveButton id={condoRaw.id} name={condoRaw.name} />
-          {/* CompareButton will be added in Task 8 */}
+          <CompareButton id={condoRaw.id} name={condoRaw.name} />
         </div>
         <LinkShareButtons
           url={`${SITE_URL}/${lang}/condo/${condoRaw.id}`}
