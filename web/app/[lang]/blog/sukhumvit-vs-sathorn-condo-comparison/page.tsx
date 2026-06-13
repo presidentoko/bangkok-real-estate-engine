@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLang, type Lang } from "@/lib/i18n";
-import { blogBreadcrumbs } from "@/lib/seo";
+import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL = SEO_SITE_URL;
 const SLUG = "sukhumvit-vs-sathorn-condo-comparison";
 const PUBLISHED = "2026-05-07";
 
@@ -60,11 +60,7 @@ export async function generateMetadata({
     ],
     alternates: {
       canonical: url,
-      languages: {
-        en: `${SITE_URL}/en/blog/${SLUG}`,
-        ko: `${SITE_URL}/ko/blog/${SLUG}`,
-        th: `${SITE_URL}/th/blog/${SLUG}`,
-      },
+      languages: langAlternates(`/blog/${SLUG}`),
     },
     openGraph: {
       title: m.ogTitle,
@@ -189,12 +185,27 @@ export default async function CorridorComparison({
     headline: META[lang].ogTitle,
     inLanguage: lang,
     datePublished: PUBLISHED,
-    dateModified: PUBLISHED,
+    dateModified: new Date().toISOString().slice(0, 10),
     author: { "@id": `${SITE_URL}/#org` },
     publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: POST_URL,
     description: META[lang].desc,
   };
+
+  const faqJsonLd = buildFaqJsonLd([
+    {
+      q: "Is Sukhumvit or Sathorn better for condo investment in Bangkok?",
+      a: "The two corridors serve different investment profiles. Sukhumvit (Asok, Phrom Phong, Thonglor) has the highest rental demand from expats and tourists but also the highest entry prices. Sathorn offers slightly lower median prices with professional long-term tenant demand from the nearby financial district. Silom (Bang Rak) sits between both in price and tenant mix.",
+    },
+    {
+      q: "What are median condo sale prices in Sukhumvit vs Sathorn in Bangkok?",
+      a: "Based on RealData's analysis of active hipflat listings, Sukhumvit corridor condos (Vadhana, Khlong Toei, Phra Khanong) carry higher median sale prices per sqm than Sathorn, reflecting foreign-demand premiums and luxury developer concentration. Figures update weekly — see the full comparison table for current data.",
+    },
+    {
+      q: "Which Bangkok central district has the lowest flood risk for condos?",
+      a: "Sathorn and Silom (Bang Rak) rank at BMA flood Level 1 — no significant historical flooding. Sukhumvit corridor averages Level 2, with isolated pockets at Level 3 in lower Sukhumvit sois during extreme events. All three corridors are considerably safer than outer Bangkok districts like Don Mueang (Level 4–5).",
+    },
+  ]);
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -207,6 +218,10 @@ export default async function CorridorComparison({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, META[lang].title)),
         }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <article>
         <header className="mb-6">

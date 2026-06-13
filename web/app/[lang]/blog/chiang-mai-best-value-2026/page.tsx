@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLang, type Lang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
 const SITE_URL = SEO_SITE_URL;
@@ -203,7 +204,7 @@ export default async function ChiangMaiBestValue({
     "@type": "Article",
     headline: t.h1,
     datePublished: PUBLISHED,
-    dateModified: PUBLISHED,
+    dateModified: new Date().toISOString().slice(0, 10),
     author: { "@id": `${SITE_URL}/#org` },
     publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: POST_URL,
@@ -234,6 +235,21 @@ export default async function ChiangMaiBestValue({
     },
   };
 
+  const faqJsonLd = buildFaqJsonLd([
+    {
+      q: "What is a good condo price in Chiang Mai for digital nomads?",
+      a: "Based on RealData's analysis, Chiang Mai condo prices range from under 1M THB in outer districts (San Sai, Hang Dong) to 3–5M THB in premium Nimmanhaemin. Bubble Index below 90 means you get more sqm per baht than comparable buildings in the same sub-area — these represent the best value relative to the local market.",
+    },
+    {
+      q: "Can foreigners buy condos in Chiang Mai?",
+      a: "Yes. The same rules apply as Bangkok: foreigners may buy condo units in freehold title up to 49% of a building's total units. Funds must be remitted from abroad in foreign currency. Chiang Mai has fewer buildings near their 49% quota cap than Bangkok, making availability less of a concern — but verification with the juristic office is still recommended.",
+    },
+    {
+      q: "What is the Bubble Index for Nimmanhaemin condos in Chiang Mai?",
+      a: "Nimman (Nimmanhaemin) is Chiang Mai's most sought-after sub-area for digital nomads and tourists, pushing Bubble Indexes above 100 for most buildings there. RealData's analysis identifies buildings below the Nimman sub-area median — typically slightly off the main Nimman Road corridor or in the adjacent Maya Mall area — as the best value within this popular zone.",
+    },
+  ]);
+
   return (
     <main className="max-w-3xl mx-auto p-6">
       <script
@@ -245,6 +261,10 @@ export default async function ChiangMaiBestValue({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, t.h1)),
         }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <article>

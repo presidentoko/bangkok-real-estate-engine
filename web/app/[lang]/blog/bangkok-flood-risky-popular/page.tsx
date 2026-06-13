@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLang, type Lang } from "@/lib/i18n";
-import { blogBreadcrumbs } from "@/lib/seo";
+import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL = SEO_SITE_URL;
 const SLUG = "bangkok-flood-risky-popular";
 const PUBLISHED = "2026-05-07";
 
@@ -56,11 +56,7 @@ export async function generateMetadata({
     ],
     alternates: {
       canonical: url,
-      languages: {
-        en: `${SITE_URL}/en/blog/${SLUG}`,
-        ko: `${SITE_URL}/ko/blog/${SLUG}`,
-        th: `${SITE_URL}/th/blog/${SLUG}`,
-      },
+      languages: langAlternates(`/blog/${SLUG}`),
     },
     openGraph: {
       title: m.ogTitle,
@@ -229,7 +225,7 @@ export default async function FloodRiskyPost({
     headline: META[lang].ogTitle,
     inLanguage: lang,
     datePublished: PUBLISHED,
-    dateModified: PUBLISHED,
+    dateModified: new Date().toISOString().slice(0, 10),
     author: { "@id": `${SITE_URL}/#org` },
     publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: POST_URL,
@@ -271,6 +267,21 @@ export default async function FloodRiskyPost({
     );
   });
 
+  const faqJsonLd = buildFaqJsonLd([
+    {
+      q: "Which Bangkok areas have the worst flood risk for condo buyers?",
+      a: "The Bangkok Metropolitan Administration (BMA) flood map designates Level 4–5 (highest risk) in northern and eastern districts including Don Mueang, Bang Khen, Lat Phrao, Min Buri, and Nong Chok. During heavy monsoon seasons these areas experience 30–80cm of standing water. Active condo listings exist in all these zones, often without flood disclosure.",
+    },
+    {
+      q: "How does BMA rate flood risk in Bangkok?",
+      a: "BMA uses a 1–5 scale based on historical flood depth and drainage capacity: Level 1 = no significant flood history; Level 2 = minor puddles; Level 3 = 10–30cm; Level 4 = 30–80cm; Level 5 = over 80cm. The 2011 mega-flood affected vast parts of Bangkok at Level 4–5. RealData maps all condos against this BMA dataset.",
+    },
+    {
+      q: "Are condos in Bangkok flood zones cheaper?",
+      a: "Not significantly. RealData analysis shows flood Level 4–5 condos often list near market price, as flood risk is rarely disclosed in listings. Buyers focused on central-Bangkok alternatives can filter for Level 1–2 areas first, then compare prices within those safer zones.",
+    },
+  ]);
+
   return (
     <main className="max-w-3xl mx-auto p-6">
       <script
@@ -282,6 +293,10 @@ export default async function FloodRiskyPost({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, t.h1)),
         }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <article>
         <header className="mb-6">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLang, type Lang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
 const SITE_URL = SEO_SITE_URL;
@@ -198,12 +199,13 @@ export default async function PhuketBubbleWatch({
       .filter((x): x is Row => x !== null);
   }
 
+
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: t.h1,
     datePublished: PUBLISHED,
-    dateModified: PUBLISHED,
+    dateModified: new Date().toISOString().slice(0, 10),
     author: { "@id": `${SITE_URL}/#org` },
     publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: POST_URL,
@@ -246,6 +248,25 @@ export default async function PhuketBubbleWatch({
           __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, t.h1)),
         }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildFaqJsonLd([
+            {
+              q: "What is the Phuket condo Bubble Index?",
+              a: "RealData's Bubble Index measures each condo building's median sale price per sqm relative to its sub-area (tambon) median. 100 = at market. 200 = priced double the local average. In Phuket, buildings catering to foreign vacation-rental buyers — particularly in Patong, Kata, and Kamala — often score 150–350, reflecting the beach-proximity premium.",
+            },
+            {
+              q: "Who buys overpriced condos in Phuket?",
+              a: "Phuket's premium condo market is driven by Russian buyers (particularly post-2022), Chinese investors, Western retirees seeking vacation homes, and Bangkok investors targeting vacation-rental income. Marketing materials emphasize 'guaranteed yield' and 'beachfront premium' without publishing specific numbers — this analysis supplies those numbers.",
+            },
+            {
+              q: "How do you measure if a Phuket condo is overpriced?",
+              a: "RealData crawls all hipflat.co.th listings for each Phuket condo building, computes the median price per square meter, then divides by the sub-area (tambon) median. Buildings with fewer than 5 sampled properties per sub-area are excluded. Sale prices are preferred; rent data is used as fallback when no sale listings exist.",
+            },
+          ])),
+        }}
+      />
 
       <article>
         <header className="mb-6">
@@ -274,32 +295,44 @@ export default async function PhuketBubbleWatch({
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => {
-              const above = Math.round(r.bubble_index - 100);
-              return (
-                <tr key={r.condo_id} className="border-b border-zinc-900">
-                  <td className="py-3 text-zinc-500 tabular-nums">{i + 1}</td>
-                  <td className="py-3">
-                    <Link
-                      href={`/${lang}/condo/${r.condo_id}`}
-                      className="text-zinc-100 hover:text-blue-300 transition"
-                    >
-                      {r.name}
-                    </Link>
-                  </td>
-                  <td className="py-3 text-zinc-400 text-xs">{r.region}</td>
-                  <td className="py-3 text-right">
-                    <span
-                      className={`font-bold tabular-nums ${
-                        above > 100 ? "text-rose-400" : above > 30 ? "text-orange-400" : "text-zinc-300"
-                      }`}
-                    >
-                      +{above}%
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-8 text-center text-zinc-500 text-sm">
+                  {lang === "ko"
+                    ? "푸켓 Bubble Index 계산 중 — 곧 업데이트됩니다."
+                    : lang === "th"
+                    ? "กำลังคำนวณ Bubble Index ภูเก็ต — จะอัพเดทเร็วๆ นี้"
+                    : "Phuket Bubble Index computing — check back shortly."}
+                </td>
+              </tr>
+            ) : (
+              rows.map((r, i) => {
+                const above = Math.round(r.bubble_index - 100);
+                return (
+                  <tr key={r.condo_id} className="border-b border-zinc-900">
+                    <td className="py-3 text-zinc-500 tabular-nums">{i + 1}</td>
+                    <td className="py-3">
+                      <Link
+                        href={`/${lang}/condo/${r.condo_id}`}
+                        className="text-zinc-100 hover:text-blue-300 transition"
+                      >
+                        {r.name}
+                      </Link>
+                    </td>
+                    <td className="py-3 text-zinc-400 text-xs">{r.region}</td>
+                    <td className="py-3 text-right">
+                      <span
+                        className={`font-bold tabular-nums ${
+                          above > 100 ? "text-rose-400" : above > 30 ? "text-orange-400" : "text-zinc-300"
+                        }`}
+                      >
+                        +{above}%
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
 

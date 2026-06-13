@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLang, type Lang } from "@/lib/i18n";
-import { blogBreadcrumbs } from "@/lib/seo";
+import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL = SEO_SITE_URL;
 const SLUG = "bangkok-overpriced-top10";
 const PUBLISHED = "2026-05-06";
 
@@ -56,11 +56,7 @@ export async function generateMetadata({
     ],
     alternates: {
       canonical: url,
-      languages: {
-        en: `${SITE_URL}/en/blog/${SLUG}`,
-        ko: `${SITE_URL}/ko/blog/${SLUG}`,
-        th: `${SITE_URL}/th/blog/${SLUG}`,
-      },
+      languages: langAlternates(`/blog/${SLUG}`),
     },
     openGraph: {
       title: m.ogTitle,
@@ -190,7 +186,7 @@ export default async function OverpricedTop10({
     headline: META[lang].ogTitle,
     inLanguage: lang,
     datePublished: PUBLISHED,
-    dateModified: PUBLISHED,
+    dateModified: new Date().toISOString().slice(0, 10),
     author: { "@id": `${SITE_URL}/#org` },
     publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: POST_URL,
@@ -224,6 +220,21 @@ export default async function OverpricedTop10({
     },
   };
 
+  const faqJsonLd = buildFaqJsonLd([
+    {
+      q: "What is the Bangkok condo Bubble Index?",
+      a: "The Bangkok condo Bubble Index divides each building's median sale price per sqm by the median for all buildings in the same district (khet). 100 = at district average. 200 = priced double the district average. RealData measures 1,003 Bangkok condo buildings to compute this score weekly.",
+    },
+    {
+      q: "Which Bangkok districts have the most overpriced condos?",
+      a: "Based on RealData's analysis, the highest Bubble Index condos concentrate in Pathum Wan (Ratchadamri, Wireless Road corridor), Vadhana (upper Sukhumvit), and Phra Nakhon (riverside luxury). These areas attract luxury developer projects and foreign investor marketing, pushing prices 3–4× above district medians.",
+    },
+    {
+      q: "Does a high Bubble Index mean a Bangkok condo is a bad investment?",
+      a: "Not necessarily. A high Bubble Index (above 200) means the building is priced significantly above comparable condos in the same district. Luxury brand, location quality, or superior amenities may justify a real premium. The Bubble Index is a starting point for due diligence — it shows you the number so you can decide if the premium is justified.",
+    },
+  ]);
+
   return (
     <main className="max-w-3xl mx-auto p-6">
       <script
@@ -235,6 +246,10 @@ export default async function OverpricedTop10({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, t.h1)),
         }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <article>
         <header className="mb-6">

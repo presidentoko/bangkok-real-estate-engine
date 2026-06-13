@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLang, type Lang } from "@/lib/i18n";
-import { blogBreadcrumbs } from "@/lib/seo";
+import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL = SEO_SITE_URL;
 const SLUG = "bangkok-foreigner-best-value";
 const PUBLISHED = "2026-05-07";
 
@@ -56,11 +56,7 @@ export async function generateMetadata({
     ],
     alternates: {
       canonical: url,
-      languages: {
-        en: `${SITE_URL}/en/blog/${SLUG}`,
-        ko: `${SITE_URL}/ko/blog/${SLUG}`,
-        th: `${SITE_URL}/th/blog/${SLUG}`,
-      },
+      languages: langAlternates(`/blog/${SLUG}`),
     },
     openGraph: {
       title: m.ogTitle,
@@ -222,7 +218,7 @@ export default async function BestValuePost({
     headline: META[lang].ogTitle,
     inLanguage: lang,
     datePublished: PUBLISHED,
-    dateModified: PUBLISHED,
+    dateModified: new Date().toISOString().slice(0, 10),
     author: { "@id": `${SITE_URL}/#org` },
     publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: POST_URL,
@@ -253,6 +249,21 @@ export default async function BestValuePost({
     },
   };
 
+  const faqJsonLd = buildFaqJsonLd([
+    {
+      q: "What is the 49% foreign quota for Bangkok condos?",
+      a: "Thai law (Condominium Act) caps foreign freehold ownership in any condo building at 49% of the total registered units. Once a building's quota is full, foreigners can only buy via Thai company structure or long-term leasehold (30+30+30 years). Popular expat buildings in Sukhumvit and Sathorn often have limited or zero remaining quota.",
+    },
+    {
+      q: "How does RealData identify the best Bangkok condos for foreign investors?",
+      a: "RealData combines two scores: (1) Bubble Index below 100 — the building is priced below its district's median per sqm; and (2) Livability Score in the top tier — a BTS or MRT station under 400m, hospitals, international schools, and supermarkets within 1km. The top 8 buildings by combined score are shown.",
+    },
+    {
+      q: "What is a good Livability Score for a Bangkok condo?",
+      a: "RealData's Livability Score (0–100) weights BTS/MRT proximity most heavily, then adds points for each hospital, international school, and supermarket within 1km. Scores above 70 indicate strong infrastructure access typical of central Bangkok. Scores above 85 are rare and usually found within 200m of a major interchange station like Asok, Phrom Phong, or Sala Daeng.",
+    },
+  ]);
+
   return (
     <main className="max-w-3xl mx-auto p-6">
       <script
@@ -264,6 +275,10 @@ export default async function BestValuePost({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, t.h1)),
         }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <article>
         <header className="mb-6">

@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLang, type Lang } from "@/lib/i18n";
-import { blogBreadcrumbs } from "@/lib/seo";
+import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL = SEO_SITE_URL;
 const SLUG = "bangkok-foreign-buyer-guide-2026";
 const PUBLISHED = "2026-05-07";
 
@@ -58,11 +58,7 @@ export async function generateMetadata({
     ],
     alternates: {
       canonical: url,
-      languages: {
-        en: `${SITE_URL}/en/blog/${SLUG}`,
-        ko: `${SITE_URL}/ko/blog/${SLUG}`,
-        th: `${SITE_URL}/th/blog/${SLUG}`,
-      },
+      languages: langAlternates(`/blog/${SLUG}`),
     },
     openGraph: {
       title: m.ogTitle,
@@ -90,13 +86,28 @@ export default async function ForeignBuyerGuide({
     headline: META[lang].ogTitle,
     inLanguage: lang,
     datePublished: PUBLISHED,
-    dateModified: PUBLISHED,
+    dateModified: new Date().toISOString().slice(0, 10),
     author: { "@id": `${SITE_URL}/#org` },
     publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: POST_URL,
     description: META[lang].desc,
     about: { "@type": "Thing", name: "Bangkok real estate market" },
   };
+
+  const faqJsonLd = buildFaqJsonLd([
+    {
+      q: "Can foreigners legally own condos in Bangkok?",
+      a: "Yes. Under the Thai Condominium Act, foreigners may purchase condo units in freehold title (chanote) as long as foreign ownership in the building does not exceed 49% of total units. The buyer's funds must be transferred from abroad in foreign currency and converted to Thai baht (documented via a Foreign Exchange Transaction Form). Land ownership requires different legal structures.",
+    },
+    {
+      q: "What does the 49% quota rule mean for Bangkok condo buyers?",
+      a: "In any Thai condo project, a maximum of 49% of total units may be held in foreign names on the title deed. Buildings popular with foreign buyers (especially Sukhumvit and Sathorn) may have little or no remaining quota — verify directly with the project juristic office or via hipflat before making an offer.",
+    },
+    {
+      q: "What taxes do foreigners pay when buying a Bangkok condo resale?",
+      a: "Buying a Bangkok condo resale involves: Transfer fee (2% of appraised value); Specific Business Tax at 3.3% if seller held under 5 years; Stamp Duty at 0.5% if SBT exempt; and seller's Withholding Tax (1–3%). Buyers should budget approximately 3–4% of purchase price in total transaction costs.",
+    },
+  ]);
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -109,6 +120,10 @@ export default async function ForeignBuyerGuide({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, META[lang].title)),
         }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <article>
         <header className="mb-6">
