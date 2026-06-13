@@ -250,9 +250,6 @@ def main() -> int:
             rc = run_step(label, cmd, deadline, args.dry_run, timeout_s=cap_s)
             if rc == -1:
                 break  # out of time — stop starting new discovery steps
-            if rc != 0:
-                print(f"[{_now()}] WARNING: '{label}' failed (exit {rc}) — "
-                      f"continuing to next step", flush=True)
             touched = True
 
         if touched and not args.skip_post:
@@ -279,4 +276,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
