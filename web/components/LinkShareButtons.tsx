@@ -13,12 +13,27 @@ export function LinkShareButtons({ url, title }: Props) {
   const lineHref = `https://line.me/R/msg/text/?${encodeURIComponent(`${title}\n${url}`)}`;
 
   const onCopy = async () => {
+    let success = false;
     try {
       await navigator.clipboard.writeText(url);
+      success = true;
+    } catch {
+      // Fallback for mobile browsers that deny clipboard permission
+      try {
+        const el = document.createElement("input");
+        el.value = url;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+        success = true;
+      } catch {
+        // truly unavailable — no-op
+      }
+    }
+    if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard API unavailable (non-HTTPS dev env) — silently ignore
     }
   };
 
@@ -28,6 +43,7 @@ export function LinkShareButtons({ url, title }: Props) {
         href={lineHref}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label={`Share on LINE: ${title}`}
         className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#06C755] hover:bg-[#05b34c] text-white font-semibold text-sm transition"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
