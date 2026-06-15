@@ -1,0 +1,22 @@
+# Browser scraper profiles (huge, not needed for deploy)
+.nodriver-profile*/
+.playwright-profile*/
+
+# Python / data files — not needed for the Next.js deploy
+src/
+scripts/
+logs/
+data/
+spatial_matches.tsv
+debug_html/
+docs/
+*.py
+*.pyc
+*.pyo
+__pycache__/
+.venv/
+venv/
+*.egg-info/
+
+# Large local artifacts
+web/.next/cache/
