@@ -118,7 +118,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "could not save inquiry" }, { status: 500 });
   }
 
-  void notifyTelegram({
+  await notifyTelegram({
     type: inquiry_type,
     email,
     phone,

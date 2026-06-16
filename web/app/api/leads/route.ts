@@ -179,8 +179,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Fire-and-forget Telegram ops notify
-  void notifyOps({
+  await notifyOps({
     email,
     name,
     condo_id,
