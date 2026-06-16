@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContactForm } from "@/components/ContactForm";
-import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 
 const SITE_URL =
@@ -16,10 +15,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Contact — RealData" };
-  const t = getDictionary(lang);
   return {
-    title: `${t.contact.title} — RealData`,
-    description: t.contact.lead,
+    title: "Contact & Concierge — RealData Bangkok",
+    description:
+      "Property concierge for foreign buyers in Thailand. Get a personalised shortlist, price guidance, and viewing support — or reach our team for advertising and data partnerships.",
     alternates: {
       canonical: `/${lang}/contact`,
       languages: {
@@ -39,30 +38,20 @@ export default async function ContactPage({
 }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
-  const t = getDictionary(lang);
 
   return (
     <main className="max-w-2xl mx-auto p-6">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t.contact.title}</h1>
-        <p className="text-zinc-400 text-sm">{t.contact.lead}</p>
+        <h1 className="text-3xl font-bold mb-2">Contact us</h1>
+        <p className="text-zinc-400 text-sm">
+          Property concierge, advertising, or data partnerships — fill in the form and we&apos;ll be
+          in touch.
+        </p>
       </header>
 
       <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-5">
-        <ContactForm strings={t.contact.form} />
+        <ContactForm />
       </div>
-
-      <section className="mt-8 grid sm:grid-cols-2 gap-3 text-sm">
-        {t.contact.useCases.map((u) => (
-          <div
-            key={u.title}
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4"
-          >
-            <div className="font-semibold text-zinc-200 mb-1">{u.title}</div>
-            <p className="text-zinc-400 leading-relaxed">{u.body}</p>
-          </div>
-        ))}
-      </section>
     </main>
   );
 }
