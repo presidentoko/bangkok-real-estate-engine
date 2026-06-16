@@ -353,6 +353,26 @@ export default async function CityPage({
         )}
       </section>
 
+      {/* Retiree lens CTA */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <Link
+          href={`/${lang}/retiree/${slug}`}
+          className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 hover:border-zinc-600 transition group"
+        >
+          <div>
+            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">
+              Retiree lens
+            </div>
+            <div className="text-zinc-100 font-semibold group-hover:text-emerald-400 transition">
+              Retiree-friendly condos in {city.name[lang as Lang]} →
+            </div>
+            <div className="text-zinc-500 text-xs mt-0.5">
+              Ranked by healthcare access, air quality &amp; transit
+            </div>
+          </div>
+        </Link>
+      </section>
+
       {/* Travel affiliate — viewing trip booking */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <TravelAffiliateCard
