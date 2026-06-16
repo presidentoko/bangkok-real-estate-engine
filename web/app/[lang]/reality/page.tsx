@@ -89,9 +89,9 @@ async function fetchTopBubblePerProvince(): Promise<Case[]> {
       scores.push(...((s ?? []) as ScoreRow[]));
     }
 
-    // 3. Pick top 3 by bubble_index per province
+    // 3. Pick top 5 by bubble_index per province
     scores.sort((a, b) => (b.bubble_index ?? 0) - (a.bubble_index ?? 0));
-    const top = scores.slice(0, 3).filter((s) => s.bubble_index > 130);
+    const top = scores.slice(0, 5).filter((s) => s.bubble_index > 115);
     if (!top.length) continue;
 
     // 4. Pull flood_risk_level for those (Bangkok-only data, but

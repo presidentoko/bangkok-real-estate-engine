@@ -14,6 +14,7 @@ const dict = {
     blog: "Blog",
     about: "Methodology",
     contact: "Contact",
+    retiree: "Retiree",
   },
   footer: {
     about:

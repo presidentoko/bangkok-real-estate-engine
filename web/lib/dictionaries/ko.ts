@@ -13,6 +13,7 @@ const dict: Dict = {
     blog: "Blog",
     about: "방법론",
     contact: "문의",
+    retiree: "은퇴자",
   },
   footer: {
     about:
