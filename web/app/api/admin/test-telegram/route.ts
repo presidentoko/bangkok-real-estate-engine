@@ -3,11 +3,6 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  const secret = req.headers.get("x-admin-secret");
-  if (secret !== process.env.ADMIN_SECRET) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
