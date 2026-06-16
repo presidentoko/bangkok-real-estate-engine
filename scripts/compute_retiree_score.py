@@ -132,7 +132,12 @@ def main() -> int:
         print("no condos with livability data — nothing to update")
         return 0
 
-    db.from_("condos").upsert(updates, on_conflict="id").execute()
+    for u in updates:
+        db.from_("condos").update({
+            "retiree_score": u["retiree_score"],
+            "retiree_score_computed_at": u["retiree_score_computed_at"],
+        }).eq("id", u["id"]).execute()
+
     good_plus = sum(1 for u in updates if u["retiree_score"] >= 55)
     print(f"retiree_score computed for {len(updates)} condos ({good_plus} scored >= 55 / good+)")
     return 0
