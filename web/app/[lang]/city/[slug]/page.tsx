@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
 import { CityMapSvg, type CityPoint } from "@/components/CityMapSvg";
+import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
 import { CITIES, cityProvinceSlugs, getCity, type City, type CitySlug } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
@@ -371,6 +372,13 @@ export default async function CityPage({
             </div>
           </div>
         </Link>
+      </section>
+
+      {/* Concierge CTA */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <LeadCaptureCTA
+          headline={`Looking for a condo in ${city.name[lang as Lang]}? Get an expert read.`}
+        />
       </section>
 
       {/* Travel affiliate — viewing trip booking */}

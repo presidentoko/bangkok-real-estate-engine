@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { CITIES, cityProvinceSlugs, getCity } from "@/lib/cities";
 import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
@@ -267,6 +268,10 @@ export default async function RetireeCityPage({
       </section>
 
       {/* Internal links to other cities */}
+      <LeadCaptureCTA
+        headline="Planning a retirement move to Thailand? Get a personalised shortlist."
+      />
+
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-zinc-200">
           Same lens in other cities
