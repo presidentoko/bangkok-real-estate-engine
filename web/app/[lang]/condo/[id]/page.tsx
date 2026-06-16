@@ -25,6 +25,7 @@ import {
   getCondoYield,
   getCurrentMortgageRate,
 } from "@/lib/queries/yield";
+import { canonicalCitySlug, getCity } from "@/lib/cities";
 import { retireeSuitability } from "@/lib/retiree";
 import { langAlternates } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
@@ -157,6 +158,7 @@ export default async function CondoPage({
       .from("condos_published")
       .select(
         "id, name, developer, url, regions(name), latitude, longitude, " +
+        "province, retiree_score, " +
         "floors, total_units, completion_year, description, hero_image_url, " +
         "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
         "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
@@ -225,6 +227,8 @@ export default async function CondoPage({
     developer: string | null;
     url: string | null;
     regions: { name: string } | { name: string }[] | null;
+    province: string | null;
+    retiree_score: number | null;
     latitude: number | null;
     longitude: number | null;
     floors: number | null;
@@ -829,6 +833,18 @@ export default async function CondoPage({
           {stationLinkOk && stationName && (
             <li><Link href={`/${lang}/near/${stationSpokeSlug}`}>Condos near {stationName} station</Link></li>
           )}
+          {(() => {
+            const citySlug = condoRaw.province != null ? canonicalCitySlug(condoRaw.province) : null;
+            const cityObj = citySlug ? getCity(citySlug) : null;
+            if (!cityObj || (condoRaw.retiree_score ?? 0) < 55) return null;
+            return (
+              <li>
+                <Link href={`/${lang}/retiree/${citySlug}`}>
+                  More retiree-friendly condos in {cityObj.name.en}
+                </Link>
+              </li>
+            );
+          })()}
           <li><Link href={`/${lang}/glossary/bubble-index`}>What is the Bubble Index?</Link></li>
           <li><Link href={`/${lang}/glossary/gross-yield`}>What is gross yield?</Link></li>
           <li><Link href={`/${lang}/glossary/resale-liquidity`}>What is the Resale Liquidity Score?</Link></li>
