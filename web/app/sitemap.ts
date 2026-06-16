@@ -91,6 +91,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Retiree segment pages — 8 cities × N langs.
+  for (const lang of LANGS) {
+    for (const city of CITIES) {
+      const path = `/retiree/${city.slug}`;
+      out.push({
+        url: `${SITE_URL}/${lang}${path}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.8,
+        alternates: { languages: langAlternates(path) },
+      });
+    }
+  }
+
   // District landing pages — one per region with at least 3 active condos.
   // We don't want to surface tiny single-condo regions or stale slugs.
   const supabase = getServerSupabase();
