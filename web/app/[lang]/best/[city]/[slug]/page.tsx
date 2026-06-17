@@ -113,12 +113,22 @@ export default async function BestSlicePage({
   }
   query = query.order("gross_yield_pct", { ascending: false }).limit(50);
 
-  const [{ data: rowsData }, mortgage] = await Promise.all([
+  const [{ data: rowsData }, mortgage, { data: retireeData }] = await Promise.all([
     query,
     getCurrentMortgageRate(supabase),
+    supabase
+      .from("condos")
+      .select("id, name, retiree_score, regions(name)")
+      .eq("province", city)
+      .eq("is_active", true)
+      .gte("retiree_score", 55)
+      .order("retiree_score", { ascending: false })
+      .limit(5),
   ]);
 
   const rows = (rowsData ?? []) as unknown as Row[];
+  type RetireeRow = { id: string; name: string; retiree_score: number; regions: { name: string } | { name: string }[] | null };
+  const retireeRows = (retireeData ?? []) as unknown as RetireeRow[];
   const mrr = mortgage?.rate ?? null;
 
   const titleChunk = filterObj.titleChunk(cityObj.display);
@@ -416,6 +426,51 @@ export default async function BestSlicePage({
           ))}
         </div>
       </section>
+
+      {/* Retiree Picks — only shown when city has scored data */}
+      {retireeRows.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-zinc-200">
+              🏥 Retiree-friendly picks in {cityObj.display}
+            </h2>
+            <Link
+              href={`/${lang}/retiree/${city}`}
+              className="text-xs text-emerald-400 hover:text-emerald-300 shrink-0"
+            >
+              Full ranked list →
+            </Link>
+          </div>
+          <p className="text-xs text-zinc-500">
+            Scored on healthcare access (40%), air quality (25%), transit (20%), daily errands (15%). Min score 55.
+          </p>
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
+            {retireeRows.map((r, i) => {
+              const region = (Array.isArray(r.regions) ? r.regions[0] : r.regions)?.name;
+              const score = r.retiree_score;
+              const scoreColor = score >= 75 ? "text-emerald-400" : score >= 55 ? "text-emerald-300" : "text-zinc-400";
+              return (
+                <Link
+                  key={r.id}
+                  href={`/${lang}/condo/${r.id}`}
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-zinc-900/50 transition ${i > 0 ? "border-t border-zinc-800/50" : ""}`}
+                >
+                  <span className="text-zinc-600 tabular-nums text-xs w-5 shrink-0">{i + 1}</span>
+                  <span className="flex-1 text-zinc-100 font-medium text-sm leading-snug">{r.name}</span>
+                  {region && <span className="text-zinc-500 text-xs hidden sm:block">{region}</span>}
+                  <span className={`font-bold tabular-nums text-sm shrink-0 ${scoreColor}`}>{score}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <Link
+            href={`/${lang}/blog/thailand-best-cities-for-retirees-2026`}
+            className="block text-xs text-zinc-500 hover:text-zinc-300"
+          >
+            → Why we score healthcare at 40%: read the city comparison guide
+          </Link>
+        </section>
+      )}
 
       <LeadCaptureCTA
         headline={`See one you like in ${cityObj.display}? Get an expert read.`}
