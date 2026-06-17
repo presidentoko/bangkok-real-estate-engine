@@ -31,6 +31,21 @@ export async function generateMetadata({
 // page via a CONTENT switch.
 const POSTS = [
   {
+    slug: "thailand-best-cities-for-retirees-2026",
+    title: {
+      en: "Best Cities to Retire in Thailand 2026 — Data Ranked",
+      ko: "2026 태국 은퇴지 최고 도시 — 데이터 랭킹",
+      th: "เมืองที่ดีที่สุดสำหรับเกษียณในไทย 2026 — จัดอันดับด้วยข้อมูล",
+    },
+    description: {
+      en: "Healthcare, air quality, transit, walkability — we scored Phuket, Pattaya, Chiang Mai, Hua Hin, and Bangkok for retirees. No broker placement.",
+      ko: "의료·공기질·교통·편의 4가지로 직접 점수 낸 태국 5개 도시 비교. 방콕, 푸켓, 파타야, 치앙마이, 후아힌.",
+      th: "เปรียบเทียบ 5 เมืองไทย ด้วยข้อมูลด้านสุขภาพ อากาศ ขนส่ง และความสะดวก ภูเก็ต พัทยา เชียงใหม่ หัวหิน กรุงเทพ",
+    },
+    date: "2026-06-17",
+    tag: { en: "Retiree", ko: "은퇴자", th: "ผู้เกษียณ" },
+  },
+  {
     slug: "phuket-bubble-watch",
     title: {
       en: "Phuket Bubble Watch — Top 10 Overpriced Condos",

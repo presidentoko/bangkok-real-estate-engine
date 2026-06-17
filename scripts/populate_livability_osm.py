@@ -45,7 +45,7 @@ MAX_DELAY_S = 60
 RESET_AFTER_OK = 8
 
 
-def _load_targets(client, force: bool, sources: list[str] | None) -> list[dict]:
+def _load_targets(client, force: bool, sources: list[str] | None, provinces: list[str] | None) -> list[dict]:
     out: list[dict] = []
     offset = 0
     while True:
@@ -57,6 +57,8 @@ def _load_targets(client, force: bool, sources: list[str] | None) -> list[dict]:
         )
         if sources:
             q = q.in_("source", sources)
+        if provinces:
+            q = q.in_("province", provinces)
         page = (
             q.range(offset, offset + PAGE - 1)
             .execute()
@@ -90,9 +92,9 @@ def _load_targets(client, force: bool, sources: list[str] | None) -> list[dict]:
     return [r for r in out if r["id"] not in existing]
 
 
-async def _run(limit: int | None, force: bool, sources: list[str] | None) -> int:
+async def _run(limit: int | None, force: bool, sources: list[str] | None, provinces: list[str] | None) -> int:
     client = get_client()
-    targets = _load_targets(client, force, sources)
+    targets = _load_targets(client, force, sources, provinces)
     if limit:
         targets = targets[:limit]
     if not targets:
@@ -188,8 +190,13 @@ def main() -> int:
         help="Restrict to these condo sources (e.g. fazwaz dotproperty "
              "ddproperty). Omit to target every published geo-located condo.",
     )
+    ap.add_argument(
+        "--province", nargs="+", default=None,
+        help="Restrict to these province slugs (e.g. phuket pattaya huahin). "
+             "Accepts both compact and kebab forms.",
+    )
     args = ap.parse_args()
-    return asyncio.run(_run(args.limit, args.force, args.sources))
+    return asyncio.run(_run(args.limit, args.force, args.sources, args.province))
 
 
 if __name__ == "__main__":
