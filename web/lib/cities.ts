@@ -2,6 +2,7 @@
 // Each entry drives a /[lang]/city/[slug] landing page when published.
 
 export type CitySlug =
+  | "bangkok"
   | "pattaya"
   | "chonburi"
   | "huahin"
@@ -25,6 +26,21 @@ export type City = {
 };
 
 export const CITIES: City[] = [
+  {
+    slug: "bangkok",
+    name: { en: "Bangkok", ko: "방콕", th: "กรุงเทพฯ" },
+    tagline: {
+      en: "Urban retirement hub — world-class hospitals, BTS/MRT grid, lowest cost private healthcare in Asia.",
+      ko: "도심 은퇴 허브 — 세계급 병원, BTS·MRT 촘촘한 네트워크, 아시아 최저 민간 의료비.",
+      th: "ศูนย์กลางผู้เกษียณในเมือง โรงพยาบาลระดับโลก BTS/MRT ครอบคลุม ค่ารักษาพยาบาลเอกชนถูกสุดในเอเชีย",
+    },
+    center: [100.5018, 13.7563],
+    audience: {
+      en: "Best for: urban retirees, medical-tourism extended stays, proximity to Bumrungrad / Samitivej",
+      ko: "타겟: 도심 은퇴자, 의료 관광 장기 체류, 범룽랏·사미티벳 병원 접근 우선",
+      th: "เหมาะสำหรับ: ผู้เกษียณในเมือง พำนักระยะยาวเพื่อการแพทย์ ใกล้บำรุงราษฎร์/สมิติเวช",
+    },
+  },
   {
     slug: "phuket",
     name: { en: "Phuket", ko: "푸켓", th: "ภูเก็ต" },

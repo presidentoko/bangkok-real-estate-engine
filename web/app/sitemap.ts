@@ -205,5 +205,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Developer lens pages — one per developer with condos in DB.
+  const { data: devSlugs } = await supabase
+    .from("condos_published")
+    .select("developer_slug")
+    .not("developer_slug", "is", null);
+  const uniqueDevSlugs = [...new Set((devSlugs ?? []).map((r: { developer_slug: string }) => r.developer_slug as string))];
+  for (const devSlug of uniqueDevSlugs) {
+    const dp = `/developer/${devSlug}`;
+    for (const lang of LANGS) {
+      out.push({
+        url: `${SITE_URL}/${lang}${dp}`,
+        lastModified: now,
+        changeFrequency: "monthly",
+        priority: 0.6,
+        alternates: { languages: langAlternates(dp) },
+      });
+    }
+  }
+
   return out;
 }

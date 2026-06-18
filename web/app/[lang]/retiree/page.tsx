@@ -38,6 +38,11 @@ const CITY_META: Record<string, {
   highlight: { en: string; ko: string; th: string };
   watch: { en: string; ko: string; th: string };
 }> = {
+  bangkok: {
+    tagline: { en: "Hospitals + BTS everywhere", ko: "어디나 병원 + BTS", th: "โรงพยาบาล + BTS ทั่วเมือง" },
+    highlight: { en: "Bumrungrad, Samitivej, BNH — all JCI-accredited. BTS/MRT within 500m of most condos.", ko: "범룽랏·사미티벳·BNH 모두 JCI 인증. 대부분 콘도 500m 내 BTS/MRT.", th: "บำรุงราษฎร์ สมิติเวช BNH ล้วน JCI BTS/MRT ห่างจากคอนโดส่วนใหญ่ไม่เกิน 500 เมตร" },
+    watch: { en: "Traffic + air quality (PM2.5) peaks Nov–Feb. Choose condos near BTS to avoid car dependency.", ko: "11~2월 교통·공기질(PM2.5) 최악. BTS 근처 콘도로 자가용 의존 방지.", th: "ปัญหาจราจร + PM2.5 พุ่งสูง พ.ย.–ก.พ. เลือกคอนโดใกล้ BTS ลดการพึ่งพารถยนต์" },
+  },
   phuket: {
     tagline: { en: "Beach + hospitals", ko: "해변 + 병원", th: "หาด + โรงพยาบาล" },
     highlight: { en: "Bangkok Hospital Phuket (JCI-accredited) + clean sea air", ko: "국제 인증 방콕 병원 푸켓 + 맑은 해양 공기", th: "Bangkok Hospital ภูเก็ต (JCI) + อากาศทะเลสะอาด" },
