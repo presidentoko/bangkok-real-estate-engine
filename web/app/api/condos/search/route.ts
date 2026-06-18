@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   const supabase = getServerSupabase();
   const { data, error } = await supabase
     .from("condos_published")
-    .select("id, name, regions(name), developer")
+    .select("id, slug, name, regions(name), developer")
     .ilike("name", `%${q}%`)
     .limit(10);
   if (error) {

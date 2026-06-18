@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 type SearchResult = {
   id: string;
+  slug: string | null;
   name: string;
   developer: string | null;
   regions: { name: string } | { name: string }[] | null;
@@ -99,7 +100,7 @@ export function CondoSearch({ lang }: { lang: string }) {
             return (
               <Link
                 key={r.id}
-                href={`/${lang}/condo/${r.id}`}
+                href={`/${lang}/condo/${r.slug ?? r.id}`}
                 onClick={() => setOpen(false)}
                 className="block px-3 py-2 hover:bg-zinc-900 transition border-b border-zinc-900/60 last:border-b-0"
               >

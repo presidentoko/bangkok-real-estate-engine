@@ -19,6 +19,8 @@ export type WeeklyFactBullet = {
   value: string;
   /** Optional condo UUID for deep-link. */
   condo_id?: string | null;
+  /** Optional keyword slug for deep-link (preferred over condo_id when present). */
+  slug?: string | null;
   /** The DB column this number was sourced from (e.g. gross_yield_pct). */
   metric?: string | null;
   /** The number we expect when re-querying (used by the verifier). */

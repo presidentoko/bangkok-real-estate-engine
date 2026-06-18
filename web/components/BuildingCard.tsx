@@ -90,7 +90,7 @@ export function BuildingCard({
 
   return (
     <Link
-      href={`${hrefPrefix}${condo.id}`}
+      href={`${hrefPrefix}${condo.slug ?? condo.id}`}
       className="group relative block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-zinc-600 transition"
     >
       <div className={`relative ${compact ? "aspect-[5/3]" : "aspect-[5/3]"} bg-zinc-950 overflow-hidden`}>

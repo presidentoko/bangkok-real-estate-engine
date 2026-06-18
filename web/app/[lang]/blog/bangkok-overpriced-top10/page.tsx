@@ -71,6 +71,7 @@ export async function generateMetadata({
 
 type Row = {
   condo_id: string;
+  slug: string | null;
   bubble_index: number;
   name: string;
   region: string;
@@ -166,14 +167,15 @@ export default async function OverpricedTop10({
   for (const s of (scores ?? []) as Array<{ condo_id: string; bubble_index: number }>) {
     const { data } = await supabase
       .from("condos_published")
-      .select("name, regions(name)")
+      .select("name, slug, regions(name)")
       .eq("id", s.condo_id)
       .maybeSingle();
     if (!data) continue;
-    const c = data as unknown as { name: string; regions: { name: string } | { name: string }[] | null };
+    const c = data as unknown as { name: string; slug: string | null; regions: { name: string } | { name: string }[] | null };
     const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
     rows.push({
       condo_id: s.condo_id,
+      slug: c.slug,
       bubble_index: s.bubble_index,
       name: c.name,
       region,
@@ -207,7 +209,7 @@ export default async function OverpricedTop10({
             addressRegion: "Bangkok",
             addressCountry: "TH",
           },
-          url: `${SITE_URL}/${lang}/condo/${r.condo_id}`,
+          url: `${SITE_URL}/${lang}/condo/${r.slug ?? r.condo_id}`,
           additionalProperty: [
             {
               "@type": "PropertyValue",
@@ -286,7 +288,7 @@ export default async function OverpricedTop10({
                   </td>
                   <td className="py-3 pr-3 font-semibold">
                     <Link
-                      href={`/${lang}/condo/${r.condo_id}`}
+                      href={`/${lang}/condo/${r.slug ?? r.condo_id}`}
                       className="hover:underline"
                     >
                       {r.name}

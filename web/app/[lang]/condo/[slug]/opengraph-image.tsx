@@ -107,12 +107,15 @@ function bubbleLabel(b: number | null, t: typeof LABELS["en"]): string {
   return t.bubbleFair;
 }
 
+const UUID_RE_OG =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function OG({
   params,
 }: {
-  params: { id: string; lang: string };
+  params: { slug: string; lang: string };
 }) {
-  const id = params.id;
+  const { slug } = params;
   const lang: Lang = isLang(params.lang) ? params.lang : "en";
   const t = LABELS[lang];
 
@@ -124,12 +127,14 @@ export default async function OG({
   let avail: number | null = null;
   try {
     const supabase = getServerSupabase();
+    // Support both legacy UUID params and new slug params.
+    const condoQuery = UUID_RE_OG.test(slug)
+      ? supabase.from("condos_published").select("id, name, regions(name), total_units, available_units_count").eq("id", slug).maybeSingle()
+      : supabase.from("condos_published").select("id, name, regions(name), total_units, available_units_count").eq("slug", slug).maybeSingle();
+    const { data: condoData } = await condoQuery;
+    const id = (condoData as unknown as { id: string } | null)?.id ?? slug;
     const [{ data: condo }, { data: score }, { data: risk }] = await Promise.all([
-      supabase
-        .from("condos_published")
-        .select("name, regions(name), total_units, available_units_count")
-        .eq("id", id)
-        .maybeSingle(),
+      Promise.resolve({ data: condoData }),
       supabase.from("value_scores").select("bubble_index").eq("condo_id", id).maybeSingle(),
       supabase.from("risk_factors").select("flood_risk_level").eq("condo_id", id).maybeSingle(),
     ]);

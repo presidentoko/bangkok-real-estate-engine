@@ -70,6 +70,7 @@ export async function generateMetadata({
 
 type Row = {
   condo_id: string;
+  slug: string | null;
   bubble_index: number;
   name: string;
   region: string;
@@ -168,7 +169,7 @@ export default async function PhuketBubbleWatch({
   // because value_scores doesn't carry province; we join via condos.province.
   const { data: phuketCondos } = await supabase
     .from("condos_published")
-    .select("id, name, regions(name)")
+    .select("id, slug, name, regions(name)")
     .eq("province", "phuket")
     .limit(200);
 
@@ -176,6 +177,7 @@ export default async function PhuketBubbleWatch({
   const idToCondo = new Map(
     ((phuketCondos ?? []) as unknown as Array<{
       id: string;
+      slug: string | null;
       name: string;
       regions: { name: string } | { name: string }[] | null;
     }>).map((c) => [c.id, c])
@@ -194,7 +196,7 @@ export default async function PhuketBubbleWatch({
         const c = idToCondo.get(s.condo_id);
         if (!c) return null;
         const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "—";
-        return { condo_id: s.condo_id, bubble_index: s.bubble_index, name: c.name, region };
+        return { condo_id: s.condo_id, slug: c.slug ?? null, bubble_index: s.bubble_index, name: c.name, region };
       })
       .filter((x): x is Row => x !== null);
   }
@@ -230,7 +232,7 @@ export default async function PhuketBubbleWatch({
       itemListElement: rows.map((r, i) => ({
         "@type": "ListItem",
         position: i + 1,
-        url: `${SITE_URL}/${lang}/condo/${r.condo_id}`,
+        url: `${SITE_URL}/${lang}/condo/${r.slug ?? r.condo_id}`,
         name: r.name,
       })),
     },
@@ -313,7 +315,7 @@ export default async function PhuketBubbleWatch({
                     <td className="py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                     <td className="py-3">
                       <Link
-                        href={`/${lang}/condo/${r.condo_id}`}
+                        href={`/${lang}/condo/${r.slug ?? r.condo_id}`}
                         className="text-zinc-100 hover:text-blue-300 transition"
                       >
                         {r.name}

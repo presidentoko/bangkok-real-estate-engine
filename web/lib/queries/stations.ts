@@ -113,6 +113,7 @@ function rowToSummary(r: Record<string, any>): CondoSummary {
   const rf = Array.isArray(r.risk_factors) ? r.risk_factors[0] : r.risk_factors;
   return {
     id: r.id,
+    slug: r.slug ?? null,
     name: r.name,
     url: r.url ?? null,
     latitude: r.latitude ?? null,

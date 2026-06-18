@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { CondoFacilities } from "@/components/CondoFacilities";
 import { CondoNeighbours } from "@/components/CondoNeighbours";
 import { CondoUnitsTable } from "@/components/CondoUnitsTable";
@@ -39,6 +39,9 @@ import { CompareButton } from "@/components/CompareButton";
 
 export const revalidate = 3600;
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // Prebuild the 50 most-listed condos × 3 langs = 150 pages at build time.
 // These are the pages most likely to be hit by search/social/AI crawlers —
 // serving them as static HTML keeps function invocations off the free-plan
@@ -47,12 +50,13 @@ export async function generateStaticParams() {
   const supabase = getServerSupabase();
   const { data } = await supabase
     .from("condos_published")
-    .select("id, active_listings_count")
+    .select("slug, active_listings_count")
+    .not("slug", "is", null)
     .order("active_listings_count", { ascending: false, nullsFirst: false })
     .limit(50);
-  const ids = (data ?? []).map((r) => String(r.id));
-  return ids.flatMap((id) =>
-    (["en", "ko", "th"] as const).map((lang) => ({ id, lang }))
+  const slugs = (data ?? []).map((r) => String(r.slug));
+  return slugs.flatMap((slug) =>
+    (["en", "ko", "th"] as const).map((lang) => ({ slug, lang }))
   );
 }
 
@@ -65,31 +69,36 @@ const SITE_URL =
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string; lang: string }>;
+  params: Promise<{ slug: string; lang: string }>;
 }): Promise<Metadata> {
-  const { id, lang } = await params;
+  const { slug, lang } = await params;
   const supabase = getServerSupabase();
-  const [{ data: condo }, { data: score }, { data: risk }] = await Promise.all([
-    supabase
+
+  // Legacy UUID URL — redirect to slug-based URL.
+  if (UUID_RE.test(slug)) {
+    const { data } = await supabase
       .from("condos_published")
-      .select("name, regions(name), market_sale_median, market_summary_currency, total_units, completion_year, gross_yield_pct")
-      .eq("id", id)
-      .maybeSingle(),
-    supabase.from("value_scores").select("bubble_index").eq("condo_id", id).maybeSingle(),
-    supabase.from("risk_factors").select("flood_risk_level").eq("condo_id", id).maybeSingle(),
-  ]);
+      .select("slug")
+      .eq("id", slug)
+      .maybeSingle();
+    if (data?.slug) redirect(`/${lang}/condo/${data.slug}`);
+    return { title: "Condo report — RealData" };
+  }
+
+  const { data: condo } = await supabase
+    .from("condos_published")
+    .select("id, name, regions(name), market_sale_median, market_summary_currency, total_units, completion_year, gross_yield_pct")
+    .eq("slug", slug)
+    .maybeSingle();
   if (!condo) return { title: "Condo report — RealData" };
-  const c = condo as unknown as {
-    name: string;
-    regions: { name: string } | { name: string }[] | null;
-    market_sale_median: number | null;
-    market_summary_currency: string | null;
-    total_units: number | null;
-    completion_year: number | null;
-    gross_yield_pct: number | null;
-  };
+  const condoForMeta = condo as unknown as { id: string; name: string; regions: { name: string } | { name: string }[] | null; market_sale_median: number | null; market_summary_currency: string | null; total_units: number | null; completion_year: number | null; gross_yield_pct: number | null };
+  const [{ data: scoreMeta }, { data: riskMeta }] = await Promise.all([
+    supabase.from("value_scores").select("bubble_index").eq("condo_id", condoForMeta.id).maybeSingle(),
+    supabase.from("risk_factors").select("flood_risk_level").eq("condo_id", condoForMeta.id).maybeSingle(),
+  ]);
+  const c = condoForMeta;
   const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
-  const above = score?.bubble_index != null ? Math.round(score.bubble_index - 100) : null;
+  const above = scoreMeta?.bubble_index != null ? Math.round(scoreMeta.bubble_index - 100) : null;
   const aboveTxt =
     above == null
       ? null
@@ -99,8 +108,8 @@ export async function generateMetadata({
           ? `priced ${Math.abs(above)}% below district avg`
           : "at district average";
   const floodTxt =
-    risk?.flood_risk_level != null
-      ? `flood risk L${risk.flood_risk_level}/5`
+    riskMeta?.flood_risk_level != null
+      ? `flood risk L${riskMeta.flood_risk_level}/5`
       : null;
   const yieldTxt =
     c.gross_yield_pct != null ? `yield ${c.gross_yield_pct.toFixed(2)}%` : null;
@@ -121,17 +130,17 @@ export async function generateMetadata({
     title,
     description: desc,
     alternates: {
-      canonical: `${SITE_URL}/${lang}/condo/${id}`,
-      languages: langAlternates(`/condo/${id}`),
+      canonical: `${SITE_URL}/${lang}/condo/${slug}`,
+      languages: langAlternates(`/condo/${slug}`),
     },
     openGraph: {
       title,
       description: desc,
-      url: `${SITE_URL}/${lang}/condo/${id}`,
+      url: `${SITE_URL}/${lang}/condo/${slug}`,
       type: "article",
       images: [
         {
-          url: `/${lang}/condo/${id}/opengraph-image`,
+          url: `/${lang}/condo/${slug}/opengraph-image`,
           width: 1200,
           height: 630,
           alt: `${c.name} — RealData Bangkok condo report`,
@@ -144,10 +153,30 @@ export async function generateMetadata({
 export default async function CondoPage({
   params,
 }: {
-  params: Promise<{ id: string; lang: string }>;
+  params: Promise<{ slug: string; lang: string }>;
 }) {
-  const { id, lang } = await params;
+  const { slug, lang } = await params;
   const supabase = getServerSupabase();
+
+  // Legacy UUID URL → 308 redirect to slug-based URL.
+  if (UUID_RE.test(slug)) {
+    const { data } = await supabase
+      .from("condos_published")
+      .select("slug")
+      .eq("id", slug)
+      .maybeSingle();
+    if (data?.slug) permanentRedirect(`/${lang}/condo/${data.slug}`);
+    notFound();
+  }
+
+  // Step 1: resolve condo id from slug (needed for join queries on other tables).
+  const { data: condoHead } = await supabase
+    .from("condos_published")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!condoHead) notFound();
+  const id = (condoHead as { id: string }).id;
 
   const [
     condoRes, scoreRes, livRes, riskRes, latestRes,
@@ -158,7 +187,7 @@ export default async function CondoPage({
       .from("condos_published")
       .select(
         "id, name, developer, url, regions(name), latitude, longitude, " +
-        "province, retiree_score, " +
+        "province, retiree_score, slug, " +
         "floors, total_units, completion_year, description, hero_image_url, " +
         "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
         "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
@@ -223,6 +252,7 @@ export default async function CondoPage({
   // supabase-js types `regions` as an array on joins; collapse to single.
   const condoRaw = condoRes.data as unknown as {
     id: string;
+    slug: string | null;
     name: string;
     developer: string | null;
     url: string | null;
@@ -353,17 +383,18 @@ export default async function CondoPage({
     siteUrl: SITE_URL,
     lang,
   });
+  const condoSlug = condoRaw.slug ?? slug;
   const breadcrumbsJsonLd = buildBreadcrumbsJsonLd({
     siteUrl: SITE_URL,
     lang,
-    condoId: condoRaw.id,
+    condoSlug,
     condoName: condoRaw.name,
     region,
   });
   const speakableJsonLd = buildCondoSpeakableJsonLd({
     siteUrl: SITE_URL,
     lang,
-    condoId: condoRaw.id,
+    condoSlug,
     condoName: condoRaw.name,
   });
 
@@ -592,7 +623,7 @@ export default async function CondoPage({
           <CompareButton id={condoRaw.id} name={condoRaw.name} />
         </div>
         <LinkShareButtons
-          url={`${SITE_URL}/${lang}/condo/${condoRaw.id}`}
+          url={`${SITE_URL}/${lang}/condo/${condoSlug}`}
           title={`${condoRaw.name} (${region}) — RealData report`}
         />
       </div>

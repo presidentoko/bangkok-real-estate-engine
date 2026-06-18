@@ -71,6 +71,7 @@ export async function generateMetadata({
 
 type Row = {
   condo_id: string;
+  slug: string | null;
   name: string;
   region: string;
   flood_risk_level: number;
@@ -161,15 +162,15 @@ export default async function FloodRiskyPost({
   const supabase = getServerSupabase();
 
   const PAGE = 1000;
-  const condos: Array<{ id: string; name: string; regions: { name: string } | { name: string }[] | null }> = [];
+  const condos: Array<{ id: string; slug: string | null; name: string; regions: { name: string } | { name: string }[] | null }> = [];
   let offset = 0;
   while (true) {
     const { data } = await supabase
       .from("condos_published")
-      .select("id, name, regions(name)")
+      .select("id, slug, name, regions(name)")
       .eq("source", "hipflat")
       .range(offset, offset + PAGE - 1);
-    const page = (data ?? []) as Array<{ id: string; name: string; regions: { name: string } | { name: string }[] | null }>;
+    const page = (data ?? []) as Array<{ id: string; slug: string | null; name: string; regions: { name: string } | { name: string }[] | null }>;
     condos.push(...page);
     if (page.length < PAGE) break;
     offset += PAGE;
@@ -210,6 +211,7 @@ export default async function FloodRiskyPost({
     const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
     rows.push({
       condo_id: c.id,
+      slug: c.slug ?? null,
       name: c.name,
       region,
       flood_risk_level: lvl,
@@ -245,7 +247,7 @@ export default async function FloodRiskyPost({
             addressRegion: "Bangkok",
             addressCountry: "TH",
           },
-          url: `${SITE_URL}/${lang}/condo/${r.condo_id}`,
+          url: `${SITE_URL}/${lang}/condo/${r.slug ?? r.condo_id}`,
           additionalProperty: [
             { "@type": "PropertyValue", name: "Flood Risk Level (0-5)", value: r.flood_risk_level },
             { "@type": "PropertyValue", name: "Active listings", value: r.listings_count },
@@ -329,7 +331,7 @@ export default async function FloodRiskyPost({
                 <tr key={r.condo_id} className="hover:bg-zinc-800/40">
                   <td className="py-3 pl-4 pr-2 font-mono text-zinc-500 tabular-nums">{i + 1}</td>
                   <td className="py-3 pr-3 font-semibold">
-                    <Link href={`/${lang}/condo/${r.condo_id}`} className="hover:underline">
+                    <Link href={`/${lang}/condo/${r.slug ?? r.condo_id}`} className="hover:underline">
                       {r.name}
                     </Link>
                   </td>

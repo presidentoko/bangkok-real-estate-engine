@@ -44,13 +44,14 @@ export async function GET(req: Request) {
   // Supabase returns value_scores + risk_factors as nested objects in one
   // round-trip instead of three.
   const SELECT =
-    "id, name, url, latitude, longitude, hero_image_url, total_units, " +
+    "id, slug, name, url, latitude, longitude, hero_image_url, total_units, " +
     "available_units_count, market_sale_median, market_rent_median, " +
     "market_summary_currency, property_type, province, source, regions(name), " +
     "value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
 
   type Joined = {
     id: string;
+    slug?: string | null;
     name: string;
     url: string | null;
     latitude: number | null;
@@ -107,6 +108,7 @@ export async function GET(req: Request) {
         : r.risk_factors;
       return {
         id: r.id,
+        slug: r.slug ?? null,
         name: r.name,
         url: r.url,
         latitude: r.latitude,

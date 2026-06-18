@@ -1,0 +1,9 @@
+OK attempt 1 via 2080 status=200 len=191795
+head: ')]}\'\n[["ICONSIAM Bangkok",[[null,null,null,null,null,null,null,null,"RLwaaqzvOKmB9u8P86-RyQc","0ahUKEwisoYua5-CUAxWpgP0HHfNXJHkQmBkIAigA",null,null,null,null,["RLwaaqzvOKmB9u8P86-RyQc","0ahUKEwisoYua5'
+JSON parsed OK. top-level len: 70
+
+rating-candidates found: 4
+  [0][1][0][14][204][0][0][1][4]: rating=4.7 nearby_ints=[7525]
+  [0][1][0][14][204][0][2][1][4]: rating=4.4 nearby_ints=[4922]
+  [0][1][0][14][204][0][3][1][4]: rating=4.6 nearby_ints=[2837]
+  [0][1][0][14][204][0][4][1][4]: rating=4.3 nearby_ints=[2693]

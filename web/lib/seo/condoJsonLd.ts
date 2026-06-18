@@ -10,6 +10,7 @@
 
 type CondoLite = {
   id: string;
+  slug: string | null;
   name: string;
   latitude: number | null;
   longitude: number | null;
@@ -139,7 +140,7 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
     "@context": "https://schema.org",
     "@type": "ApartmentComplex",
     name: condo.name,
-    url: `${siteUrl}/${lang}/condo/${condo.id}`,
+    url: `${siteUrl}/${lang}/condo/${condo.slug ?? condo.id}`,
     address: {
       "@type": "PostalAddress",
       addressLocality: region,
@@ -186,11 +187,11 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
 export function buildBreadcrumbsJsonLd(args: {
   siteUrl: string;
   lang: string;
-  condoId: string;
+  condoSlug: string;
   condoName: string;
   region: string;
 }): Record<string, unknown> {
-  const { siteUrl, lang, condoId, condoName, region } = args;
+  const { siteUrl, lang, condoSlug, condoName, region } = args;
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -198,7 +199,7 @@ export function buildBreadcrumbsJsonLd(args: {
       { "@type": "ListItem", position: 1, name: "RealData", item: `${siteUrl}/${lang}` },
       { "@type": "ListItem", position: 2, name: "Inventory", item: `${siteUrl}/${lang}/inventory` },
       { "@type": "ListItem", position: 3, name: region, item: `${siteUrl}/${lang}/inventory` },
-      { "@type": "ListItem", position: 4, name: condoName, item: `${siteUrl}/${lang}/condo/${condoId}` },
+      { "@type": "ListItem", position: 4, name: condoName, item: `${siteUrl}/${lang}/condo/${condoSlug}` },
     ],
   };
 }
@@ -215,15 +216,15 @@ export function buildBreadcrumbsJsonLd(args: {
 export function buildCondoSpeakableJsonLd(args: {
   siteUrl: string;
   lang: string;
-  condoId: string;
+  condoSlug: string;
   condoName: string;
 }): Record<string, unknown> {
-  const { siteUrl, lang, condoId, condoName } = args;
+  const { siteUrl, lang, condoSlug, condoName } = args;
   return {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: `${condoName} — RealData report`,
-    url: `${siteUrl}/${lang}/condo/${condoId}`,
+    url: `${siteUrl}/${lang}/condo/${condoSlug}`,
     inLanguage: lang,
     speakable: {
       "@type": "SpeakableSpecification",

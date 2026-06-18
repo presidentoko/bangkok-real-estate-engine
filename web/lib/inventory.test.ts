@@ -15,6 +15,7 @@ import type { CondoSummary } from "./queries/condos.ts";
 function condo(over: Partial<CondoSummary>): CondoSummary {
   return {
     id: "x",
+    slug: null,
     name: "X",
     url: null,
     latitude: null,

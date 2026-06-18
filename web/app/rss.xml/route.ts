@@ -66,12 +66,13 @@ export async function GET(request: Request) {
   const supabase = getServerSupabase();
   const buildBldgs = await supabase
     .from("condos_published")
-    .select("id, name, first_seen_at, regions(name)")
+    .select("id, slug, name, first_seen_at, regions(name)")
     .order("first_seen_at", { ascending: false })
     .limit(15);
 
   const recentBldgs = ((buildBldgs.data ?? []) as unknown as Array<{
     id: string;
+    slug: string | null;
     name: string;
     first_seen_at: string | null;
     regions: { name: string } | { name: string }[] | null;
@@ -79,7 +80,7 @@ export async function GET(request: Request) {
     const region = (Array.isArray(b.regions) ? b.regions[0] : b.regions)?.name ?? "Thailand";
     return {
       title: `New: ${b.name} (${region})`,
-      link: `${SITE_URL}/en/condo/${b.id}`,
+      link: `${SITE_URL}/en/condo/${b.slug ?? b.id}`,
       desc: `${b.name} in ${region} — RealData independent report card.`,
       date: b.first_seen_at ?? new Date().toISOString(),
       guid: `condo-${b.id}`,

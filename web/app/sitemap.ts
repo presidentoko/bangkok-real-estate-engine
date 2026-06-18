@@ -147,21 +147,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Condo report pages — only geo-located ones (rest have no real data).
+  // Condo report pages — only geo-located ones with a slug.
   const PAGE = 1000;
   let offset = 0;
   while (true) {
     const { data } = await supabase
       .from("condos_published")
-      .select("id, last_seen_at")
-      .eq("source", "hipflat")
+      .select("slug, last_seen_at")
+      .not("slug", "is", null)
       .not("latitude", "is", null)
       .range(offset, offset + PAGE - 1);
-    const rows = (data ?? []) as Array<{ id: string; last_seen_at: string | null }>;
+    const rows = (data ?? []) as Array<{ slug: string; last_seen_at: string | null }>;
     if (rows.length === 0) break;
     for (const r of rows) {
       const lastMod = r.last_seen_at ? new Date(r.last_seen_at) : now;
-      const condoPath = `/condo/${r.id}`;
+      const condoPath = `/condo/${r.slug}`;
       for (const lang of LANGS) {
         out.push({
           url: `${SITE_URL}/${lang}${condoPath}`,

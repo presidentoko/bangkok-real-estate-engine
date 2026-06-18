@@ -19,13 +19,14 @@ export function generateStaticParams() {
 }
 
 const SELECT =
-  "id, name, url, latitude, longitude, hero_image_url, total_units, " +
+  "id, slug, name, url, latitude, longitude, hero_image_url, total_units, " +
   "available_units_count, market_sale_median, market_rent_median, " +
   "market_summary_currency, property_type, province, source, regions(name), " +
   "value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
 
 type Joined = {
   id: string;
+  slug?: string | null;
   name: string;
   url: string | null;
   latitude: number | null;
@@ -53,6 +54,7 @@ function flatten(r: Joined): CondoSummary {
   const pt = (r.property_type ?? "condo") as PropertyType;
   return {
     id: r.id,
+    slug: r.slug ?? null,
     name: r.name,
     url: r.url,
     latitude: r.latitude,
@@ -198,7 +200,7 @@ export default async function CityPage({
     itemListElement: condos.slice(0, 50).map((c, i) => ({
       "@type": "ListItem",
       position: i + 1,
-      url: `${SEO_SITE_URL}/${lang}/condo/${c.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${c.slug ?? c.id}`,
       name: c.name,
     })),
   };

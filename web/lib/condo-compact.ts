@@ -87,6 +87,7 @@ export function decodeCompact(c: CompactCondoSummaries): CondoSummary[] {
   for (let i = 0; i < c.count; i++) {
     out[i] = {
       id: c.id[i],
+      slug: null,
       name: c.name[i],
       url: null,
       latitude: c.lat?.[i] ?? null,

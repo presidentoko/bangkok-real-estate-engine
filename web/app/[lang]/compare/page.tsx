@@ -31,6 +31,7 @@ export async function generateMetadata({
 
 type CondoFull = {
   id: string;
+  slug: string | null;
   name: string;
   url: string | null;
   province: string | null;
@@ -56,7 +57,7 @@ async function fetchCondos(supabase: ReturnType<typeof getServerSupabase>, ids: 
     supabase
       .from("condos")
       .select(
-        "id, name, url, province, completion_year, total_units, " +
+        "id, slug, name, url, province, completion_year, total_units, " +
         "gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
         "market_sale_median, market_rent_median, " +
         "cam_fee_per_month, sinking_fund, building_ownership, " +
@@ -144,7 +145,7 @@ export default async function ComparePage({
                 {condos.map((c) => (
                   <th key={c.id} className="text-left px-4 py-3">
                     <Link
-                      href={`/${lang}/condo/${c.id}`}
+                      href={`/${lang}/condo/${c.slug ?? c.id}`}
                       className="text-zinc-100 hover:underline"
                     >
                       {c.name}

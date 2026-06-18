@@ -1,0 +1,590 @@
+id_a	source_a	name_a	id_b	source_b	name_b	distance_m	name_score
+02ad4f2c-8f54-4f10-902d-a4edd201773c	hipflat	Santorini Hua Hin - Khao Tao	15f4f24c-5c68-462a-9b3f-2a14f677029c	dotproperty	Santorini Hua Hin - Khao Tao	0.0	1.000
+91ec9c73-2b51-412c-bd0f-ad91a79b6aca	fazwaz	Diamond Park	a740960a-f5bc-4b7b-a74f-a5d1aa944f8d	dotproperty	Diamond Park	0.0	1.000
+1f76e72e-7f86-452b-9bc4-67150f5f9ad4	hipflat	TIRA TIRAA	47f30e57-8fb4-4617-8496-9db73b63ab79	dotproperty	TIRA TIRAA	0.0	1.000
+2684791b-42cc-4db1-b04e-a53c33f8cf2a	hipflat	Samui Emerald Condominium	2e7ce368-d3fd-415a-b4e2-2a5b5bf08afd	dotproperty	Samui Emerald Condominium	0.0	1.000
+2f5cbb54-2446-4637-9634-0b335c2033e7	hipflat	Santipura Residences Hua Hin	c4ee0f5d-075c-449d-9f0d-809814dce545	dotproperty	Santipura Residences Hua Hin	0.0	1.000
+33795fe2-b7a3-4db9-92de-c318027feb1d	hipflat	Amari Residences Hua Hin	8fc6e854-7e69-4906-a522-d2c1640347e1	dotproperty	Amari Residences Hua Hin	0.0	1.000
+0993a622-9174-4360-8647-9d995581313c	dotproperty	The Tree Hua Mak	7070d080-94ac-4952-9573-7bd831d1699a	fazwaz	The Tree Hua-Mak	0.0	1.000
+62801c82-353e-4e99-b153-79ff4389efd0	dotproperty	The Tree Hua Mak	7070d080-94ac-4952-9573-7bd831d1699a	fazwaz	The Tree Hua-Mak	0.0	1.000
+607dd57d-d79c-49e3-9cfc-2ca89bcc31ac	hipflat	My Style Hua Hin 102	adb1f1e8-462a-4812-885c-10af3c93ae54	dotproperty	My Style Hua Hin 102	0.0	1.000
+08356791-1098-45c9-8fc2-10ab18cdba70	dotproperty	Springfield condo	7a78777f-6d59-4d13-a2b1-bbea2def8ca0	hipflat	Springfield condo	0.0	1.000
+01348337-1727-440d-81a8-f8598f65483d	dotproperty	SCOPE Langsuan	ba258831-6cbe-4832-a889-1794c589bd1b	fazwaz	Scope Lang Suan	0.0	1.000
+34e4f81c-bf80-453d-b39a-dd2fb5d41152	dotproperty	Lumpini Place Rama IV - Sathorn	35228809-d2ef-4c9f-a64c-5a18b7102acf	fazwaz	Lumpini Place Rama IV-Sathorn	0.0	1.000
+1d5ab6a2-78a8-48d1-a960-751b916acb47	dotproperty	The Zest Ladprao	a3a5f2bb-32cf-4a76-a076-d6537b90b238	fazwaz	The Zest Ladprao	0.0	1.000
+a3a5f2bb-32cf-4a76-a076-d6537b90b238	fazwaz	The Zest Ladprao	d9107ae9-c0aa-4c47-bbca-832e3f407ce4	dotproperty	The Zest Ladprao	0.0	1.000
+1e1ca5cd-ab3b-464f-a94e-cd5c19351acc	dotproperty	The Key Phahonyothin	f090d405-c3ca-4e62-8f1e-0e72e78d8c63	fazwaz	The Key Phahonyothin	0.0	1.000
+3de9aecd-bc0f-48d3-b96d-8dec58144425	dotproperty	The Key Phahonyothin	f090d405-c3ca-4e62-8f1e-0e72e78d8c63	fazwaz	The Key Phahonyothin	0.0	1.000
+2527e5b1-f643-4698-982a-49dc8f8292fa	dotproperty	Citi Resort Sukhumvit 49	d5995e8b-598e-467d-ade8-8a54b09408d2	fazwaz	Citi Resort Sukhumvit 49	0.0	1.000
+270e4988-1a7e-4e96-9070-e940149975b9	fazwaz	Lumpini Center Nawamin	2cee449b-aaeb-40af-8631-5410ebdb1b71	dotproperty	Lumpini Center Nawamin	0.0	1.000
+32659855-245e-4953-87df-bcb232cc0c9a	dotproperty	Eighteen Seven - One Bangkok	c018926d-8a55-424f-b084-88928b282c5d	fazwaz	Eighteen Seven - One Bangkok	0.0	1.000
+42e592a3-afb0-4fd2-adce-abae55935163	dotproperty	Ratchaarpa Tower	e47614dd-c7a6-4d94-8002-3ffd6d2c0a7e	fazwaz	Ratchaarpa Tower	0.0	1.000
+46087e18-21d5-4375-a2a8-ba6df0d44c4c	dotproperty	Ratchada Terrace	5e458004-bb7b-4d1b-9ea9-5e0191a89820	fazwaz	Ratchada Terrace	0.0	1.000
+5754a3d0-2791-46be-9ff2-5df383ac42f5	dotproperty	Regent home 7/1 Bangna	bcef7eef-6096-4e46-bbae-98527412f2cf	fazwaz	Regent home 7/1 Bangna	0.0	1.000
+2177dbf8-f577-4aea-a51e-6c4ff864be1b	fazwaz	Maru Ladprao 15	5a321ddd-7bfd-4dab-a2a3-f7a55f82a34c	dotproperty	Maru Ladprao 15	0.0	1.000
+5cb01be5-4eb7-45a6-9e83-29383e9df12b	dotproperty	Supalai Icon Sathorn	a42471b6-eb8f-4a4d-ba22-c9e4adee0b64	fazwaz	Supalai Icon Sathorn	0.0	1.000
+55f02828-7997-4b94-b089-01dc5c106062	fazwaz	My Condo Sukhumvit 103	765d9553-f41d-4e89-a931-ad444ddf5cb1	dotproperty	My Condo Sukhumvit 103	0.0	1.000
+011dcde6-5a6d-4771-8841-6640a68945ac	ddproperty	The Habitat Sukhumvit 53	79d65458-9d97-488c-8689-e5be465a9d92	dotproperty	The Habitat Sukhumvit 53	0.0	1.000
+011dcde6-5a6d-4771-8841-6640a68945ac	ddproperty	The Habitat Sukhumvit 53	fd9cef8f-6624-49c4-88c9-14be4e1254f0	dotproperty	The Habitat Sukhumvit 53	0.0	1.000
+68ec521c-5e9f-4423-832e-6517688ce5cc	fazwaz	Silk Sanampao	89a0b640-6f8f-40a9-a1ba-a003bff7d133	dotproperty	Silk Sanampao	0.0	1.000
+9aba98d7-bd41-4eb7-bccf-e2c9c03981cf	dotproperty	Quintara MHy’ZEN Phrom Phong	9c865b00-d028-48ed-959c-9a85ca41c6d1	fazwaz	Quintara MHy’ZEN Phrom Phong	0.0	1.000
+9bb22a8c-bbc3-4f82-bedf-5c12e45128e3	dotproperty	Domus 16	eef7b189-b583-4b6e-88ee-0e881fe9b29a	fazwaz	Domus 16	0.0	1.000
+525dc861-8358-4a37-8c24-b83c5377da9e	fazwaz	Bangna Place	9c612665-f194-4925-83a9-f0839b2d8d6e	dotproperty	Bangna Place	0.0	1.000
+a1705df5-f595-4f63-830e-bb1a9d13bb3f	dotproperty	Lumpini Center Happyland	bda2ee98-4329-4727-93c8-b1e67c5ce597	fazwaz	Lumpini Center Happyland	0.0	1.000
+4973d0d9-6175-4a47-9fb6-4643a890f376	fazwaz	Noble State 39	c855ec82-5580-4c03-99f8-903521b81340	dotproperty	NOBLE STATE 39	0.0	1.000
+01ed4576-8f67-4753-8a8c-1f6f9667a841	fazwaz	Duliya Chalisma	d8693d0b-876b-494d-bab2-f9ddc28ed818	dotproperty	Duliya Chalisma	0.0	1.000
+699420f1-4d37-4155-8539-8801f520371e	fazwaz	Modiz Interchange	e034c319-59dd-4f12-8fac-878ee4b6fc08	dotproperty	Modiz Interchange	0.0	1.000
+00c8a882-1baa-487a-8654-e3d1b9be2811	fazwaz	Garden Asoke - Rama 9	ed0ac976-c6fa-4f0d-8afc-86126355c5a2	dotproperty	Garden Asoke - Rama 9	0.0	1.000
+e9dcd5d2-dc53-4732-9d18-cea3e78aafb5	fazwaz	Still Sukhumvit 20	fce25e41-3a66-4c3c-aa10-37781978f304	dotproperty	Still Sukhumvit 20	0.0	1.000
+77ccfcf0-dab4-43a8-b507-3a7bf8d056fe	fazwaz	Metris Pattanakarn - Ekkamai	fe0a4c41-51b4-4f86-8557-9f47e5b8fbdf	dotproperty	Metris Pattanakarn - Ekkamai	0.0	1.000
+60b28a25-e589-4d8f-9366-55be07efc0c6	dotproperty	The Address Sathorn	e8c16c21-7598-4548-81ea-ae1782b25029	fazwaz	The Address Sathorn	0.5	1.000
+e8c16c21-7598-4548-81ea-ae1782b25029	fazwaz	The Address Sathorn	f72d7a77-52be-4a61-9ea5-6ea6c09b444a	dotproperty	The Address Sathorn	0.5	1.000
+2d0754d3-caa8-4fa8-92c7-bdef0c14e016	dotproperty	The LIVIN Phetkasem	a719f2b9-4dbd-467f-873b-d1d97e046171	fazwaz	The LIVIN Phetkasem	1.0	1.000
+a719f2b9-4dbd-467f-873b-d1d97e046171	fazwaz	The LIVIN Phetkasem	d5bdd493-f069-4364-a4b1-b8ef73cec211	dotproperty	The LIVIN Phetkasem	1.0	1.000
+46d35694-da31-4cb2-aff8-310af1ed4b57	dotproperty	Asoke Tower	89bf72c0-a7d6-41be-a01c-5ef1ce340dd9	fazwaz	Asoke Towers	1.0	1.000
+cb6e13ee-4f04-4c88-8731-fa3828074135	dotproperty	Wyndham Residence	f25c6b72-04f4-4fd5-bb93-8a8ecdbc49f0	fazwaz	Wyndham Residence Bangkok	1.3	1.000
+23f6eb95-9ba1-4fbc-9287-32b2e7a33daf	ddproperty	SO Origin Bangtao Beach	a99df756-b4c8-4064-baf4-86796fa3c6bf	dotproperty	So Origin Bangtao Beach	1.5	1.000
+63236051-3d39-4a31-9f02-c04556fa5a49	dotproperty	Space Cherngtalay Condominium	dba1b29d-3e3f-4df9-8d3d-09d3ef801a0e	ddproperty	Space Cherngtalay Condominium	2.2	1.000
+1e0301db-0751-4e6e-8e4e-b47b6ca9bfb1	ddproperty	The Cube Urban Sathorn - Chan	5a4014d3-f0f8-4949-b0ac-162720605f99	fazwaz	The CUBE Urban Sathorn – Chan	2.2	1.000
+4ce3226d-6aff-4a7d-9c58-a361e73da3ae	dotproperty	CANVAS Cherngtalay	6a20eb7d-566f-4fb5-b517-188b7117a85a	ddproperty	CANVAS Cherngtalay	2.6	1.000
+4ce3226d-6aff-4a7d-9c58-a361e73da3ae	dotproperty	CANVAS Cherngtalay	7d09ffc7-06bc-4fdf-a3a7-7d61d870d3a9	ddproperty	CANVAS Cherngtalay	2.6	1.000
+427659ba-ec05-4070-8207-b6f06bdc7c2b	fazwaz	The Privacy Jatujak	76666035-0ce9-4920-b05e-f3d16ec75d65	dotproperty	The Privacy Jatujak	2.7	1.000
+427659ba-ec05-4070-8207-b6f06bdc7c2b	fazwaz	The Privacy Jatujak	a5f4f151-77f5-406f-8e64-139442a2dde2	dotproperty	The Privacy Jatujak	2.7	1.000
+48c7c381-eeee-4de6-9145-2c624f2f4aa0	fazwaz	The Strand Thonglor	bc17f48e-ae63-473f-bf05-7db2b8beb0ee	dotproperty	The Strand Thonglor	2.7	1.000
+48c7c381-eeee-4de6-9145-2c624f2f4aa0	fazwaz	The Strand Thonglor	c839219f-3ed4-4e1c-a01c-6cafd0dd6126	dotproperty	The Strand Thonglor	2.7	1.000
+8de78dfd-acb5-485d-a5d9-0bad6efee6ce	dotproperty	So Origin Siriraj	ca6d4c5a-ced4-48ec-889b-45abd64777c7	fazwaz	So Origin Siriraj	2.7	1.000
+a50badf2-ee63-4005-8a18-12ef8dad5e82	fazwaz	Amanta Ratchada	ac38de2b-6c02-4cf7-9606-ae488d479f83	dotproperty	Amanta Ratchada	2.8	1.000
+48206675-30f2-4a9b-9752-31469ad756dd	ddproperty	Wyndham Fantasea Condo Chalong	94fe0311-20db-425c-8453-b1239afb2e8e	dotproperty	Wyndham Fantasea Condo Chalong	3.0	1.000
+96b25c0f-3a8c-4d56-901e-03737be388c5	ddproperty	The Zero Bang Tao	fb417bc2-9c63-4941-ae0f-79f4e0322bdc	dotproperty	The Zero Bang Tao	3.3	1.000
+33e56b6c-4cf6-4043-b18e-cc3096819902	ddproperty	Peylaa Phuket Bang Tao	b6e1bf00-7159-4947-8b4b-839a0d1a9058	dotproperty	PEYLAA Phuket Bang Tao	3.6	1.000
+3d5a9f9a-0f68-4ada-aa7d-c1c5c082eeff	dotproperty	Skyrise Avenue Sukhumvit 64	e3f934e8-32e0-4ceb-a8e3-84e8b42204bc	fazwaz	Skyrise Avenue Sukhumvit 64	3.6	1.000
+0c03de8a-c974-4d91-8be2-06cff636ccb4	dotproperty	The Residences 38	797b6a19-b5bc-4bf0-b34d-b82a476a2f17	fazwaz	The Residences 38	3.7	1.000
+1daa656d-97ed-4c7a-88fc-6f3c185fdee1	dotproperty	The Residences 38	797b6a19-b5bc-4bf0-b34d-b82a476a2f17	fazwaz	The Residences 38	3.7	1.000
+14132a6d-3697-48ad-8bc3-c6806e23a493	ddproperty	Menam Residences	5115ad57-def0-4514-8c08-af8f4a362f4d	dotproperty	Menam Residences Condominium	3.9	1.000
+a2180ff6-ca45-4f99-a964-bf2762f2232d	dotproperty	The Modeva	afbe1eac-3762-4000-9b86-998cf6789b38	ddproperty	The Modeva	3.9	1.000
+4c9fa3a9-ca77-4f95-bcf8-ec75b005d4b0	dotproperty	Plus 38 Hip	5eb3c4c7-f328-4811-8200-80ecf921ef29	fazwaz	Plus 38 Hip	3.9	1.000
+89e3eeac-be36-446b-b8a0-e0bacb66566e	ddproperty	The Residences at InterContinental Phuket Resort	9ccf969b-4b6f-4242-9ed9-7508cb2484d5	dotproperty	The Residences at InterContinental Phuket Resort	4.0	1.000
+4f014378-56be-465b-871a-2e6bb7f65924	dotproperty	C Ekkamai	5be426d3-1792-4758-923c-474eebaa4293	ddproperty	C Ekkamai	4.1	1.000
+072aa184-14e9-4815-9c3f-a9986a2ba027	dotproperty	Katabello	9228ca27-5d8f-4798-b1e1-a6cc7b4eef5d	ddproperty	The Katabello	4.5	1.000
+0d7d7875-2ce1-412e-b9fc-f642433d6a3a	fazwaz	Le Monaco Residence Ari	43401ec5-7b9b-40f1-915a-6b24e3288347	dotproperty	Le Monaco Residence Ari	4.7	1.000
+5ecbe2d8-96d0-4ae9-b9f6-49c500dfeb99	fazwaz	Chidlom Place	6a7f3507-d5f8-4992-a75d-56d4b233ea3e	dotproperty	Chidlom Place	4.7	1.000
+603ed127-9d6e-4945-b20f-088260188a3c	fazwaz	Maxxi Prime Ratchada - Sutthisan	a539ae3a-0757-4856-9e12-a548ec8a9b34	dotproperty	Maxxi Prime Ratchada - Sutthisan	5.0	1.000
+013d52d9-6561-43f2-95e8-e263f439b772	dotproperty	Atmoz Ladprao 71	1c441af6-262d-4ed9-8b46-9a51e6ac6ffe	fazwaz	Atmoz Ladprao 71	5.1	1.000
+c5d83190-793b-48d5-b8f3-2ca202a1f549	dotproperty	Ruenrudee Condominium	e19594fe-9801-405c-82da-990754e853a8	fazwaz	Ruenrudee Condominium	5.6	1.000
+4074de60-f2f5-48f9-9d8c-04d59da813d2	ddproperty	The Title Adora Rawai	d4f0de7b-08a4-41e3-af4e-32da7170860a	dotproperty	The Title Adora Rawai	5.9	1.000
+05119cf4-198f-40a5-9a6e-b7111d45205b	dotproperty	Sense Phaholyothin	77866a40-e659-4a92-b76d-7f9e0f56ea7d	fazwaz	Sense Phaholyothin	6.0	1.000
+817c64ba-6afb-4ff3-9257-2fc83e92aabb	ddproperty	The Pixels Cape Panwa	ee870e58-6af7-4c9e-a240-82096454768a	dotproperty	THE PIXELS CAPE PANWA CONDO	6.2	1.000
+216abf40-9f56-4fd3-b77c-41448225c473	dotproperty	Urbana Sathorn	5645c7dc-bf10-4575-9d52-06a7123b1dd7	fazwaz	Urbana Sathorn	6.5	1.000
+1f35624c-9ce1-4978-9e21-a8144f40e72d	ddproperty	Above Element Condo	ac5b6bdb-16d1-41e2-a813-1a0d523c4222	dotproperty	Above Element	6.9	1.000
+06a47b97-6592-4884-9fe9-92ccd234a23e	fazwaz	The Seed Musee	17c1262c-33e1-490a-9bcc-dce0caf2e8b6	dotproperty	The Seed Musee	7.0	1.000
+06a47b97-6592-4884-9fe9-92ccd234a23e	fazwaz	The Seed Musee	a97a360a-f10f-49c4-9966-351d9bb255a6	dotproperty	The Seed Musee	7.0	1.000
+1232e5ed-4654-4cfa-8ab4-dd8d54e731f4	ddproperty	XT Ekkamai	30876921-8438-46c4-bc27-932c06aea996	dotproperty	XT Ekkamai	7.0	1.000
+17a3cb49-9050-4122-8c3a-65120c8955d1	ddproperty	La Citta Delre Thonglor 16	55b63da2-a35e-4906-909f-d5fe585059e4	dotproperty	La Citta Delre Thonglor 16	7.1	1.000
+3642581e-d3c9-4005-bd77-7f272ee8ff9b	dotproperty	The Reserve Phahol - Pradipat	8d8a50ad-a405-423d-9594-d73c93e4b24b	fazwaz	The Reserve Phahol-Pradipat	7.3	1.000
+6ba1846b-9622-4f4d-a162-55d575bbe7c2	dotproperty	The Reserve Phahol - Pradipat	8d8a50ad-a405-423d-9594-d73c93e4b24b	fazwaz	The Reserve Phahol-Pradipat	7.3	1.000
+64fbf675-e395-4fb7-8d5a-b9819ff7d258	ddproperty	Baan Mai Khao	a890b0ad-6f6a-4d5d-b49f-46c3d0b67dd3	dotproperty	Baan Mai Khao	7.4	1.000
+51bb3479-fb60-4d65-b1aa-2c8b03912501	fazwaz	SOCIO Reference 61	c0a65515-f02e-4278-96ac-7c860f34d7fa	dotproperty	SOCIO Reference 61	7.5	1.000
+2f96bede-38d4-47ae-ba11-97abcd744fa0	dotproperty	The Elegant Ladprao 1	f91e7043-45e9-4f6e-a299-bc72ccf4aea8	fazwaz	The Elegant Ladprao 1	7.5	1.000
+b287ef54-8995-4a9b-9106-34a467122c44	dotproperty	The Elegant Ladprao 1	f91e7043-45e9-4f6e-a299-bc72ccf4aea8	fazwaz	The Elegant Ladprao 1	7.5	1.000
+1d6108fd-2796-4a5d-ba47-547852564c3d	fazwaz	Q House Condo Sukhumvit 79	6d2fe0be-e192-48d3-bdfd-de34d1d9703f	dotproperty	Q House Condo Sukhumvit 79	7.8	1.000
+35f684a9-2037-4065-9c8c-acd6ad3f3524	dotproperty	Lumpini Selected Sutthisan - Saphankwai	a6da76f8-ab53-4be2-988b-20751c2bd730	fazwaz	Lumpini Selected Sutthisan - Saphankwai	7.8	1.000
+288fe30d-e1ef-42a7-a13b-63b858f4424d	ddproperty	Royal Phuket Marina	a733a7f3-6d22-44c3-a42f-52c3508134d6	dotproperty	Royal Phuket Marina	7.9	1.000
+870368bc-5514-4aa0-ae10-216c28a6c494	ddproperty	Thru Thonglor	c849030f-3ca2-4624-9d61-d652fee63e59	dotproperty	Thru Thonglor	7.9	1.000
+429750d2-95a4-4145-beb0-d7a38a216b75	fazwaz	Groove Ratchada - Ladprao	fc2fd201-f7b5-4146-a18f-03aff3a0a3ec	dotproperty	Groove Ratchada - Ladprao	8.4	1.000
+4cabaad5-0f71-4b1f-8acb-7c86f9b08488	dotproperty	Quintara Treehaus Sukhumvit 42	8109262a-f095-40bd-90d1-b6215598ebbc	fazwaz	Quintara Treehaus Sukhumvit 42	8.5	1.000
+5ef8736c-1129-400a-a774-5224c2e67661	fazwaz	Via ARI	a4df9385-3a3c-4c06-8d97-27d8ae0e0d1b	dotproperty	Via ARI	8.5	1.000
+b093fbc9-eecc-4dc7-a577-15bd19427a03	dotproperty	Ideo Ladprao 5	f5b1e628-f5b6-4953-94ef-6588211d642a	fazwaz	Ideo Ladprao 5	8.5	1.000
+15487c4a-460d-4bba-8a8f-0105313b95a3	ddproperty	The Regent Bangtao	d0ac07bb-65fa-4006-b2ef-ea3108d01fa2	dotproperty	The Regent Bangtao	8.9	1.000
+557aea7f-d4df-4f43-a386-6bba4e5772ba	fazwaz	Lumpini Place Srinakarin	c7dcf3f4-415d-4a2a-9123-3a579e56418d	dotproperty	Lumpini Place Srinakarin	9.0	1.000
+63d32b9b-4eed-4670-91ed-95c40fe70907	dotproperty	The Roof Garden Onnut	e9e1b71c-1038-400d-992b-1f5a74fc797f	fazwaz	The Roof Garden Onnut	9.3	1.000
+c93f02a7-3f33-4efa-b615-57a043275559	dotproperty	The Roof Garden Onnut	e9e1b71c-1038-400d-992b-1f5a74fc797f	fazwaz	The Roof Garden Onnut	9.3	1.000
+295fa5b9-968e-4558-8123-22ea447aa05b	dotproperty	Ideo Blucove Sathorn	61beb04d-ff8e-4544-a69e-bbc48e727ea9	fazwaz	Ideo Blucove Sathorn	9.3	1.000
+279295b3-f36e-4029-accf-01d4ad2b8c66	fazwaz	HQ By Sansiri	d3747366-447a-47c1-9ff2-f1f20a52ae6b	dotproperty	HQ by Sansiri	9.5	1.000
+7ee94cef-024d-40fd-9747-2a70f639cf2d	dotproperty	D Condo Kathu	9619936b-9db5-46d1-9149-6326805c328e	ddproperty	Dcondo Kathu	9.8	1.000
+827e4241-2a67-46b4-8ce1-ac07a40747c5	fazwaz	Ideo Q Siam-Ratchathewi	ae803a2f-83dd-406f-91e9-c4a14fdfc9ca	dotproperty	Ideo Q Siam-Ratchathewi	9.8	1.000
+0debc30c-014b-4b3d-83b3-c12152ff9a51	dotproperty	Circle Rein Sukhumvit 12	f89da04f-a558-4b9c-b6b7-ddbcf8d05d47	fazwaz	Circle rein Sukhumvit 12	9.9	1.000
+da347e7e-21c5-4867-a578-f9ba2cc47438	dotproperty	Baan Suan Rachathani 2 	e0f5da36-2967-46b2-90df-66490fce3733	fazwaz	Baan Suan Rachathani 2	10.0	1.000
+3473d0d9-2aee-441b-9952-c719885b5891	dotproperty	Baan Siriyenakat	91b7c80f-4fb3-4c60-b7ee-7dee0e8a27ed	fazwaz	Baan Siriyenakat	10.0	1.000
+0e067446-52ef-46a6-af45-274b4900eaf3	dotproperty	Benjamas Ville 4	7a09b0b6-2e89-45c8-8121-2197fa2262f1	fazwaz	Benjamas Ville 4	10.0	1.000
+172b7cc2-7d0b-4776-acbd-3132879bf24c	dotproperty	Nue Noble Ratchada-Lat Phrao	2fee17db-1ca1-4b86-90c1-f8034ad961de	fazwaz	Nue Noble Ratchada-Lat Phrao	10.0	1.000
+233cad35-a0c4-478e-9722-f259df29e507	fazwaz	COBE Ratchada-Rama 9	b8a7eae5-dcd6-485c-8ae5-b0797f667c22	ddproperty	COBE Ratchada-Rama 9	10.1	1.000
+05269d0e-1bc5-423d-a5ca-0866643f8559	dotproperty	O2 Hip	209294ef-08be-46e1-8739-03553c46a652	fazwaz	O2 Hip Condo	10.1	1.000
+c75d5f31-79c3-4f6d-a9de-dec52cde13c3	fazwaz	Chin Life Ramintra Km. 4	d17600be-74de-4ce2-ae16-fac797cf69c1	dotproperty	Chin Life Ramintra Km. 4	10.2	1.000
+3d9a7d2d-cdb0-4b91-b0aa-c4960d9d82a8	dotproperty	Baan Suan Thon Phutthabucha 47	46240704-da46-482b-bac0-6ed4105f986a	fazwaz	Baan Suan Thon Phutthabucha 47	10.3	1.000
+6678bb17-0a38-4d11-b6b6-07d2c5df8a92	fazwaz	The Teak Sukhumvit 39	6c840729-2a2e-4b74-8cff-07a2de244f5e	dotproperty	The Teak Sukhumvit 39	10.4	1.000
+6678bb17-0a38-4d11-b6b6-07d2c5df8a92	fazwaz	The Teak Sukhumvit 39	800a3463-d28b-47f5-8639-74e9eb8f331e	dotproperty	The Teak Sukhumvit 39	10.4	1.000
+56a737f3-ad5d-4cf1-8a87-efe5186dd1a3	fazwaz	Sithakarn Condominium	b1f953eb-6c91-48b0-be9d-c74ec9dc1471	dotproperty	Sithakarn Condominium	10.4	1.000
+11f0582b-91f8-4fb5-8580-64028bc45cd3	ddproperty	The Base Height Phuket	90026335-2223-4483-b6d7-6abe2af1a41a	dotproperty	The Base Height Phuket	10.7	1.000
+1e51afab-61ab-4143-8c0f-f8e669071da9	fazwaz	Supalai Wellington	83736227-f905-45ed-a6dc-2730a312ffe1	dotproperty	Supalai Wellington	10.8	1.000
+5654990f-acc6-4e86-902d-8ec4fd0d7562	dotproperty	The Base Rise	d234f338-8e0e-4955-a896-27547cb44184	ddproperty	The Base Rise	10.8	1.000
+182359df-1aa2-4836-99b6-abdde2f578e3	fazwaz	Siamese Exclusive 42	20f5a0cd-61cf-4704-8ce3-5fcbd47e315f	dotproperty	Siamese Exclusive 42	10.9	1.000
+b6027716-960e-4e24-9678-ac5f157ef0d4	dotproperty	NUE District R9	d3dd34c7-2680-4bde-975d-91e71fd4d2bb	fazwaz	Nue District R9	10.9	1.000
+23d2f6c5-38cc-4d55-9571-d6090df22d6a	dotproperty	D Mura Ratchayothin	9cab2712-a216-411b-b967-d98783a72b97	fazwaz	D Mura Ratchayothin	11.7	1.000
+08b381fc-313c-41a9-ad48-b090aafd5929	fazwaz	The Lofts Ekkamai	52e80711-0675-4f31-bcaf-f49af29163dd	dotproperty	The Lofts Ekkamai	11.7	1.000
+08b381fc-313c-41a9-ad48-b090aafd5929	fazwaz	The Lofts Ekkamai	dab0a8fa-6f68-4054-896c-b201a0fd563f	dotproperty	The Lofts Ekkamai	11.7	1.000
+05131785-5fcc-4844-9724-9af35f74d601	fazwaz	Kallista Mansion	aeaee5e5-1768-4757-927c-8969fdf6b0de	dotproperty	Kallista Mansion	11.9	1.000
+21d055de-c851-41e5-8c9e-6cacaed32915	dotproperty	Noble Emmerse Phrom Phong	30ba4a46-88e1-4cd8-b8dd-6d3bd09eb2b1	fazwaz	Noble Emmerse Phrom Phong	11.9	1.000
+34b8ee02-fe3e-4115-a7ee-29e08237e88f	fazwaz	Newton Tower	d120c8b6-a6f3-489f-af4a-b29c93319b36	dotproperty	Newton Tower	11.9	1.000
+8947236b-aba6-465f-9b6e-88eb28bc01da	fazwaz	La Vie En Rose Place	b8d217a3-501c-4fbc-94c6-cee5c299d8b7	dotproperty	La Vie En Rose Place	11.9	1.000
+70f25516-eb60-4b0f-9e2a-48916f83fb34	dotproperty	FLO by Sansiri	b9ab1191-79be-4ded-a721-dc8b6bf782a8	fazwaz	FLO by Sansiri	12.1	1.000
+0b9454e0-af42-4f19-bf93-a585b7465613	dotproperty	Life Pinklao	1c12a5a0-6e22-4c2e-b0bc-ef29e25ca836	fazwaz	Life Pinklao	12.1	1.000
+1f14da0a-8011-4d5d-a5a1-3b0950d0ef21	dotproperty	The Diplomat 39	a85154f8-c745-4264-a19a-33719ad36440	fazwaz	The Diplomat 39	12.2	1.000
+5ed8ba02-6040-46f8-845d-39dd30f4265c	dotproperty	The Diplomat 39	a85154f8-c745-4264-a19a-33719ad36440	fazwaz	The Diplomat 39	12.2	1.000
+ab68d084-de49-49b6-b994-b72369e23ccd	fazwaz	The Link Sukhumvit 64	ad1151d0-5681-429e-828b-5b1fbde7cfac	dotproperty	The Link Sukhumvit 64	12.5	1.000
+ab68d084-de49-49b6-b994-b72369e23ccd	fazwaz	The Link Sukhumvit 64	ceb1d5a4-9fbe-4f23-b967-38efd47bde4a	dotproperty	The Link Sukhumvit 64	12.5	1.000
+69be9dff-d19d-49f1-b261-b3e15b761807	fazwaz	The Madison	b18aa697-73fb-483f-bb31-2f80ed0d5ad1	dotproperty	The Madison	12.6	1.000
+69be9dff-d19d-49f1-b261-b3e15b761807	fazwaz	The Madison	ebbb7f45-3eb6-4f48-bc2d-b10d1eb8a842	dotproperty	The Madison	12.6	1.000
+4f1f1222-dce5-4571-8d34-4a24fa61b496	dotproperty	FYNN Sukhumvit 31	ac37b83a-eb13-4b41-9c4e-2b98e5fcfbe7	fazwaz	FYNN Sukhumvit 31	12.6	1.000
+6495cb60-c2d8-4558-a41a-0822e9328017	dotproperty	So Origin Sukhumvit 105	d8214056-4fcb-4128-a69b-d10eb2911a24	fazwaz	So Origin Sukhumvit 105	12.7	1.000
+02fe58ae-e84f-4565-956b-0a901e182d80	dotproperty	PYNN Pridi 20	f5b4694e-88ab-4435-a181-c10b73ed1d44	fazwaz	PYNN Pridi 20	12.8	1.000
+ed9f4b79-1eef-49dc-90d9-ba56b21ba86d	fazwaz	Sathorn Happy Land Tower	f8d8e777-63bd-4010-a1d4-db2ffa25a0e4	dotproperty	Sathorn Happy Land Tower	12.8	1.000
+2cf3ba05-309e-45a9-a1b7-5ffa68b83fd6	dotproperty	Blossom Condo @ Sathorn-Charoenrat	bcebe424-0862-430a-9011-24dfa1978fb9	fazwaz	Blossom Condo @ Sathorn-Charoenrat	13.0	1.000
+b0a0a231-ea9c-424e-aa88-25f318a68e5a	dotproperty	Maestro 01 Sathorn-Yenakat	e6fbe896-6179-4dbb-9073-39cb51a2d1e2	fazwaz	Maestro 01 Sathorn-Yenakat	13.2	1.000
+21cbecc5-eaac-416b-9938-b374c5de59a3	fazwaz	The Seed Mingle	671f2c70-c469-4dbe-81e3-108e1900b256	dotproperty	The Seed Mingle	13.3	1.000
+21cbecc5-eaac-416b-9938-b374c5de59a3	fazwaz	The Seed Mingle	d18fa878-8ee5-45ff-b6ff-c9bfc84082e9	dotproperty	The Seed Mingle	13.3	1.000
+17a3cb49-9050-4122-8c3a-65120c8955d1	ddproperty	La Citta Delre Thonglor 16	7a32b333-0613-4081-b92d-3a4945b63ce9	fazwaz	La Citta Delre Thonglor 16	13.4	1.000
+1c1ad9bf-c826-433e-bdcb-d9440f90de1a	dotproperty	Culture Thonglor	f120fca7-b889-4c71-9618-07dd72fb09ed	fazwaz	Culture Thonglor	13.8	1.000
+800725b0-e392-4a6f-9ce8-1a62c81dbce9	ddproperty	PYNE by Sansiri	86437261-09e5-401f-90a8-d7f05292a5a7	fazwaz	Pyne by Sansiri	13.8	1.000
+426be01f-9ecd-4978-87ba-148a26a657a9	fazwaz	Zenith Place Sukhumvit 42	7b82da93-cd74-49e9-bd70-f70869443afa	dotproperty	Zenith Place Sukhumvit 42	13.8	1.000
+39d4f3db-5808-4229-8feb-ef4c1fb066c9	fazwaz	Flexi Riverview - Charoennakorn	d86fa8b4-8f87-47b0-9b41-c3afca25d162	dotproperty	Flexi Riverview - Charoennakorn	13.9	1.000
+edc11cd8-b115-4167-884c-0b7e4716c43f	dotproperty	Baan Siri 31	ff68c880-685c-48a3-9e28-b7f492651639	fazwaz	Baan Siri 31	14.0	1.000
+9334de5d-c36e-4044-ba0f-87a59de2c1bc	dotproperty	Penthouse Condominium 3	9e4f703d-5e8d-4d16-b309-c0dd55a0547f	fazwaz	Penthouse Condominium 3	14.2	1.000
+b2225332-7ebf-44b2-b50a-d1fcd55bbd33	fazwaz	Vibhavadi Suite	defc5010-ca9a-4d39-a7da-3395cbceacef	dotproperty	Vibhavadi Suite	14.2	1.000
+3a034fa2-75f9-4ed5-83db-16af7e094ac3	dotproperty	Ceil by Sansiri	c079e034-4fed-4436-8a48-c8765eaa48c9	ddproperty	CEIL by Sansiri	14.3	1.000
+1e9892c0-456a-431b-9c92-1e13dbb28340	dotproperty	Chewathai Residence Thonglor	dd39b221-0cb4-4d2e-be51-b82b0cba2449	fazwaz	Chewathai Residence Thonglor	14.4	1.000
+426c84ff-901e-4931-a7c6-313a68812b02	dotproperty	Sukhumvit House	fa0e29c2-c48a-4780-a12f-1bb402a6770f	fazwaz	Sukhumvit House	14.7	1.000
+429b1c0f-a2c9-4ea9-8e00-43b3fe28f506	dotproperty	Origin Residences Sukhumvit	d5ac8a3b-0e38-44da-8b47-4c2eeb0cca49	fazwaz	Origin Residences Sukhumvit	14.9	1.000
+0472d4e6-5959-4f66-aae0-09256dbf57c8	dotproperty	Condolette Pixel Sathorn	0871f745-b0c3-4a16-a15a-694324d12b62	fazwaz	Condolette Pixel Sathorn	15.0	1.000
+b4c7f344-da4d-4941-8601-4809e5a51ed0	dotproperty	Cloud Residences SKV 23	ef782cc8-a155-433d-9e01-f81a80d109c3	fazwaz	Cloud Residences SKV23	15.1	1.000
+2e0bfb58-9338-4f5f-9191-f72e8b22d1bf	dotproperty	Modiz Collection Bangpho	c442ba36-353b-4af7-8963-6ed10361f7cf	fazwaz	Modiz Collection Bangpho	15.1	1.000
+71cbacb9-9751-4596-803b-6025efee1184	fazwaz	U Sabai Rama 4 - Kluaynamthai	ce38af66-f7ef-4dc2-9b58-a2ed8951c1f3	dotproperty	U Sabai Rama 4 - Kluaynamthai	15.1	1.000
+1a9ab4ac-b1da-4dab-8e45-601371d408f8	dotproperty	Ideo Mobi Sukhumvit 40	f2c1aa35-048c-4274-a532-c8078888cbbe	fazwaz	Ideo Mobi Sukhumvit 40	15.2	1.000
+0f7e05d5-ff30-48ee-9ad4-c4b22c32aa3e	dotproperty	COZI BTS Saphanmai	9ce83217-aefc-4db2-9333-894f11296d70	fazwaz	COZI BTS Saphanmai	15.4	1.000
+5cb144d6-9ee3-4b95-a47f-80fe5670e8e7	dotproperty	The Room Sukhumvit 69	7396bf09-6800-46d3-9f27-40b8c6e58772	fazwaz	The Room Sukhumvit 69	15.5	1.000
+7396bf09-6800-46d3-9f27-40b8c6e58772	fazwaz	The Room Sukhumvit 69	df27ab60-137e-4615-9a90-8941dfe74472	dotproperty	The Room Sukhumvit 69	15.5	1.000
+4513cd6a-99dd-432e-9e8d-e95406cddfac	ddproperty	Supreme Legend	d9196e17-18c3-46d7-9579-62bd1cfb52b6	dotproperty	Supreme Legend	15.9	1.000
+2204c801-e8e4-4be9-8af6-fed44d977429	ddproperty	Surfhouse Residences	310cd2d8-c259-44d5-858a-ba4f29db0fad	dotproperty	Surfhouse Residences	16.0	1.000
+952942fd-f498-49a0-bd9d-030b6349348d	ddproperty	Royal Kamala Phuket	b8213b43-b452-446f-924d-88baaf80c706	dotproperty	Royal Kamala Phuket	16.2	1.000
+22957332-e0b9-4417-8742-2f30818887ee	dotproperty	HUE Sukhumvit	e817d4da-7177-4286-af69-0474557520f7	fazwaz	Hue Sukhumvit	16.3	1.000
+16858816-d4c3-47e4-baa5-ba414ae4d3e6	dotproperty	Origin Play Sri Udom Station	ea7442cc-486b-400e-8741-81e267f5b9d7	fazwaz	Origin Play Sri Udom Station	16.7	1.000
+8c139314-048b-4c73-8c79-3eaf4d528526	fazwaz	Sari by Sansiri	aab9742e-9463-4024-8e6a-718f6d307cd9	dotproperty	Sari by Sansiri	16.9	1.000
+1054b16c-39cd-4b49-9ec1-5c43320a7552	dotproperty	Villa Sikhara	dd608648-cc4a-4b6f-9147-310b0106e236	fazwaz	Villa Sikhara	16.9	1.000
+03e8428c-34de-4569-9403-39fa20c8d503	fazwaz	Maestro 02 Ruamrudee	772c3258-236c-4737-90da-866fed9decb5	dotproperty	Maestro 02 Ruamrudee	16.9	1.000
+66d6f508-9fdd-4f42-abe1-693048001ebf	fazwaz	Prime Mansion Sukhumvit 31	976f613f-a779-43b2-bb40-a6cba455835a	dotproperty	Prime Mansion Sukhumvit 31	17.0	1.000
+55aad5c5-858b-4526-bf85-3a6697158610	dotproperty	Rhythm Ekkamai Estate	852519e1-cf12-43e6-9de8-1e7554b0887a	ddproperty	Rhythm Ekkamai Estate	17.0	1.000
+deeb95a0-d47e-4590-a712-ff98d6c0a5ce	ddproperty	M Thonglor 10	fd8ac9c7-85d2-4de4-b3be-e692314715a5	fazwaz	M Thonglor 10	17.1	1.000
+61bb5b98-b672-42a8-8260-637567197dc5	dotproperty	Supalai Premier Place Asoke	bc8c9814-444d-4f67-ae10-12d9155af6eb	fazwaz	Supalai Premier Place Asoke	17.2	1.000
+47ea9ed6-ce8a-402f-9739-74d1f1b70695	fazwaz	Quad Silom	5e1cad37-f681-4e24-91bb-8d37dd86c732	dotproperty	Quad Silom	17.3	1.000
+475b211c-ed34-48eb-9295-ef6d3f72e7ba	dotproperty	NUE Evo Ari	5dc26766-335f-490b-a01e-a4cf804c8de2	fazwaz	Nue Evo Ari	17.3	1.000
+78a51c6d-38b0-4679-9614-1e6c83e1f3a0	dotproperty	The Ozone Signature Condominium	8bf1886b-bec3-44da-b4f4-68e8f9295808	ddproperty	The Ozone Signature Condominium	17.4	1.000
+732372dc-466a-41ff-9032-c97ae334a4a6	fazwaz	KnightsBridge Kaset - Society	b8106160-964d-4e37-9b11-cb39053abc39	dotproperty	Knightsbridge Kaset Society	17.6	1.000
+7ba36d2d-b726-4fcd-9622-ef50289a808d	dotproperty	Liberty Park 2	a790c078-081c-4914-8c97-5f212ae4db9f	fazwaz	Liberty Park 2	17.6	1.000
+1710b6c7-247d-4bc5-9c43-156431f303ff	ddproperty	The Zero Nai Yang	94ce1d7e-b3ee-480f-a2f7-77ea2e2ddbd3	dotproperty	The Zero Nai Yang	17.7	1.000
+9bbf96e5-581e-4b82-9ffd-bfa05b0c36bb	fazwaz	Bangkok Feliz Sukhumvit 69-2	e7643d4f-c76c-4703-b651-1073b5518693	dotproperty	Bangkok Feliz Sukhumvit 69-2	17.8	1.000
+22300239-4d05-4fb8-b571-da92ba27111f	dotproperty	The Bangkok Thonglor	5884bf2a-0aa1-4a54-968d-62ce2a251887	fazwaz	The Bangkok Thonglor	18.2	1.000
+5884bf2a-0aa1-4a54-968d-62ce2a251887	fazwaz	The Bangkok Thonglor	7948a613-6325-478b-80d0-5b5ed4154d8b	dotproperty	The Bangkok Thonglor	18.2	1.000
+5b2d9ece-4ac4-40c8-8f5f-ddbfe922c91f	fazwaz	Tree Condo Sukhumvit 42	681794bc-30d7-4b53-9230-3b7b07b21b2e	dotproperty	Tree Condo Sukhumvit 42	18.5	1.000
+88b03ef8-baa5-4452-97df-7f0b9dfac9d8	dotproperty	Noble Ambience Sukhumvit 42	bead9df0-463a-44dc-8c16-ab1685ef9153	fazwaz	Noble Ambience Sukhumvit 42	18.5	1.000
+68a210fc-9188-4c08-9ac3-970019368eb5	fazwaz	XVI The Sixteenth Condominium	e8bf8261-1ebe-4fbf-a444-73600e596003	dotproperty	XVI The Sixteenth Condominium	18.6	1.000
+20e09849-b2c9-4152-b673-7a828ff1dfb0	fazwaz	Acadamia Grand Tower	4b133bb0-471b-43a3-bd0c-cccc3258abed	dotproperty	Acadamia Grand Tower	18.7	1.000
+82fbd331-89b9-4ad6-89d3-14686922723b	ddproperty	Landmark @MRTA Station	8c5b5b36-2617-49fe-b279-15da2720ec76	dotproperty	Landmark @MRTA Station	18.8	1.000
+7dd072d7-a92f-475a-a210-f88c3f09567b	fazwaz	Condo One Thonglor	b39e0cf4-9b11-462b-8c3a-cb4a7454efa7	dotproperty	Condo One Thonglor	18.9	1.000
+702ce732-d16f-4dde-89d2-d0ded3cdd71d	fazwaz	KnightsBridge Space Sukhumvit-Rama 4	86e68c8e-2b90-441b-8d69-654711ffedbb	dotproperty	KnightsBridge Space Sukhumvit-Rama 4	19.1	1.000
+55b63da2-a35e-4906-909f-d5fe585059e4	dotproperty	La Citta Delre Thonglor 16	7a32b333-0613-4081-b92d-3a4945b63ce9	fazwaz	La Citta Delre Thonglor 16	19.2	1.000
+1604f34d-1178-43ca-a3c6-94652e097992	dotproperty	Rhythm Asoke 2	f7182382-ca85-4c58-be50-b2f9ca72d632	fazwaz	Rhythm Asoke 2	19.2	1.000
+2c0f2dcc-940e-4ff1-9f24-6af00e7e61a4	dotproperty	Reference Ekkamai	54b2fdef-4e1a-498b-9101-e508ba4ba3a9	fazwaz	Reference Ekkamai	19.4	1.000
+34d3818e-c733-401d-aef8-1ed383a4d868	fazwaz	Atmoz Tropicana Bangna	3c1bf25c-31b7-4d82-8150-b39bc50bda76	dotproperty	Atmoz Tropicana Bangna	19.6	1.000
+54ab01ed-6c7c-4b07-b494-debb88a3abfd	dotproperty	Voque Sukhumvit 31	f959e6a2-b814-4f1d-a49a-2ee70d350bf9	fazwaz	Voque Sukhumvit 31	19.7	1.000
+79ce9b7f-6ced-482c-9205-8980a87141ab	ddproperty	Cloud Thonglor-Phetchaburi	bcf588a1-0081-4ec5-8498-300e5e315f26	dotproperty	CLOUD Thonglor-Phetchaburi	20.0	1.000
+041cdf8d-123d-4f97-b34f-b180978f93a1	fazwaz	Kiarti Thanee City Mansion	d476b071-60a1-4799-b514-7395a8b74a0b	dotproperty	Kiarti Thanee City Mansion	20.0	1.000
+51572ee1-3b82-472d-8f05-b760e6c7f422	fazwaz	Quintara Phume Sukhumvit 39	515fee41-8f01-4355-98e2-b89e281c9e0e	dotproperty	 Quintara Phume Sukhumvit 39	20.1	1.000
+37f26fcf-443d-44ca-aeee-77dce89bc075	dotproperty	Supalai City Resort Ratchayothin - Phaholyothin 32	576ca285-04a9-48db-b709-cd8d2537a9d8	fazwaz	Supalai City Resort Ratchayothin - Phaholyothin 32	20.4	1.000
+8b3a4ff0-7cf6-4033-b7a5-ee4a2bbfa133	fazwaz	XT10 Ekkamai	cc33256e-c7a2-48e3-8a3b-d0152d432a67	dotproperty	XT10 Ekkamai	20.6	1.000
+49709822-c915-4c5b-9bf4-83746a6992d9	dotproperty	The Excel Ratchada 18	c7a91e10-4de0-427e-bfcf-9f4f67b5ac52	fazwaz	The Excel Ratchada 18	20.6	1.000
+b6914bef-8b9f-487f-aba3-3bcaafb675a6	dotproperty	The Excel Ratchada 18	c7a91e10-4de0-427e-bfcf-9f4f67b5ac52	fazwaz	The Excel Ratchada 18	20.6	1.000
+65f165fb-fe3c-4481-9ff3-b89b9e490b3c	dotproperty	Lake Green	67f722ba-012a-44d3-b9f7-1e1e3082f9bd	fazwaz	Lake Green Condominium	20.7	1.000
+36b00dc0-d307-4ec4-9ff5-e9f296d8fce2	ddproperty	Dcondo Creek Phuket	add4cea9-6def-47c5-8d4b-e8a09ab36903	dotproperty	D Condo Creek Phuket	20.7	1.000
+805d67d9-d21f-46f9-af87-574cf4854dbc	dotproperty	Ideo Verve Ratchaprarop	c56a556f-fcfc-46b8-ac7e-c1e18f92131c	fazwaz	Ideo Verve Ratchaprarop	21.0	1.000
+620f8450-9609-4c11-9a84-bc6c41013828	dotproperty	Circle Sukhumvit 31	c756b23c-e4af-43fc-88b0-3a45ea7f493e	fazwaz	Circle Sukhumvit 31	21.1	1.000
+ff6433fd-d8ee-436e-9bac-d8cb0f23fd90	dotproperty	Venio Sukhumvit 10	ffeb52b9-2362-4705-a3f4-bae9793d50ec	fazwaz	Venio Sukhumvit 10	21.1	1.000
+4c03ebf1-6dfa-4aa5-8b41-d404614d7be2	fazwaz	The Room Sathorn-TanonPun	f258fc53-539c-4b69-ad05-b60a5eb0ff74	dotproperty	The Room Sathorn - TanonPun	21.3	1.000
+4c03ebf1-6dfa-4aa5-8b41-d404614d7be2	fazwaz	The Room Sathorn-TanonPun	f957d197-77d9-4124-8f4c-5d9e376f358f	dotproperty	The Room Sathorn - TanonPun	21.3	1.000
+54bbd940-02b7-453b-8dd4-d275f4879e3a	dotproperty	Ficus Lane	a0a7df2b-3a06-41e0-abee-d20293898846	fazwaz	Ficus Lane	21.3	1.000
+e62c030d-aaf2-4823-b299-ada0447a14fa	fazwaz	Ideo Sukhumvit 93	e8043306-e470-4505-9001-c8a3c0d4efe7	dotproperty	Ideo Sukhumvit 93	21.4	1.000
+535c0664-ad5b-43d9-89a7-785bb434361b	fazwaz	Vela De Condo UTCC - Vipawadee 2	8eed309e-0461-4d8e-add1-f48cca877fce	dotproperty	Vela De Condo UTCC - Vipawadee 2	21.4	1.000
+c4d55a3e-3038-4aca-b5a1-2ab245ee5714	dotproperty	Zenith Place @ Sukhumvit	ee98366a-f100-4d52-91ef-72d16d07c708	fazwaz	Zenith Place Sukhumvit	21.5	1.000
+525b6407-44c2-4271-9312-cd63a8de1d69	fazwaz	Circle Living Prototype	d1aa8529-759a-4c54-bdbd-1d0ba0eea517	dotproperty	Circle Living Prototype	21.7	1.000
+30876921-8438-46c4-bc27-932c06aea996	dotproperty	XT Ekkamai	44842273-e151-4753-9c66-974b28907c5a	fazwaz	XT Ekkamai	22.1	1.000
+afa06782-2932-4aa4-86bd-b5a428104b6d	fazwaz	Niche Pride Ekkamai	bc63301d-eb69-457d-aa71-5d22aa6c2b57	dotproperty	Niche Pride Ekkamai	22.3	1.000
+785e089f-4ed3-4bfb-b034-aef61efd9f8b	dotproperty	The Green Condo III	b0eeeb6f-bed4-47aa-b1e9-0b652ed383a8	fazwaz	The Green Condo III	22.4	1.000
+9a7f2666-b95e-4134-b491-4cd00bf91641	dotproperty	The Green Condo III	b0eeeb6f-bed4-47aa-b1e9-0b652ed383a8	fazwaz	The Green Condo III	22.4	1.000
+1232e5ed-4654-4cfa-8ab4-dd8d54e731f4	ddproperty	XT Ekkamai	44842273-e151-4753-9c66-974b28907c5a	fazwaz	XT Ekkamai	22.4	1.000
+65bb2189-a0c1-4756-b907-b4f9ac442a60	dotproperty	Baan Ploenchit	82f7fea7-f95d-4403-9ac1-ec3a3585c73d	fazwaz	Baan Ploenchit	22.7	1.000
+aa00d556-be9d-4dc7-bbc8-38b0e4fb1b86	dotproperty	Rhythm Ratchada-Huai Khwang	acfc3f10-725a-4eaf-a77f-ab9f3e2d8f95	fazwaz	Rhythm Ratchada - Huai Khwang	22.8	1.000
+6072537b-523a-4ddb-a605-1f68496b686a	dotproperty	Ideo Sukhumvit - Rama 4	b584e1aa-01e1-4094-b0c2-80651e257081	fazwaz	Ideo Sukhumvit - Rama 4	23.1	1.000
+2ace9f9a-aa63-4406-b24d-890befad7c2d	ddproperty	The Royal Place Condominium	ac7bbbdf-1520-45f3-b565-70661cd233e1	dotproperty	The Royal Place Condominium	23.2	1.000
+6caa3b24-e751-427e-a923-3eeff93fafd5	dotproperty	Lumpini Ville Sukhumvit 77	ae6abb89-7349-48d5-957d-e9f8a116c6ea	fazwaz	Lumpini Ville Sukhumvit 77	23.3	1.000
+c92d4b62-caa5-4b95-b086-09f8bde05815	fazwaz	Siri At Sukhumvit	e7128795-4026-4667-a4ea-089005f859da	dotproperty	Siri at Sukhumvit	23.5	1.000
+d213dc90-cbdd-40bc-ad37-3f8efbe8bb44	dotproperty	Artemis Sukhumvit 77	dc658e31-3701-410e-882f-d5605e51a731	fazwaz	Artemis Sukhumvit 77	23.6	1.000
+0739ad16-0798-4213-b6ff-29268a51d967	dotproperty	The Crest Sukhumvit 49	f77372bd-8372-46f7-9bc8-f949e644f310	fazwaz	The Crest Sukhumvit 49	23.6	1.000
+f77372bd-8372-46f7-9bc8-f949e644f310	fazwaz	The Crest Sukhumvit 49	f893d580-55b0-49ff-90ed-57f0bca43d48	dotproperty	The Crest Sukhumvit 49	23.6	1.000
+6d881e96-3705-45db-a317-b02ad1ac0da9	dotproperty	LYSS Ratchayothin	9ef3b345-19be-4fa0-9ca7-833702f7f1f3	fazwaz	Lyss Ratchayothin	23.9	1.000
+248c5be3-1f40-459e-97da-8a16cfe4f6f2	dotproperty	The City Phuket	2e0eaae4-6acb-4825-9c5f-71af85f29c1c	ddproperty	The City Phuket	24.1	1.000
+619f3053-c317-4c7c-b61a-6f14ad1a958b	fazwaz	Fifty Fifth Tower	62dd2d89-5db8-4f74-843f-b3b113ea2dbc	dotproperty	Fifty Fifth Tower	24.3	1.000
+4dda1881-75e2-41c3-ace5-c96667cab96f	dotproperty	The Unique Ladprao 26	620d8db5-6b3a-4e42-8521-a11c915a8a21	fazwaz	The Unique Ladprao 26	24.4	1.000
+620d8db5-6b3a-4e42-8521-a11c915a8a21	fazwaz	The Unique Ladprao 26	9c006922-99ab-49dd-8ea2-24c87444a785	dotproperty	The Unique Ladprao 26	24.4	1.000
+3a3d2be9-4403-4bbd-b2ea-888cb3ca3fac	dotproperty	IDEO Mobi Sukhumvit 66	a89e0c4b-87ae-4bcf-a0b1-81848cae2dac	fazwaz	Ideo Mobi Sukhumvit 66	24.5	1.000
+0558fd83-c33b-4582-a227-db2d6df37164	fazwaz	The Winning Tower	164169d6-aba8-49e6-836c-ce0df59a9053	dotproperty	The Winning Tower	24.6	1.000
+0558fd83-c33b-4582-a227-db2d6df37164	fazwaz	The Winning Tower	455f88ca-7e69-4636-b24f-80e88e61fcf7	dotproperty	The Winning Tower	24.6	1.000
+09bf3138-7031-4c27-84d6-2c8bebf1996c	dotproperty	 The Extro Phayathai - Rangnam	aea760c9-74fe-4208-ad9d-8f02a6cb9e6f	fazwaz	The Extro Phayathai - Rangnam	24.8	1.000
+aea760c9-74fe-4208-ad9d-8f02a6cb9e6f	fazwaz	The Extro Phayathai - Rangnam	de790739-5ac6-4a02-9e08-033c56a244bd	dotproperty	 The Extro Phayathai - Rangnam	24.8	1.000
+10df73be-aff2-4e87-b000-f6690cdde82f	dotproperty	Walden Thonglor 8	785541fc-2bcb-4b29-81f4-64fc92c7a387	fazwaz	Walden Thonglor 8 condominium	24.9	1.000
+036aaa24-7faf-4567-b143-f88ee5843a91	fazwaz	First Tower	89b92b22-b08d-47d2-a7ce-6cc7a3cbf934	dotproperty	First Tower condominium	24.9	1.000
+8b8835f3-83c1-4d3a-8600-27308d9833b4	dotproperty	Beverly 33	e6505458-11eb-4957-9e16-e8223972c65f	fazwaz	Beverly 33	25.0	1.000
+408b8bba-4710-42c8-9d5d-c2dadf1afdf7	dotproperty	The Crest Sukhumvit 24	78fa08e2-c228-4428-b91f-aa75763e495d	fazwaz	The Crest Sukhumvit 24	25.3	1.000
+6838914c-cddb-44e0-abf4-00437c83c136	dotproperty	The Crest Sukhumvit 24	78fa08e2-c228-4428-b91f-aa75763e495d	fazwaz	The Crest Sukhumvit 24	25.3	1.000
+994ea0cf-2786-498b-96e6-4a56311fc904	dotproperty	The Pillar	b990e753-ad40-4bb2-9eb1-84ff0f67a161	fazwaz	The Pillar	25.9	1.000
+b990e753-ad40-4bb2-9eb1-84ff0f67a161	fazwaz	The Pillar	f89e666d-6390-4f6f-9904-3bff61af668d	dotproperty	The Pillar	25.9	1.000
+342299ee-cdc3-4bcc-bc7e-a4a1b3d92f1f	dotproperty	SOCIO Ruamrudee	fc95a4d4-25d9-4521-a3ae-165d06b42c4c	fazwaz	SOCIO Ruamrudee	26.2	1.000
+a2d5781b-dce3-4d3e-83c9-a788140f9e28	fazwaz	The Crest Park Residences	a7d38345-10de-4653-8c10-f52e25c3d126	dotproperty	The Crest Park Residences	26.3	1.000
+a2d5781b-dce3-4d3e-83c9-a788140f9e28	fazwaz	The Crest Park Residences	dc3482ff-ad97-4765-a4d1-9fa598fdff38	dotproperty	The Crest Park Residences	26.3	1.000
+49b9e0a5-9a7e-4fe2-80c5-4af58310f23b	fazwaz	Le Rich Sathorn-Satupradit	8b3bfa81-3e9e-4160-8b0e-c69e15a340f9	dotproperty	Le Rich Sathorn - Satupradit	26.4	1.000
+0796bb5f-5f71-40a7-aeca-72570b0a1402	dotproperty	Whizdom Craftz Samyan	4c0f2eaf-e52b-4560-99db-7b389da0cdbb	fazwaz	Whizdom Craftz Samyan	26.7	1.000
+86589705-bd32-418c-8d7c-e76749d3917c	dotproperty	PB Penthouse 2	99c65583-3218-43ba-9104-c9ee81a137a2	fazwaz	PB Penthouse 2	27.0	1.000
+3260fd86-41c0-4777-9245-60864b59ca01	dotproperty	Regent on the Park 3	3bd5f174-3b49-4f91-8c35-a0bada564ff1	ddproperty	Regent On The Park 3	27.1	1.000
+3a1312a4-327e-436a-935e-4e2a57dbdda8	dotproperty	Wish @ Samyan	61164efb-6877-4536-b5d8-0c19b7f35b04	fazwaz	Wish @ Samyan	27.3	1.000
+ac0720d2-17eb-40a9-ade2-abd85a66b9a2	fazwaz	Liv At 49	c28ff4bf-130f-44cf-ab3c-79117703daec	dotproperty	Liv At 49	27.8	1.000
+747a308c-e9ce-4f1c-943d-bbeaabd01e39	dotproperty	Prive by Sansiri	c6b718a6-32ce-4e53-8d90-8756cd295e08	fazwaz	Prive by Sansiri	28.0	1.000
+b6041a0d-c63d-4890-bd2b-c08402477488	fazwaz	Noble Reflex	b759d27e-6b37-48ea-aa2f-a3f0e8cdb2f0	dotproperty	Noble Reflex	28.3	1.000
+358d5c19-4acf-4276-804f-0481612ffc99	fazwaz	KnightsBridge Prime Ratchayothin	5932b739-015a-40c5-b062-efa54364c7e2	dotproperty	KnightsBridge Prime Ratchayothin	28.6	1.000
+bdc491bb-c749-4b16-b46c-1d9574134a33	dotproperty	Ideo Sathorn - Wongwian Yai	e9b1262e-5a39-4a1e-a758-37a66a8a5e96	fazwaz	Ideo Sathorn Wongwianyai	28.6	1.000
+62c00c98-d3ac-4372-8693-0dbd5f036606	dotproperty	M Thonglor 10	deeb95a0-d47e-4590-a712-ff98d6c0a5ce	ddproperty	M Thonglor 10	28.7	1.000
+0a34f6c2-79eb-434b-ab1b-3c1a5f83095a	fazwaz	Lumpini Ville Ramkhamhaeng 60/2	ee45b8c5-ac5c-45c0-98e7-5ae37a092890	dotproperty	Lumpini Ville Ramkhamhaeng 60/2	28.8	1.000
+9a329619-acbb-4536-8c90-9867a5916281	fazwaz	Icondo Sukhumvit 105	c0b88e03-aa49-4fbf-a785-a39a8cba7967	dotproperty	iCondo Sukhumvit 105	28.8	1.000
+c71f8efd-f821-469c-8b27-af28c4c1d1f1	dotproperty	Vista Garden	e2e813e8-f9f0-43b8-88f9-cf0b4e95ee2a	fazwaz	Vista Garden	28.8	1.000
+9c96b8e6-f210-48c7-be10-d81f14727650	dotproperty	ReLife The Windy	f24a8dda-30f6-4bbc-851a-c00b56a64847	ddproperty	ReLife The Windy	28.9	1.000
+82f4b643-3c38-42c8-879f-efebe6478e2c	dotproperty	Via 49	9d2a4100-fb25-498a-b598-84abf4af0bd3	fazwaz	Via 49	29.5	1.000
+1ab2dcac-80a1-40cf-90bc-2db15759b1e5	dotproperty	Q1 Sukhumvit	22a4f6d3-57c5-4c2f-8fdb-4ebe8dff7714	ddproperty	Q1 Sukhumvit	29.6	1.000
+1ab2dcac-80a1-40cf-90bc-2db15759b1e5	dotproperty	Q1 Sukhumvit	64c55d46-5258-44f9-8082-5b973847d586	ddproperty	Q1 Sukhumvit	29.6	1.000
+07542c73-fa0f-49a2-97f5-c7db46ab1b99	dotproperty	The Concord	d09d8434-dc56-4908-a8e0-46f4e5d7b4bb	fazwaz	The Concord	29.9	1.000
+cba0b666-c28e-440c-8815-5f97d93fa79a	dotproperty	The Concord	d09d8434-dc56-4908-a8e0-46f4e5d7b4bb	fazwaz	The Concord	29.9	1.000
+32f505c9-0c53-473b-9ff3-044c4dd2aabb	dotproperty	Chapter One Eco Ratchada - Huaikwang	7ac3a12c-5f59-47ee-8209-5fa2073004a8	fazwaz	Chapter One ECO Ratchada - Huaikwang	29.9	1.000
+8a20bc72-3c77-4e37-a1aa-67951a4a134e	dotproperty	Baan Yuppayong	f3b5d830-5f93-4345-a392-ac976fdb463d	fazwaz	Baan Yuppayong	30.0	1.000
+23c695f0-610d-4034-9d58-7b98eb0e62ae	dotproperty	Supalai Elite Phayathai	4e4d7e66-0b7c-4428-a7b7-31b102f9d840	fazwaz	Supalai Elite Phayathai	30.1	1.000
+39fb0ef4-56e3-45e3-a60b-5d47f1411897	fazwaz	The LIVIN Ramkhamhaeng	3b7a40b4-6cdb-4085-a77f-1f324bf12f3c	dotproperty	The LIVIN Ramkhamhaeng	30.2	1.000
+39fb0ef4-56e3-45e3-a60b-5d47f1411897	fazwaz	The LIVIN Ramkhamhaeng	fef9e6d7-9df2-4df0-b0dd-e87f5f226928	dotproperty	The LIVIN Ramkhamhaeng	30.2	1.000
+23d36bc5-1ec8-4f38-bd55-02e07dc24c9d	dotproperty	Runesu Thonglor 5	c6865238-3553-4b56-9300-a232f754b90d	fazwaz	Runesu Thonglor 5	30.6	1.000
+8759b4bf-1c52-4fb2-8e41-6331f45986a5	fazwaz	Noble Form Thonglor	941f382c-0e70-4b34-9259-22e749c9d53f	dotproperty	Noble Form Thonglor	30.7	1.000
+6275a240-e2db-45c4-af24-0945bad93e6c	fazwaz	Sukhumvit Living Town	8feb12d0-d7b7-490e-bd09-b001999adf3f	dotproperty	Sukhumvit Living Town	30.7	1.000
+5b79e85c-daa8-4417-8c16-5b1e7487b806	dotproperty	Supalai Elite Sukhumvit 39	7fad9f1e-e65f-45de-a3f2-223d9b3d24b1	fazwaz	Supalai Elite Sukhumvit 39	30.7	1.000
+8670a4fc-6ac8-4607-b7d4-1537f5a6c807	fazwaz	Sukhumvit Suite	de9408e4-1428-42b6-8214-ca99444f2dd3	dotproperty	Sukhumvit Suite	30.8	1.000
+027df3f3-321d-426f-8325-ce5907424101	fazwaz	Siamese Exclusive Sukhumvit 31	6b6356ad-2775-4ce0-9517-a53ba2be0acd	dotproperty	Siamese Exclusive Sukhumvit 31	31.1	1.000
+b39f181d-c3f7-41f9-b839-23375ea0fd10	dotproperty	Hyde Sukhumvit 11	eb9582bf-3249-45f9-bef8-b59fa65d703e	fazwaz	Hyde Sukhumvit 11	31.3	1.000
+9d940a05-aac0-489d-88aa-fa6838f9388c	dotproperty	Metro Luxe Ratchada	a3bdad10-99bf-4d86-936f-e78d7c3fb5fb	fazwaz	Metro Luxe Ratchada	31.4	1.000
+5d04a766-f2fd-4cda-bf13-d662d249b5df	dotproperty	Lumpini Ville Phatthanakan-New Phetchaburi	e0edb729-8d5b-44bb-a217-6c8109f8f078	fazwaz	Lumpini Ville Phatthanakan-New Phetchaburi	31.4	1.000
+03524d8d-8ed4-4804-a53a-011f3c6b493e	dotproperty	The Rich Rama 9 - Srinakarin	2f7119cc-b7d9-4630-b00a-6f217d717597	fazwaz	The Rich Rama 9 - Srinakarin	31.4	1.000
+0cfa534d-1c36-44a8-b258-abef99d976f3	dotproperty	The Rich Rama 9 - Srinakarin	2f7119cc-b7d9-4630-b00a-6f217d717597	fazwaz	The Rich Rama 9 - Srinakarin	31.4	1.000
+e03181c7-a3e2-405e-be1b-7e09fc55c2a2	dotproperty	Lumpini Place Water Cliff	ea52ca65-2032-4bfa-8ddf-264c04d12558	fazwaz	Lumpini Place Water Cliff	31.8	1.000
+bc7eee35-7f5d-4fa3-a9c8-bc00edf88295	dotproperty	Ashton Asoke - Rama 9	f845525b-93dd-4602-a127-10682ece76d9	fazwaz	Ashton Asoke - Rama 9	32.2	1.000
+2dd0c209-2b8e-4cae-8412-95fec9908f61	dotproperty	Wattana Suite	d1b7b28d-9476-4dcc-ad2f-e42304c79d08	fazwaz	Wattana Suite	32.5	1.000
+cd21a3e9-35b5-4dc9-b99b-11fdb5decbdb	dotproperty	Lert Ubon Sky Life Tower	d6d009e2-e99b-4d6f-8851-8027528c4406	fazwaz	Lert Ubon Sky Life Tower	32.5	1.000
+10efdbf4-2dad-4242-895b-0d2409caa545	dotproperty	The ESSE Sukhumvit 36	79da14d1-9fac-4b7e-b9c6-ded90bb0d9e1	ddproperty	The Esse Sukhumvit 36	33.0	1.000
+79da14d1-9fac-4b7e-b9c6-ded90bb0d9e1	ddproperty	The Esse Sukhumvit 36	ebc32024-c183-4ccd-a69f-5af2d503cabc	dotproperty	The ESSE Sukhumvit 36	33.0	1.000
+803a892f-5f84-4423-b9e5-f897fbb1c0b9	dotproperty	Supalai Premier Charoen Nakhon	d8dc54be-d48f-4640-9236-612d47401f5c	ddproperty	Supalai Premier Charoen Nakhon	33.0	1.000
+26c68400-687d-45bb-96c8-878005bfebb9	fazwaz	SHUSH Ratchathewi	318e9b43-0292-4d41-9f08-4b85428f75f3	dotproperty	SHUSH Ratchathewi	33.1	1.000
+7c81b662-2402-4d71-8916-ffd9b430a775	fazwaz	Maestro 03 Ratchada-Rama 9	f0dbca71-a369-4022-a709-19bbd7d6ea82	dotproperty	Maestro 03 Ratchada-Rama 9	33.5	1.000
+2b507b98-a4f9-4cef-920d-048a0dea03f8	fazwaz	Whizdom 101	553d1fc1-5d10-407f-9720-d9cf20b95ed9	dotproperty	Whizdom 101	33.6	1.000
+5fa044bb-3379-4d08-8dc1-e8f2511d2e6d	fazwaz	Las Colinas	a7c8c5ca-36f4-47cf-ab6a-4687804d5133	dotproperty	Las Colinas	33.7	1.000
+2fd3973a-b7ad-46d3-ba8d-829d32941c8b	fazwaz	The Line Sukhumvit 71	cb921442-edc2-4a2f-822e-e78ce56071c6	dotproperty	The Line Sukhumvit 71	33.8	1.000
+2fd3973a-b7ad-46d3-ba8d-829d32941c8b	fazwaz	The Line Sukhumvit 71	ce72d10a-214c-497b-aaba-f267799d56d1	dotproperty	The Line Sukhumvit 71	33.8	1.000
+726c07c9-5792-488f-8cfe-5e7a9c44fbe8	fazwaz	La Maison Phaholyothin 24	c1321520-8fba-4ac9-b7e1-eb8f06fc4b71	dotproperty	La Maison  Phaholyothin 24	34.2	1.000
+1999d03b-73f4-4135-ac9c-ac3d235ff321	dotproperty	Supalai Elite Sathorn - Suanplu	3131a7c1-3a71-4e84-a9c6-cbeb257696ff	fazwaz	Supalai Elite Sathorn - Suanplu	34.4	1.000
+278e7411-93c7-4236-869c-fe14eb9a1b5a	dotproperty	The Line sukhumvit 101	eac2a959-fe11-48e7-9458-d749a90c2ff4	fazwaz	The Line Sukhumvit 101	34.5	1.000
+52665183-5beb-4a8b-a74d-486e30bb70e7	dotproperty	The Line sukhumvit 101	eac2a959-fe11-48e7-9458-d749a90c2ff4	fazwaz	The Line Sukhumvit 101	34.5	1.000
+3f6478b8-1920-4086-83b7-9625f99a815e	dotproperty	Supalai City Resort Charan 91	81073b32-4e0c-499d-b8ad-476c327db10b	fazwaz	Supalai City Resort Charan 91	34.6	1.000
+5088486b-ddc7-48f2-b743-164a1d0507bc	dotproperty	Lumpini Park View	e201dcfa-2b15-489b-96ab-fb75d771d9cb	fazwaz	Lumpini Park View	34.7	1.000
+3623e069-5252-48b8-85ea-3e751b50e9dd	fazwaz	Royal River Place	42741770-eed1-4756-9b5a-e17c83238d6e	dotproperty	Royal River Place	35.2	1.000
+7ea31a85-95b3-445b-8b40-5b9828616beb	dotproperty	Sapphire Luxurious Condominium Rama 3	d5934f01-5c98-4151-b3c0-d4e18579dde7	fazwaz	Sapphire Luxurious Condominium Rama 3	35.4	1.000
+6b198db8-854e-4ca6-94c7-83b8fa33acfb	dotproperty	Aspire Huai Khwang	73f718c9-a9d1-4f10-b287-96b4c9ca9216	fazwaz	Aspire Huai Khwang	35.5	1.000
+2e029fdd-d16f-4518-9321-cdd8db0c4aad	fazwaz	Life Ratchada - Rama 9	318f01a1-c7c8-449b-ad7c-b5e268af88fb	dotproperty	Life Ratchada - Rama 9	35.7	1.000
+0b9143b2-1811-40ae-ba30-96207654c492	dotproperty	The Editor Saphan Khwai	87b75545-44e3-479e-bb2d-5da7aa1af468	fazwaz	The Editor Saphan Khwai	35.8	1.000
+1b58e5de-355d-4a39-bbb7-a86e27fe98a1	dotproperty	The Editor Saphan Khwai	87b75545-44e3-479e-bb2d-5da7aa1af468	fazwaz	The Editor Saphan Khwai	35.8	1.000
+b45ac2cf-35d0-4407-a1cb-7cf8186e4c37	ddproperty	THE Base Cherngtalay	d9a17da5-2666-4dd8-a8ab-aeb2f19b76b8	dotproperty	The Base Cherngtalay	36.0	1.000
+7472de05-35fd-4d3f-9f11-c24e1379ac52	dotproperty	U Delight @ Bangson Station	a2208359-b697-49be-bf78-9f15586677b9	fazwaz	U Delight Bangson Station	36.3	1.000
+ccc2bb91-372c-4b5c-be50-8734e3e1900f	dotproperty	Hampton Residence Thonglor At Park Origin Thonglor	eb0a8646-d66e-491b-8b99-a9d094ae7a2f	fazwaz	Hampton Residence Thonglor At Park Origin Thonglor	36.6	1.000
+8547e085-0e01-4ee0-9498-a46f1dc6c1f7	fazwaz	Ideo Mobi Charan Interchange	e686cf2f-a61a-48ab-b199-856acde6375c	dotproperty	Ideo Mobi Charan Interchange	36.9	1.000
+b7375c6f-908a-4e5f-ab85-b72169a973ce	dotproperty	TreeCondo Sukhumvit 52	e9ac69a8-1249-41f7-8d81-c666927573b0	fazwaz	Tree Condo Sukhumvit 52	37.2	1.000
+28c15a8d-6ca3-4983-b13d-88ad6c324d46	fazwaz	59 Heritage	6ccea5d9-d3f7-4ae2-bf29-4236b28f4e39	dotproperty	59 Heritage	37.2	1.000
+3452ba54-a9d9-4585-8cd9-48d2de58f4cd	dotproperty	The Tree Ladprao-Wanghin	3b110c7b-1f59-4588-8d42-3ccba706a1dc	fazwaz	The Tree Ladprao-Wanghin	37.6	1.000
+3b110c7b-1f59-4588-8d42-3ccba706a1dc	fazwaz	The Tree Ladprao-Wanghin	8ca3b4f5-debb-4899-9bfd-bdad46bd8208	dotproperty	The Tree Ladprao-Wanghin	37.6	1.000
+4fe18a5d-d023-4db7-8d81-040e92130340	fazwaz	Noble Solo	bfadcb05-b265-47d8-9814-ee7c98a26f3d	dotproperty	Noble Solo	37.8	1.000
+8a500ea2-5330-4736-b30c-728789af2ca4	ddproperty	Arise Vibe	ac1a679e-98e9-4a18-bf74-6f8a8a5118d8	dotproperty	Arise Vibe	37.8	1.000
+54321050-824d-43ce-a6ff-5fd3b8c8f516	fazwaz	Itsara Condominium	849e7ffc-6dfe-4a27-bf09-c951c5ca770d	dotproperty	Itsara Condominium	38.6	1.000
+19336a4b-df26-487f-a0fa-823def1a997a	ddproperty	UP Ekamai	ddf000eb-eb49-4504-9120-ce2114adab09	dotproperty	Up Ekamai	38.7	1.000
+25bb6a12-8b7b-4f7a-9bdd-06902dde5250	ddproperty	ASHTON Asoke	e38be659-e6a1-40b9-968e-305b87810c52	dotproperty	Ashton Asoke	39.0	1.000
+0fbef2eb-47cf-43f8-a8dd-d670c82d4dc6	fazwaz	Thepleela Condo Town	5587edf4-52f7-4e85-85fa-f290ae7707fc	dotproperty	Thepleela Condo Town	39.3	1.000
+0fbef2eb-47cf-43f8-a8dd-d670c82d4dc6	fazwaz	Thepleela Condo Town	807f1970-accb-448b-a816-5b03be5126a8	dotproperty	Thepleela Condo Town	39.3	1.000
+c9d4cfde-208c-485e-9995-5fe8defae799	dotproperty	749 Residence	f484912c-a3d7-475d-b905-8b70baa6fc05	fazwaz	749 Residence	39.4	1.000
+9d6d3fb2-995c-4960-8d6b-cfb67ff6c8fc	dotproperty	Serio Sukhumvit 50	ed3efe99-d90c-4b1a-966e-54264c740c55	fazwaz	Serio Sukhumvit 50	39.4	1.000
+1d486e6d-3dc6-4240-8d64-9a0fc146df39	dotproperty	The Room Sukhumvit 62	7483e7e2-f168-461c-a766-8f18c7183243	ddproperty	The Room Sukhumvit 62	39.5	1.000
+7483e7e2-f168-461c-a766-8f18c7183243	ddproperty	The Room Sukhumvit 62	b0ee5de0-f32d-439a-9407-32f31958c85c	dotproperty	The Room Sukhumvit 62	39.5	1.000
+743edf0f-8cea-463f-8114-2be26488ca21	dotproperty	Park Origin Thonglor	fa6bad8e-71de-4129-b7b0-9162911d6293	fazwaz	Park Origin Thonglor	39.7	1.000
+465b2209-1899-4b02-af9a-34b0acd3d7c2	ddproperty	The Title Cielo Rawai	a35d6ebb-23e2-4f91-9cc9-7c28b63c9c11	dotproperty	The Title Cielo Rawai	39.8	1.000
+079a2864-6f94-4988-a247-7b3b3fca2136	fazwaz	Via 61	37d7bded-1de8-4055-823a-bf1d788828e2	dotproperty	Via 61	40.1	1.000
+2ac225cb-ef4b-4902-8aef-66561b21c708	fazwaz	Coco Parc	80d503f1-6275-436e-8323-61a19b466afd	dotproperty	COCO Parc	40.4	1.000
+2b04d3a8-acd2-4b8d-917d-98930791b662	dotproperty	Centric Ratchayothin	e0858b17-b94b-4aa9-a2ba-2b26ee7fbb06	ddproperty	Centric Ratchayothin	40.5	1.000
+31c5a309-d1dc-4e14-b3ea-f639052ebb90	fazwaz	ARLO Sukhumvit 105 - Lasalle	dc0eec8d-21d6-4f07-9154-a0396bce67a0	dotproperty	ARLO Sukhumvit 105 - Lasalle	40.6	1.000
+229e5a9c-5a09-43e8-be21-21b4300230b2	dotproperty	The Park Chidlom	96de834c-a735-4116-8fd7-104c3ddb56b6	fazwaz	The Park Chidlom	40.6	1.000
+96de834c-a735-4116-8fd7-104c3ddb56b6	fazwaz	The Park Chidlom	ab8fc316-603a-401a-82a8-ea9f7de860ad	dotproperty	The Park Chidlom	40.6	1.000
+a92673b5-4ed1-4620-a772-7cb2a406b671	fazwaz	Somkid Gardens	b812609c-fd79-4a41-98f1-51e2ecd5a4d8	dotproperty	Somkid Gardens	41.5	1.000
+170bacbd-c798-4843-9ab7-fd38601aeaa5	dotproperty	The Met	f2dd2de9-9a91-44b7-b054-b78ebaa39e27	fazwaz	The Met	41.6	1.000
+6d8ab571-a38b-42f0-a6a3-2616f405b240	dotproperty	The Met	f2dd2de9-9a91-44b7-b054-b78ebaa39e27	fazwaz	The Met	41.6	1.000
+4abc03af-e78f-499c-81b4-01af961be870	fazwaz	The Master Centrium Asoke-Sukhumvit	94646a79-493b-49e5-989d-d9c9bb841a8d	dotproperty	The Master Centrium Asoke-Sukhumvit	41.6	1.000
+4abc03af-e78f-499c-81b4-01af961be870	fazwaz	The Master Centrium Asoke-Sukhumvit	f24c0c4c-e06d-413c-9c38-3a684ac339cb	dotproperty	The Master Centrium Asoke-Sukhumvit	41.6	1.000
+08290203-3805-4f9e-b584-cfbd4d422e15	dotproperty	The Base Sukhumvit 77	c1a4b40c-aff6-4a84-8ac8-cb00688188e9	fazwaz	The Base Sukhumvit 77	42.3	1.000
+12c397df-c166-4fd0-9086-d72c9c5bdbb4	dotproperty	The Base Sukhumvit 77	c1a4b40c-aff6-4a84-8ac8-cb00688188e9	fazwaz	The Base Sukhumvit 77	42.3	1.000
+79f98875-4526-459f-ba74-745ffb926f23	fazwaz	Art @Thonglor 25	afe83e1d-78ab-467f-af15-1f873f843e6c	dotproperty	Art @ Thonglor 25	42.4	1.000
+039ae8ac-d064-4717-a5c9-e299dc819c6f	fazwaz	COBE Kaset-Sripatum	1fef8dc9-d60a-4ac1-b5bf-98e62643902f	dotproperty	COBE Kaset-Sripatum	42.5	1.000
+4c846803-4899-4994-be55-16f802d7f9f3	dotproperty	Eden Ekkamai	910cba97-812f-4ed0-a1b9-c81f2aacd329	fazwaz	Eden Ekkamai	42.8	1.000
+bd8fad61-42bb-4751-90cb-6f82cd1cf2c5	fazwaz	Lumpini Ville Cultural Center	f356f1ed-546e-40e3-a676-fb7b891f1dca	dotproperty	Lumpini Ville Cultural Center	43.1	1.000
+1ec5263f-ddc3-497b-b2c1-6655d72aa4c4	dotproperty	Supalai Park Phaholyothin	e302dd1b-40da-40d6-86ad-4c91e07cf7b0	fazwaz	Supalai Park Phaholyothin	43.1	1.000
+0f87b1f4-959e-433a-9a1c-0963d973cadf	fazwaz	Taka Haus	817321eb-9d21-41d4-abbe-d73d6382272b	ddproperty	Taka Haus	43.4	1.000
+070f2aff-17cb-402c-8735-9dd7e62157a5	dotproperty	Voque Sukhumvit 16	2876cdbb-0c83-4b12-976f-4a45af69bc18	fazwaz	Voque Sukhumvit 16	43.5	1.000
+47a25a0b-2143-408c-9f87-d54bbab491f4	dotproperty	Family Condominium	b5ede562-174b-455b-b9d7-71fd43d60647	fazwaz	Family Condominium	43.6	1.000
+7c4e7797-3c23-4419-9ffc-3f4558756ddd	dotproperty	The Natural Place Suite	d6326430-fd9f-49ee-bb10-beba0a9669e7	fazwaz	The Natural Place Suite Condominium	43.6	1.000
+90a6f47b-1b42-4971-a54a-014e3eb0cdfa	dotproperty	The Natural Place Suite	d6326430-fd9f-49ee-bb10-beba0a9669e7	fazwaz	The Natural Place Suite Condominium	43.6	1.000
+8c1725f3-2dba-4d73-bd17-b91f937ef26a	fazwaz	Vtara Sukhumvit 36	9efb9b16-194f-4d92-8fd0-655ff5f84662	dotproperty	Vtara Sukhumvit 36	43.9	1.000
+62c00c98-d3ac-4372-8693-0dbd5f036606	dotproperty	M Thonglor 10	fd8ac9c7-85d2-4de4-b3be-e692314715a5	fazwaz	M Thonglor 10	44.0	1.000
+d6726184-f35b-4ab7-8175-873f1b2631f4	dotproperty	FYNN Aree	ee894d4a-aee8-4f93-b143-fee0c18d0fe0	fazwaz	FYNN Aree	44.4	1.000
+154ff7d6-cc39-4754-8af6-d74e63eddb69	dotproperty	The Future Condo	4ad992af-948a-4b8b-b89f-cb100b2efe5c	ddproperty	The Future	44.8	1.000
+0fe418b3-8c18-4d92-b603-67c0c305a39e	dotproperty	The Bangkok Sukhumvit 43	ce11b879-b1ce-407e-9089-81e82fb2b636	fazwaz	The Bangkok Sukhumvit 43	45.1	1.000
+aeb7be3b-c1d2-47aa-94bf-235cbf5622cd	dotproperty	The Bangkok Sukhumvit 43	ce11b879-b1ce-407e-9089-81e82fb2b636	fazwaz	The Bangkok Sukhumvit 43	45.1	1.000
+570c77ff-c001-47f7-8ab6-5402627f27fa	fazwaz	Eight Thonglor Residence	62aa15cf-a709-4715-9d73-43cbe200e4ac	dotproperty	Eight Thonglor Residence	45.5	1.000
+42946f7f-a419-42e2-881d-646eda92161a	ddproperty	Bright Phuket	54c83fec-1b07-4c73-b546-e1049ffd7905	dotproperty	Bright Phuket	45.6	1.000
+75efc8ed-40ba-4f07-91f0-bffdd0a60421	dotproperty	Whizdom Avenue Ratchada - Ladprao	f3c88e1b-02a6-4cde-9e47-203f97a9a900	fazwaz	Whizdom Avenue Ratchada - Ladprao	45.8	1.000
+0b0dce8b-efd2-4025-8a2e-818a2a75026f	dotproperty	Noble Around Ari	165a1c05-8c56-4405-9304-a92e190d6553	fazwaz	Noble Around Ari	46.2	1.000
+12e2115d-6b50-4a46-91d2-ddbb7b0646b6	fazwaz	The Parco Condominium	43c1f3b6-b718-48d5-8a7e-5719bf2215bc	dotproperty	The Parco condominium	46.8	1.000
+12e2115d-6b50-4a46-91d2-ddbb7b0646b6	fazwaz	The Parco Condominium	c32377bf-b9aa-4869-bdf4-0d26e1df6ee6	dotproperty	The Parco condominium	46.8	1.000
+8b3c54d5-b015-418d-b91a-04c300438671	fazwaz	T.P.J. Condo	9e4df937-7b25-4e9c-899f-ed5c6cd48dff	dotproperty	T.P.J. Condo	46.9	1.000
+1fab3d56-60fc-4748-a5be-72adb4f40e04	dotproperty	SCOPE Thonglor	909d67e5-22d7-445d-ab4f-7613c8e3ea45	ddproperty	SCOPE Thonglor	47.5	1.000
+38c51515-84f7-4e7c-ba8b-2262156fb4e7	dotproperty	Diamond Sukhumvit	8e58de07-73f6-4b2d-bee3-9215923c20fd	fazwaz	Diamond Sukhumvit	47.7	1.000
+28ccaaf9-a441-4456-99c1-6ab6e9d176b4	dotproperty	Premier Condominium	97edb65d-cd2d-4044-8c13-cb641a46035d	fazwaz	Premier Condominium	47.7	1.000
+6650283f-bda5-4c75-9db2-46280aa0b0e1	fazwaz	The Base Ratchada 19	a9619471-daf0-461c-ab27-1fa042916866	dotproperty	The Base Ratchada 19	48.2	1.000
+6650283f-bda5-4c75-9db2-46280aa0b0e1	fazwaz	The Base Ratchada 19	df702fa7-a541-4b54-8de3-a840ff806110	dotproperty	The Base Ratchada 19	48.2	1.000
+3a60af31-0a0d-4232-861d-0cac7b89bcc5	fazwaz	The Light Ladprao	510dbd13-36ad-4a33-8a6a-35fb48af9008	dotproperty	The Light Ladprao	48.4	1.000
+3a60af31-0a0d-4232-861d-0cac7b89bcc5	fazwaz	The Light Ladprao	b6e1c5fd-4ea4-44aa-82f7-87edca63bc66	dotproperty	The Light Ladprao	48.4	1.000
+2191cf3e-665d-469c-ac4a-dabd08d96541	dotproperty	The Excel Hideaway Sukhumvit 50	31df0d5e-0dc7-4d69-95b5-2d4e372f43d7	fazwaz	The Excel Hideaway Sukhumvit 50	48.5	1.000
+31df0d5e-0dc7-4d69-95b5-2d4e372f43d7	fazwaz	The Excel Hideaway Sukhumvit 50	b5d80677-cf51-420c-b77a-c77c2e1598aa	dotproperty	The Excel Hideaway Sukhumvit 50	48.5	1.000
+58145d82-235b-49e4-9fb9-1e7293c9299e	dotproperty	Baan Ananda	6f7f4896-4fd5-4f10-8e3f-40b1c59078b9	fazwaz	Baan Ananda	48.5	1.000
+06635f8a-7291-462c-8b5b-b2dd84014be6	fazwaz	Commonwealth Pinklao	afa8654c-a530-40db-905a-2ee86b519d72	dotproperty	Commonwealth Pinklao	48.6	1.000
+86ffc275-caab-438f-ba38-a211da19647d	dotproperty	Chapter Thonglor 25	bceecf78-fe6d-4016-8c95-cb4bd4290147	fazwaz	Chapter Thonglor 25	48.8	1.000
+cc12d990-df63-458a-9ee7-921ad89cf428	dotproperty	Viphavadi View Condo	f7c5885a-493b-4a12-945f-418f5e913462	fazwaz	Viphavadi View Condo	48.8	1.000
+35669471-d039-4677-bcdc-24a8a2618902	dotproperty	MARQUE Sukhumvit	5adadf83-a00f-4239-8510-88d24cc20118	fazwaz	MARQUE Sukhumvit	49.2	1.000
+52b3ea6f-f373-487c-b2b3-1a065e095b09	ddproperty	Saturdays Residence	cd2624ba-2bbd-4ba9-93c5-4ce5ac603998	dotproperty	Saturdays Condo	49.3	1.000
+4426a713-8bb0-49d0-a1aa-da4921f211c8	fazwaz	Kasa Deva Sathon - Kanlapaphruek	e974a0b6-9182-4f88-8e12-7b4cc4f2b160	dotproperty	Kasa Deva Sathon - Kanlapaphruek	49.6	1.000
+8a9c8301-dd8f-4ac9-9d47-91c6d9ac29b0	dotproperty	The Room Charoenkrung 30	afd7e303-88fd-4a2f-adc4-133f6b3eba41	fazwaz	The Room Charoenkrung 30	50.0	1.000
+afd7e303-88fd-4a2f-adc4-133f6b3eba41	fazwaz	The Room Charoenkrung 30	f747d1a0-8f83-4c87-9d04-0d8c02e6a884	dotproperty	The Room Charoenkrung 30	50.0	1.000
+1ec53c06-4b28-4263-b050-39d99a5c84e7	dotproperty	Belgravia Residences	663da7f3-2a30-4ebc-a2fe-165c5799c7dc	fazwaz	Belgravia Residences	51.0	1.000
+4b62d51f-3d67-4da4-9572-57ed5f335659	dotproperty	P.S.T. City Home	7b2a74f2-6738-4a91-bda2-82c75c5653a3	fazwaz	P.S.T. City Home	51.2	1.000
+12262b66-3636-4d89-a106-dde0b7efc47e	dotproperty	The Address Chidlom	aee1096d-05bb-44aa-a5b7-2803926c9a03	fazwaz	The Address Chidlom	51.5	1.000
+44c140ef-b7c4-48ac-a2ec-7a0dae83c965	dotproperty	The Address Chidlom	aee1096d-05bb-44aa-a5b7-2803926c9a03	fazwaz	The Address Chidlom	51.5	1.000
+61756f58-0e43-4eda-b3c2-5e6984fec79b	fazwaz	Regent On The Park 1	c99361bd-4d61-479b-9c4e-6e53fa4cb537	dotproperty	Regent on the Park 1	51.8	1.000
+18a6cb5a-f64b-4629-b0e7-574d7750514c	fazwaz	Dolce Lasalle	f9877892-5523-462e-a5b3-7ea56d800277	dotproperty	Dolce Lasalle	52.0	1.000
+341a930f-4efd-40e8-a828-db2041c1dc57	fazwaz	Rich Park at Triple Station	ccfcb596-175e-4828-8ee7-d6672f08b824	dotproperty	Rich Park at Triple Station	52.1	1.000
+2a7f30f8-db2e-4fb9-bf01-6739e5e72e8f	dotproperty	Chambers On-Nut Station	71717602-c2e1-44cf-ba19-dd1e4c5c4000	fazwaz	Chambers On-Nut Station	52.2	1.000
+40109540-1a4c-468b-979c-798762e03baf	fazwaz	Ivy Thonglor	f51cea5d-c596-4818-ab29-55980e51fafc	dotproperty	Ivy Thonglor	52.3	1.000
+c87e7364-db44-48ed-94ad-046e3fe979ea	fazwaz	Lumpini Ville Onnut 46	df07b0fa-db70-4b88-8217-2338162deae2	dotproperty	Lumpini Ville Onnut 46	52.4	1.000
+1d59dc86-bc41-42d8-92f8-2f9f6eb9bf76	dotproperty	D Condo Campus Resort KuKu	d193d19e-2962-41e5-b459-dbbff9dd8d65	ddproperty	Dcondo Campus Resort Kuku	52.4	1.000
+4a95b2e8-f39b-4035-8b4e-5c85f0a9b6fb	fazwaz	PITI SUKHUMVIT 101	57963bfe-c323-43cd-a036-f6dc7336ea83	dotproperty	PITI SUKHUMVIT 101	52.7	1.000
+c51ad55b-7e69-4d9d-a28a-f976f1c9c03f	dotproperty	Lumpini Place Narathiwas 24	c8aaeaf4-afad-43b9-b4db-55ca8574f2be	fazwaz	Lumpini Place Narathiwas 24	53.9	1.000
+33344348-6f76-4496-a566-15b48b3cf392	dotproperty	Modern Home Tower The Exclusive	d5516762-3d7f-46e2-89de-489628a9408f	fazwaz	Modern Home Tower The Exclusive	54.2	1.000
+0dec4774-f057-4a00-ada0-85149f0d6a7b	dotproperty	Noble BE 33	cdb63128-9d11-405c-945f-65b172d486b5	fazwaz	Noble BE33	54.6	1.000
+2c7c049d-2945-4fc3-8945-61704ad28720	dotproperty	Ideo Mobi Sukhumvit Eastgate	3888ed0b-ad99-4d9f-9f1d-79274fa7e1c3	fazwaz	Ideo Mobi Sukhumvit Eastgate	54.9	1.000
+5dbe99ca-b9ce-4523-b665-876a50bf30ad	fazwaz	Niche Pride Taopoon-Interchange	7f9894df-aef5-4588-9d77-dd99f3cd167e	dotproperty	Niche Pride Taopoon - Interchange	55.0	1.000
+68bf2d51-8bae-4cb5-b1ac-0b6363515969	dotproperty	Crystal Garden	701e6ec4-8025-4025-81be-3528969f2bca	fazwaz	Crystal Garden	55.0	1.000
+5a4014d3-f0f8-4949-b0ac-162720605f99	fazwaz	The CUBE Urban Sathorn – Chan	8a94c098-6273-4341-acbc-e50ae337147a	dotproperty	The CUBE Urban Sathorn – Chan	55.6	1.000
+5a4014d3-f0f8-4949-b0ac-162720605f99	fazwaz	The CUBE Urban Sathorn – Chan	fb191461-64ff-4624-a625-80486fb5725e	dotproperty	The CUBE Urban Sathorn – Chan	55.6	1.000
+9a63437e-f4bd-4c0a-94e3-48eb577165e1	dotproperty	The Room Phayathai	aa3a922d-4db2-48a0-9063-32a545a2b59a	fazwaz	The Room Phayathai	55.9	1.000
+aa3a922d-4db2-48a0-9063-32a545a2b59a	fazwaz	The Room Phayathai	eee9ae71-be56-4f2b-a1e1-5ec14992fad9	dotproperty	The Room Phayathai	55.9	1.000
+1e0301db-0751-4e6e-8e4e-b47b6ca9bfb1	ddproperty	The Cube Urban Sathorn - Chan	8a94c098-6273-4341-acbc-e50ae337147a	dotproperty	The CUBE Urban Sathorn – Chan	55.9	1.000
+1e0301db-0751-4e6e-8e4e-b47b6ca9bfb1	ddproperty	The Cube Urban Sathorn - Chan	fb191461-64ff-4624-a625-80486fb5725e	dotproperty	The CUBE Urban Sathorn – Chan	55.9	1.000
+9968c1f6-f758-4101-9287-5bc46ef2d959	dotproperty	Noble Ploenchit	b992f7b3-da22-43ea-b5e0-179ac5ef183e	ddproperty	Noble Ploenchit	56.9	1.000
+3618ebac-a9f3-4793-90ea-16ee83cad082	ddproperty	Noble Ploenchit	9968c1f6-f758-4101-9287-5bc46ef2d959	dotproperty	Noble Ploenchit	56.9	1.000
+9aba98d7-bd41-4eb7-bccf-e2c9c03981cf	dotproperty	Quintara MHy’ZEN Phrom Phong	fc39f43b-e7b3-4476-8400-7c52fc490974	ddproperty	Quintara MHy’ZEN Phrom Phong	57.1	1.000
+9c865b00-d028-48ed-959c-9a85ca41c6d1	fazwaz	Quintara MHy’ZEN Phrom Phong	fc39f43b-e7b3-4476-8400-7c52fc490974	ddproperty	Quintara MHy’ZEN Phrom Phong	57.1	1.000
+7631e5fd-26d4-4e44-8855-b79729b3e57e	fazwaz	Supalai Wellington 2	9ebd3bf9-8d8a-4d56-9b3f-8f4f99b8fdf2	dotproperty	Supalai Wellington 2	57.2	1.000
+0ccc314e-da34-4b31-a2bd-f62f54e0563a	dotproperty	Klass Sarasin-Rajdamri	e1769209-d67c-459a-ad62-43d0a6d1412d	fazwaz	Klass Sarasin-Rajdamri	57.3	1.000
+37d6d7fc-3965-42cc-aff7-e402f6a81c4c	dotproperty	Origin Play Sri Laselle Station	7e507a28-c221-46ad-94cc-1cb3d4bc71ce	fazwaz	Origin Play Sri Laselle Station	57.4	1.000
+009b6d6f-5ade-4e7a-8288-1e8350d2ae57	fazwaz	Origin Plug & Play Ramkhamhaeng Triple Station	5bc1a301-2dca-4c86-8437-c1798b637339	dotproperty	Origin Plug & Play Ramkhamhaeng Triple Station	57.4	1.000
+26554466-e1f0-42cb-9a9c-86704307bacb	fazwaz	Blocs 77	6d880b87-7613-4dce-9b4c-3993166a7d8c	dotproperty	Blocs 77	57.5	1.000
+c1fbb0f6-c066-4cfd-b62a-23416fefbc27	dotproperty	The Capital Ratchaprarop-Vibha	d10c03e0-c5a2-4b95-a581-ecdc3998f64b	fazwaz	The Capital Ratchaprarop-Vibha	57.6	1.000
+d10c03e0-c5a2-4b95-a581-ecdc3998f64b	fazwaz	The Capital Ratchaprarop-Vibha	e2481bc2-e848-43b3-83bb-d581617cd0f1	dotproperty	The Capital Ratchaprarop-Vibha	57.6	1.000
+0a016b0e-4b57-44bb-b2ed-1f6bb5f2f8dc	dotproperty	Modiz Vault Kaset Sripatum	9a7dd6f9-9098-453d-838b-d38bbc204764	fazwaz	Modiz Vault Kaset Sripatum	58.1	1.000
+26ddfee3-1df9-4b69-b58a-0a87a0bbdf29	fazwaz	Sathorn Prime Residence	943db84b-927c-46dc-bf1d-abf480c33b21	dotproperty	Sathorn Prime Residence	58.4	1.000
+9224f3ab-9b84-465f-b67d-ae07d503c06e	fazwaz	Plum Condo Mix Chaengwattana	d7c710c4-c35a-4f8e-a143-38e2c0847be5	dotproperty	Plum Condo Mix Chaengwattana	58.7	1.000
+7788f9f2-8f56-4da5-89f4-ca9c590901a6	fazwaz	Regent Home Sukhumvit 97/1	c1cdc48e-050b-4d97-871d-57a2d69b6b11	dotproperty	Regent Home Sukhumvit 97/1	58.8	1.000
+4a53a259-2bac-49d4-a8a4-e39fb61e6c0e	ddproperty	Fifty Fifth Tower	62dd2d89-5db8-4f74-843f-b3b113ea2dbc	dotproperty	Fifty Fifth Tower	59.2	1.000
+077d38f0-4a01-41b2-a954-421c56b87afb	fazwaz	Ivy Sathorn 10	660f066d-3c54-449a-ae9a-56500ef90142	dotproperty	Ivy Sathorn 10	59.2	1.000
+19f726ec-540d-44fc-a987-c5ba7db98927	fazwaz	Onyx Phaholyothin	a28482be-2c07-443d-9a7d-966d690638ab	dotproperty	Onyx Phaholyothin	59.5	1.000
+10ff76cf-5a0f-47e3-b24d-a62b5ebbed19	fazwaz	Lumpini Park Phahon 32	88b55a1f-775e-4186-91d5-e05dd7d471fb	dotproperty	LUMPINI PARK PHAHON 32	59.9	1.000
+bceca9df-bf90-4fc6-beb8-66268126da4a	fazwaz	The President Sathorn-Ratchaphruek 1	c8965614-fa62-4293-951e-f5f1cd130c6c	dotproperty	The President Sathorn-Ratchaphruek	0.0	0.982
+bceca9df-bf90-4fc6-beb8-66268126da4a	fazwaz	The President Sathorn-Ratchaphruek 1	ee10a3c6-fdbe-4e21-b8e7-06461a916b13	dotproperty	The President Sathorn-Ratchaphruek	0.0	0.982
+606e9056-b1d9-4e8d-9370-dc9dfd19b998	fazwaz	Supalai Premier Charoen Nakon	803a892f-5f84-4423-b9e5-f897fbb1c0b9	dotproperty	Supalai Premier Charoen Nakhon	33.8	0.981
+606e9056-b1d9-4e8d-9370-dc9dfd19b998	fazwaz	Supalai Premier Charoen Nakon	d8dc54be-d48f-4640-9236-612d47401f5c	ddproperty	Supalai Premier Charoen Nakhon	58.0	0.981
+449e8c7b-c782-4710-adeb-9b3c19e65124	dotproperty	Supalai Park Ekamai - Thonglor	f07f6ca6-628a-4a7a-bb15-a51f85f3bf5a	ddproperty	Supalai Park Ekkamai-Thonglor	23.8	0.980
+24b3006d-50a8-441e-b71d-67eec3541cfe	fazwaz	The Monument Thong Lo	37cf9c4f-3b0d-45db-8774-d016867627af	ddproperty	The Monument Thonglor	10.9	0.968
+97eb968c-11c2-4df1-9745-266ffc33319e	fazwaz	The Cube Ramkhamhang	b61a220e-a4cd-4b01-bacb-8a319a533f4b	hipflat	The Cube Ramkhamhaeng	21.6	0.968
+c8aaeaf4-afad-43b9-b4db-55ca8574f2be	fazwaz	Lumpini Place Narathiwas 24	f22e66b7-80d0-4f82-a3c3-685d1d87cd77	dotproperty	Lumpini Place Narathiwat 24	18.0	0.958
+bab0109d-9a70-45ef-bb9b-301ad50b6b98	dotproperty	Liberty Park	d532246d-e0e3-4a08-bb37-86d2cebee5ba	fazwaz	Liberty Park 1	7.5	0.957
+270a153d-a546-4c15-b527-0dc29ec4c601	fazwaz	U Delight at Jatujak Station	aad6b0ad-60fc-41da-993a-ddc6b45d9277	dotproperty	U Delight @ Jatujak Station	11.6	0.957
+c0a70f14-5c39-465d-b540-3c528576280f	dotproperty	Humble Living @ Fueangfu	cecc0f3d-7bbf-4291-8284-ae18c26e63db	fazwaz	Humble Living At FueangFu	11.2	0.952
+7e8164fb-3c7d-49e9-bfdf-49e8957c8e38	fazwaz	The Star Estate at Narathiwas	b1f09e12-046d-4996-af8f-31cb96e98ae4	hipflat	The Star Estate @ Narathiwas	20.0	0.952
+0184960f-1145-4b74-baa6-1711f6cbbbcc	dotproperty	Citi Resort Sukhumvit 39	d5995e8b-598e-467d-ade8-8a54b09408d2	fazwaz	Citi Resort Sukhumvit 49	52.1	0.952
+38763694-2d7a-4209-8611-e64de12529bc	dotproperty	Ideo Phaholyothin Chatujak	d2d9b1f3-8b36-45d1-b97b-62bdf1ef3efa	fazwaz	Ideo Phaholyothin Chatuchak	0.0	0.939
+4a25e04b-f4f2-484a-85be-554c347b94a0	dotproperty	Sea Heaven Phase 3	74398ec8-d356-4f65-90e0-7bb9c4cf74fc	ddproperty	Sea Heaven Phase 2	5.2	0.933
+2cea99c8-130c-4cf2-b559-5560dd63c920	dotproperty	Asakan Place Srinakarindra	32cb37ff-7b07-4994-bc00-fb191b42c63d	fazwaz	Asakan Place Srinakarin	17.1	0.933
+2854d748-d8f9-4e1b-a46d-28fa58701990	dotproperty	Centric Sathorn - Saint Louis	d8577742-0f14-4ad0-b396-1a604c267681	ddproperty	Centric Sathorn-St Louis	19.6	0.933
+0118792f-98a3-4c1a-b0dc-9c78de5cd024	dotproperty	Phatssana Gardens	031ef0d4-06a4-4ba0-9c3f-a54c494f7c2f	fazwaz	Phatsana Garden	25.4	0.933
+af760b2f-0c18-467a-90f4-8d058fce526e	dotproperty	Proud Posto Praram 2-Phutthabucha	f4afd6d4-cf83-41d7-8cfa-0a40e0904470	fazwaz	Proud Posto Rama 2 - Phutthabucha	8.3	0.929
+06f60b92-bf39-4e41-9f05-6e626e1b0627	fazwaz	Origins Bangmod-Rama 2	e05b8ba3-c4de-483c-bc61-6d0e00ab9d1f	hipflat	Origins Bangmod-Rama II	32.0	0.923
+2455d093-b641-479a-bb09-5ccea2f19f4e	fazwaz	Qube Sukhumvit 46	b33ce4ce-fe2f-491c-ae5e-a89d9ad7c7f0	dotproperty	Qube Sukhumvit soi 46	16.7	0.909
+4ee0ddf9-d5e8-486e-900d-df9b18f36a3c	hipflat	Tree Condo LUXE Sukhumvit 52	e9ac69a8-1249-41f7-8d81-c666927573b0	fazwaz	Tree Condo Sukhumvit 52	28.3	0.909
+4ee0ddf9-d5e8-486e-900d-df9b18f36a3c	hipflat	Tree Condo LUXE Sukhumvit 52	b7375c6f-908a-4e5f-ab85-b72169a973ce	dotproperty	TreeCondo Sukhumvit 52	42.6	0.909
+1adaa4fb-7907-4083-bb4b-722057612d93	hipflat	Plum Condo Chaengwattana Station	8e65aba5-77b5-4c93-99c5-a4e48e5c64c9	fazwaz	Plum Condo Chaengwattana Station Phase 1	0.0	0.906
+07a368af-3b2e-467d-b5ad-6c9cad406ae4	fazwaz	The Kris Extra 4	26585159-48a0-4f62-8a40-51f819cf93ab	hipflat	The Kris Extra 7	40.4	0.900
+358d5c19-4acf-4276-804f-0481612ffc99	fazwaz	KnightsBridge Prime Ratchayothin	ec76c5e0-35b6-4ba5-9453-2c983516ff39	dotproperty	KnightsBridge Space Ratchayothin	47.3	0.900
+5b37727f-fc0d-4cbf-a935-1d116f85612d	hipflat	Lumpini Park Boromratchachonni-Sirindhorn	b03cfbe1-8117-43d9-a02b-9b0abba07dfe	fazwaz	Lumpini Park Boromratchonnanee-Sirindhorn	22.5	0.895
+818de280-83b7-4fde-863d-0b4cb1d02814	hipflat	The New Concept Pool Villa Garden	ed845f52-1344-410e-bcce-84b5e69138b1	dotproperty	The New Concept Pool Garden	32.5	0.889
+a721e7bf-5018-4354-802a-643e9edc2942	fazwaz	A Space ID Asoke-Ratchada	e006e004-5458-4da5-a9e7-45565f131bcf	hipflat	A Space Hideaway Asoke-Ratchada	33.5	0.875
+8230b835-d639-492d-b986-9921d9c04e4e	dotproperty	The Waterford Rama 4	dcc178c1-759b-446d-bcc0-1939e4daacb9	fazwaz	Waterford Park Rama 4	49.9	0.875
+8abe466d-2acc-4c45-b87f-c4993f2d25bb	dotproperty	The Waterford Rama 4	dcc178c1-759b-446d-bcc0-1939e4daacb9	fazwaz	Waterford Park Rama 4	49.9	0.875
+483d1f6f-aa77-42cc-b8dd-55b72184e662	dotproperty	Circle S Sukhumvit 12	f89da04f-a558-4b9c-b6b7-ddbcf8d05d47	fazwaz	Circle rein Sukhumvit 12	46.9	0.872
+5a519e4c-1a0d-4f14-9696-b59a61a629ba	dotproperty	Regent Home 15 Changwattana	b7215638-4772-4976-9335-900346ff44ce	hipflat	Regent home 18 changwattana - laksi	12.1	0.868
+39e5f5dd-bec5-4ad7-8cad-d28d35dfdd73	ddproperty	Arcadia Center Suites, Chon Buri (Pattaya)	7df66fc3-dd48-4070-b08f-59d8608fa11a	dotproperty	Arcadia Center Suites Pattaya	41.7	0.867
+52ac3e17-36db-4aa5-ba11-a8c8cba43607	dotproperty	Condo One Sukhumvit 52	ed50894f-b9a5-4589-86eb-4c3fff4713ec	hipflat	My Condo Sukhumvit 52	26.2	0.865
+41de17e9-8aef-47e9-85c5-48077f11ab84	fazwaz	Life At Ratchada - Huay Kwang	ccd812af-418f-4440-96bb-5da83c36ce8f	dotproperty	Ideo Ratchada-Huaykwang	17.6	0.864
+54fc47e5-7942-4ef3-bd41-3e5e74772ec7	hipflat	Chrisma Ramintra	efd944d0-bb32-4e41-9b0b-2458a7e1b870	fazwaz	Chrisma Condo Ramintra	0.0	0.857
+8e65aba5-77b5-4c93-99c5-a4e48e5c64c9	fazwaz	Plum Condo Chaengwattana Station Phase 1	9dfa341c-a7e4-4094-b6bf-c82dc70d82a0	dotproperty	Plum Condo Chaengwattana (phase - 2)	2.2	0.857
+339faf94-e7a1-498b-9b85-70a44dcb89ba	ddproperty	Espana Condo Resort, Chon Buri (Pattaya)	4858132f-5c88-407b-a265-d8af25dbefc9	dotproperty	Espana Condo Resort Pattaya	38.7	0.857
+2e908136-921f-4b0f-b23f-b84ce9c804f3	ddproperty	The Title Coralina Kamala	d854d66c-9270-4078-bb88-1b4e8a33da02	dotproperty	Coralina Kamala	16.5	0.848
+0d8af8fe-3e70-4ba6-82e5-26968e02a799	dotproperty	VOQUE Place Sukhumvit 107 - Bearing 2	a4da4e3f-87ed-41cd-ac4c-fa06d0c609b3	fazwaz	Voque Place Sukhumvit 107	18.3	0.846
+1a42277e-ca84-4d43-8eae-24b0a7f11338	hipflat	AMIGO ORIENTAL GARDEN	9d6e5b59-0ce7-484d-bc88-a2a8cbf93856	dotproperty	Siam Oriental Garden 2	42.8	0.842
+5eca03d3-3d44-4bc5-8786-93e835522457	fazwaz	Lumpini Place Pinklao 2	7bd2cdd8-341c-4005-8f60-5ff40bce5a50	hipflat	Lumpini Park Pinklao	52.1	0.842
+0cac7832-6ea4-40e8-96f2-25b8bd5641ba	dotproperty	C View Residence Pattaya	180477b5-b245-4d27-a892-4cb415b5ef3a	ddproperty	C View Residence, Chon Buri (Pattaya)	16.8	0.840
+79171cf8-2264-4c1b-abab-a56d9f5406d9	dotproperty	U Vibha - Ladprao	adcfc11e-3880-4b52-9b12-c2e1ee9d5f17	fazwaz	Condo U Vibha - Ladprao	16.9	0.839
+8005fb8e-b1ce-4aab-9c33-10453190a014	hipflat	Rende Sukhumvit 23	e652944c-0fa3-4013-86e3-5eba3a844f65	dotproperty	Wind Sukhumvit 23	54.7	0.839
+ac0720d2-17eb-40a9-ade2-abd85a66b9a2	fazwaz	Liv At 49	df8dad50-e3e9-443c-9f1e-5a702d43da61	dotproperty	LIV@49	16.8	0.833
+16f85c14-7998-4c30-abd2-03470071c752	fazwaz	U Delight Residence Phatthanakan	8fc011b9-dff5-4bea-b1cb-b0fedaa9f1ce	hipflat	U Delight Residence Pattanakarn-Thonglor	44.0	0.831
+34d0677d-453f-4544-84c7-e251a647e1f6	ddproperty	VN Residence 3, Chon Buri (Pattaya)	674af0f6-3388-4634-b299-ae2f80c31607	dotproperty	VN Residence 3 Pattaya	25.7	0.826
+622ad772-1f63-4339-be85-d7423487485a	hipflat	Supalai Loft Phasi Charoen Station	dc9e5f8a-394a-4bba-8f02-e211a6cb6250	dotproperty	Supalai Veranda Phasi Charoen Station	31.3	0.825
+04a5cb72-9af2-4a5c-9083-6555099384b0	ddproperty	Layan Green Park	07f5902a-2b0d-4a22-849e-5bcf85d71bbf	dotproperty	Layan Green Park Phase 1	13.0	0.824
+4a57439b-9ede-49d1-a330-b569df892c3c	dotproperty	Venetian Signature Condo Resort Pattaya	6ccfda65-ecf7-4a84-ad61-2640a296c7f0	ddproperty	Venetian Signature Condo Resort Pattaya, Chon Buri (Pattaya)	47.4	0.824
+b135c309-f113-446a-816c-1bb001411c22	dotproperty	Happy Home Ratchada 18	ef9a29b0-6195-4b6c-a41f-3a2f6f5ee0dc	fazwaz	Happy Condo Ratchada 18	35.8	0.821
+d76ac125-e92d-456c-9550-98b4dfc521a9	ddproperty	Lumpini Condo Town North Pattaya-Sukumvit, Chon Buri (Pattaya)	dfe2f831-9f13-44c5-b699-2722031224f5	dotproperty	Lumpini Condo Town North Pattaya - Sukhumvit	12.4	0.818
+4e082f23-78f2-4670-94a4-08ce6a6e3297	dotproperty	Naiharn Sea Condominium	5f6d5526-fed5-49fb-8348-3adc3a60ebee	hipflat	Nai Harn Beach‎ Condominium	58.1	0.818
+2ae244f2-89ac-40b4-b468-9f0de767e16d	dotproperty	Reference Sathorn - Wongwianyai	c7ebbc94-dd7d-4b48-9bfe-d42ff1b86839	hipflat	The Rich Sathorn Wongwian Yai	59.6	0.816
+83a31d9d-937e-409f-a1a2-5123ff4ba967	dotproperty	HYDE Sukhumvit 11 by Ariva	eb9582bf-3249-45f9-bef8-b59fa65d703e	fazwaz	Hyde Sukhumvit 11	7.1	0.811
+ae7d6446-c21d-4f0c-ad5f-6956c0162339	hipflat	Diamond Ratchada City Plus	badc6068-1357-46a7-98fb-5b5913f9799d	dotproperty	Diamond Ratchada Cool House	17.7	0.809
+1adaa4fb-7907-4083-bb4b-722057612d93	hipflat	Plum Condo Chaengwattana Station	9dfa341c-a7e4-4094-b6bf-c82dc70d82a0	dotproperty	Plum Condo Chaengwattana (phase - 2)	2.2	0.807
+8c545e2e-14cd-4471-8276-369eb7edde02	ddproperty	Notting Hill Laemchabang-Sriracha, Chon Buri (Pattaya)	e474eadc-a0b3-4775-8a4f-6baa799c7f76	dotproperty	Notting Hill Laemchabang - Sriracha	2.2	0.800
+27b634ee-a91e-4fdb-b929-aba946824fe8	hipflat	De Blue Sky	c76e72d4-4763-4b34-bdfe-afe9bca3332c	dotproperty	De Blue	30.5	0.800
+5d7dd072-0a35-42c1-b5e0-4db24e1673ca	dotproperty	Baan Suan Greenery Hill	7ec27669-5f38-4a23-9bf0-edd4c865fc40	hipflat	Baan Suan Greenery Hill Karnkanok 5	35.1	0.800
+57d8b44d-4d87-44e1-9f95-c72f35cf91b8	dotproperty	THE BASE Downtown - Phuket	86d7b96a-83eb-446c-9f35-b19a7ccee732	ddproperty	The Base Downtown	36.7	0.800
+0801b923-9d07-4c1e-a256-f0515aec8ddb	hipflat	Wongamat Residence	7da097cb-10ba-46c6-8a0d-568f17102394	dotproperty	Arom Wongamat	39.8	0.800
+077bd268-15e7-4212-83c0-e322aed5e5ea	dotproperty	Oceana Kamala	5aaff058-0948-4a4f-a104-4e1b3af3d184	ddproperty	Oceana Resort Kamala	52.5	0.800
+3bb91009-53ef-40ad-8218-1909a4e54653	fazwaz	Bangkapi Condotown	5322e589-8d7c-4dae-8597-b8ad2e489846	dotproperty	Bangkapi Condotown Building D	32.5	0.791
+10efdbf4-2dad-4242-895b-0d2409caa545	dotproperty	The ESSE Sukhumvit 36	574211de-0112-42e3-8b84-11e4e2cea23c	ddproperty	The Reserve Sukhumvit 61	33.0	0.788
+574211de-0112-42e3-8b84-11e4e2cea23c	ddproperty	The Reserve Sukhumvit 61	ebc32024-c183-4ccd-a69f-5af2d503cabc	dotproperty	The ESSE Sukhumvit 36	33.0	0.788
+09161773-f221-4936-ac76-c9842aa0e188	dotproperty	Klass Condo Siam	f81922d2-df3d-4060-aab2-96e4f6275c26	fazwaz	Klass Siam	5.0	0.783
+0608c836-5605-4145-a788-071f72c8ea4e	ddproperty	SKYPARK Lucean Jomtien Pattaya, Chon Buri (Pattaya)	d017f456-7a25-4064-a296-a78e1d55019b	dotproperty	SKYPARK Lucean Jomtien Pattaya	22.6	0.783
+8402798c-1729-46cc-83a0-c757d206ab7f	hipflat	SR Complex	ad631353-130b-4d1f-9420-82c9be7d3b0b	dotproperty	SR Condo Complex	25.2	0.783
+88773736-c852-4929-a88f-a0b4a1529ef5	ddproperty	Chambery Sriracha-Laemchabang, Chon Buri (Pattaya)	ff64f452-e41d-47a7-b238-868d0db9e176	dotproperty	Chambery Sriracha-Laemchabang	33.6	0.783
+3d475efd-19a5-4719-ae8d-360eb5d9fe39	ddproperty	La Citta Penthouse	91be9c83-8bed-45b6-a322-ce3d2243ddd7	dotproperty	La Citta Penthouse Thonglor 8	15.4	0.780
+a048530d-f8b4-4c48-abdb-2a77d9d09422	ddproperty	Siam Oriental Tropical Garden, Chon Buri (Pattaya)	c46ed568-a9fb-4fb1-9002-c614758c7b7c	dotproperty	Siam Oriental Tropical Garden	8.9	0.776
+04ea645f-7011-43a3-8b3b-6e9957be8c14	ddproperty	Brixton Kaset Sriracha Campus, Chon Buri (Pattaya)	0a5f0b0c-dcb0-43d0-a8a6-ee2560eab856	hipflat	Brixton Kaset Sriracha Campus	31.4	0.776
+68e104ac-dd49-43d7-95bc-6d20183d4ab1	ddproperty	The Breeze Condominium Bangsaray, Chon Buri (Pattaya)	d3504cc0-c4bc-45a0-bdc1-267bbe9b00e8	dotproperty	The Breeze Condominium Bangsaray	40.5	0.776
+0fd0cae5-8de3-4bb9-b592-d9ca2e66348d	ddproperty	Dcondo Campus Resort Bangsaen, Chon Buri (Pattaya)	da4469fc-dd26-43c8-bfb2-cd998d05873b	dotproperty	Dcondo Campus Resort Bangsaen	56.0	0.776
+10efdbf4-2dad-4242-895b-0d2409caa545	dotproperty	The ESSE Sukhumvit 36	e0cffddd-dc18-4c66-bcac-e4fa2375d95d	ddproperty	The Crest Sukhumvit 34	33.0	0.774
+0f55be5d-b371-4927-aa48-196770394c34	ddproperty	IDEO Q Sukhumvit 36	10efdbf4-2dad-4242-895b-0d2409caa545	dotproperty	The ESSE Sukhumvit 36	33.0	0.774
+0f55be5d-b371-4927-aa48-196770394c34	ddproperty	IDEO Q Sukhumvit 36	ebc32024-c183-4ccd-a69f-5af2d503cabc	dotproperty	The ESSE Sukhumvit 36	33.0	0.774
+e0cffddd-dc18-4c66-bcac-e4fa2375d95d	ddproperty	The Crest Sukhumvit 34	ebc32024-c183-4ccd-a69f-5af2d503cabc	dotproperty	The ESSE Sukhumvit 36	33.0	0.774
+06f60b92-bf39-4e41-9f05-6e626e1b0627	fazwaz	Origins Bangmod-Rama 2	d2da43c6-1096-4324-b5a2-620f0d9ee12d	hipflat	Origins Rama 2	40.0	0.774
+711921bf-3826-4e47-a917-360aceb21c72	ddproperty	Ocean Stone	e2796d8c-7961-4c54-b376-9d70194dac92	dotproperty	Oceanstone Phuket	12.7	0.769
+1dac3cd3-52ea-4b35-b9bf-2f8a2ca4f8ab	fazwaz	Bridge Sathorn-Narathiwas	43c39bed-c8d4-428d-87a6-314cd9d1c187	hipflat	Bridge Narathiwat	26.4	0.769
+3be81b17-be6c-45ca-9807-08d68a7c561d	hipflat	Kensington Leamchabang – Sriracha	86a4015c-fa58-4348-9922-a5a962e897f7	ddproperty	Kensington Laemchabang-Sriracha, Chon Buri (Pattaya)	33.3	0.767
+09625fae-451e-443c-9d4e-b64f0458fd5b	fazwaz	The Fine by Fine Home Ari 4	3065951c-ae6a-469b-b483-6e15ae2a3203	dotproperty	The Fine by Fine Home Ari 4 - Paholyothin	33.1	0.766
+09625fae-451e-443c-9d4e-b64f0458fd5b	fazwaz	The Fine by Fine Home Ari 4	716ea53a-b975-4812-8711-b8dfddddc6e0	dotproperty	The Fine by Fine Home Ari 4 - Paholyothin	33.1	0.766
+52ac3e17-36db-4aa5-ba11-a8c8cba43607	dotproperty	Condo One Sukhumvit 52	53aca4f3-75f4-49cd-9222-2911382fd7cb	hipflat	The Next Sukhumvit 52	49.2	0.765
+11afccf1-6e6f-49ad-a3d0-15c6ca2e48e6	ddproperty	The Indeed Condo Urban Sriracha, Chon Buri (Pattaya)	c1f16fb6-810f-49ef-ac2a-f82e5090c92b	dotproperty	The Indeed Condo Urban Sriracha	10.7	0.762
+10efdbf4-2dad-4242-895b-0d2409caa545	dotproperty	The ESSE Sukhumvit 36	51a1d4c7-66e0-4fdc-980b-29e701b019c0	ddproperty	168 Sukhumvit 36	33.0	0.759
+51a1d4c7-66e0-4fdc-980b-29e701b019c0	ddproperty	168 Sukhumvit 36	ebc32024-c183-4ccd-a69f-5af2d503cabc	dotproperty	The ESSE Sukhumvit 36	33.0	0.759
+74ef70f0-2a64-47ea-b80d-a3e26f2965b6	dotproperty	Origin Thonglor World	fa6bad8e-71de-4129-b7b0-9162911d6293	fazwaz	Park Origin Thonglor	43.4	0.757
+8ecbda95-1c15-4c76-b664-2eff9d1131b3	dotproperty	Veranda Residence Pattaya	c2ab1ae5-9cbe-4993-ac79-6d10a3e11358	ddproperty	Veranda Residence Pattaya, Chon Buri (Pattaya)	44.6	0.754
+4c6d553a-ecf8-4e45-9f67-c03203739d74	ddproperty	Dormy Residences Sriracha, Chon Buri (Pattaya)	f86862b8-e939-43d8-b34b-6439d52cb256	dotproperty	Dormy Residences Sriracha	47.8	0.754
+5e1cad37-f681-4e24-91bb-8d37dd86c732	dotproperty	Quad Silom	67093635-edf9-4f19-847b-ea7f11600b6a	hipflat	Quad Suites Silom	9.2	0.750
+47ea9ed6-ce8a-402f-9739-74d1f1b70695	fazwaz	Quad Silom	67093635-edf9-4f19-847b-ea7f11600b6a	hipflat	Quad Suites Silom	10.9	0.750
+012ccfc5-e7be-4da4-b5fc-659615dacf1d	dotproperty	Sea Heaven	74398ec8-d356-4f65-90e0-7bb9c4cf74fc	ddproperty	Sea Heaven Phase 2	16.8	0.750
+395d6a0e-96c8-42ed-8717-4978d25feb9c	ddproperty	Estella Ekkamai (Movenpick Residences Ekkamai)	90f47fc9-74f9-47e7-bba1-e0a49bc2f44f	hipflat	Estella Residences Ekkamai	52.4	0.750
+0c34f7bf-6e18-43e1-a105-6d320693450c	dotproperty	Amari Residences Pattaya	e1c0970e-57ab-4795-947c-868a3239d6c3	ddproperty	Amari Residences Pattaya, Chon Buri (Pattaya)	2.6	0.746
+2a2e7fdc-1ee8-4ec3-8a73-bb2e3ee9933e	hipflat	Marina Bayfront Sriracha	d63690e9-b352-4b25-b371-777f94e65cee	ddproperty	Marina Bayfront Sriracha, Chon Buri (Pattaya)	13.2	0.746
+39da3db5-2a7b-4634-b5c8-64a3eb21d809	hipflat	Ramada Mira North Pattaya	fab293ca-2b28-48ae-b6a6-88465d4b878a	ddproperty	Ramada Mira North Pattaya, Chon Buri (Pattaya)	21.2	0.746
+69940d2e-3e3f-4544-840f-2c64405cfed7	dotproperty	Aquarous Jomtien Pattaya	83275121-c226-4c91-a46d-39daba7e0ade	ddproperty	Aquarous Jomtien Pattaya, Chon Buri (Pattaya)	32.1	0.746
+45f78852-3ea0-42af-9549-62b2eccc54af	hipflat	Ananya Beachfront Naklua	b93a13bd-6750-4dfd-aa47-0d43dece9359	ddproperty	Ananya Beachfront Naklua, Chon Buri (Pattaya)	33.0	0.746
+6ae916a0-7946-4bc1-abb1-28df5dcbbe36	dotproperty	Vincente Sukhumvit 49	a79bb606-1577-4166-b9e0-19cb41796881	hipflat	The shine sukhumvit 39	9.5	0.743
+38023ef7-df0a-4a97-aff9-ca31c10d5f18	dotproperty	Stasia Residences Sriracha	4ae73069-fd51-43af-8e47-1631967a8f39	ddproperty	Stasia Residence Sriracha, Chon Buri (Pattaya)	46.3	0.742
+a2eea172-f46e-467b-8323-c4f23441124f	hipflat	Dcondo Tann-Charan	b6d5c538-1c97-45ce-926b-08688397f7a8	fazwaz	Dcondo Panaa	26.3	0.741
+378ed9e2-ff66-4df5-81a2-5cf344bd4259	dotproperty	Lumpini Condo Town Ramintra - Laksi	bf186c32-8c9c-41e4-acd2-e75552c2f079	hipflat	Lumpini Ville Ramintra - Laksi	30.4	0.741
+9968c1f6-f758-4101-9287-5bc46ef2d959	dotproperty	Noble Ploenchit	a5aa493f-e025-4f66-86a5-af27dd3d2f35	ddproperty	Baan Ploenchit	56.9	0.741
+b19c4410-5f57-41fd-96e5-bd3cf2514a77	hipflat	Sunshine Beach Condotel	f9cb8feb-6323-4575-9ab3-5733b4d52b73	ddproperty	Sunshine Beach Condotel, Chon Buri (Pattaya)	7.4	0.737
+78471f0b-7e85-4d99-ba2a-1db1dda7bfc4	ddproperty	Grand View Condo Pattaya, Chon Buri (Pattaya)	c16d60e5-4b92-4321-8b67-2e40c649c7c7	hipflat	Grand View Condo Pattaya	8.1	0.737
+58627ad5-3e6a-4a1b-91bc-91462608aa18	hipflat	Jomtien Beach Mountain 6	f1b92fa0-d0a1-4f3f-a60c-e1692fa4b944	ddproperty	Jomtien Beach Mountain 6, Chon Buri (Pattaya)	8.9	0.737
+45fa0b42-3c98-4fa0-86ae-443278c0c113	ddproperty	Siam Oriental Elegance 2, Chon Buri (Pattaya)	bc0bec5f-57ea-4cd9-94c3-430595bb1668	dotproperty	Siam Oriental Elegance 2	9.0	0.737
+82d13b3e-0125-44ac-b470-9a2a3f44d8ca	ddproperty	TC Green Rama 9	f942e2d6-0990-4493-a55b-75454a1c4522	dotproperty	TC Green	42.7	0.737
+2cf7e41f-631d-4556-981b-1d86c224d149	dotproperty	D.S. Tower 1 Sukhumvit 33	773519f5-511a-4ff9-a5df-1407afe680ef	hipflat	AP Suites Sukhumvit 33	58.6	0.737
+64779172-219a-488f-ba37-e1357c928c6e	fazwaz	Noble Above Wireless Ruamrudee	e05a64d1-8590-4be7-870b-daacda762df0	dotproperty	Noble Ambience Ruamrudee	33.8	0.735
+2455d093-b641-479a-bb09-5ccea2f19f4e	fazwaz	Qube Sukhumvit 46	b9d01ecd-9eab-4b6d-850f-06f8f2fdd0f2	dotproperty	Vinn Sukhumvit 46	23.0	0.733
+9224f3ab-9b84-465f-b67d-ae07d503c06e	fazwaz	Plum Condo Mix Chaengwattana	b971aa75-bb81-4fac-9b1d-9196617106d9	dotproperty	Plum Condo Chaengwattana Station Phase 3	48.3	0.733
+8c1725f3-2dba-4d73-bd17-b91f937ef26a	fazwaz	Vtara Sukhumvit 36	9b5f2e1e-00f9-43ae-82c7-467d86586783	dotproperty	168 Sukhumvit 36	54.6	0.733
+9ddade65-1f1a-4786-bebe-3bb06c93d5d7	hipflat	Supalai Vista Sri Racha-Laemchabang Port Intersection	f3fe0c1f-9e8a-46b2-bdc3-9ed03c626a82	ddproperty	Supalai Vista Sri Racha-Laemchabang, Chon Buri (Pattaya)	21.5	0.731
+0b79a584-159f-4f25-b0b5-467929fbcc87	hipflat	Mida Grande Resort Condominiums	f2c37ad7-cf1a-4ccf-b51f-2442e4fad260	ddproperty	Mida Grande Resort	6.5	0.727
+725278e5-a318-4a88-bcc6-0013f6b6530e	dotproperty	Pattaya Plaza Condotel	7950a765-d734-4e60-a9fc-cbb8b03db943	ddproperty	Pattaya Plaza Condotel, Chon Buri (Pattaya)	8.6	0.727
+672ed02b-afda-4a25-93a6-2849a36da346	ddproperty	Siam Oriental Elegance, Chon Buri (Pattaya)	f310341f-0df1-4ed4-9d5c-a8c94f749ba5	dotproperty	Siam Oriental Elegance	25.3	0.727
+10efdbf4-2dad-4242-895b-0d2409caa545	dotproperty	The ESSE Sukhumvit 36	e6ec92d3-a6ad-45d0-8199-de22635b0a76	ddproperty	Oka Haus Sukhumvit 36	33.0	0.727
+e6ec92d3-a6ad-45d0-8199-de22635b0a76	ddproperty	Oka Haus Sukhumvit 36	ebc32024-c183-4ccd-a69f-5af2d503cabc	dotproperty	The ESSE Sukhumvit 36	33.0	0.727
+53a37352-5969-4729-b357-518da58ec952	ddproperty	The Urban Attitude Pattaya, Chon Buri (Pattaya)	68e77895-9444-49db-b137-fcdff9cd2c6f	dotproperty	The Urban Attitude Pattaya	35.1	0.727
+52e99076-dfd5-4d94-bd35-4aa4a5e06059	hipflat	Like Sukhumvit 16	cd2a608d-6677-4912-8b6a-0b3f25bd2269	dotproperty	Trapezo Sukhumvit 16	38.7	0.727
+12937ea4-98ac-4484-982c-b004fa0a016b	hipflat	Suntara Residence Sriracha	2bfda360-ea13-4bb5-b2e3-9fb146759b0a	ddproperty	Suntara Residence, Chon Buri (Pattaya)	49.8	0.727
+0a34f6c2-79eb-434b-ab1b-3c1a5f83095a	fazwaz	Lumpini Ville Ramkhamhaeng 60/2	3b7a40b4-6cdb-4085-a77f-1f324bf12f3c	dotproperty	The LIVIN Ramkhamhaeng	52.8	0.727
+0a34f6c2-79eb-434b-ab1b-3c1a5f83095a	fazwaz	Lumpini Ville Ramkhamhaeng 60/2	fef9e6d7-9df2-4df0-b0dd-e87f5f226928	dotproperty	The LIVIN Ramkhamhaeng	52.8	0.727
+21a55172-22ac-4f0a-9711-9199773c6267	dotproperty	The Clover Thonglor	b76f6074-5277-4ec9-91c3-1b1b652ce17d	fazwaz	Thonglor Tower	52.8	0.727
+b76f6074-5277-4ec9-91c3-1b1b652ce17d	fazwaz	Thonglor Tower	caa9318d-1180-4f4d-b44a-4c446ba7e164	dotproperty	The Clover Thonglor	52.8	0.727
+39fb0ef4-56e3-45e3-a60b-5d47f1411897	fazwaz	The LIVIN Ramkhamhaeng	ee45b8c5-ac5c-45c0-98e7-5ae37a092890	dotproperty	Lumpini Ville Ramkhamhaeng 60/2	58.3	0.727
+83ac0ddd-4d4d-407c-b840-f0e88e365842	dotproperty	The Avenue Pattaya	fc081468-3f96-4214-8559-fcb65c1f19b4	hipflat	The Urban Pattaya	53.1	0.720
+5a8c9265-828f-4b01-ac1b-101f20eb9f92	hipflat	The Viva Condo Sathorn-taksin	eeda308a-ff62-48ca-8cb9-516341459cbe	dotproperty	The Seed Sathorn-Taksin	55.6	0.718
+1ab330e1-e260-486c-b125-7e7249d245e6	dotproperty	The Seed Sathorn-Taksin	5a8c9265-828f-4b01-ac1b-101f20eb9f92	hipflat	The Viva Condo Sathorn-taksin	55.6	0.718
+6e9d54ed-8cd9-425c-8c50-3e2d44adfc51	hipflat	Copacabana Coral Reef	f47d6281-4b09-4f79-89c9-9176bfb34e4a	ddproperty	Copacabana Coral Reef, Chon Buri (Pattaya)	2.5	0.717
+4f2bb0a1-b06d-4f16-a1fe-5f21bdb73703	dotproperty	City Garden Tropicana	d0ca31da-1d9e-49c0-b4ee-ac1ac722a578	ddproperty	City Garden Tropicana, Chon Buri (Pattaya)	6.8	0.717
+56ccaf2b-e5b7-4896-ba6c-e7f4a3c5b921	dotproperty	City Garden Pratumnak	c9bf7aa0-4ce2-4b3b-a25e-2e67a21951b4	ddproperty	City Garden Pratumnak, Chon Buri (Pattaya)	11.4	0.717
+5b754b50-5643-4e4a-8b5f-17be2b26b610	hipflat	Seven Seas le Carnival	cd8828bd-7c5e-41a9-b20b-52ec44a321b4	ddproperty	Seven Seas Le Carnival, Chon Buri (Pattaya)	13.2	0.717
+9d6e5b59-0ce7-484d-bc88-a2a8cbf93856	dotproperty	Siam Oriental Garden 2	c2ad30f3-99fd-4c12-a586-9464b7a4de70	ddproperty	Siam Oriental Garden 2, Chon Buri (Pattaya)	21.3	0.717
+906712ba-a7ce-4733-aa13-5104bd346523	ddproperty	Nordic Dream Paradise, Chon Buri (Pattaya)	eb3acedf-18c5-4def-8404-ced32156eae7	dotproperty	Nordic Dream Paradise	25.2	0.717
+ac7390f6-e622-4f1f-af1a-739e2b217284	hipflat	Atlantis Condo Resort	b4faad09-40a5-4fb5-a6cf-5dba73f41d67	ddproperty	Atlantis Condo Resort, Chon Buri (Pattaya)	32.2	0.717
+4b5cc48d-c85f-4a75-9f36-62375c716789	hipflat	View Talay Residence 6	6f929e08-a1f0-4b95-b046-882a6d894711	ddproperty	View Talay Residence 6, Chon Buri (Pattaya)	41.3	0.717
+13bd247a-ef3f-4bbb-b0dd-9cbedcb8a481	dotproperty	Wongamat Garden Beach	7fc31669-fd94-43e2-b9e4-191c16bda419	ddproperty	Wongamat Garden Beach, Chon Buri (Pattaya)	53.5	0.717
+a97a7671-1c20-465d-8ae2-74b3751a81aa	ddproperty	Bangsaray Heights, Chon Buri (Pattaya)	faf9891b-f709-49fb-b26b-894a5ea17edd	dotproperty	Bangsaray Heights Condominium by Sunplay	22.3	0.716
+1d486e6d-3dc6-4240-8d64-9a0fc146df39	dotproperty	The Room Sukhumvit 62	2d078362-ca4e-4802-8120-9e8bb7eb9382	ddproperty	The Muse Sukhumvit	39.5	0.714
+2d078362-ca4e-4802-8120-9e8bb7eb9382	ddproperty	The Muse Sukhumvit	b0ee5de0-f32d-439a-9407-32f31958c85c	dotproperty	The Room Sukhumvit 62	39.5	0.714
+1fab3d56-60fc-4748-a5be-72adb4f40e04	dotproperty	SCOPE Thonglor	555c370c-c921-4219-9ad8-e2d84236faa3	ddproperty	Culture Thonglor	47.5	0.714
+10efdbf4-2dad-4242-895b-0d2409caa545	dotproperty	The ESSE Sukhumvit 36	17237260-29d0-4fe4-9813-e9da4943c974	ddproperty	Vtara Sukhumvit 36	33.0	0.710
+17237260-29d0-4fe4-9813-e9da4943c974	ddproperty	Vtara Sukhumvit 36	ebc32024-c183-4ccd-a69f-5af2d503cabc	dotproperty	The ESSE Sukhumvit 36	33.0	0.710
+54ab01ed-6c7c-4b07-b494-debb88a3abfd	dotproperty	Voque Sukhumvit 31	ac37b83a-eb13-4b41-9c4e-2b98e5fcfbe7	fazwaz	FYNN Sukhumvit 31	36.0	0.710
+4f1f1222-dce5-4571-8d34-4a24fa61b496	dotproperty	FYNN Sukhumvit 31	f959e6a2-b814-4f1d-a49a-2ee70d350bf9	fazwaz	Voque Sukhumvit 31	39.7	0.710
+46df3e98-5b98-4a5d-94ef-3da46a450816	hipflat	I-Space Residence	647b3c80-2eaa-4f03-b658-5eecb2a5c7e0	dotproperty	Sunisa Place Condo	0.0	0.706
+4890b961-ebb9-4adb-a4c3-a373d5b12a63	ddproperty	The Base Central Pattaya, Chon Buri (Pattaya)	61b4ce8f-4b85-473f-aa23-17726184ae0f	dotproperty	The Base Central Pattaya	4.8	0.706
+1c25aaf4-6154-4e0a-bad1-05e1aa6525ab	hipflat	Edge Central Pattaya	2fa18706-b456-48ca-9068-c81607913b28	ddproperty	EDGE Central Pattaya, Chon Buri (Pattaya)	21.2	0.706
+00c17e8b-fe93-4cbd-bb24-f110e39e1af7	hipflat	Arcadia Beach Resort	df87d034-6d43-4514-a5be-e42163f76fa1	ddproperty	Arcadia Beach Resort, Chon Buri (Pattaya)	27.7	0.706
+2fd4404f-39dd-4ece-a381-f91ee0c51c09	fazwaz	Phasuk Tower Condominium	a4384c21-20eb-4e95-8b1c-2d0a7f6b115f	hipflat	Phasuk Place	54.2	0.706
+1dac3c10-3538-45fd-8548-d00f2ac7e503	hipflat	Executive Residence II	a318c4f6-c16f-4fdc-bbc3-6d005f6b1c4d	ddproperty	Executive Residence 2, Chon Buri (Pattaya)	33.2	0.704
+03e4407b-60be-4375-9735-707d3081ef83	ddproperty	The View Suanluang	90fa7696-9c34-4c9f-b92b-efdc64b9b510	dotproperty	The View condominium Suan Luang	20.5	0.703
+86db890d-9ff5-4175-8e66-08c3f2dc2edd	hipflat	Siam Oriental Twins	f310341f-0df1-4ed4-9d5c-a8c94f749ba5	dotproperty	Siam Oriental Elegance	53.4	0.703
+10456324-b1e1-40ec-9519-24ee957f83c7	hipflat	Penroong Condo View Laem chabang	d0da62f9-ced1-4677-9810-6db066f89c1d	ddproperty	Penroong Condo View, Chon Buri (Pattaya)	8.4	0.700

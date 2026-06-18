@@ -126,9 +126,9 @@ export default async function WeeklyPostPage({
                 className="flex items-baseline gap-3 flex-wrap"
               >
                 <span className="text-zinc-300 flex-1 min-w-0">
-                  {b.condo_id ? (
+                  {(b.slug ?? b.condo_id) ? (
                     <Link
-                      href={`/${lang}/condo/${b.condo_id}`}
+                      href={`/${lang}/condo/${b.slug ?? b.condo_id}`}
                       className="hover:text-emerald-400 hover:underline"
                     >
                       {b.label}

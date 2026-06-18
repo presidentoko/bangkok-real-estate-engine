@@ -48,3 +48,5 @@ Thumbs.db
 
 # Claude Code local settings (contains user-specific tokens)
 .claude/
+
+.vercel

@@ -21,6 +21,7 @@ const PROVINCES = [
 
 type YieldRow = {
   id: string;
+  slug: string | null;
   name: string;
   url: string | null;
   province: string | null;
@@ -96,7 +97,7 @@ export default async function YieldsPage({
   let query = supabase
     .from("condos")
     .select(
-      "id, name, url, province, " +
+      "id, slug, name, url, province, " +
       "gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
       "yield_sample_sale, yield_sample_rent, regions(name)",
     )
@@ -131,7 +132,7 @@ export default async function YieldsPage({
       "@type": "ListItem",
       position: i + 1,
       name: r.name,
-      url: `${SEO_SITE_URL}/${lang}/condo/${r.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug ?? r.id}`,
       additionalProperty: [
         { "@type": "PropertyValue", name: "Gross yield (%)", value: r.gross_yield_pct },
         ...(mrr != null
@@ -267,7 +268,7 @@ export default async function YieldsPage({
                   className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3"
                 >
                   <Link
-                    href={`/${lang}/condo/${r.id}`}
+                    href={`/${lang}/condo/${r.slug ?? r.id}`}
                     className="block space-y-2"
                   >
                     <div className="flex items-baseline gap-2">
@@ -334,7 +335,7 @@ export default async function YieldsPage({
                     <td className="px-4 py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                     <td className="px-4 py-3">
                       <Link
-                        href={`/${lang}/condo/${r.id}`}
+                        href={`/${lang}/condo/${r.slug ?? r.id}`}
                         className="text-zinc-100 hover:underline font-medium"
                       >
                         {r.name}

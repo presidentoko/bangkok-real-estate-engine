@@ -1,6 +1,6 @@
 @echo off
 REM Daily entry point for the unattended discovery sweep, called by Windows
-REM Task Scheduler (task name: BkkRealEstateDiscovery). Runs ONE ~4h pass-set
+REM Task Scheduler (task name: BkkRealEstateDiscovery). Runs ONE ~10h pass-set
 REM and exits. Keeps a per-day log so a failed run is debuggable.
 REM
 REM Guard: if a discovery run is already alive (e.g. a long manual run, or the
@@ -20,9 +20,9 @@ if %errorlevel%==0 (
 
 for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value 2^>nul ^| find "="') do set DT=%%I
 set STAMP=%DT:~0,8%
-echo [%date% %time%] launching daily discovery --hours 4 >> "%REPO%\logs\discovery.cron.log"
+echo [%date% %time%] launching daily discovery --hours 10 >> "%REPO%\logs\discovery.cron.log"
 
-python scripts\overnight_discovery.py --hours 4 ^
+python scripts\overnight_discovery.py --hours 10 ^
   1>> "%REPO%\logs\discovery.%STAMP%.out.log" ^
   2>> "%REPO%\logs\discovery.%STAMP%.err.log"
 
