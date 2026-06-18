@@ -598,6 +598,9 @@ export default async function CondoPage({
   });
   const faqJsonLd = buildFaqJsonLd(faqItems);
 
+  const condoCitySlug = canonicalCitySlug(condoRaw.province);
+  const condoCityName = getCity(condoCitySlug)?.name[isLang(lang) ? lang : "en"] ?? condoCitySlug;
+
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-8">
       <script
@@ -745,6 +748,23 @@ export default async function CondoPage({
         supermarkets={livRes.data?.supermarkets_within_1km ?? null}
         nearestTransitM={nearestTransitM}
       />
+
+      {retiree != null && retiree.score >= 55 && (
+        <Link
+          href={`/${lang}/retiree/${condoCitySlug}`}
+          className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 hover:border-zinc-600 transition group"
+        >
+          <div>
+            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Retiree lens</div>
+            <div className="text-zinc-100 font-semibold group-hover:text-emerald-400 transition">
+              More retiree-friendly condos in {condoCityName} →
+            </div>
+            <div className="text-zinc-500 text-xs mt-0.5">
+              Ranked by healthcare, air quality &amp; transit
+            </div>
+          </div>
+        </Link>
+      )}
 
       {/* Market summary */}
       {(condoRaw.market_rent_median || condoRaw.market_sale_median) && (
