@@ -101,7 +101,7 @@ export default async function RetireeCityPage({
     .gte("retiree_score", 55)
     .in("province", provinces)
     .order("retiree_score", { ascending: false })
-    .limit(60);
+    .limit(200);
 
   if (error) console.error("[retiree/city] Supabase error:", error);
 
