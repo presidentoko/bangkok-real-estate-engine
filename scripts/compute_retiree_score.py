@@ -93,17 +93,27 @@ def compute_score(
 def main() -> int:
     db = get_client()
 
-    resp = (
-        db.from_("condos")
-        .select(
-            "id, aqi_score, "
-            "livability_metrics(hospitals_within_1km, supermarkets_within_1km, "
-            "nearest_bts_distance_m, nearest_mrt_distance_m)"
+    PAGE = 1000
+    offset = 0
+    rows: list[dict] = []
+    while True:
+        resp = (
+            db.from_("condos")
+            .select(
+                "id, aqi_score, "
+                "livability_metrics(hospitals_within_1km, supermarkets_within_1km, "
+                "nearest_bts_distance_m, nearest_mrt_distance_m)"
+            )
+            .range(offset, offset + PAGE - 1)
+            .execute()
         )
-        .execute()
-    )
+        batch = resp.data or []
+        rows.extend(batch)
+        if len(batch) < PAGE:
+            break
+        offset += PAGE
 
-    rows = resp.data or []
+    print(f"fetched {len(rows)} condos from DB")
     now = datetime.now(timezone.utc).isoformat()
     updates: list[dict] = []
 
@@ -132,11 +142,13 @@ def main() -> int:
         print("no condos with livability data — nothing to update")
         return 0
 
-    for u in updates:
+    for i, u in enumerate(updates, 1):
         db.from_("condos").update({
             "retiree_score": u["retiree_score"],
             "retiree_score_computed_at": u["retiree_score_computed_at"],
         }).eq("id", u["id"]).execute()
+        if i % 200 == 0:
+            print(f"  updated {i}/{len(updates)}")
 
     good_plus = sum(1 for u in updates if u["retiree_score"] >= 55)
     print(f"retiree_score computed for {len(updates)} condos ({good_plus} scored >= 55 / good+)")
