@@ -17,6 +17,7 @@ export function generateStaticParams() {
 
 type Row = {
   id: string;
+  slug: string | null;
   name: string;
   province: string | null;
   retiree_score: number | null;
@@ -93,7 +94,7 @@ export default async function RetireeCityPage({
   const { data } = await supabase
     .from("condos")
     .select(
-      "id, name, province, retiree_score, gross_yield_pct, avg_sale_price, " +
+      "id, slug, name, province, retiree_score, gross_yield_pct, avg_sale_price, " +
         "foreign_quota_inventory_pct, cam_fee_per_month, regions(name), " +
         "livability_metrics(hospitals_within_1km)"
     )
@@ -136,7 +137,7 @@ export default async function RetireeCityPage({
       "@type": "ListItem",
       position: i + 1,
       name: r.name,
-      url: `${SEO_SITE_URL}/${lang}/condo/${r.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug ?? r.id}`,
       additionalProperty: [
         { "@type": "PropertyValue", name: "Retiree Score", value: r.retiree_score ?? 0 },
         ...(r.foreign_quota_inventory_pct != null
@@ -203,7 +204,7 @@ export default async function RetireeCityPage({
                 <td className="px-4 py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                 <td className="px-4 py-3">
                   <Link
-                    href={`/${lang}/condo/${r.id}`}
+                    href={`/${lang}/condo/${r.slug ?? r.id}`}
                     className="text-zinc-100 hover:underline font-medium"
                   >
                     {r.name}
@@ -235,7 +236,7 @@ export default async function RetireeCityPage({
         <ul className="sm:hidden divide-y divide-zinc-800/70">
           {rows.map((r, i) => (
             <li key={r.id} className="p-3">
-              <Link href={`/${lang}/condo/${r.id}`} className="block space-y-2">
+              <Link href={`/${lang}/condo/${r.slug ?? r.id}`} className="block space-y-2">
                 <div className="flex items-baseline gap-2">
                   <span className="text-zinc-600 tabular-nums text-xs w-6 shrink-0">{i + 1}</span>
                   <span className="text-zinc-100 font-medium leading-snug">{r.name}</span>
