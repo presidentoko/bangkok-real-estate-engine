@@ -92,7 +92,7 @@ export default async function RetireeCityPage({
   const provinces = cityProvinceSlugs(city);
 
   const { data } = await supabase
-    .from("condos")
+    .from("condos_published")
     .select(
       "id, slug, name, province, retiree_score, gross_yield_pct, avg_sale_price, " +
         "foreign_quota_inventory_pct, cam_fee_per_month, regions(name), " +
@@ -100,7 +100,6 @@ export default async function RetireeCityPage({
     )
     .gte("retiree_score", 55)
     .in("province", provinces)
-    .eq("is_active", true)
     .order("retiree_score", { ascending: false })
     .limit(60);
 
