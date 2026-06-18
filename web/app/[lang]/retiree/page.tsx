@@ -150,7 +150,7 @@ export default async function RetireeLanding({
       {activeCities.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">
-            Cities with retiree data
+            {lang === "ko" ? "은퇴자 데이터 있는 도시" : lang === "th" ? "เมืองที่มีข้อมูลผู้เกษียณ" : "Cities with retiree data"}
           </h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {activeCities.map((c) => {
@@ -181,18 +181,24 @@ export default async function RetireeLanding({
                   )}
                   <div className="flex gap-5 text-sm mb-3">
                     <div>
-                      <div className="text-zinc-500 text-xs">≥55점 콘도</div>
+                      <div className="text-zinc-500 text-xs">
+                        {lang === "ko" ? "≥55점 콘도" : lang === "th" ? "คอนโด ≥55" : "≥55 condos"}
+                      </div>
                       <div className="font-bold tabular-nums">{c.count}</div>
                     </div>
                     {c.avgScore && (
                       <div>
-                        <div className="text-zinc-500 text-xs">평균</div>
+                        <div className="text-zinc-500 text-xs">
+                          {lang === "ko" ? "평균" : lang === "th" ? "เฉลี่ย" : "Avg"}
+                        </div>
                         <div className="font-bold tabular-nums text-emerald-400">{c.avgScore}</div>
                       </div>
                     )}
                     {c.topScore && (
                       <div>
-                        <div className="text-zinc-500 text-xs">최고</div>
+                        <div className="text-zinc-500 text-xs">
+                          {lang === "ko" ? "최고" : lang === "th" ? "สูงสุด" : "Top"}
+                        </div>
                         <div className="font-bold tabular-nums text-emerald-300">{c.topScore}</div>
                       </div>
                     )}
@@ -224,7 +230,7 @@ export default async function RetireeLanding({
       {comingSoon.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">
-            Coming soon — data updating nightly
+            {lang === "ko" ? "준비 중 — 데이터 매일 밤 업데이트" : lang === "th" ? "เร็วๆ นี้ — อัปเดตทุกคืน" : "Coming soon — data updating nightly"}
           </h2>
           <div className="flex flex-wrap gap-2">
             {comingSoon.map((c) => {
