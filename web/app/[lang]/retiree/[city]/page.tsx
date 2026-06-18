@@ -91,7 +91,7 @@ export default async function RetireeCityPage({
   const supabase = getServerSupabase();
   const provinces = cityProvinceSlugs(city);
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("condos_published")
     .select(
       "id, slug, name, province, retiree_score, gross_yield_pct, avg_sale_price, " +
@@ -102,6 +102,8 @@ export default async function RetireeCityPage({
     .in("province", provinces)
     .order("retiree_score", { ascending: false })
     .limit(60);
+
+  if (error) console.error("[retiree/city] Supabase error:", error);
 
   const rows = (data ?? []) as unknown as Row[];
 

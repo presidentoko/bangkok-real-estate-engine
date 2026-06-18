@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CITIES } from "@/lib/cities";
+import { CITIES, cityProvinceSlugs } from "@/lib/cities";
 import { isLang, type Lang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
@@ -79,11 +79,10 @@ export default async function RetireeLanding({
   const cityStats = await Promise.all(
     CITIES.map(async (city) => {
       const { data } = await supabase
-        .from("condos")
+        .from("condos_published")
         .select("retiree_score")
-        .in("province", [city.slug, city.slug.replace("-", "")])
+        .in("province", cityProvinceSlugs(city.slug))
         .gte("retiree_score", 55)
-        .eq("is_active", true)
         .order("retiree_score", { ascending: false })
         .limit(60);
 
