@@ -11,6 +11,7 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const revalidate = 3600;
+export const maxDuration = 300;
 
 const STATIC_PATHS = [
   { path: "", changeFrequency: "hourly" as const, priority: 1.0 },
@@ -119,7 +120,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const r of regions) {
     const count = (r.condos ?? []).length;
     if (count < 3 || !r.name) continue;
-    const districtPath = `/district/${r.name}`;
+    // encodeURIComponent handles spaces/special chars in region names so the
+    // sitemap XML stays valid. Next.js decodes params automatically, so the
+    // district page's resolveRegion() receives the original name.
+    const districtPath = `/district/${encodeURIComponent(r.name)}`;
     for (const lang of LANGS) {
       out.push({
         url: `${SITE_URL}/${lang}${districtPath}`,
@@ -133,7 +137,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Auto-generated weekly blog posts. Each entry sits at /blog/weekly/{slug}
   // and the JSON files in web/content/weekly/ are the source of truth.
-  const weeklyPosts = await listWeeklyPosts();
+  const weeklyPosts = await listWeeklyPosts().catch(() => []);
   for (const post of weeklyPosts) {
     const wp = `/blog/weekly/${post.slug}`;
     for (const lang of LANGS) {
@@ -191,7 +195,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Station spoke pages (only viable stations >= threshold).
-  const stations = await getViableStations();
+  const stations = await getViableStations().catch(() => []);
   for (const s of stations) {
     const np = `/near/${s.slug}`;
     for (const lang of LANGS) {
