@@ -106,9 +106,9 @@ export default async function StationPage({
       </header>
 
       <h2 className="text-xl font-semibold mb-3">{fill(t.near.listTitle, data.name)}</h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {data.condos.map((c) => (
-          <BuildingCard key={c.id} condo={c} hrefPrefix={`/${lang}/condo/`} />
+          <BuildingCard key={c.id} condo={c} hrefPrefix={`/${lang}/condo/`} size="sm" />
         ))}
       </div>
 

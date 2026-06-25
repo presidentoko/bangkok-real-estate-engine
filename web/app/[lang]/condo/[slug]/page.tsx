@@ -878,6 +878,15 @@ export default async function CondoPage({
         ctaText="Find a hotel near this building →"
       />
 
+      {/* Bottom share — visible after reading the full report */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
+        <div className="text-sm font-semibold text-zinc-300">Found this useful? Share the report</div>
+        <LinkShareButtons
+          url={`${SITE_URL}/${lang}/condo/${condoSlug}`}
+          title={`${condoRaw.name} (${region}) — RealData report`}
+        />
+      </div>
+
       <section className="text-sm">
         <div className="text-zinc-300 font-semibold mb-1">Nearby &amp; metrics</div>
         <ul className="text-blue-400 space-y-1">

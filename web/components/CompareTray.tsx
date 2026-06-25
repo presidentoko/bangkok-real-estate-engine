@@ -28,7 +28,7 @@ export function CompareTray() {
   };
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-50 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur px-4 py-3 flex items-center justify-between gap-3 sm:px-6">
+    <div className="fixed bottom-14 sm:bottom-0 inset-x-0 z-50 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur px-4 py-3 flex items-center justify-between gap-3 sm:px-6">
       <div className="text-sm text-zinc-300">
         <span className="font-semibold text-white">{queue.length}</span>
         {" / 3 condos selected for comparison"}

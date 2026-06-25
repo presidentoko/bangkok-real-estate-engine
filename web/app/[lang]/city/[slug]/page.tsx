@@ -306,9 +306,9 @@ export default async function CityPage({
               {t.superValueSubtitle(superValue, withBubble, cityName)}
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {superValuePicks.map((c) => (
-              <BuildingCard key={c.id} condo={c} hrefPrefix={`/${lang}/condo/`} />
+              <BuildingCard key={c.id} condo={c} hrefPrefix={`/${lang}/condo/`} size="sm" />
             ))}
           </div>
         </section>
@@ -326,9 +326,9 @@ export default async function CityPage({
             </h2>
             <p className="text-zinc-500 text-sm mt-1">{t.bubbleSubtitle}</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {overpriced.map((c) => (
-              <BuildingCard key={c.id} condo={c} hrefPrefix={`/${lang}/condo/`} />
+              <BuildingCard key={c.id} condo={c} hrefPrefix={`/${lang}/condo/`} size="sm" />
             ))}
           </div>
         </section>
@@ -343,7 +343,7 @@ export default async function CityPage({
         {condos.length === 0 ? (
           <div className="text-zinc-500 text-sm">{t.pendingPipeline}</div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {condos.map((c) => (
               <BuildingCard
                 key={c.id}

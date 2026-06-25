@@ -356,9 +356,9 @@ export function InventoryGrid({
                   </h2>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {topPicks.map((c) => (
-                  <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} />
+                  <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} size="sm" />
                 ))}
               </div>
             </section>
@@ -396,7 +396,7 @@ export function InventoryGrid({
             </button>
           </div>
         ) : !loaded ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
@@ -408,9 +408,9 @@ export function InventoryGrid({
           <div className="text-center text-zinc-500 py-16 text-sm">No matches.</div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {visible.map((c) => (
-                <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} />
+                <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} size="sm" />
               ))}
             </div>
             {hasMore && (

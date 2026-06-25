@@ -5,6 +5,8 @@ import { CitySwitcher } from "@/components/CitySwitcher";
 import { CondoSearch } from "@/components/CondoSearch";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { MobileMenu } from "@/components/MobileMenu";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { BackToTop } from "@/components/BackToTop";
 import { CompareTray } from "@/components/CompareTray";
 import { SavedNavLink } from "@/components/SavedNavLink";
 import { getDictionary } from "@/lib/getDictionary";
@@ -142,9 +144,11 @@ export default async function LangLayout({
         </nav>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-16 sm:pb-0">{children}</main>
 
       <CompareTray />
+      <BackToTop />
+      <MobileBottomNav lang={lang} />
 
       <footer className="mt-12 border-t border-zinc-900 bg-zinc-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
@@ -201,7 +205,7 @@ export default async function LangLayout({
             </ul>
           </div>
         </div>
-        <div className="border-t border-zinc-900 px-4 sm:px-6 py-4 text-center text-xs text-zinc-600">
+        <div className="border-t border-zinc-900 px-4 sm:px-6 py-4 pb-20 sm:pb-4 text-center text-xs text-zinc-600">
           © {new Date().getFullYear()} RealData · {t.footer.copyright}
         </div>
       </footer>
