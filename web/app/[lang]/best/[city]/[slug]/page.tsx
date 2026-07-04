@@ -11,6 +11,7 @@ import {
   type BestCitySlug,
   type BestFilterSlug,
 } from "@/lib/bestSlugs";
+import { canonicalCitySlug, cityProvinceSlugs } from "@/lib/cities";
 import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
@@ -92,13 +93,18 @@ export default async function BestSlicePage({
 
   const supabase = getServerSupabase();
 
+  // condos.province has accumulated two slug conventions over time (see
+  // lib/cities.ts) — match every DB variant for this city, not just the
+  // kebab-case BEST_CITIES slug, or multi-word cities silently undercount.
+  const provinces = cityProvinceSlugs(canonicalCitySlug(city));
+
   let query = supabase
     .from("condos")
     .select(
       "id, name, province, gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
       "yield_sample_sale, yield_sample_rent, foreign_quota_inventory_pct, regions(name)",
     )
-    .eq("province", city)
+    .in("province", provinces)
     .eq("is_active", true)
     .not("gross_yield_pct", "is", null)
     // Same sanity bounds as /yields — keep the slice quote-able.
@@ -119,7 +125,7 @@ export default async function BestSlicePage({
     supabase
       .from("condos")
       .select("id, name, retiree_score, regions(name)")
-      .eq("province", city)
+      .in("province", provinces)
       .eq("is_active", true)
       .gte("retiree_score", 55)
       .order("retiree_score", { ascending: false })

@@ -1,6 +1,6 @@
 import { LANGS } from "@/lib/i18n";
 import { BEST_CITIES, BEST_FILTERS } from "@/lib/bestSlugs";
-import { CITIES } from "@/lib/cities";
+import { CITIES, canonicalCitySlug, cityProvinceSlugs } from "@/lib/cities";
 import { getServerSupabase } from "@/lib/supabase";
 import { getViableStations } from "@/lib/queries/stations";
 import {
@@ -17,6 +17,7 @@ export const maxDuration = 60;
 export async function GET(): Promise<Response> {
   const today = isoDate(new Date());
   const entries: string[] = [];
+  const supabase = getServerSupabase();
 
   // City hub pages
   for (const lang of LANGS) {
@@ -28,11 +29,40 @@ export async function GET(): Promise<Response> {
     }
   }
 
-  // Best filter landings — 9 cities × 7 filters × 3 langs
-  for (const lang of LANGS) {
-    for (const city of BEST_CITIES) {
-      for (const filter of BEST_FILTERS) {
-        const path = `/best/${city.slug}/${filter.slug}`;
+  // Best filter landings — 9 cities × 7 filters × 3 langs, but only for
+  // combos that currently have ≥1 matching condo. Same eligibility bars as
+  // app/[lang]/best/[city]/[slug]/page.tsx (is_active, sale/rent sample ≥2,
+  // avg_sale_price ≥500k, gross_yield_pct between 3 and 25). A zero-match
+  // slice renders as a "No matches yet" page at 200 — a soft-404 candidate
+  // — so it's left out of the sitemap until real data backs it, mirroring
+  // the ≥3-condos gate already used below for district pages.
+  const { data: bestCandidates } = await supabase
+    .from("condos")
+    .select("province, gross_yield_pct, avg_sale_price")
+    .eq("is_active", true)
+    .not("gross_yield_pct", "is", null)
+    .gte("gross_yield_pct", 3)
+    .lte("gross_yield_pct", 25)
+    .gte("avg_sale_price", 500_000)
+    .gte("yield_sample_sale", 2)
+    .gte("yield_sample_rent", 2)
+    .limit(20_000);
+  type BestCandidateRow = { province: string | null; gross_yield_pct: number | null; avg_sale_price: number | null };
+  const bestRows = (bestCandidates ?? []) as BestCandidateRow[];
+
+  for (const city of BEST_CITIES) {
+    const provinces = new Set(cityProvinceSlugs(canonicalCitySlug(city.slug)));
+    const cityRows = bestRows.filter((r) => r.province && provinces.has(r.province));
+    for (const filter of BEST_FILTERS) {
+      const minYield = filter.minYield ?? 3;
+      const matched = cityRows.filter(
+        (r) =>
+          (r.gross_yield_pct ?? 0) >= minYield &&
+          (filter.maxSale == null || (r.avg_sale_price ?? Infinity) <= filter.maxSale),
+      ).length;
+      if (matched === 0) continue;
+      const path = `/best/${city.slug}/${filter.slug}`;
+      for (const lang of LANGS) {
         entries.push(
           urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "weekly", priority: 0.65, path })
         );
@@ -49,8 +79,6 @@ export async function GET(): Promise<Response> {
       );
     }
   }
-
-  const supabase = getServerSupabase();
 
   // District pages — only regions with ≥3 condos
   const { data: regionData } = await supabase
