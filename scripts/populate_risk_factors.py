@@ -7,8 +7,14 @@ The regions table holds both slug ("bang-khun-thian") and canonical
 ("Bang Khun Thian") variants of the same khet — we normalise both sides
 before matching, identical to the JS normaliser in InventoryMap.tsx.
 
+Flood/subsidence level is a static lookup by district — it never changes for
+a condo whose region hasn't changed, so by default we skip condos that
+already have both levels set. Pass --force to recompute everyone (e.g. after
+a district mapping change or a batch of backfill_province reassignments).
+
 Usage:
   python scripts/populate_risk_factors.py
+  python scripts/populate_risk_factors.py --force
   python scripts/populate_risk_factors.py --dry-run
 """
 from __future__ import annotations
@@ -48,6 +54,8 @@ def _build_subsidence_lookup() -> dict[str, int]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--force", action="store_true",
+                     help="Recompute condos that already have both risk levels set.")
     args = ap.parse_args()
 
     client = get_client()
@@ -73,6 +81,28 @@ def main() -> int:
             break
         offset += PAGE
     logger.info(f"loaded {len(condos)} hipflat condos")
+
+    if not args.force:
+        already_done: set[str] = set()
+        offset = 0
+        while True:
+            page = (
+                client.table("risk_factors")
+                .select("condo_id, flood_risk_level, subsidence_level")
+                .range(offset, offset + PAGE - 1)
+                .execute()
+                .data
+            ) or []
+            for r in page:
+                if r.get("flood_risk_level") is not None or r.get("subsidence_level") is not None:
+                    already_done.add(r["condo_id"])
+            if len(page) < PAGE:
+                break
+            offset += PAGE
+        before = len(condos)
+        condos = [c for c in condos if c["id"] not in already_done]
+        logger.info(f"  skipping {before - len(condos)} already-scored condos "
+                    f"({len(condos)} left; use --force to recompute all)")
 
     rows: list[dict] = []
     n_matched = n_skipped = 0

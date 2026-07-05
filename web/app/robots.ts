@@ -20,10 +20,17 @@ const AI_AGENTS = [
   "Google-Extended",   // Bard/Gemini training opt-in
   "GoogleOther",       // Google research crawl
   "Bingbot",           // Bing + Copilot
-  "CCBot",             // Common Crawl (trains most open LLMs)
-  "Bytespider",        // ByteDance / Doubao
   "Applebot",          // Apple Intelligence
   "Applebot-Extended", // Apple AI training opt-in
+];
+
+// Heavy, high-volume crawlers with no meaningful SEO/AEO payoff for this
+// site. A wildcard "*" allow rule doesn't block them by itself — each needs
+// its own disallow record. Removed 2026-07 after they contributed to a
+// Supabase egress-quota lockout on a low-traffic project.
+const BLOCKED_AGENTS = [
+  "Bytespider", // ByteDance — no discovery/citation value here, very heavy
+  "CCBot",      // Common Crawl — diffuse benefit, very heavy
 ];
 
 export default function robots(): MetadataRoute.Robots {
@@ -34,6 +41,10 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: ua,
         allow: "/",
         disallow: ["/admin", "/api"],
+      })),
+      ...BLOCKED_AGENTS.map((ua) => ({
+        userAgent: ua,
+        disallow: "/",
       })),
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

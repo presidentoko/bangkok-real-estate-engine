@@ -100,7 +100,7 @@ def main() -> int:
         resp = (
             db.from_("condos")
             .select(
-                "id, aqi_score, "
+                "id, aqi_score, retiree_score, "
                 "livability_metrics(hospitals_within_1km, supermarkets_within_1km, "
                 "nearest_bts_distance_m, nearest_mrt_distance_m)"
             )
@@ -116,6 +116,7 @@ def main() -> int:
     print(f"fetched {len(rows)} condos from DB")
     now = datetime.now(timezone.utc).isoformat()
     updates: list[dict] = []
+    unchanged = 0
 
     for row in rows:
         lm = row.get("livability_metrics")
@@ -132,22 +133,35 @@ def main() -> int:
         )
         if score is None:
             continue
+        # Skip the write when the score hasn't moved. Inputs like hospital
+        # counts and transit distance rarely change once set, so most rows
+        # are no-ops after the first run. aqi_score can still update
+        # independently (see ingest_pm25.py) — we recompute every row above,
+        # we just don't issue a write when the result is identical.
+        if row.get("retiree_score") == score:
+            unchanged += 1
+            continue
         updates.append({
             "id": row["id"],
             "retiree_score": score,
             "retiree_score_computed_at": now,
         })
 
+    print(f"  {unchanged} unchanged (skipped), {len(updates)} to update")
+
     if not updates:
         print("no condos with livability data — nothing to update")
         return 0
 
+    RECONNECT_EVERY = 500
     for i, u in enumerate(updates, 1):
+        if i % RECONNECT_EVERY == 1:
+            db = get_client()
         db.from_("condos").update({
             "retiree_score": u["retiree_score"],
             "retiree_score_computed_at": u["retiree_score_computed_at"],
         }).eq("id", u["id"]).execute()
-        if i % 200 == 0:
+        if i % RECONNECT_EVERY == 0:
             print(f"  updated {i}/{len(updates)}")
 
     good_plus = sum(1 for u in updates if u["retiree_score"] >= 55)
