@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { RealityCard } from "@/components/RealityCard";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 type PriceHistoryRow = {
   price: number;

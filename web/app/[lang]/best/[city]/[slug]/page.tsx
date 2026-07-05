@@ -19,7 +19,7 @@ import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 // Pre-render every (city, slug) combination at build time. With 9 cities
 // × 7 slugs = 63 combos per language, that's a 1-shot static export

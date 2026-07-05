@@ -37,7 +37,11 @@ import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { SaveButton } from "@/components/SaveButton";
 import { CompareButton } from "@/components/CompareButton";
 
-export const revalidate = 3600;
+// Discovery/scrape cadence is monthly now, not hourly — a long revalidate
+// window here directly cuts ISR regenerations (and the Supabase reads they
+// trigger) across thousands of condo pages, the single biggest multiplier
+// in the whole site.
+export const revalidate = 86400;
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

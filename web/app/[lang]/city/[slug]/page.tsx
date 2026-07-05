@@ -12,7 +12,7 @@ import { type CondoSummary, type PropertyType } from "@/lib/queries/condos";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export function generateStaticParams() {
   return CITIES.map((c) => ({ slug: c.slug }));

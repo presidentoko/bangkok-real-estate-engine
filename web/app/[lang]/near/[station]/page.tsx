@@ -10,7 +10,7 @@ import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { getViableStations, getStationData } from "@/lib/queries/stations";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   const stations = await getViableStations();
