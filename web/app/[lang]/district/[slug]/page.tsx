@@ -12,6 +12,7 @@ export const revalidate = 86400;
 
 type CondoLite = {
   id: string;
+  slug: string | null;
   name: string;
   province: string | null;
   url: string | null;
@@ -58,16 +59,25 @@ export async function generateMetadata({
   const supabase = getServerSupabase();
   const region = await resolveRegion(supabase, slug);
   if (!region) return { title: "District — RealData" };
-  const display = region.name.replace(/-/g, " ");
+  const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const province = region.province ?? "Bangkok";
+  const title = `${display} Condos, ${province.replace(/\b\w/g, (c) => c.toUpperCase())} — Yields, Prices & Flood Risk | RealData`;
+  const description =
+    `Every condo in ${display}, ${province}: gross rental ` +
+    `yields ranked against Thai MRR, sale/rent medians, flood risk levels, ` +
+    `and cross-portal price comparison. Independent data — no developer placement.`;
   return {
-    title: `${display} condos — yields, prices, flood risk | RealData`,
-    description:
-      `Every condo in ${display}, ${region.province ?? "Bangkok"}: gross rental ` +
-      `yields ranked against Thai MRR, sale/rent medians, flood risk levels, ` +
-      `and cross-portal price comparison. Independent data measurement.`,
+    title,
+    description,
     alternates: {
       canonical: `${SEO_SITE_URL}/${lang}/district/${slug}`,
       languages: langAlternates(`/district/${slug}`),
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SEO_SITE_URL}/${lang}/district/${slug}`,
+      type: "website",
     },
   };
 }
@@ -88,7 +98,7 @@ export default async function DistrictPage({
     supabase
       .from("condos")
       .select(
-        "id, name, province, url, gross_yield_pct, avg_sale_price, " +
+        "id, slug, name, province, url, gross_yield_pct, avg_sale_price, " +
         "avg_monthly_rent, market_sale_median, market_rent_median, " +
         "market_summary_currency"
       )
@@ -125,8 +135,8 @@ export default async function DistrictPage({
     .sort((a, b) => (b.gross_yield_pct ?? 0) - (a.gross_yield_pct ?? 0))
     .slice(0, 8);
 
-  const display = region.name.replace(/-/g, " ");
-  const provinceDisplay = (region.province ?? "Bangkok").replace(/-/g, " ");
+  const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const provinceDisplay = (region.province ?? "Bangkok").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   // JSON-LD Place schema for the district + ItemList of top condos.
   const jsonLd = {
@@ -262,7 +272,7 @@ export default async function DistrictPage({
                     <tr key={c.id} className="border-t border-zinc-800/50 hover:bg-zinc-900/50">
                       <td className="px-4 py-3">
                         <Link
-                          href={`/${lang}/condo/${c.id}`}
+                          href={`/${lang}/condo/${c.slug ?? c.id}`}
                           className="text-zinc-100 hover:underline font-medium"
                         >
                           {c.name}
@@ -306,7 +316,7 @@ export default async function DistrictPage({
             .map((c) => (
               <li key={c.id}>
                 <Link
-                  href={`/${lang}/condo/${c.id}`}
+                  href={`/${lang}/condo/${c.slug ?? c.id}`}
                   className="text-zinc-300 hover:text-emerald-400 hover:underline"
                 >
                   {c.name}

@@ -61,11 +61,11 @@ export async function generateMetadata({
   if (!cityObj || !isLang(lang)) return { title: "Retiree-Friendly Condos" };
 
   const cityName = cityObj.name.en;
-  const title = `Retiree-Friendly Condos in ${cityName} | RealData`;
+  const title = `Best Condos for Retirees in ${cityName} — Hospitals, AQI & Transit Ranked | RealData`;
   const description =
-    `Condos in ${cityName} ranked by retiree suitability score — ` +
-    `healthcare access, air quality, transit, and daily errands. ` +
-    `Foreign-quota availability and monthly maintenance fees included.`;
+    `${cityName} condos ranked by retiree suitability score — ` +
+    `hospitals within 1 km, air quality (AQI/PM2.5), BTS/MRT transit access, and daily errands. ` +
+    `Includes foreign-quota availability and monthly CAM fees. No developer sponsorships.`;
 
   return {
     title,

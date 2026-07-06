@@ -14,12 +14,24 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Methodology — RealData" };
   const t = getDictionary(lang).about;
+  const title = lang === "en"
+    ? "Bangkok Condo Data Methodology — Bubble Index, Yield & Flood Risk | RealData"
+    : `${t.title} — RealData`;
+  const description = lang === "en"
+    ? "How RealData independently measures 1,800+ Thai condos — Bubble Index formula, rental yield calculation, flood risk scoring using BMA & JICA data, and full refresh cadence. No developer sponsorships."
+    : t.lead;
   return {
-    title: `${t.title} — RealData`,
-    description: t.lead,
+    title,
+    description,
     alternates: {
       canonical: `${SEO_SITE_URL}/${lang}/about`,
       languages: langAlternates("/about"),
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SEO_SITE_URL}/${lang}/about`,
+      type: "website",
     },
   };
 }

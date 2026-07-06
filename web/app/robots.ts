@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
 
 // Explicit allow rules for the major AI training + answer-engine crawlers.
 // Wildcard already covers them, but spelling them out (1) makes intent

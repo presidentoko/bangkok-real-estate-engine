@@ -30,8 +30,10 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import atexit
 import io
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -43,9 +45,33 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 
 PYTHON = sys.executable
 
+# Track the currently-running child so signal handlers can kill it.
+_active_proc: subprocess.Popen | None = None
+
 
 def _now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _kill_active() -> None:
+    global _active_proc
+    if _active_proc is not None:
+        print(f"[{_now()}] cleanup: killing active child (pid={_active_proc.pid})",
+              flush=True)
+        _kill_tree(_active_proc)
+        _active_proc = None
+
+
+def _handle_signal(signum, frame) -> None:
+    print(f"[{_now()}] signal {signum} received — shutting down", flush=True)
+    _kill_active()
+    sys.exit(1)
+
+
+atexit.register(_kill_active)
+signal.signal(signal.SIGINT, _handle_signal)
+if hasattr(signal, "SIGTERM"):
+    signal.signal(signal.SIGTERM, _handle_signal)
 
 
 def run_step(label: str, cmd: list[str], deadline: float, dry_run: bool,
@@ -76,8 +102,10 @@ def run_step(label: str, cmd: list[str], deadline: float, dry_run: bool,
     t0 = time.time()
     # start_new_session so we can kill the whole child tree (sweep scripts spawn
     # ingest subprocesses / nodriver Chrome).
+    global _active_proc
     try:
         proc = subprocess.Popen(cmd, cwd=ROOT, start_new_session=True)
+        _active_proc = proc
     except Exception as e:
         print(f"[{_now()}] {label}: SPAWN FAILED {type(e).__name__}: {e}", flush=True)
         return 1
@@ -92,6 +120,8 @@ def run_step(label: str, cmd: list[str], deadline: float, dry_run: bool,
         print(f"[{_now()}] {label}: EXCEPTION {type(e).__name__}: {e}", flush=True)
         _kill_tree(proc)
         return 1
+    finally:
+        _active_proc = None
     mins = (time.time() - t0) / 60
     print(f"[{_now()}] {label}: {'OK' if rc == 0 else f'FAILED (exit {rc})'} "
           f"in {mins:.1f} min", flush=True)

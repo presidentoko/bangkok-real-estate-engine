@@ -16,12 +16,24 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!isLang(lang)) return { title: "RealData Blog" };
   const t = getDictionary(lang);
+  const title = lang === "en"
+    ? "Bangkok Real Estate Blog — Condo Data, Flood Risk & Investment Guides | RealData"
+    : `${t.blogIndex.title} — Bangkok property data analysis`;
+  const description = lang === "en"
+    ? "Data-driven Bangkok real estate analysis — flood risk rankings, bubble index breakdowns, rental yield comparisons, retiree guides, and foreign buyer handbooks. No influencer speculation, just numbers."
+    : t.blogIndex.lead;
   return {
-    title: `${t.blogIndex.title} — Bangkok property data analysis`,
-    description: t.blogIndex.lead,
+    title,
+    description,
     alternates: {
       canonical: `${SEO_SITE_URL}/${lang}/blog`,
       languages: langAlternates("/blog"),
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SEO_SITE_URL}/${lang}/blog`,
+      type: "website",
     },
   };
 }

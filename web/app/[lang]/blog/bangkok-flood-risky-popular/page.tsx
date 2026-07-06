@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -309,13 +310,16 @@ export default async function FloodRiskyPost({
           <p className="text-zinc-400 mt-2 text-sm">
             <time>{PUBLISHED}</time> · {t.byline}
           </p>
+          <div className="max-w-xs mt-4">
+            <LinkShareButtons url={`${SITE_URL}/${lang}/blog/${SLUG}`} title={t.h1} />
+          </div>
         </header>
 
         <section className="prose prose-invert prose-zinc max-w-none mb-6 text-zinc-300 space-y-3">
           <FloodMapLinkedIntro lang={lang} content={t} />
         </section>
 
-        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-zinc-500 uppercase tracking-wider bg-zinc-950">

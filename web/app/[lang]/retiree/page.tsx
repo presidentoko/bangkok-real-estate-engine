@@ -15,13 +15,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Retiree-Friendly Condos in Thailand" };
+  const title = "Best Condos for Retirees in Thailand 2026 — Bangkok, Phuket, Chiang Mai | RealData";
+  const description =
+    "Thailand condos ranked for retiree suitability — healthcare access (hospitals within 1km), air quality (AQI), BTS/MRT transit, and daily errands. Bangkok, Phuket, Pattaya, Chiang Mai and more. No developer sponsorships.";
   return {
-    title: "Retiree-Friendly Condos in Thailand — RealData",
-    description:
-      "Find the best condos for retirees across Thailand. Ranked by healthcare access, air quality, transit, and daily errands. Data-driven, no developer sponsorships.",
+    title,
+    description,
     alternates: {
       canonical: `${SEO_SITE_URL}/${lang}/retiree`,
       languages: langAlternates("/retiree"),
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SEO_SITE_URL}/${lang}/retiree`,
+      type: "website",
     },
   };
 }

@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
 import { CityMapSvg, type CityPoint } from "@/components/CityMapSvg";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
+import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
 import { CITIES, cityProvinceSlugs, getCity, type City, type CitySlug } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
 import { type CondoSummary, type PropertyType } from "@/lib/queries/condos";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 86400;
@@ -273,6 +275,13 @@ export default async function CityPage({
               </div>
             ))}
           </div>
+
+          <div className="max-w-xs mt-6">
+            <LinkShareButtons
+              url={`${SEO_SITE_URL}/${lang}/city/${slug}`}
+              title={`${cityName} ${t.headerSuffix} — RealData`}
+            />
+          </div>
         </div>
       </section>
 
@@ -390,6 +399,51 @@ export default async function CityPage({
           destination={city.name[lang as Lang]}
         />
       </section>
+
+      {/* FAQ — AEO surface */}
+      {lang === "en" && (() => {
+        const superValuePct = withBubble > 0 ? Math.round((superValue / withBubble) * 100) : null;
+        const faqItems = [
+          {
+            q: `How many condo buildings does RealData track in ${city.name.en}?`,
+            a: `RealData tracks ${total} condo buildings in ${city.name.en} across ${districts.size} sub-areas, sourced from hipflat. ${withBubble} buildings have a Bubble Index score (price vs. district average).`,
+          },
+          {
+            q: `How do I find underpriced condos in ${city.name.en}?`,
+            a: `RealData's Bubble Index measures each building's median price-per-sqm against its district average. A Bubble Index below 90 means the building is priced below the local market. Currently ${superValuePct != null ? superValuePct + "% of scored buildings" : "a subset"} in ${city.name.en} qualify as Super Value — underpriced AND with top-quartile livability scores. Look for the ★ Super Value badge on building cards.`,
+          },
+          {
+            q: `Can foreigners buy condos in ${city.name.en}?`,
+            a: `Yes, with restrictions. Thai law caps foreign ownership at 49% of total floor area per building (Condominium Act Section 19). Foreigners can only purchase units in the 'foreign quota' portion. RealData surfaces the measured foreign-quota inventory share on each building page — so buyers can see at a glance whether a project still has foreign-eligible units.`,
+          },
+          {
+            q: `What data sources does RealData use for ${city.name.en} condos?`,
+            a: `Listings and prices are sourced from hipflat.co.th with weekly re-crawls. Macro benchmarks (MRR, MLR, policy rate) come from Bank of Thailand BTWS_STAT API, refreshed daily. Flood risk (Bangkok only) uses BMA Drainage Department records, JICA reports, and 2011 great flood inundation maps. Transit and amenity data comes from OpenStreetMap via Overpass API. No developer money, no paid placement.`,
+          },
+        ];
+        const faqJsonLd = buildFaqJsonLd(faqItems);
+        return (
+          <>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+            />
+            <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-900">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">
+                Frequently asked questions
+              </h2>
+              <dl className="space-y-3 max-w-3xl">
+                {faqItems.map((f) => (
+                  <div key={f.q} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <dt className="font-semibold text-zinc-100 mb-2">{f.q}</dt>
+                    <dd className="text-zinc-400 text-sm leading-relaxed">{f.a}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          </>
+        );
+      })()}
 
       {/* Other cities */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-900">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
+import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -112,6 +113,12 @@ export default async function WeeklyPostPage({
         <p className="text-zinc-300 text-base leading-relaxed">
           <InlineMd text={post.lead} />
         </p>
+        <div className="max-w-xs pt-1">
+          <LinkShareButtons
+            url={`${SEO_SITE_URL}/${lang}/blog/weekly/${slug}`}
+            title={`${post.title} — RealData`}
+          />
+        </div>
       </header>
 
       {post.fact_bullets.length > 0 && (
@@ -162,6 +169,14 @@ export default async function WeeklyPostPage({
       <LeadCaptureCTA
         headline="Want a vetted broker's take on any building in this post?"
       />
+
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
+        <div className="text-sm font-semibold text-zinc-300">Found this useful? Share the post</div>
+        <LinkShareButtons
+          url={`${SEO_SITE_URL}/${lang}/blog/weekly/${slug}`}
+          title={`${post.title} — RealData`}
+        />
+      </div>
 
       <section className="border-t border-zinc-800 pt-6 text-xs text-zinc-500">
         <p>

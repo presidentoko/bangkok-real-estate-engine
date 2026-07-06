@@ -18,7 +18,6 @@ function regionLabel(r: CondoSearchResult["regions"]): string {
 }
 
 export function PromotionForm() {
-  const [secret, setSecret] = useState("");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CondoSearchResult[]>([]);
   const [picked, setPicked] = useState<CondoSearchResult | null>(null);
@@ -34,15 +33,6 @@ export function PromotionForm() {
   const [result, setResult] = useState<
     { ok: true; id: string } | { ok: false; message: string } | null
   >(null);
-
-  // Persist admin secret locally so it survives reload.
-  useEffect(() => {
-    const v = localStorage.getItem("admin_secret");
-    if (v) setSecret(v);
-  }, []);
-  useEffect(() => {
-    if (secret) localStorage.setItem("admin_secret", secret);
-  }, [secret]);
 
   // Debounced condo search.
   const searchTimer = useRef<number | null>(null);
@@ -80,10 +70,12 @@ export function PromotionForm() {
     try {
       const r = await fetch("/api/promotions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-secret": secret,
-        },
+        headers: { "Content-Type": "application/json" },
+        // No admin secret here — this form only renders behind the
+        // /admin/* middleware gate, so the httpOnly admin_session cookie
+        // (set at /admin/login) is sent automatically and verified
+        // server-side by checkAdminAuth(). Nothing sensitive touches
+        // client JS or localStorage.
         body: JSON.stringify({
           condo_id: picked.id,
           promoted_by: promotedBy.trim(),
@@ -117,17 +109,6 @@ export function PromotionForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">Admin secret</label>
-        <input
-          type="password"
-          value={secret}
-          onChange={(e) => setSecret(e.target.value)}
-          placeholder="ADMIN_SECRET from .env"
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 font-mono"
-        />
-      </div>
-
       <div>
         <label className="block text-sm font-medium mb-1">Condo</label>
         {picked ? (
@@ -244,7 +225,7 @@ export function PromotionForm() {
 
       <button
         type="submit"
-        disabled={busy || !picked || !promotedBy.trim() || !secret}
+        disabled={busy || !picked || !promotedBy.trim()}
         className="w-full py-3 rounded-2xl bg-pink-500 hover:bg-pink-400 disabled:opacity-50 font-semibold text-white transition"
       >
         {busy ? "Saving…" : "Add promotion"}

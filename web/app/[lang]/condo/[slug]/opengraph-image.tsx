@@ -113,10 +113,10 @@ const UUID_RE_OG =
 export default async function OG({
   params,
 }: {
-  params: { slug: string; lang: string };
+  params: Promise<{ slug: string; lang: string }>;
 }) {
-  const { slug } = params;
-  const lang: Lang = isLang(params.lang) ? params.lang : "en";
+  const { slug, lang: langParam } = await params;
+  const lang: Lang = isLang(langParam) ? langParam : "en";
   const t = LABELS[lang];
 
   let name = "Bangkok Condo";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { checkAdminSecret } from "@/lib/admin";
+import { checkAdminAuth } from "@/lib/admin";
 import { getServerSupabase } from "@/lib/supabase";
 
 const ALLOWED_PLATFORMS = ["youtube", "blog", "instagram", "tiktok", "news", "other"];
@@ -14,7 +14,7 @@ type Body = {
 };
 
 export async function POST(req: Request) {
-  if (!checkAdminSecret(req)) {
+  if (!(await checkAdminAuth(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

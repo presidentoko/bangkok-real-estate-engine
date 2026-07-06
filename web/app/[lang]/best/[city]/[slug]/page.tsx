@@ -34,6 +34,7 @@ export function generateStaticParams() {
 
 type Row = {
   id: string;
+  slug: string | null;
   name: string;
   province: string | null;
   gross_yield_pct: number | null;
@@ -101,7 +102,7 @@ export default async function BestSlicePage({
   let query = supabase
     .from("condos")
     .select(
-      "id, name, province, gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
+      "id, slug, name, province, gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
       "yield_sample_sale, yield_sample_rent, foreign_quota_inventory_pct, regions(name)",
     )
     .in("province", provinces)
@@ -124,7 +125,7 @@ export default async function BestSlicePage({
     getCurrentMortgageRate(supabase),
     supabase
       .from("condos")
-      .select("id, name, retiree_score, regions(name)")
+      .select("id, slug, name, retiree_score, regions(name)")
       .in("province", provinces)
       .eq("is_active", true)
       .gte("retiree_score", 55)
@@ -133,7 +134,7 @@ export default async function BestSlicePage({
   ]);
 
   const rows = (rowsData ?? []) as unknown as Row[];
-  type RetireeRow = { id: string; name: string; retiree_score: number; regions: { name: string } | { name: string }[] | null };
+  type RetireeRow = { id: string; slug: string | null; name: string; retiree_score: number; regions: { name: string } | { name: string }[] | null };
   const retireeRows = (retireeData ?? []) as unknown as RetireeRow[];
   const mrr = mortgage?.rate ?? null;
 
@@ -163,7 +164,7 @@ export default async function BestSlicePage({
       "@type": "ListItem",
       position: i + 1,
       name: r.name,
-      url: `${SEO_SITE_URL}/${lang}/condo/${r.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug ?? r.id}`,
       additionalProperty: [
         { "@type": "PropertyValue", name: "Gross yield (%)", value: r.gross_yield_pct ?? 0 },
         ...(mrr != null && r.gross_yield_pct != null
@@ -304,7 +305,7 @@ export default async function BestSlicePage({
                     <td className="px-4 py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                     <td className="px-4 py-3">
                       <Link
-                        href={`/${lang}/condo/${r.id}`}
+                        href={`/${lang}/condo/${r.slug ?? r.id}`}
                         className="text-zinc-100 hover:underline font-medium"
                       >
                         {r.name}
@@ -349,7 +350,7 @@ export default async function BestSlicePage({
               const spread = mrr != null ? y - mrr : null;
               return (
                 <li key={r.id} className="p-3">
-                  <Link href={`/${lang}/condo/${r.id}`} className="block space-y-2">
+                  <Link href={`/${lang}/condo/${r.slug ?? r.id}`} className="block space-y-2">
                     <div className="flex items-baseline gap-2">
                       <span className="text-zinc-600 tabular-nums text-xs w-6 shrink-0">
                         {i + 1}
@@ -458,7 +459,7 @@ export default async function BestSlicePage({
               return (
                 <Link
                   key={r.id}
-                  href={`/${lang}/condo/${r.id}`}
+                  href={`/${lang}/condo/${r.slug ?? r.id}`}
                   className={`flex items-center gap-3 px-4 py-3 hover:bg-zinc-900/50 transition ${i > 0 ? "border-t border-zinc-800/50" : ""}`}
                 >
                   <span className="text-zinc-600 tabular-nums text-xs w-5 shrink-0">{i + 1}</span>

@@ -1,10 +1,10 @@
-import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { createHash, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
+import { ADMIN_SESSION_MAX_AGE_S, createAdminSession } from "@/lib/adminSession";
 
 export const runtime = "nodejs";
 
 const COOKIE_NAME = "admin_session";
-const COOKIE_MAX_AGE_S = 60 * 60 * 24 * 30; // 30 days
 
 /**
  * Validate a constant-time secret comparison without leaking timing info.
@@ -42,18 +42,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "incorrect secret" }, { status: 401 });
   }
 
-  // Session token — random per-login, stored as cookie. The token itself
-  // is verified by the middleware reading-only (we accept any non-empty
-  // value since the secret was just validated). For multi-server setups
-  // upgrade to a signed JWT.
-  const token = randomBytes(32).toString("hex");
+  // Session token — HMAC-signed with ADMIN_SECRET (see lib/adminSession.ts),
+  // so the middleware can verify it's genuine (not just present) without a
+  // server-side session store.
+  const token = await createAdminSession(adminSecret);
   const res = NextResponse.json({ ok: true });
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: COOKIE_MAX_AGE_S,
+    maxAge: ADMIN_SESSION_MAX_AGE_S,
   });
   return res;
 }

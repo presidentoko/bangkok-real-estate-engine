@@ -18,7 +18,7 @@ const STATIC_PATHS = [
   { path: "/flood", changefreq: "weekly", priority: 0.9 },
   { path: "/reality", changefreq: "daily", priority: 0.7 },
   { path: "/blog", changefreq: "weekly", priority: 0.7 },
-  { path: "/about", changefreq: "monthly", priority: 0.6 },
+  { path: "/about", changefreq: "monthly", priority: 0.7 },
   { path: "/data", changefreq: "daily", priority: 0.8 },
   { path: "/stale", changefreq: "daily", priority: 0.7 },
   { path: "/press", changefreq: "monthly", priority: 0.5 },
@@ -34,7 +34,7 @@ const STATIC_PATHS = [
   // Named static blog posts
   { path: "/blog/bangkok-overpriced-top10", changefreq: "weekly", priority: 0.6 },
   { path: "/blog/bangkok-foreigner-best-value", changefreq: "weekly", priority: 0.6 },
-  { path: "/blog/bangkok-flood-risky-popular", changefreq: "weekly", priority: 0.6 },
+  { path: "/blog/bangkok-flood-risky-popular", changefreq: "weekly", priority: 0.8 },
   { path: "/blog/bangkok-foreign-buyer-guide-2026", changefreq: "weekly", priority: 0.7 },
   { path: "/blog/sukhumvit-vs-sathorn-condo-comparison", changefreq: "weekly", priority: 0.7 },
   { path: "/blog/phuket-bubble-watch", changefreq: "weekly", priority: 0.7 },

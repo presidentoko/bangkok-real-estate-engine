@@ -299,7 +299,7 @@ export default async function DataShowcase({
         <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">
           {t.perCityHeader}
         </h2>
-        <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-zinc-400 text-[10px] uppercase tracking-wider bg-zinc-950/40">
               <tr>

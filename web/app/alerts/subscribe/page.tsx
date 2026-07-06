@@ -39,7 +39,9 @@ export default function SubscribePage() {
         </li>
         <li>
           <span className="font-semibold text-pink-400">3.</span> Paste it
-          below and submit.
+          below and submit — we send a confirmation message immediately, so
+          if you don&apos;t see one land in Telegram, the ID was wrong or
+          step 1 wasn&apos;t done yet.
         </li>
       </ol>
 

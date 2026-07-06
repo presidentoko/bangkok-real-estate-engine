@@ -293,12 +293,12 @@ export function InventoryGrid({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search building name…"
-            className="flex-1 min-w-[200px] bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
+            className="flex-1 min-w-[200px] bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
           />
           <select
             value={district}
             onChange={(e) => setDistrict(e.target.value)}
-            className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200"
+            className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-sm text-zinc-200"
           >
             <option value="">All districts ({districts.length})</option>
             {districts.map((d) => (
@@ -308,7 +308,7 @@ export function InventoryGrid({
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200"
+            className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-sm text-zinc-200"
           >
             {Object.entries(SORT_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>

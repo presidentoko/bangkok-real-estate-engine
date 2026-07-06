@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -413,6 +414,9 @@ export default async function ThailandRetireeGuide({
           <p className="text-zinc-400 mt-2 text-sm">
             <time dateTime={PUBLISHED}>{PUBLISHED}</time> · {t.byline}
           </p>
+          <div className="max-w-xs mt-4">
+            <LinkShareButtons url={`${SITE_URL}/${lang}/blog/${SLUG}`} title={t.h1} />
+          </div>
         </header>
 
         {/* Intro */}

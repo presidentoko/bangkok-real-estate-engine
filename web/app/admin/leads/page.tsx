@@ -2,9 +2,10 @@
  * Admin leads inbox — list view of every consultation lead with status,
  * filters, and a one-click link to the originating condo (when there is one).
  *
- * TODO: gate this route. Currently it's URL-obscurity only (same as
- * /admin/promotions). For multi-user / public hardening, wrap with Vercel
- * Password Protection on the /admin path, or migrate to NextAuth.
+ * Gated by middleware.ts, which verifies the HMAC-signed `admin_session`
+ * cookie (see lib/adminSession.ts) before any request reaches this page.
+ * Fine for a solo-operator MVP; migrate to NextAuth/Clerk before opening
+ * admin access to multiple people.
  */
 import Link from "next/link";
 import { redirect } from "next/navigation";

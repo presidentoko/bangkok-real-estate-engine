@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
+import sanitizeHtml from "sanitize-html";
 import { CondoFacilities } from "@/components/CondoFacilities";
 import { CondoNeighbours } from "@/components/CondoNeighbours";
 import { CondoUnitsTable } from "@/components/CondoUnitsTable";
@@ -65,7 +66,7 @@ export async function generateStaticParams() {
 }
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
 
 // AEO/SEO metadata. Each condo page gets a unique title + description that
 // surfaces our differentiator (bubble_index, flood level) so search snippets
@@ -91,17 +92,20 @@ export async function generateMetadata({
 
   const { data: condo } = await supabase
     .from("condos_published")
-    .select("id, name, regions(name), market_sale_median, market_summary_currency, total_units, completion_year, gross_yield_pct")
+    .select("id, name, regions(name), province, market_sale_median, market_summary_currency, total_units, completion_year, gross_yield_pct")
     .eq("slug", slug)
     .maybeSingle();
   if (!condo) return { title: "Condo report — RealData" };
-  const condoForMeta = condo as unknown as { id: string; name: string; regions: { name: string } | { name: string }[] | null; market_sale_median: number | null; market_summary_currency: string | null; total_units: number | null; completion_year: number | null; gross_yield_pct: number | null };
+  const condoForMeta = condo as unknown as { id: string; name: string; province: string | null; regions: { name: string } | { name: string }[] | null; market_sale_median: number | null; market_summary_currency: string | null; total_units: number | null; completion_year: number | null; gross_yield_pct: number | null };
   const [{ data: scoreMeta }, { data: riskMeta }] = await Promise.all([
     supabase.from("value_scores").select("bubble_index").eq("condo_id", condoForMeta.id).maybeSingle(),
     supabase.from("risk_factors").select("flood_risk_level").eq("condo_id", condoForMeta.id).maybeSingle(),
   ]);
   const c = condoForMeta;
   const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
+  const provinceDisplay = c.province
+    ? c.province.replace(/-/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase())
+    : "Bangkok";
   const above = scoreMeta?.bubble_index != null ? Math.round(scoreMeta.bubble_index - 100) : null;
   const aboveTxt =
     above == null
@@ -117,9 +121,10 @@ export async function generateMetadata({
       : null;
   const yieldTxt =
     c.gross_yield_pct != null ? `yield ${c.gross_yield_pct.toFixed(2)}%` : null;
-  const title = `${c.name} (${region}) — RealData report`;
+  const titleSuffix = [yieldTxt, floodTxt].filter(Boolean).join(" · ") || `${provinceDisplay} condo`;
+  const title = `${c.name}, ${region} — ${titleSuffix} | RealData`;
   const desc =
-    `${c.name} in ${region}, Bangkok. ` +
+    `${c.name} in ${region}, ${provinceDisplay}. ` +
     [
       c.completion_year ? `built ${c.completion_year}` : null,
       c.total_units ? `${c.total_units} units` : null,
@@ -129,7 +134,7 @@ export async function generateMetadata({
     ]
       .filter(Boolean)
       .join(" · ") +
-    ". Independent data report — listings, 13-month price trend, amenities, flood risk.";
+    ". See listings, 13-month price trend, yield calculation, flood risk and amenities.";
   return {
     title,
     description: desc,
@@ -681,9 +686,14 @@ export default async function CondoPage({
           <div
             className="text-zinc-400 text-sm mt-4 leading-relaxed [&_b]:text-zinc-300 [&_strong]:text-zinc-300"
             dangerouslySetInnerHTML={{
-              __html: decodeEntities(condoRaw.description)
-                .replace(/<(script|style|iframe|object|embed|form)[\s\S]*?<\/\1>/gi, "")
-                .replace(/<(script|style|iframe|object|embed|form)[^>]*\/?>/gi, ""),
+              __html: sanitizeHtml(decodeEntities(condoRaw.description), {
+                // Scraped third-party copy — allow only basic text formatting.
+                // No attributes at all, so no onerror=/href="javascript:"/etc
+                // vectors survive, unlike the old naive tag-stripping regex.
+                allowedTags: ["b", "strong", "i", "em", "p", "br", "ul", "ol", "li", "span"],
+                allowedAttributes: {},
+                disallowedTagsMode: "discard",
+              }),
             }}
           />
         )}

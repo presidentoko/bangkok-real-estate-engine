@@ -7,6 +7,47 @@ type Body = {
   bubble_threshold?: number;
 };
 
+// The #1 silent-failure mode for Telegram alerts: the user typos their chat
+// ID (or copies the wrong number, or never messaged the bot to open the DM
+// channel), the form happily says "Subscribed", and they never find out —
+// because the only place that would notice is a fire-and-forget send() deep
+// in the alert pipeline, days later. We catch it here instead by sending a
+// real confirmation message at signup time and surfacing any failure right
+// in the form. Falls back to "trust it" if the bot token isn't configured.
+async function verifyTelegramChat(
+  chatId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return { ok: true };
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text:
+          "✅ Subscribed — you'll get a message here the next time a Bangkok " +
+          "condo listing in your filter drops under your Bubble Index threshold.",
+      }),
+    });
+    if (res.ok) return { ok: true };
+    const j: { description?: string } = await res.json().catch(() => ({}));
+    const desc = j.description ?? "";
+    if (/chat not found/i.test(desc) || /bot was blocked/i.test(desc)) {
+      return {
+        ok: false,
+        error:
+          "That chat ID isn't reachable yet — open Telegram, message @Bkkbudong_bot, " +
+          "tap /start, then try subscribing again.",
+      };
+    }
+    return { ok: false, error: `Telegram rejected that chat ID (${desc || "unknown error"}).` };
+  } catch {
+    // Network hiccup talking to Telegram shouldn't block signup on our end.
+    return { ok: true };
+  }
+}
+
 export async function POST(req: Request) {
   let body: Body;
   try {
@@ -33,6 +74,11 @@ export async function POST(req: Request) {
       { error: "bubble_threshold must be 50–100" },
       { status: 400 }
     );
+  }
+
+  const verify = await verifyTelegramChat(chat_id);
+  if (!verify.ok) {
+    return NextResponse.json({ error: verify.error }, { status: 400 });
   }
 
   const supabase = getServerSupabase();

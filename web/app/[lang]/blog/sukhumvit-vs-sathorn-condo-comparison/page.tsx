@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -229,6 +230,9 @@ export default async function CorridorComparison({
             ← Blog
           </Link>
           <Body lang={lang} stats={stats} totalBuildings={totalBuildings} />
+          <div className="max-w-xs mt-4">
+            <LinkShareButtons url={POST_URL} title={META[lang].ogTitle} />
+          </div>
         </header>
       </article>
     </main>
@@ -495,7 +499,7 @@ function ComparisonTable({ stats, lang }: { stats: CorridorStat[]; lang: Lang })
   } as const;
   const t = labels[lang];
   return (
-    <section className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden mt-6">
+    <section className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-x-auto mt-6">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-xs text-zinc-500 uppercase tracking-wider bg-zinc-950">

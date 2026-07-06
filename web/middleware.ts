@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { verifyAdminSession } from "./lib/adminSession";
 import { DEFAULT_LANG, LANGS, type Lang } from "./lib/i18n";
 
 const CONDO_UUID_PATH_RE = /^\/([a-z]{2})\/condo\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
@@ -66,13 +67,22 @@ export async function middleware(req: NextRequest) {
   // Admin gate — runs BEFORE the SKIP_PREFIXES check so we can protect
   // /admin/* with a cookie. The login page itself is public so the user
   // can reach it without already being authed.
+  //
+  // The cookie value is HMAC-signed (lib/adminSession.ts) with ADMIN_SECRET,
+  // so we verify the signature and expiry here rather than just checking
+  // that *a* cookie is present — a bare presence check meant anyone could
+  // grant themselves access via `document.cookie = "admin_session=x"`.
   if (pathname.startsWith("/admin") && !ADMIN_PUBLIC_PATHS.has(pathname)) {
     const cookie = req.cookies.get("admin_session")?.value;
-    if (!cookie) {
+    const valid = await verifyAdminSession(cookie, process.env.ADMIN_SECRET);
+    if (!valid) {
       const url = req.nextUrl.clone();
       url.pathname = "/admin/login";
       url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
+      const res = NextResponse.redirect(url);
+      // Clear any bogus/expired cookie so it doesn't linger in the browser.
+      if (cookie) res.cookies.set("admin_session", "", { path: "/", maxAge: 0 });
+      return res;
     }
   }
 

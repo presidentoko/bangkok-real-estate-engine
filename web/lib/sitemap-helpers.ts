@@ -1,7 +1,7 @@
 import { LANGS } from "@/lib/i18n";
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
 
 /** Matches UUID-format slugs — guard against un-migrated condo rows */
 export const UUID_RE =

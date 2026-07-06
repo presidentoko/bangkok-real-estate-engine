@@ -53,13 +53,15 @@ export async function generateMetadata({
   const city = resolveCity(cityParam);
   const cityName = city.name[lang];
   const isBangkok = city.slug === "bangkok";
+  const title = isBangkok
+    ? "Bangkok Condo List — All Buildings with Yield, Price & Flood Risk | RealData"
+    : `${cityName} Condo List — All Buildings with Yield, Price & Flood Risk | RealData`;
+  const description = isBangkok
+    ? "Browse 1,800+ condos across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin and Chonburi. Each card shows rental yield, Bubble Index, flood risk, and foreign quota. Filter by city and district."
+    : `Browse every tracked condo in ${cityName}. Filter by district, Bubble Index, and price. Each building shows rental yield, flood risk, and foreign-quota availability.`;
   return {
-    title: isBangkok
-      ? "Thailand Condo Inventory — every building, mapped | RealData"
-      : `${cityName} Condo Inventory — every building, mapped | RealData`,
-    description: isBangkok
-      ? "Every hipflat-tracked condo across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, Chonburi. Filter by city + district, browse cards, click for the full report."
-      : `Every hipflat-tracked condo in ${cityName}. Filter by district, bubble index, price, see the full report for each building.`,
+    title,
+    description,
     alternates: {
       canonical: isBangkok
         ? `${SEO_SITE_URL}/${lang}/inventory`
@@ -67,6 +69,12 @@ export async function generateMetadata({
       languages: langAlternates(
         isBangkok ? "/inventory" : `/inventory?city=${city.slug}`
       ),
+    },
+    openGraph: {
+      title,
+      description,
+      url: isBangkok ? `${SEO_SITE_URL}/${lang}/inventory` : `${SEO_SITE_URL}/${lang}/inventory?city=${city.slug}`,
+      type: "website",
     },
   };
 }

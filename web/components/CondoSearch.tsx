@@ -80,7 +80,7 @@ export function CondoSearch({ lang }: { lang: string }) {
         }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-zinc-600 rounded-lg pl-7 pr-2 py-1 text-xs focus:outline-none transition"
+        className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-zinc-600 rounded-lg pl-7 pr-2 py-1 text-base sm:text-xs focus:outline-none transition"
       />
       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-500 text-xs pointer-events-none">
         ⌕

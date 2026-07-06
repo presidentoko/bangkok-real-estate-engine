@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -131,6 +132,9 @@ export default async function ForeignBuyerGuide({
             ← Blog
           </Link>
           <Body lang={lang} />
+          <div className="max-w-xs mt-4">
+            <LinkShareButtons url={POST_URL} title={META[lang].ogTitle} />
+          </div>
         </header>
       </article>
     </main>

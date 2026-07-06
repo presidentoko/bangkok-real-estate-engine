@@ -129,7 +129,7 @@ export function ContactForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500"
+            className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500"
           />
         </label>
 
@@ -142,7 +142,7 @@ export function ContactForm() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+66 8x xxx xxxx"
-              className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500"
+              className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500"
             />
           </label>
           <label className="block">
@@ -153,7 +153,7 @@ export function ContactForm() {
               value={lineId}
               onChange={(e) => setLineId(e.target.value)}
               placeholder="@yourlineid"
-              className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500"
+              className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500"
             />
           </label>
         </div>
@@ -250,7 +250,7 @@ export function ContactForm() {
               ? "Which condo / area are you looking at?"
               : "Tell us about your company and goals."
           }
-          className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500 resize-y"
+          className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:border-emerald-500 resize-y"
         />
       </label>
 

@@ -29,16 +29,22 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!isLang(lang)) return {};
   const t = getDictionary(lang);
+  const title = lang === "en"
+    ? "Bangkok Condo Data — Yields, Prices & Flood Risk | RealData"
+    : `${t.brand.name} — ${t.home.heroTitle1} ${t.home.heroTitle2Highlight}${t.home.heroTitle3}`;
+  const description = lang === "en"
+    ? "Independent data on 1,800+ Thai condos across 9 cities — rental yields vs Bank of Thailand mortgage rate, district flood risk, foreign-quota inventory, cross-portal price comparison. Bangkok, Phuket, Chiang Mai and 6 more."
+    : t.home.heroLead;
   return {
-    title: `${t.brand.name} — ${t.home.heroTitle1} ${t.home.heroTitle2Highlight}${t.home.heroTitle3}`,
-    description: t.home.heroLead,
+    title,
+    description,
     alternates: {
       canonical: `${SEO_SITE_URL}/${lang}`,
       languages: langAlternates(""),
     },
     openGraph: {
-      title: t.brand.name,
-      description: t.home.heroLead,
+      title,
+      description,
       url: `${SEO_SITE_URL}/${lang}`,
       type: "website",
     },
@@ -59,7 +65,7 @@ export default async function Home({
     fetchHomeFeatured(),
     fetchSiteStats(),
     fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/bangkok-districts.geojson`,
+      `${SEO_SITE_URL}/bangkok-districts.geojson`,
       { next: { revalidate: 3600 } }
     )
       .then((r) => (r.ok ? r.json() : { type: "FeatureCollection", features: [] }))

@@ -40,10 +40,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Yields — RealData" };
-  const title = "Top rental-yield condos in Thailand — RealData";
+  const title = "Top Rental Yield Condos in Bangkok & Thailand — Ranked vs Bank of Thailand Rate | RealData";
   const description =
     "Bangkok and Thailand condos ranked by gross rental yield (annual rent ÷ sale price). " +
-    "Compared against the Bank of Thailand MRR mortgage benchmark. " +
+    "Each building compared against the live Bank of Thailand MRR mortgage benchmark — positive spread means rent covers the mortgage. " +
     "Independent measurement across hipflat, dotproperty, ddproperty, fazwaz.";
   return {
     title,

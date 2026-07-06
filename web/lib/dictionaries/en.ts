@@ -132,11 +132,27 @@ const dict = {
         q: "How often is the data refreshed?",
         a: "Bangkok listings refresh daily for new inventory. Full Thailand sweep runs weekly across hipflat, dotproperty, ddproperty, fazwaz. Yields and bubble index recompute after every ingest cycle. BOT macro rates refresh daily. Flood layer reviews annually. Each building page shows its own measurement timestamp.",
       },
+      {
+        q: "What is the typical rental yield for condos in Bangkok?",
+        a: "Gross rental yields for Bangkok condos measured by RealData typically range from 3% to 7%, with a median around 4.5–5%. Central districts like Silom and Sukhumvit tend toward 3.5–5% due to higher sale prices, while outer areas like Lat Phrao and Phra Khanong can reach 5–7%. Net yield is typically 1.5–3 percentage points lower after CAM fees, vacancy, and management costs.",
+      },
+      {
+        q: "How much does a condo in Bangkok cost?",
+        a: "Bangkok condo prices span a wide range: studios and 1-bedroom units in outer districts start from ฿1.5–3M (≈$40,000–85,000). Mid-market central condos (Asok, Phrom Phong, Ari) run ฿4–10M. Premium high-rise units in Silom or Sukhumvit start from ฿10M and can exceed ฿50M. The Bubble Index on each building page shows whether a specific condo is priced above or below its district average.",
+      },
+      {
+        q: "What is the 49% foreign ownership rule for Thai condos?",
+        a: "Thai law (Condominium Act Section 19) caps total foreign ownership in any condo building at 49% of total floor area. This means foreigners can only buy units in the 'foreign quota' — the portion up to 49% — and once full, the building is closed to new foreign purchases. RealData surfaces the measured foreign-quota inventory share per building from FazWaz listings, so buyers can check whether a project still has foreign-eligible units.",
+      },
+      {
+        q: "Which Bangkok districts are best for condo investment?",
+        a: "Based on RealData measurements, districts combining low flood risk with above-average yields include Phra Khanong (On Nut / Ekkamai area), Bang Na, and Khlong Toei. Sukhumvit central (Asok to Phrom Phong) has lower yields but strong resale liquidity. For budget buyers, Lat Phrao and Chatuchak offer yield-to-price ratios above the city median. Each district page shows median yield, median sale price, and flood risk for every tracked building.",
+      },
     ],
   },
   flood: {
-    title: "🌊 Flood Map",
-    lead: "Which districts flood every monsoon, which stay dry. Verify before you buy. Built from BMA Drainage Department + JICA reports + 2011 great flood records.",
+    title: "🌊 Flood Risk Map",
+    lead: "Which Bangkok districts flood every monsoon season, which stay dry. Verify before you buy. Built from BMA Drainage Department + JICA reports + 2011 great flood inundation records.",
     whyDistrict: "Why district-level?",
     whyDistrictBody:
       "BMA does not publicly release block-level flood GeoJSON. District-level baseline is enough for macro risk decisions. Within a district, road elevation and drainage still vary — site visits before purchase.",
@@ -426,8 +442,8 @@ const dict = {
   near: {
     breadcrumb: "Stations",
     titleSuffix: "condos near",
-    metaSuffix: "Condos near {station} — prices, yield, flood risk & ratings | RealData",
-    summaryLead: "Within 1 km of {station} we track",
+    metaSuffix: "Condos near {station} Station, Bangkok — Yield, Prices & Flood Risk | RealData",
+    summaryLead: "Within 1 km of {station} station, Bangkok —",
     statCondos: "condos",
     statMedianPsm: "median ฿/sqm",
     statMedianYield: "median gross yield",

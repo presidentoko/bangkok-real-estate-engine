@@ -8,6 +8,7 @@ import { CITIES, cityProvinceSlugs, getCity } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
 const BANGKOK_NAME: Record<string, string> = {
@@ -49,15 +50,28 @@ export async function generateMetadata({
   const city = resolveCity(cityParam);
   const isBangkok = city.slug === "bangkok";
   const cityName = city.name[lang];
-  const titleBase = `${t.flood.title}${isBangkok ? "" : ` — ${cityName}`}`;
+
+  const title = isBangkok && lang === "en"
+    ? "Bangkok Flood Risk Map — All 50 Districts Scored | RealData"
+    : `${cityName} Flood Risk Map | RealData`;
+  const description = isBangkok && lang === "en"
+    ? "Which Bangkok districts flood every monsoon season — and which stay dry. All 50 khet scored 0–5 using BMA Drainage Dept, JICA, and 2011 great flood records. Every condo plotted on the risk map."
+    : t.flood.lead;
+
   return {
-    title: `${titleBase} — RealData`,
-    description: t.flood.lead,
+    title,
+    description,
     alternates: {
       canonical: isBangkok
         ? `${SEO_SITE_URL}/${lang}/flood`
         : `${SEO_SITE_URL}/${lang}/flood?city=${city.slug}`,
       languages: langAlternates(isBangkok ? "/flood" : `/flood?city=${city.slug}`),
+    },
+    openGraph: {
+      title,
+      description,
+      url: isBangkok ? `${SEO_SITE_URL}/${lang}/flood` : `${SEO_SITE_URL}/${lang}/flood?city=${city.slug}`,
+      type: "website",
     },
   };
 }
@@ -141,7 +155,7 @@ export default async function FloodPage({
           .range(0, 9999),
     isBangkok
       ? fetch(
-          `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/bangkok-districts.geojson`,
+          `${SEO_SITE_URL}/bangkok-districts.geojson`,
           { next: { revalidate: 3600 } }
         )
           .then((r) => (r.ok ? r.json() : { features: [] }))
@@ -214,8 +228,33 @@ export default async function FloodPage({
     })),
   ];
 
+  const webPageJsonLd = isBangkok ? {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "Bangkok Flood Risk Map — All 50 Districts",
+    description: "Interactive flood risk map for all 50 Bangkok khet, scored 0–5 using BMA Drainage Dept, JICA, and 2011 great flood records. Every tracked condo plotted by flood level.",
+    url: `${SEO_SITE_URL}/${lang}/flood`,
+    inLanguage: lang,
+    about: {
+      "@type": "Dataset",
+      name: "Bangkok District Monsoon Flood Risk Dataset",
+      description: "Flood risk scores (0–5) for all 50 Bangkok khet (districts), calibrated against BMA Drainage Department records, JICA hydrological reports, and 2011 great flood inundation mapping. Reviewed annually.",
+      creator: { "@type": "Organization", name: "RealData", url: SEO_SITE_URL },
+      keywords: ["Bangkok flood risk", "Bangkok khet flood", "BMA flood data", "2011 Bangkok flood", "monsoon flooding Bangkok", "Bangkok district flood map"],
+      spatialCoverage: { "@type": "Place", name: "Bangkok Metropolitan Region", addressCountry: "TH" },
+      temporalCoverage: "2011/",
+      isAccessibleForFree: true,
+    },
+  } : null;
+
   return (
     <main className="max-w-5xl mx-auto p-6">
+      {webPageJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
+        />
+      )}
       <header className="mb-6">
         <h1 className="text-3xl font-bold mb-2">
           🌊 {cityName}{" "}
@@ -333,6 +372,58 @@ export default async function FloodPage({
               </div>
             </div>
           </div>
+
+          {/* FAQ — AEO + SEO surface for common Bangkok flood questions */}
+          {(() => {
+            const highRisk = districtRanking.filter((d) => d.level >= 4).map((d) => d.district).slice(0, 6);
+            const lowRisk = districtRanking.filter((d) => d.level <= 1).map((d) => d.district).slice(0, 6);
+            const faqItems = [
+              {
+                q: "Which Bangkok districts have the highest flood risk?",
+                a: highRisk.length > 0
+                  ? `Districts rated Level 4–5 (highest risk) include ${highRisk.join(", ")}. These areas experienced sustained inundation during the 2011 great flood and face recurring monsoon flooding. Each condo page shows its district's exact flood level.`
+                  : "Districts in outer Bangkok — particularly north and east — typically carry the highest flood risk (Level 4–5). Central elevated areas like Pathum Wan and Watthana are generally Level 1–2.",
+              },
+              {
+                q: "Which areas of Bangkok are safe from flooding?",
+                a: lowRisk.length > 0
+                  ? `Districts rated Level 0–1 (lowest risk) include ${lowRisk.join(", ")}. These areas have elevated terrain and robust BMA drainage infrastructure. Pathum Wan (Siam/Phloen Chit), Watthana (Asok/Phrom Phong), and Bang Rak (Silom) are typically the driest zones.`
+                  : "Central Bangkok districts — Pathum Wan, Bang Rak, and Watthana — are rated Level 1 (very low risk) due to elevated terrain and robust BMA drainage. They stayed largely dry during the 2011 great flood.",
+              },
+              {
+                q: "How is Bangkok flood risk measured?",
+                a: "RealData assigns each of Bangkok's 50 khet (districts) a flood risk level from 0 to 5 using three primary sources: BMA (Bangkok Metropolitan Administration) Drainage Department records, JICA flood frequency reports, and 2011 great flood inundation maps. Level 0 = no observed flooding; Level 5 = repeat full-area inundation during monsoon season. The layer is reviewed annually after each BMA monsoon report.",
+              },
+              {
+                q: "Did the 2011 Bangkok flood affect all areas of the city?",
+                a: "No. The 2011 great flood primarily affected outer districts north and east of Bangkok — including Lak Si, Don Mueang, Lat Phrao, Nong Chok, and Khlong Sam Wa — which saw waist-deep flooding lasting weeks. The central business districts (Silom, Sukhumvit, Siam) were largely protected by elevated terrain and the King's Dyke flood barriers. RealData's flood risk model is calibrated against these 2011 records.",
+              },
+              {
+                q: "Is Sukhumvit safe from flooding in Bangkok?",
+                a: "Sukhumvit spans multiple districts with varying flood risk. Lower Sukhumvit (Khlong Toei, Watthana — BTS Asok to Phrom Phong area) carries Level 1–2 risk and stayed dry in 2011. Upper Sukhumvit extending toward On Nut, Phra Khanong, and Bang Na has Level 2–3 risk with occasional street flooding during heavy monsoon rains. Check the individual building page for its exact district flood level.",
+              },
+            ];
+            const faqJsonLd = buildFaqJsonLd(faqItems);
+            return (
+              <>
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+                />
+                <section className="mt-10">
+                  <h2 className="text-xl font-semibold mb-4">Bangkok flood risk — frequently asked questions</h2>
+                  <dl className="space-y-3">
+                    {faqItems.map((f) => (
+                      <div key={f.q} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                        <dt className="font-semibold text-zinc-100 mb-2">{f.q}</dt>
+                        <dd className="text-zinc-400 text-sm leading-relaxed">{f.a}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              </>
+            );
+          })()}
         </>
       )}
     </main>
