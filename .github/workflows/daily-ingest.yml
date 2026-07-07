@@ -1,10 +1,19 @@
-name: Daily fresh-listing ingest
+name: Weekly fresh-listing ingest (mid-week)
 
-# Daily 03:30 Asia/Bangkok = 20:30 UTC previous day.
+# Wednesdays 03:30 Asia/Bangkok = 20:30 UTC Tuesday — offset from the Sunday
+# weekly-refresh full sweep so freshness is spread across the week instead
+# of stacking two full pipelines back to back.
+#
+# Was daily until 2026-07-07: compute_yields.py full-scans the `listings`
+# table every run, so a daily cadence meant a full-table Supabase egress
+# read every day on top of the Sunday sweep, on a <50-user site. Throttled
+# to weekly to stop that from re-triggering the egress-quota lockout that
+# daily-scrape automation caused earlier (see also the local Windows
+# discovery task, which was moved from daily to monthly the same day).
+#
 # Light catch-pass: hits only ~100 newest sale + ~100 newest rent listings
-# per source for Bangkok. Catches new inventory within a day so the site
-# stays fresh between weekly full sweeps. Updates yields + price snapshots
-# off the fresh data.
+# per source for Bangkok. Updates yields + price snapshots off the fresh
+# data.
 #
 # Runs on the self-hosted Windows runner (same one as weekly-refresh) so
 # the persistent nodriver profiles (.nodriver-profile-ddproperty/ and
@@ -16,7 +25,7 @@ name: Daily fresh-listing ingest
 
 on:
   schedule:
-    - cron: "30 20 * * *"
+    - cron: "30 20 * * 3"
   workflow_dispatch:
     inputs:
       limit_per_source:
