@@ -65,9 +65,32 @@ export async function generateMetadata({
   const titleChunk = filterObj.titleChunk(cityObj.display);
   const title = `Best ${titleChunk} — RealData`;
   const description = filterObj.descChunk(cityObj.display);
+
+  // Cheap count-only version of the page's main query — decides whether this
+  // slice is a soft-404 (zero matches) so we can noindex it instead of
+  // letting crawlers waste budget on an empty result page.
+  const supabase = getServerSupabase();
+  const provinces = cityProvinceSlugs(canonicalCitySlug(city));
+  let countQuery = supabase
+    .from("condos")
+    .select("id", { count: "exact", head: true })
+    .in("province", provinces)
+    .eq("is_active", true)
+    .not("gross_yield_pct", "is", null)
+    .gte("gross_yield_pct", filterObj.minYield ?? 3)
+    .lte("gross_yield_pct", 25)
+    .gte("avg_sale_price", 500_000)
+    .gte("yield_sample_sale", 2)
+    .gte("yield_sample_rent", 2);
+  if (filterObj.maxSale != null) {
+    countQuery = countQuery.lte("avg_sale_price", filterObj.maxSale);
+  }
+  const { count } = await countQuery;
+
   return {
     title,
     description,
+    ...(count === 0 ? { robots: { index: false, follow: true } } : {}),
     alternates: {
       canonical: `${SEO_SITE_URL}/${lang}/best/${city}/${slug}`,
       languages: langAlternates(`/best/${city}/${slug}`),

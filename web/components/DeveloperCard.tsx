@@ -1,6 +1,10 @@
+import Link from "next/link";
+
 type Props = {
   name: string | null;
   slug: string | null;
+  /** Current page's language, used to build the internal /{lang}/developer/{slug} link. */
+  lang: string;
   projectCount: number | null;
   unitCount: number | null;
   /** Roll-up across the condos WE track for this developer (developers table). */
@@ -18,6 +22,7 @@ type Props = {
 export function DeveloperCard({
   name,
   slug,
+  lang,
   projectCount,
   unitCount,
   trackedBuildings,
@@ -41,7 +46,11 @@ export function DeveloperCard({
             ? { label: "Smaller portfolio", tone: "text-amber-400" }
             : { label: "New / single-project developer", tone: "text-orange-400" };
 
-  const profileUrl = slug
+  // Primary CTA points at our own developer page (internal linking — was
+  // sending "see all projects" traffic straight to competitor FazWaz).
+  // FazWaz stays as a small secondary source citation below.
+  const profileUrl = slug ? `/${lang}/developer/${slug}` : null;
+  const fazwazUrl = slug
     ? `https://www.fazwaz.com/property-developers/${slug}`
     : null;
 
@@ -117,14 +126,24 @@ export function DeveloperCard({
         {profileUrl && (
           <>
             {" "}
+            <Link href={profileUrl} className="text-blue-400 hover:underline">
+              See all their projects →
+            </Link>
+          </>
+        )}
+        {fazwazUrl && (
+          <>
+            {" "}
+            (source:{" "}
             <a
-              href={profileUrl}
+              href={fazwazUrl}
               target="_blank"
               rel="noreferrer noopener"
-              className="text-blue-400 hover:underline"
+              className="hover:underline"
             >
-              See all their projects →
+              FazWaz
             </a>
+            )
           </>
         )}
       </p>

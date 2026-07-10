@@ -74,6 +74,7 @@ def main() -> int:
         "listings",
         "condo_id, listing_type, price_per_sqm",
         source="hipflat",
+        is_active=True,
     )
     listings = [l for l in listings if l.get("price_per_sqm") is not None]
     logger.info(f"listings with pps: {len(listings)}")

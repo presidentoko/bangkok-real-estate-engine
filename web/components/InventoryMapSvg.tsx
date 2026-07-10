@@ -131,7 +131,9 @@ export function InventoryMapSvg({
       .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
       .map((p) => {
         const [x, y] = project(p.lng, p.lat);
-        return { id: p.id, name: p.name, x, y };
+        // Round to 1dp — plenty of precision at this viewBox scale, and
+        // shaves the long float tails off every point's SSR'd markup.
+        return { id: p.id, name: p.name, x: +x.toFixed(1), y: +y.toFixed(1) };
       });
 
     return { paths, dots };

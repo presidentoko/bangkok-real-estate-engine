@@ -209,7 +209,8 @@ export default async function CondoPage({
         "foreign_quota_listings_available, thai_quota_listings_available, " +
         "total_quota_listings_observed, foreign_quota_inventory_pct, " +
         "foreign_quota_fetched_at, " +
-        "developer_slug, developer_project_count, developer_unit_count"
+        "developer_slug, developer_project_count, developer_unit_count, " +
+        "google_rating, google_review_count"
       )
       .eq("id", id)
       .maybeSingle(),
@@ -303,6 +304,8 @@ export default async function CondoPage({
     developer_slug: string | null;
     developer_project_count: number | null;
     developer_unit_count: number | null;
+    google_rating: number | null;
+    google_review_count: number | null;
   };
   const regions = Array.isArray(condoRaw.regions)
     ? condoRaw.regions[0] ?? null
@@ -705,6 +708,7 @@ export default async function CondoPage({
       <DeveloperCard
         name={condoRaw.developer}
         slug={condoRaw.developer_slug}
+        lang={lang}
         projectCount={condoRaw.developer_project_count}
         unitCount={condoRaw.developer_unit_count}
         trackedBuildings={devStats?.tracked_buildings ?? null}
@@ -907,6 +911,20 @@ export default async function CondoPage({
       <section className="text-sm">
         <div className="text-zinc-300 font-semibold mb-1">Nearby &amp; metrics</div>
         <ul className="text-blue-400 space-y-1">
+          {regions?.name && (
+            <li>
+              {/* District URLs use the raw region name as their slug (see
+                  app/[lang]/district/[slug]/page.tsx), encoded the same way
+                  the breadcrumb JSON-LD and sitemap-areas.xml do. */}
+              <Link href={`/${lang}/district/${encodeURIComponent(regions.name)}`}>
+                {lang === "ko"
+                  ? `${region} 지역 콘도 전체 보기`
+                  : lang === "th"
+                    ? `ดูคอนโดทั้งหมดในย่าน${region}`
+                    : `More condos in ${region}`}
+              </Link>
+            </li>
+          )}
           {stationLinkOk && stationName && (
             <li><Link href={`/${lang}/near/${stationSpokeSlug}`}>Condos near {stationName} station</Link></li>
           )}

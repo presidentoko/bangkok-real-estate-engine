@@ -90,6 +90,18 @@ export default async function Home({
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
 
+  // Cap dots actually rendered in the SSR'd SVG — the map ships one
+  // <Link><circle> per point, and at ~12k condos that alone was a large
+  // chunk of the ~1.5MB homepage HTML (confirmed 2026-07-10 audit). Evenly
+  // stride-sample instead of truncating to the first N so the map still
+  // reads as geographically representative rather than clustering wherever
+  // the DB happens to return rows first.
+  const DOT_CAP = 400;
+  const mapDots =
+    points.length > DOT_CAP
+      ? points.filter((_, i) => i % Math.ceil(points.length / DOT_CAP) === 0)
+      : points;
+
   // Featured picks (selected DB-side in fetchHomeFeatured)
   const { superValue, overpriced, safest } = featured;
 
@@ -272,7 +284,7 @@ export default async function Home({
         </div>
         <InventoryMapSvg
           khetCounts={khetCounts}
-          points={points}
+          points={mapDots}
           totalBuildings={stats.buildings}
           condoLinkPrefix={`/${lang}/condo/`}
           districts={districts}

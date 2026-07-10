@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RealityCard } from "@/components/RealityCard";
+import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 86400;
@@ -9,6 +11,52 @@ type PriceHistoryRow = {
   delta_pct: number | null;
   captured_at: string;
 };
+
+// `id` is the promotion id (not condo id). Every promotion page inherited the
+// root layout's generic title until now — one extra lookup per generation is
+// cheap at 24h revalidate.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string; lang: string }>;
+}): Promise<Metadata> {
+  const { id, lang } = await params;
+  const supabase = getServerSupabase();
+
+  const { data: promo } = await supabase
+    .from("condo_promotions")
+    .select("condo_id, promoted_by, claim")
+    .eq("id", id)
+    .maybeSingle();
+  if (!promo) return { title: "Advertised vs measured — RealData" };
+
+  const { data: condo } = await supabase
+    .from("condos_published")
+    .select("name")
+    .eq("id", promo.condo_id)
+    .maybeSingle();
+  if (!condo) return { title: "Advertised vs measured — RealData" };
+
+  const title = `${condo.name} — advertised vs measured | RealData`;
+  const description = promo.claim
+    ? `${condo.name} was promoted${promo.promoted_by ? ` by ${promo.promoted_by}` : ""} with the claim: "${promo.claim}". See RealData's independently measured price, flood risk, and livability signals for this building.`
+    : `See how ${condo.name}'s promoted listing compares to RealData's independently measured price, flood risk, and livability signals.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SEO_SITE_URL}/${lang}/reality/${id}`,
+      languages: langAlternates(`/reality/${id}`),
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SEO_SITE_URL}/${lang}/reality/${id}`,
+      type: "article",
+    },
+  };
+}
 
 export default async function RealityPage({
   params,

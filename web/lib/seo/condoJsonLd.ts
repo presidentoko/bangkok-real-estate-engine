@@ -17,6 +17,8 @@ type CondoLite = {
   total_units: number | null;
   available_units_count: number | null;
   province?: string | null;
+  google_rating?: number | null;
+  google_review_count?: number | null;
 };
 
 type AnalyticalSignals = {
@@ -184,6 +186,17 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
             "@type": "LocationFeatureSpecification",
             name: a,
           })),
+        }
+      : {}),
+    ...(condo.google_rating != null &&
+    condo.google_review_count != null &&
+    condo.google_review_count > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: condo.google_rating,
+            reviewCount: condo.google_review_count,
+          },
         }
       : {}),
     ...(additionalProps.length ? { additionalProperty: additionalProps } : {}),
