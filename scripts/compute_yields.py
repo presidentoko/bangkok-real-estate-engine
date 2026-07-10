@@ -76,20 +76,37 @@ def main() -> None:
     rent_rows = load_listings("rent")
     logger.info(f"  loaded {len(rent_rows)} rent rows")
 
-    def to_thb(row: dict) -> float:
+    def to_thb(row: dict) -> float | None:
+        """THB rows pass through, USD rows convert at --thb-per-usd. Any other
+        currency is excluded from the median inputs rather than taken at face
+        value (a handful of live rows carry a third currency)."""
+        currency = row.get("currency")
         price = float(row["price"])
-        if row.get("currency") == "USD":
-            price *= args.thb_per_usd
-        return price
+        if currency == "THB":
+            return price
+        if currency == "USD":
+            return price * args.thb_per_usd
+        return None
 
     from collections import defaultdict
     sale_map: dict[str, list[float]] = defaultdict(list)
     rent_map: dict[str, list[float]] = defaultdict(list)
 
+    skipped_currency = 0
     for r in sale_rows:
-        sale_map[r["condo_id"]].append(to_thb(r))
+        thb = to_thb(r)
+        if thb is None:
+            skipped_currency += 1
+            continue
+        sale_map[r["condo_id"]].append(thb)
     for r in rent_rows:
-        rent_map[r["condo_id"]].append(to_thb(r))
+        thb = to_thb(r)
+        if thb is None:
+            skipped_currency += 1
+            continue
+        rent_map[r["condo_id"]].append(thb)
+    if skipped_currency:
+        logger.debug(f"  skipped {skipped_currency} rows in unsupported currencies")
 
     both = set(sale_map) & set(rent_map)
     logger.info(f"  {len(sale_map)} condos with sale | {len(rent_map)} condos with rent | {len(both)} with both")
@@ -124,13 +141,21 @@ def main() -> None:
     if not args.dry_run:
         # Clear stale yields first so re-runs with tighter criteria don't leave old values behind.
         new_ids = {u["id"] for u in updates}
-        existing = (
-            client.table("condos")
-            .select("id")
-            .not_.is_("gross_yield_pct", "null")
-            .execute()
-            .data
-        ) or []
+        existing: list[dict] = []
+        offset = 0
+        while True:
+            chunk = (
+                client.table("condos")
+                .select("id")
+                .not_.is_("gross_yield_pct", "null")
+                .range(offset, offset + 999)
+                .execute()
+                .data
+            ) or []
+            existing.extend(chunk)
+            if len(chunk) < 1000:
+                break
+            offset += 1000
         stale_ids = [e["id"] for e in existing if e["id"] not in new_ids]
         if stale_ids:
             logger.info(f"  clearing {len(stale_ids)} stale yield rows...")

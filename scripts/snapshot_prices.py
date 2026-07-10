@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import io
 import os
+import statistics
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -27,19 +28,31 @@ from src.db import get_client
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--thb-per-usd", type=float, default=34.0,
+                     help="FX rate used to normalise USD-denominated rows (hipflat)")
     args = ap.parse_args()
 
     client = get_client()
     now = datetime.now(timezone.utc).isoformat()
 
-    # Current avg prices per (condo_id, listing_type)
+    def to_thb(value: float, currency: str | None) -> float | None:
+        """Convert a THB/USD price (or price_per_sqm) to THB. Returns None for
+        any other currency so the caller can skip the row instead of silently
+        mixing scales into the same average/median."""
+        if currency == "THB":
+            return value
+        if currency == "USD":
+            return value * args.thb_per_usd
+        return None
+
+    # Current prices per (condo_id, listing_type)
     logger.info("Loading active listings (all pages)...")
     rows = []
     offset = 0
     while True:
         chunk = (
             client.table("listings")
-            .select("condo_id, listing_type, price, price_per_sqm")
+            .select("condo_id, listing_type, price, price_per_sqm, currency")
             .eq("is_active", True)
             .not_.is_("price", "null")
             .range(offset, offset + 999)
@@ -53,22 +66,54 @@ def main() -> None:
     logger.info(f"  loaded {len(rows)} active listings")
 
     current: dict[tuple[str, str], list] = defaultdict(list)
+    skipped_currency = 0
     for r in rows:
-        current[(r["condo_id"], r["listing_type"])].append(
-            (float(r["price"]), float(r["price_per_sqm"]) if r.get("price_per_sqm") else None)
+        currency = r.get("currency")
+        price_thb = to_thb(float(r["price"]), currency)
+        if price_thb is None:
+            skipped_currency += 1
+            continue
+        pps_thb = (
+            to_thb(float(r["price_per_sqm"]), currency)
+            if r.get("price_per_sqm")
+            else None
         )
+        current[(r["condo_id"], r["listing_type"])].append((price_thb, pps_thb))
+    if skipped_currency:
+        logger.debug(f"  skipped {skipped_currency} listings in unsupported currencies")
     logger.info(f"  {len(current)} (condo, type) pairs from {len(rows)} listings")
 
-    # Last snapshot per (condo_id, listing_type)
+    # Last snapshot per (condo_id, listing_type) — pull the single most recent
+    # captured_at batch in full. PostgREST caps every response at 1000 rows
+    # regardless of .limit(), so we must paginate rather than rely on a big
+    # .limit() to grab "recent enough" rows.
     logger.info("Loading last price snapshots...")
-    prev_rows = (
+    latest = (
         client.table("price_history")
-        .select("condo_id, listing_type, price, captured_at")
+        .select("captured_at")
         .order("captured_at", desc=True)
-        .limit(50000)
+        .limit(1)
         .execute()
         .data
-    ) or []
+    )
+    prev_rows: list = []
+    if latest:
+        last_captured_at = latest[0]["captured_at"]
+        offset = 0
+        while True:
+            chunk = (
+                client.table("price_history")
+                .select("condo_id, listing_type, price")
+                .eq("captured_at", last_captured_at)
+                .order("id")
+                .range(offset, offset + 999)
+                .execute()
+                .data
+            ) or []
+            prev_rows.extend(chunk)
+            if len(chunk) < 1000:
+                break
+            offset += 1000
 
     prev: dict[tuple[str, str], float] = {}
     for r in prev_rows:
@@ -81,22 +126,22 @@ def main() -> None:
     inserts = []
     price_changes = []
     for (condo_id, ltype), prices in current.items():
-        avg_price = sum(p for p, _ in prices) / len(prices)
+        med_price = statistics.median(p for p, _ in prices)
         pps_vals = [ps for _, ps in prices if ps is not None]
-        avg_pps = sum(pps_vals) / len(pps_vals) if pps_vals else None
+        med_pps = statistics.median(pps_vals) if pps_vals else None
 
         prior = prev.get((condo_id, ltype))
         delta_pct = None
         if prior and prior > 0:
-            delta_pct = round((avg_price - prior) / prior * 100, 2)
+            delta_pct = round((med_price - prior) / prior * 100, 2)
             if abs(delta_pct) >= 1.0:
-                price_changes.append((condo_id, ltype, prior, avg_price, delta_pct))
+                price_changes.append((condo_id, ltype, prior, med_price, delta_pct))
 
         inserts.append({
             "condo_id": condo_id,
             "listing_type": ltype,
-            "price": round(avg_price, 2),
-            "price_per_sqm": round(avg_pps, 2) if avg_pps else None,
+            "price": round(med_price, 2),
+            "price_per_sqm": round(med_pps, 2) if med_pps else None,
             "delta_pct": delta_pct,
             "captured_at": now,
         })

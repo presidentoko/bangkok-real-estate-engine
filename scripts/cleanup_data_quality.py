@@ -96,15 +96,23 @@ def fix_yield_outliers(client, dry_run: bool) -> int:
     Keeps avg_sale_price / avg_monthly_rent intact (they may be correctly
     parsed for OTHER yield computations; only the yield % itself is bogus
     when sale price is wrong)."""
-    rows = (
-        client.table("condos")
-        .select(
-            "id, name, gross_yield_pct, avg_sale_price, avg_monthly_rent, province"
-        )
-        .not_.is_("gross_yield_pct", "null")
-        .execute()
-        .data
-    ) or []
+    rows: list[dict] = []
+    offset = 0
+    while True:
+        chunk = (
+            client.table("condos")
+            .select(
+                "id, name, gross_yield_pct, avg_sale_price, avg_monthly_rent, province"
+            )
+            .not_.is_("gross_yield_pct", "null")
+            .range(offset, offset + 999)
+            .execute()
+            .data
+        ) or []
+        rows.extend(chunk)
+        if len(chunk) < 1000:
+            break
+        offset += 1000
 
     bad = [
         r for r in rows

@@ -18,12 +18,20 @@ def detect_underpriced(
     supabase: Client,
     threshold: float = DEFAULT_BUBBLE_THRESHOLD,
 ) -> int:
-    scores = (
-        supabase.table("value_scores")
-        .select("condo_id, bubble_index")
-        .lte("bubble_index", threshold)
-        .execute().data
-    )
+    scores: list[dict] = []
+    offset = 0
+    while True:
+        chunk = (
+            supabase.table("value_scores")
+            .select("condo_id, bubble_index")
+            .lte("bubble_index", threshold)
+            .range(offset, offset + 999)
+            .execute().data
+        ) or []
+        scores.extend(chunk)
+        if len(chunk) < 1000:
+            break
+        offset += 1000
     if not scores:
         logger.info("underpriced: no condos under threshold")
         return 0

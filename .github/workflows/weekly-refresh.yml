@@ -113,6 +113,17 @@ jobs:
           cmd /c "python scripts\enrich_buildings_b.py --limit $limit 2>&1" | Tee-Object -FilePath tier_b.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Mark stale listings inactive
+        # dotproperty/ddproperty/fazwaz listings are only ever flipped to
+        # is_active=true on sighting; nothing else ever flips them back, so
+        # sold/delisted listings would otherwise pollute every median
+        # forever. 21-day cutoff (not 7) so a single missed weekly run
+        # doesn't mass-deactivate still-live listings.
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\mark_stale_listings.py --apply --days 21 2>&1" | Tee-Object -FilePath stale.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::mark_stale_listings exited $LASTEXITCODE" }
+
       - name: Snapshot prices + compute yields
         run: |
           cmd /c "python scripts\snapshot_prices.py 2>&1" | Tee-Object -FilePath snapshot.log
@@ -222,6 +233,7 @@ jobs:
             ingest_fazwaz_*.log
             ingest_foreign_quota.log
             tier_b.log
+            stale.log
             snapshot.log
             yields.log
             cleanup.log

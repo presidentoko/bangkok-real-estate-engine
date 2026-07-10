@@ -20,16 +20,30 @@ def _percentile_rank(values: list[float], v: float) -> float:
     return round(n / len(values) * 100, 2)
 
 
+def _fetch_all(supabase: Client, table: str) -> list[dict]:
+    """Paginate a select("*") — PostgREST caps every response at 1000 rows
+    regardless of .limit()."""
+    out: list[dict] = []
+    offset = 0
+    while True:
+        chunk = (
+            supabase.table(table)
+            .select("*")
+            .range(offset, offset + 999)
+            .execute()
+            .data
+        ) or []
+        out.extend(chunk)
+        if len(chunk) < 1000:
+            break
+        offset += 1000
+    return out
+
+
 def compute_super_value(supabase: Client, top_pct: float = 5.0) -> int:
-    scores = supabase.table("value_scores").select("*").execute().data
-    livs = {
-        r["condo_id"]: r
-        for r in supabase.table("livability_metrics").select("*").execute().data
-    }
-    risks = {
-        r["condo_id"]: r
-        for r in supabase.table("risk_factors").select("*").execute().data
-    }
+    scores = _fetch_all(supabase, "value_scores")
+    livs = {r["condo_id"]: r for r in _fetch_all(supabase, "livability_metrics")}
+    risks = {r["condo_id"]: r for r in _fetch_all(supabase, "risk_factors")}
 
     enriched: list[dict] = []
     for s in scores:
