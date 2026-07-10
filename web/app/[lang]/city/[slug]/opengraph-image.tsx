@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getCity } from "@/lib/cities";
+import { canonicalCitySlug, cityProvinceSlugs, getCity } from "@/lib/cities";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const runtime = "edge";
@@ -23,17 +23,21 @@ export default async function CityOG({
   let bubbleCount = 0;
   try {
     const supabase = getServerSupabase();
+    // DB `province` has two slug conventions (e.g. "chonburi" and
+    // "chon-buri") — match every alias for this city, not just the exact
+    // string in the URL.
+    const provinces = cityProvinceSlugs(canonicalCitySlug(slug));
     const totalRes = await supabase
       .from("condos_published")
       .select("id", { count: "exact", head: true })
-      .eq("province", slug);
+      .in("province", provinces);
     total = totalRes.count ?? 0;
 
     // bubble_index coverage = how many of those have a value_score row.
     const ids = await supabase
       .from("condos_published")
       .select("id")
-      .eq("province", slug)
+      .in("province", provinces)
       .limit(1000);
     const idList = (ids.data ?? []).map((r) => r.id as string);
     if (idList.length) {

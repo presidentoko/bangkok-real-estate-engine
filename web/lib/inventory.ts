@@ -75,6 +75,16 @@ export function topPicks(condos: CondoSummary[], limit = 6): CondoSummary[] {
     .slice(0, limit);
 }
 
+// Collapses case/whitespace/hyphen variants of a district name to a single
+// comparison key (e.g. "Bang Khun Thian" and "bang-khun-thian" both map to
+// "bangkhunthian"). Shared by extractDistricts (which builds the dropdown
+// labels) and InventoryGrid (which filters against the selected label) so
+// selecting a district matches every spelling variant, not just an exact
+// string match.
+export function normalizeDistrictLabel(s: string): string {
+  return s.toLowerCase().replace(/[\s\-_]+/g, "");
+}
+
 // Distinct districts within a condo set, collapsing case/whitespace/hyphen
 // variants and preferring a label that carries capitalisation.
 export function extractDistricts(condos: CondoSummary[]): string[] {
@@ -82,7 +92,7 @@ export function extractDistricts(condos: CondoSummary[]): string[] {
   for (const c of condos) {
     const r = c.region;
     if (!r) continue;
-    const norm = r.toLowerCase().replace(/[\s\-_]+/g, "");
+    const norm = normalizeDistrictLabel(r);
     const existing = labelByNorm.get(norm);
     if (!existing || (/[A-Z]/.test(r) && !/[A-Z]/.test(existing))) {
       labelByNorm.set(norm, r);

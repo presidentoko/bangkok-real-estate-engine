@@ -399,6 +399,7 @@ export default async function CondoPage({
     condoSlug,
     condoName: condoRaw.name,
     region,
+    districtName: regions?.name ?? null,
   });
   const speakableJsonLd = buildCondoSpeakableJsonLd({
     siteUrl: SITE_URL,

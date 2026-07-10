@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CITIES } from "@/lib/cities";
+import { canonicalCitySlug, CITIES, cityProvinceSlugs } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
@@ -95,7 +95,7 @@ export default async function DataShowcase({
     const { data: condos, count: bcount } = await supabase
       .from("condos_published")
       .select("id, market_sale_median", { count: "exact" })
-      .eq("province", p.slug)
+      .in("province", cityProvinceSlugs(canonicalCitySlug(p.slug)))
       .limit(2000);
     const ids = (condos ?? []).map((c) => (c as { id: string }).id);
     const sales = (condos ?? [])

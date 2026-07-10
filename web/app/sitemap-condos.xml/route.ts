@@ -24,17 +24,29 @@ export async function GET(request: Request): Promise<Response> {
   const today = isoDate(new Date());
   const entries: string[] = [];
 
-  const { data } = await supabase
-    .from("condos_published")
-    .select("slug, last_seen_at")
-    .not("slug", "is", null)
-    .not("latitude", "is", null)
-    .range(offset, offset + CONDOS_PER_PAGE - 1);
-
-  const rows = (data ?? []) as Array<{
-    slug: string;
-    last_seen_at: string | null;
-  }>;
+  // PostgREST caps every single request at 1000 rows regardless of the
+  // .range() size requested, so a single 2,500-row range silently drops
+  // rows 1000-2499. Walk this page's 2,500-row block in ≤1000-row
+  // sub-requests instead — the sitemap page boundaries (and therefore URLs)
+  // stay unchanged.
+  const rows: Array<{ slug: string; last_seen_at: string | null }> = [];
+  const SUB_PAGE = 1000;
+  for (let sub = 0; sub < CONDOS_PER_PAGE; sub += SUB_PAGE) {
+    const from = offset + sub;
+    const to = offset + Math.min(sub + SUB_PAGE, CONDOS_PER_PAGE) - 1;
+    const { data } = await supabase
+      .from("condos_published")
+      .select("slug, last_seen_at")
+      .not("slug", "is", null)
+      .not("latitude", "is", null)
+      .range(from, to);
+    const chunk = (data ?? []) as Array<{
+      slug: string;
+      last_seen_at: string | null;
+    }>;
+    rows.push(...chunk);
+    if (chunk.length < to - from + 1) break; // exhausted the table
+  }
 
   for (const r of rows) {
     if (UUID_RE.test(r.slug)) continue;

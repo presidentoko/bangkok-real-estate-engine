@@ -51,7 +51,7 @@ export async function generateMetadata({
   const dev = data?.[0];
   if (!dev) return { title: "Developer" };
 
-  const title = `${dev.developer} Condos Bangkok | RealData`;
+  const title = `${dev.developer} Condos in Thailand — Track Record | RealData`;
   const description =
     `${dev.developer_project_count ?? "?"} projects · ${dev.developer_unit_count?.toLocaleString() ?? "?"} units built. ` +
     `Browse all ${dev.developer} condos with yield, price, and retiree score data.`;

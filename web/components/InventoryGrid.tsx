@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BuildingCard } from "@/components/BuildingCard";
 import { decodeCompact, isCompact } from "@/lib/condo-compact";
-import type { InventoryStats } from "@/lib/inventory";
+import { normalizeDistrictLabel, type InventoryStats } from "@/lib/inventory";
 import type { CondoSummary, PropertyType } from "@/lib/queries/condos";
 
 type SortKey = "default" | "bubble_low" | "bubble_high" | "year" | "name";
@@ -143,7 +143,15 @@ export function InventoryGrid({
     const needle = q.trim().toLowerCase();
     let arr = loaded.filter((c) => {
       if (typeFilter !== "all" && c.property_type !== typeFilter) return false;
-      if (district && c.region !== district) return false;
+      if (district) {
+        // Dropdown labels are case/hyphen-normalized (extractDistricts), so
+        // compare with the same normalization instead of strict equality —
+        // otherwise a condo's raw `region` spelling variant never matches
+        // the selected label.
+        if (!c.region || normalizeDistrictLabel(c.region) !== normalizeDistrictLabel(district)) {
+          return false;
+        }
+      }
       if (photoOnly && !c.hero_image_url) return false;
       if (needle && !c.name.toLowerCase().includes(needle)) return false;
       if (bubble !== "all") {

@@ -16,6 +16,7 @@ type CondoLite = {
   longitude: number | null;
   total_units: number | null;
   available_units_count: number | null;
+  province?: string | null;
 };
 
 type AnalyticalSignals = {
@@ -136,6 +137,11 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
     });
   }
 
+  const addressRegion =
+    !condo.province || condo.province === "bangkok"
+      ? "Bangkok"
+      : condo.province.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
   return {
     "@context": "https://schema.org",
     "@type": "ApartmentComplex",
@@ -144,7 +150,7 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
     address: {
       "@type": "PostalAddress",
       addressLocality: region,
-      addressRegion: "Bangkok",
+      addressRegion,
       addressCountry: "TH",
     },
     ...(condo.latitude != null && condo.longitude != null
@@ -190,15 +196,25 @@ export function buildBreadcrumbsJsonLd(args: {
   condoSlug: string;
   condoName: string;
   region: string;
+  /** Raw region/district name (pre "Bangkok" fallback), used to build the
+   *  /district/{name} URL. Null when the condo has no resolved district —
+   *  position 3 then falls back to /inventory instead of a dead link. */
+  districtName?: string | null;
 }): Record<string, unknown> {
-  const { siteUrl, lang, condoSlug, condoName, region } = args;
+  const { siteUrl, lang, condoSlug, condoName, region, districtName } = args;
+  // District URLs use the raw region name as their slug (see
+  // app/[lang]/district/[slug]/page.tsx's resolveRegion), so encode it the
+  // same way sitemap-areas.xml does rather than slugifying it.
+  const districtUrl = districtName
+    ? `${siteUrl}/${lang}/district/${encodeURIComponent(districtName)}`
+    : `${siteUrl}/${lang}/inventory`;
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "RealData", item: `${siteUrl}/${lang}` },
       { "@type": "ListItem", position: 2, name: "Inventory", item: `${siteUrl}/${lang}/inventory` },
-      { "@type": "ListItem", position: 3, name: region, item: `${siteUrl}/${lang}/inventory` },
+      { "@type": "ListItem", position: 3, name: region, item: districtUrl },
       { "@type": "ListItem", position: 4, name: condoName, item: `${siteUrl}/${lang}/condo/${condoSlug}` },
     ],
   };

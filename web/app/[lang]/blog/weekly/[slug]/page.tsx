@@ -59,6 +59,10 @@ export default async function WeeklyPostPage({
     "@type": "Article",
     headline: post.title,
     description: post.description,
+    // No dedicated OG image route for weekly posts — Next.js resolves
+    // og:image up to the nearest ancestor's opengraph-image.tsx, which is
+    // the site-wide one at app/[lang]/opengraph-image.tsx.
+    image: `${SEO_SITE_URL}/${lang}/opengraph-image`,
     datePublished: post.published_at,
     dateModified: post.published_at,
     author: { "@type": "Organization", name: "RealData", url: SEO_SITE_URL },

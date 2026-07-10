@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
+import { canonicalCitySlug, cityProvinceSlugs } from "@/lib/cities";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -111,7 +112,10 @@ export default async function YieldsPage({
     .limit(100);
 
   if (provFilter && provFilter !== "all") {
-    query = query.eq("province", provFilter);
+    // DB `province` has two slug conventions (e.g. "chonburi" and
+    // "chon-buri"); match every alias for the selected city, not just the
+    // exact string the chip links to.
+    query = query.in("province", cityProvinceSlugs(canonicalCitySlug(provFilter)));
   }
 
   const [{ data: rows }, mortgage] = await Promise.all([

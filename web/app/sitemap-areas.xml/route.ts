@@ -36,19 +36,31 @@ export async function GET(): Promise<Response> {
   // slice renders as a "No matches yet" page at 200 — a soft-404 candidate
   // — so it's left out of the sitemap until real data backs it, mirroring
   // the ≥3-condos gate already used below for district pages.
-  const { data: bestCandidates } = await supabase
-    .from("condos")
-    .select("province, gross_yield_pct, avg_sale_price")
-    .eq("is_active", true)
-    .not("gross_yield_pct", "is", null)
-    .gte("gross_yield_pct", 3)
-    .lte("gross_yield_pct", 25)
-    .gte("avg_sale_price", 500_000)
-    .gte("yield_sample_sale", 2)
-    .gte("yield_sample_rent", 2)
-    .limit(20_000);
   type BestCandidateRow = { province: string | null; gross_yield_pct: number | null; avg_sale_price: number | null };
-  const bestRows = (bestCandidates ?? []) as BestCandidateRow[];
+  // PostgREST caps every request at 1000 rows regardless of .limit(), so a
+  // single 20,000-row limit silently truncated to the first 1000 candidates
+  // and starved the /best eligibility check of most of the table. Paginate.
+  const bestRows: BestCandidateRow[] = [];
+  {
+    let offset = 0;
+    while (true) {
+      const { data } = await supabase
+        .from("condos")
+        .select("province, gross_yield_pct, avg_sale_price")
+        .eq("is_active", true)
+        .not("gross_yield_pct", "is", null)
+        .gte("gross_yield_pct", 3)
+        .lte("gross_yield_pct", 25)
+        .gte("avg_sale_price", 500_000)
+        .gte("yield_sample_sale", 2)
+        .gte("yield_sample_rent", 2)
+        .range(offset, offset + 999);
+      const chunk = (data ?? []) as BestCandidateRow[];
+      bestRows.push(...chunk);
+      if (chunk.length < 1000) break;
+      offset += 1000;
+    }
+  }
 
   for (const city of BEST_CITIES) {
     const provinces = new Set(cityProvinceSlugs(canonicalCitySlug(city.slug)));
@@ -109,16 +121,23 @@ export async function GET(): Promise<Response> {
     }
   }
 
-  // Developer lens pages
-  const { data: devRows } = await supabase
-    .from("condos_published")
-    .select("developer_slug")
-    .not("developer_slug", "is", null);
-  const devSlugs = [
-    ...new Set(
-      (devRows ?? []).map((r: { developer_slug: string }) => r.developer_slug)
-    ),
-  ];
+  // Developer lens pages — paginated for the same reason as bestRows above.
+  const devSlugSet = new Set<string>();
+  {
+    let offset = 0;
+    while (true) {
+      const { data } = await supabase
+        .from("condos_published")
+        .select("developer_slug")
+        .not("developer_slug", "is", null)
+        .range(offset, offset + 999);
+      const chunk = (data ?? []) as Array<{ developer_slug: string }>;
+      for (const r of chunk) devSlugSet.add(r.developer_slug);
+      if (chunk.length < 1000) break;
+      offset += 1000;
+    }
+  }
+  const devSlugs = [...devSlugSet];
   for (const devSlug of devSlugs) {
     const path = `/developer/${devSlug}`;
     for (const lang of LANGS) {

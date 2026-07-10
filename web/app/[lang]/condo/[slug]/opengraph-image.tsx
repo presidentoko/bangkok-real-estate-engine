@@ -121,6 +121,7 @@ export default async function OG({
 
   let name = "Bangkok Condo";
   let region = "Bangkok";
+  let province: string | null = null;
   let bubble: number | null = null;
   let flood: number | null = null;
   let units: number | null = null;
@@ -129,8 +130,8 @@ export default async function OG({
     const supabase = getServerSupabase();
     // Support both legacy UUID params and new slug params.
     const condoQuery = UUID_RE_OG.test(slug)
-      ? supabase.from("condos_published").select("id, name, regions(name), total_units, available_units_count").eq("id", slug).maybeSingle()
-      : supabase.from("condos_published").select("id, name, regions(name), total_units, available_units_count").eq("slug", slug).maybeSingle();
+      ? supabase.from("condos_published").select("id, name, regions(name), province, total_units, available_units_count").eq("id", slug).maybeSingle()
+      : supabase.from("condos_published").select("id, name, regions(name), province, total_units, available_units_count").eq("slug", slug).maybeSingle();
     const { data: condoData } = await condoQuery;
     const id = (condoData as unknown as { id: string } | null)?.id ?? slug;
     const [{ data: condo }, { data: score }, { data: risk }] = await Promise.all([
@@ -142,11 +143,13 @@ export default async function OG({
       const c = condo as unknown as {
         name: string;
         regions: { name: string } | { name: string }[] | null;
+        province: string | null;
         total_units: number | null;
         available_units_count: number | null;
       };
       name = c.name;
       region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
+      province = c.province;
       units = c.total_units;
       avail = c.available_units_count;
     }
@@ -155,6 +158,11 @@ export default async function OG({
   } catch {
     /* fall back to defaults */
   }
+
+  const provinceDisplay =
+    !province || province === "bangkok"
+      ? "Bangkok"
+      : province.replace(/-/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase());
 
   const above = bubble != null ? Math.round(bubble - 100) : null;
   const aboveTxt =
@@ -200,7 +208,7 @@ export default async function OG({
 
         <div style={{ display: "flex", flexDirection: "column", marginTop: 36 }}>
           <div style={{ display: "flex", fontSize: 22, color: "#a1a1aa", letterSpacing: 0.5 }}>
-            {region}, Bangkok
+            {region}, {provinceDisplay}
           </div>
           <div
             style={{

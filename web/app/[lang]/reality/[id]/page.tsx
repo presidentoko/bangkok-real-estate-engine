@@ -58,10 +58,14 @@ export default async function RealityPage({
         .eq("condo_id", condo_id)
         .maybeSingle(),
       supabase.from("regions").select("avg_price_per_sqm"),
+      // Sale rows only — price_history mixes sale and rent snapshots
+      // (listing_type column), and summing both would blend rent deltas
+      // (small THB moves, huge % swings) into the "total drop" figure.
       supabase
         .from("price_history")
         .select("price, delta_pct, captured_at")
         .eq("condo_id", condo_id)
+        .eq("listing_type", "sale")
         .order("captured_at", { ascending: true }),
     ]);
 

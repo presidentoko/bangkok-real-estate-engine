@@ -21,7 +21,7 @@ export const GRADE_FG: Record<Grade, string> = {
 
 // Bubble Index: 100 = on regional average. <100 = better (cheaper than peers).
 export function gradeFromBubble(bi: number | null | undefined): Grade {
-  if (bi == null) return "F";
+  if (bi == null) return "C"; // unknown → neutral (matches gradeFromFlood)
   if (bi <= 85) return "A";
   if (bi <= 100) return "B";
   if (bi <= 115) return "C";

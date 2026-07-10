@@ -73,7 +73,12 @@ export async function listWeeklyPosts(): Promise<WeeklyPost[]> {
   return out;
 }
 
+const SLUG_RE = /^[a-z0-9-]+$/;
+
 export async function getWeeklyPost(slug: string): Promise<WeeklyPost | null> {
+  // `slug` is joined straight into a filesystem path below — reject
+  // anything that isn't a plain slug (blocks "../" traversal etc.).
+  if (!SLUG_RE.test(slug)) return null;
   try {
     const raw = await fs.readFile(path.join(CONTENT_DIR, `${slug}.json`), "utf8");
     return JSON.parse(raw) as WeeklyPost;

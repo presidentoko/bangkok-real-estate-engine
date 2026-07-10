@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
-import { CITIES, cityProvinceSlugs, getCity } from "@/lib/cities";
+import { canonicalCitySlug, CITIES, cityProvinceSlugs, getCity } from "@/lib/cities";
 import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
@@ -60,6 +60,9 @@ export async function generateMetadata({
   const cityObj = getCity(city);
   if (!cityObj || !isLang(lang)) return { title: "Retiree-Friendly Condos" };
 
+  // Canonicalize alias URLs (e.g. "chon-buri") to the UI slug so we don't
+  // publish a distinct canonical per DB province spelling.
+  const canonical = canonicalCitySlug(city);
   const cityName = cityObj.name.en;
   const title = `Best Condos for Retirees in ${cityName} — Hospitals, AQI & Transit Ranked | RealData`;
   const description =
@@ -71,10 +74,10 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `${SEO_SITE_URL}/${lang}/retiree/${city}`,
-      languages: langAlternates(`/retiree/${city}`),
+      canonical: `${SEO_SITE_URL}/${lang}/retiree/${canonical}`,
+      languages: langAlternates(`/retiree/${canonical}`),
     },
-    openGraph: { title, description, url: `${SEO_SITE_URL}/${lang}/retiree/${city}`, type: "website" },
+    openGraph: { title, description, url: `${SEO_SITE_URL}/${lang}/retiree/${canonical}`, type: "website" },
   };
 }
 
@@ -88,8 +91,13 @@ export default async function RetireeCityPage({
   const cityObj = getCity(city);
   if (!cityObj) notFound();
 
+  // Canonicalize the raw URL param — the DB `province` column has two slug
+  // conventions (e.g. "chonburi" and "chon-buri"), and a link built off
+  // either alias should resolve to the same city.
+  const canonical = canonicalCitySlug(city);
+
   const supabase = getServerSupabase();
-  const provinces = cityProvinceSlugs(city);
+  const provinces = cityProvinceSlugs(canonical);
 
   const { data, error } = await supabase
     .from("condos_published")
@@ -279,7 +287,7 @@ export default async function RetireeCityPage({
           Same lens in other cities
         </h2>
         <div className="flex flex-wrap gap-2 text-sm">
-          {CITIES.filter((c) => c.slug !== city).map((c) => (
+          {CITIES.filter((c) => c.slug !== canonical).map((c) => (
             <Link
               key={c.slug}
               href={`/${lang}/retiree/${c.slug}`}

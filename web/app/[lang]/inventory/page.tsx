@@ -150,8 +150,8 @@ export default async function InventoryPage({
           {cityName} <span className="text-zinc-500">inventory</span>
         </h1>
         <p className="text-zinc-500 text-sm mt-1">
-          {condos.length.toLocaleString()} hipflat-tracked condo buildings
-          {city.slug !== "bangkok" ? ` in ${cityName}` : " across Thailand's capital"}
+          {condos.length.toLocaleString()} condo buildings tracked across 4 portals
+          {city.slug !== "bangkok" ? ` in ${cityName}` : " in Thailand's capital"}
         </p>
         <div className="flex flex-wrap gap-1.5 mt-3">
           {cityChips.map((c) => {
