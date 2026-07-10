@@ -38,11 +38,13 @@ import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { SaveButton } from "@/components/SaveButton";
 import { CompareButton } from "@/components/CompareButton";
 
-// Discovery/scrape cadence is monthly now, not hourly — a long revalidate
-// window here directly cuts ISR regenerations (and the Supabase reads they
-// trigger) across thousands of condo pages, the single biggest multiplier
-// in the whole site.
-export const revalidate = 86400;
+// ~12,300 condos x 3 langs = ~37,000 distinct pages. Even at 24h, if
+// crawlers touch most of them once a day that's >1M ISR regenerations a
+// month on its own — confirmed 2026-07-10 (Vercel Hobby: 1.3M/200K ISR
+// writes, 650% over). The underlying data only changes via weekly-refresh
+// (Sundays) + a light Wednesday catch-pass, so daily regeneration was pure
+// waste. 7 days matches the real data cadence and cuts regenerations ~7x.
+export const revalidate = 604800;
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

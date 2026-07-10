@@ -8,7 +8,9 @@ import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 86400;
+// ~183 districts x 3 langs = ~550 pages; data only refreshes weekly (see
+// condo/[slug]/page.tsx for the full ISR-overage context from 2026-07-10).
+export const revalidate = 604800;
 
 type CondoLite = {
   id: string;

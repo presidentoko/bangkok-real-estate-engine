@@ -6,7 +6,10 @@ import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 86400;
+// Developer stats only recompute weekly (compute_developer_stats.py runs in
+// weekly-refresh POST_STEPS) — see condo/[slug]/page.tsx for the full
+// ISR-overage context from 2026-07-10.
+export const revalidate = 604800;
 
 type Row = {
   id: string;
