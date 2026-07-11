@@ -8,9 +8,9 @@ import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getWeeklyPost, listWeeklyPosts, type WeeklyPost } from "@/lib/weeklyPost";
 
-// Revalidate every 5 min — auto-blog publishes via git push, but if a
-// reader hits between deploys we serve fresh content from the JSON file.
-export const revalidate = 300;
+// Content only changes on deploy (auto-blog publishes via git push), so a
+// daily revalidate is plenty — the deploy itself rebuilds the page anyway.
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   const posts = await listWeeklyPosts();

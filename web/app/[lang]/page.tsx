@@ -19,7 +19,7 @@ import {
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
 // Stale while revalidate; data only changes when scrapers run (weekly).
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,
@@ -60,16 +60,10 @@ export default async function Home({
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
 
-  const [mapPoints, featured, stats, districts] = await Promise.all([
+  const [mapPoints, featured, stats] = await Promise.all([
     fetchCondoMapPoints(),
     fetchHomeFeatured(),
     fetchSiteStats(),
-    fetch(
-      `${SEO_SITE_URL}/bangkok-districts.geojson`,
-      { next: { revalidate: 3600 } }
-    )
-      .then((r) => (r.ok ? r.json() : { type: "FeatureCollection", features: [] }))
-      .catch(() => ({ type: "FeatureCollection", features: [] })),
   ]);
 
   // ---- Aggregations (from the lean map-point feed, not every full card)
@@ -287,7 +281,6 @@ export default async function Home({
           points={mapDots}
           totalBuildings={stats.buildings}
           condoLinkPrefix={`/${lang}/condo/`}
-          districts={districts}
         />
         <p className="text-xs text-zinc-500 mt-2">{t.home.inventoryHelp}</p>
       </section>

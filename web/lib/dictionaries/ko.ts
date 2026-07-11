@@ -27,6 +27,13 @@ const dict: Dict = {
       "인프라/교통: OpenStreetMap (Overpass)",
     ],
     copyright: "독립 측정 · 디벨로퍼 광고 없음 · 리퍼럴로 운영",
+    saved: "저장됨",
+    underpricedAlerts: "저평가 알림",
+    rssFeed: "RSS 피드",
+    guidesTitle: "가이드",
+    guideForeignOwnership: "외국인 소유",
+    guideInvestment: "투자 가이드",
+    guideGlossary: "용어집",
   },
   home: {
     heroPretitle: "독립 측정 · 4개 포털 · 9개 도시",
@@ -343,6 +350,13 @@ const dict: Dict = {
     fullInventoryStat: (n: number) => `${n.toLocaleString()}채 추적 중`,
     pendingPipeline: "아직 추적된 콘도 없음. 파이프라인 진행 중.",
     otherCitiesHeader: "다른 도시",
+    retireeLensLabel: "은퇴자 렌즈",
+    retireeLensCta: (city: string) => `${city}의 은퇴자 친화적 콘도 보기 →`,
+    retireeLensSub: "의료 접근성 · 대기질 · 교통 기준 랭킹",
+    conciergeHeadline: (city: string) => `${city}에서 콘도를 찾고 계신가요? 전문가 의견을 받아보세요.`,
+    travelFraming: (city: string) =>
+      `${city} 답사 여행을 계획 중이신가요? 항공권과 호텔을 한 번에 비교하세요.`,
+    travelCta: "항공권 + 호텔 찾기 →",
   },
   reality: {
     title: "Marketing vs Reality",

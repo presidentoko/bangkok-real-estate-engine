@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { cache } from "react";
 import sanitizeHtml from "sanitize-html";
 import { CondoFacilities } from "@/components/CondoFacilities";
 import { CondoNeighbours } from "@/components/CondoNeighbours";
@@ -33,6 +34,7 @@ import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } f
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 import { stationSlug } from "@/lib/stations";
+import type { Livability, Risk, ValueScore } from "@/lib/types";
 import { getViableStations } from "@/lib/queries/stations";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { SaveButton } from "@/components/SaveButton";
@@ -70,6 +72,94 @@ export async function generateStaticParams() {
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
 
+// ---------------------------------------------------------------------------
+// Per-request-deduped lookups
+// ---------------------------------------------------------------------------
+// generateMetadata() and the page body below both need the condo id (from
+// slug), plus the value_scores / risk_factors rows for that condo. Next.js
+// auto-dedupes identical `fetch()` calls within one request via its Data
+// Cache, but this file talks to Supabase through supabase-js directly, which
+// isn't fetch-shaped and doesn't get that dedup for free. Wrapping these
+// lookups in React's `cache()` collapses the two call sites (metadata + page
+// body) into a single Supabase round trip each, per request.
+const getCondoIdBySlug = cache(async (slug: string): Promise<string | null> => {
+  const supabase = getServerSupabase();
+  const { data } = await supabase
+    .from("condos_published")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  return (data as { id: string } | null)?.id ?? null;
+});
+
+const getSlugByLegacyId = cache(async (id: string): Promise<string | null> => {
+  const supabase = getServerSupabase();
+  const { data } = await supabase
+    .from("condos_published")
+    .select("slug")
+    .eq("id", id)
+    .maybeSingle();
+  return (data as { slug: string } | null)?.slug ?? null;
+});
+
+// Union of the columns generateMetadata() and the page body each need, so
+// both call sites share one cached query against `condos_published` instead
+// of running two overlapping (and both fairly wide) SELECTs on the same row.
+const CONDO_FULL_SELECT =
+  "id, name, developer, url, regions(name), latitude, longitude, " +
+  "province, retiree_score, slug, " +
+  "floors, total_units, completion_year, description, hero_image_url, " +
+  "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
+  "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
+  "market_summary_currency, available_units_count, " +
+  "active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
+  "cam_fee_per_month, sinking_fund, building_ownership, " +
+  "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at, " +
+  "foreign_quota_listings_available, thai_quota_listings_available, " +
+  "total_quota_listings_observed, foreign_quota_inventory_pct, " +
+  "foreign_quota_fetched_at, " +
+  "developer_slug, developer_project_count, developer_unit_count, " +
+  "google_rating, google_review_count, gross_yield_pct";
+
+const getCondoFullById = cache(async (id: string) => {
+  const supabase = getServerSupabase();
+  const { data } = await supabase
+    .from("condos_published")
+    .select(CONDO_FULL_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+  return data;
+});
+
+// value_scores / risk_factors were both `select("*")` — narrowed to just the
+// columns actually read anywhere on this page (page body + ReportCard /
+// ResaleLiquidityCard / GroundStabilityCard props), after auditing every
+// read site.
+const VALUE_SCORE_SELECT =
+  "bubble_index, is_super_value, liquidity_score, liquidity_grade, " +
+  "liquidity_absorption_rate, liquidity_median_sold_dom, liquidity_sample_size";
+const RISK_FACTORS_SELECT = "flood_risk_level, subsidence_level, subsidence_source";
+
+const getValueScoreByCondoId = cache(async (id: string): Promise<ValueScore | null> => {
+  const supabase = getServerSupabase();
+  const { data } = await supabase
+    .from("value_scores")
+    .select(VALUE_SCORE_SELECT)
+    .eq("condo_id", id)
+    .maybeSingle();
+  return data as unknown as ValueScore | null;
+});
+
+const getRiskFactorsByCondoId = cache(async (id: string): Promise<Risk | null> => {
+  const supabase = getServerSupabase();
+  const { data } = await supabase
+    .from("risk_factors")
+    .select(RISK_FACTORS_SELECT)
+    .eq("condo_id", id)
+    .maybeSingle();
+  return data as unknown as Risk | null;
+});
+
 // AEO/SEO metadata. Each condo page gets a unique title + description that
 // surfaces our differentiator (bubble_index, flood level) so search snippets
 // and AI Overviews quote our data, not the listing source.
@@ -79,29 +169,22 @@ export async function generateMetadata({
   params: Promise<{ slug: string; lang: string }>;
 }): Promise<Metadata> {
   const { slug, lang } = await params;
-  const supabase = getServerSupabase();
 
   // Legacy UUID URL — redirect to slug-based URL.
   if (UUID_RE.test(slug)) {
-    const { data } = await supabase
-      .from("condos_published")
-      .select("slug")
-      .eq("id", slug)
-      .maybeSingle();
-    if (data?.slug) redirect(`/${lang}/condo/${data.slug}`);
+    const legacySlug = await getSlugByLegacyId(slug);
+    if (legacySlug) redirect(`/${lang}/condo/${legacySlug}`);
     return { title: "Condo report — RealData" };
   }
 
-  const { data: condo } = await supabase
-    .from("condos_published")
-    .select("id, name, regions(name), province, market_sale_median, market_summary_currency, total_units, completion_year, gross_yield_pct")
-    .eq("slug", slug)
-    .maybeSingle();
+  const id = await getCondoIdBySlug(slug);
+  if (!id) return { title: "Condo report — RealData" };
+  const condo = await getCondoFullById(id);
   if (!condo) return { title: "Condo report — RealData" };
   const condoForMeta = condo as unknown as { id: string; name: string; province: string | null; regions: { name: string } | { name: string }[] | null; market_sale_median: number | null; market_summary_currency: string | null; total_units: number | null; completion_year: number | null; gross_yield_pct: number | null };
-  const [{ data: scoreMeta }, { data: riskMeta }] = await Promise.all([
-    supabase.from("value_scores").select("bubble_index").eq("condo_id", condoForMeta.id).maybeSingle(),
-    supabase.from("risk_factors").select("flood_risk_level").eq("condo_id", condoForMeta.id).maybeSingle(),
+  const [scoreMeta, riskMeta] = await Promise.all([
+    getValueScoreByCondoId(id),
+    getRiskFactorsByCondoId(id),
   ]);
   const c = condoForMeta;
   const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
@@ -171,56 +254,34 @@ export default async function CondoPage({
 
   // Legacy UUID URL → 308 redirect to slug-based URL.
   if (UUID_RE.test(slug)) {
-    const { data } = await supabase
-      .from("condos_published")
-      .select("slug")
-      .eq("id", slug)
-      .maybeSingle();
-    if (data?.slug) permanentRedirect(`/${lang}/condo/${data.slug}`);
+    const legacySlug = await getSlugByLegacyId(slug);
+    if (legacySlug) permanentRedirect(`/${lang}/condo/${legacySlug}`);
     notFound();
   }
 
-  // Step 1: resolve condo id from slug (needed for join queries on other tables).
-  const { data: condoHead } = await supabase
-    .from("condos_published")
-    .select("id")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (!condoHead) notFound();
-  const id = (condoHead as { id: string }).id;
+  // Step 1: resolve condo id from slug. Cached via React's cache() so this
+  // reuses the lookup generateMetadata() already ran for this same request
+  // instead of a second round trip.
+  const id = await getCondoIdBySlug(slug);
+  if (!id) notFound();
 
   const [
-    condoRes, scoreRes, livRes, riskRes, latestRes,
+    condoData, scoreData, livRes, riskData, latestRes,
     listingsRes, chartRes, amenitiesRes, parkingRes, neighboursRes,
     yieldData, mortgageRate, portalStats,
   ] = await Promise.all([
-    supabase
-      .from("condos_published")
-      .select(
-        "id, name, developer, url, regions(name), latitude, longitude, " +
-        "province, retiree_score, slug, " +
-        "floors, total_units, completion_year, description, hero_image_url, " +
-        "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
-        "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
-        "market_summary_currency, available_units_count, " +
-        "active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
-        "cam_fee_per_month, sinking_fund, building_ownership, " +
-        "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at, " +
-        "foreign_quota_listings_available, thai_quota_listings_available, " +
-        "total_quota_listings_observed, foreign_quota_inventory_pct, " +
-        "foreign_quota_fetched_at, " +
-        "developer_slug, developer_project_count, developer_unit_count, " +
-        "google_rating, google_review_count"
-      )
-      .eq("id", id)
-      .maybeSingle(),
-    supabase.from("value_scores").select("*").eq("condo_id", id).maybeSingle(),
+    getCondoFullById(id),
+    getValueScoreByCondoId(id),
     supabase
       .from("livability_metrics")
-      .select("*")
+      .select(
+        "nearest_bts_distance_m, nearest_bts_station, nearest_mrt_distance_m, " +
+        "nearest_mrt_station, hospitals_within_1km, schools_within_1km, " +
+        "supermarkets_within_1km"
+      )
       .eq("condo_id", id)
       .maybeSingle(),
-    supabase.from("risk_factors").select("*").eq("condo_id", id).maybeSingle(),
+    getRiskFactorsByCondoId(id),
     supabase
       .from("v_latest_listings")
       .select("price, area_sqm, price_per_sqm")
@@ -259,10 +320,12 @@ export default async function CondoPage({
     getPortalStats(supabase, id),
   ]);
 
-  if (!condoRes.data) notFound();
+  if (!condoData) notFound();
+
+  const livData = livRes.data as unknown as Livability | null;
 
   // supabase-js types `regions` as an array on joins; collapse to single.
-  const condoRaw = condoRes.data as unknown as {
+  const condoRaw = condoData as unknown as {
     id: string;
     slug: string | null;
     name: string;
@@ -347,16 +410,16 @@ export default async function CondoPage({
   // Thailand retirement-visa buyer segment. Declared here so the JSON-LD below
   // can cite the score.
   const transitDistances = [
-    livRes.data?.nearest_bts_distance_m,
-    livRes.data?.nearest_mrt_distance_m,
+    livData?.nearest_bts_distance_m,
+    livData?.nearest_mrt_distance_m,
   ].filter((d): d is number => d != null);
   const nearestTransitM = transitDistances.length
     ? Math.min(...transitDistances)
     : null;
   const retiree = retireeSuitability({
-    hospitalsWithin1km: livRes.data?.hospitals_within_1km ?? null,
+    hospitalsWithin1km: livData?.hospitals_within_1km ?? null,
     aqiScore: condoRaw.aqi_score,
-    supermarketsWithin1km: livRes.data?.supermarkets_within_1km ?? null,
+    supermarketsWithin1km: livData?.supermarkets_within_1km ?? null,
     nearestTransitM,
   });
 
@@ -381,16 +444,16 @@ export default async function CondoPage({
     region,
     amenities,
     signals: {
-      bubble_index: scoreRes.data?.bubble_index,
-      flood_risk_level: riskRes.data?.flood_risk_level,
-      nearest_bts_distance_m: livRes.data?.nearest_bts_distance_m,
-      hospitals_within_1km: livRes.data?.hospitals_within_1km,
+      bubble_index: scoreData?.bubble_index,
+      flood_risk_level: riskData?.flood_risk_level,
+      nearest_bts_distance_m: livData?.nearest_bts_distance_m,
+      hospitals_within_1km: livData?.hospitals_within_1km,
       gross_yield_pct: yieldData?.gross_yield_pct,
       aqi_score: condoRaw.aqi_score,
       foreign_quota_inventory_pct: condoRaw.foreign_quota_inventory_pct,
-      resale_liquidity_score: scoreRes.data?.liquidity_score,
+      resale_liquidity_score: scoreData?.liquidity_score,
       retiree_suitability_score: retiree?.score ?? null,
-      subsidence_level: riskRes.data?.subsidence_level,
+      subsidence_level: riskData?.subsidence_level,
       developer_name: condoRaw.developer,
       developer_project_count: condoRaw.developer_project_count,
     },
@@ -415,7 +478,7 @@ export default async function CondoPage({
 
   // Backlink target: this condo's nearest rail station spoke (only if viable).
   const stationName =
-    livRes.data?.nearest_bts_station || livRes.data?.nearest_mrt_station || null;
+    livData?.nearest_bts_station || livData?.nearest_mrt_station || null;
   const stationSpokeSlug = stationName ? stationSlug(stationName) : null;
   const viableSlugs = new Set((await getViableStations()).map((s) => s.slug));
   const stationLinkOk = stationSpokeSlug != null && viableSlugs.has(stationSpokeSlug);
@@ -423,14 +486,14 @@ export default async function CondoPage({
   // Per-condo FAQ — concrete numbers wherever we have them so the answer
   // is quotable as-is by Google AI Overviews / Perplexity / ChatGPT.
   const yieldVal = yieldData?.gross_yield_pct;
-  const bubbleVal = scoreRes.data?.bubble_index;
-  const floodVal = riskRes.data?.flood_risk_level;
-  const subsidenceVal = riskRes.data?.subsidence_level;
+  const bubbleVal = scoreData?.bubble_index;
+  const floodVal = riskData?.flood_risk_level;
+  const subsidenceVal = riskData?.subsidence_level;
   const quotaVal = condoRaw.foreign_quota_inventory_pct;
   const aqiVal = condoRaw.aqi_score;
-  const liqScore = scoreRes.data?.liquidity_score;
-  const liqAbsorb = scoreRes.data?.liquidity_absorption_rate;
-  const liqSold = scoreRes.data?.liquidity_median_sold_dom;
+  const liqScore = scoreData?.liquidity_score;
+  const liqAbsorb = scoreData?.liquidity_absorption_rate;
+  const liqSold = scoreData?.liquidity_median_sold_dom;
   const mrr = mortgageRate?.rate ?? null;
 
   const faqItems: Array<{ q: string; a: string }> = [];
@@ -565,7 +628,7 @@ export default async function CondoPage({
           : retiree.grade === "fair"
             ? "a fair fit"
             : "less suited";
-    const hosp = livRes.data?.hospitals_within_1km;
+    const hosp = livData?.hospitals_within_1km;
     const hospLine =
       hosp != null
         ? ` There ${hosp === 1 ? "is" : "are"} ${hosp} hospital/clinic${hosp === 1 ? "" : "s"} within 1km`
@@ -649,9 +712,9 @@ export default async function CondoPage({
       <div data-speakable="report-card">
         <ReportCard
           condo={{ ...condoRaw, regions }}
-          score={scoreRes.data}
-          liv={livRes.data}
-          risk={riskRes.data}
+          score={scoreData}
+          liv={livData}
+          risk={riskData}
           latest={latestRes.data}
           lang={lang}
         />
@@ -755,18 +818,18 @@ export default async function CondoPage({
       )}
 
       <ResaleLiquidityCard
-        score={scoreRes.data?.liquidity_score ?? null}
-        grade={scoreRes.data?.liquidity_grade ?? null}
-        absorptionRate={scoreRes.data?.liquidity_absorption_rate ?? null}
-        medianSoldDom={scoreRes.data?.liquidity_median_sold_dom ?? null}
-        sampleSize={scoreRes.data?.liquidity_sample_size ?? null}
+        score={scoreData?.liquidity_score ?? null}
+        grade={scoreData?.liquidity_grade ?? null}
+        absorptionRate={scoreData?.liquidity_absorption_rate ?? null}
+        medianSoldDom={scoreData?.liquidity_median_sold_dom ?? null}
+        sampleSize={scoreData?.liquidity_sample_size ?? null}
       />
 
       <RetireeSuitabilityCard
         result={retiree}
-        hospitals={livRes.data?.hospitals_within_1km ?? null}
+        hospitals={livData?.hospitals_within_1km ?? null}
         aqi={condoRaw.aqi_score}
-        supermarkets={livRes.data?.supermarkets_within_1km ?? null}
+        supermarkets={livData?.supermarkets_within_1km ?? null}
         nearestTransitM={nearestTransitM}
       />
 
@@ -874,8 +937,8 @@ export default async function CondoPage({
       />
 
       <GroundStabilityCard
-        level={riskRes.data?.subsidence_level ?? null}
-        source={riskRes.data?.subsidence_source ?? null}
+        level={riskData?.subsidence_level ?? null}
+        source={riskData?.subsidence_source ?? null}
       />
 
       <MultiPortalCard stats={portalStats} />

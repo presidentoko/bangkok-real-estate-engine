@@ -51,16 +51,32 @@ function regionLabel(r: Row): string {
   return region?.name ?? (r.province ?? "").replace(/-/g, " ");
 }
 
+// Resolve a /best city slug, accepting the legit DB/compact aliases that
+// canonicalCitySlug knows about (e.g. "chonburi" → "chon-buri", "chiang-mai"
+// stays itself). Anything else (e.g. "udon-thani") returns null so the page
+// can hard-404 instead of rendering a generic 200 for crawler-invented URLs.
+function resolveBestCity(slug: string): { slug: BestCitySlug; display: string } | null {
+  const direct = getBestCity(slug);
+  if (direct) return direct;
+  const canonical = canonicalCitySlug(slug);
+  return BEST_CITIES.find((c) => canonicalCitySlug(c.slug) === canonical) ?? null;
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ city: string; slug: string; lang: string }>;
 }): Promise<Metadata> {
   const { city, slug, lang } = await params;
-  const cityObj = getBestCity(city);
+  const cityObj = resolveBestCity(city);
   const filterObj = getBestFilter(slug);
   if (!cityObj || !filterObj || !isLang(lang)) {
-    return { title: "Best condos — RealData" };
+    // Unknown city or filter slug — the page 404s; make sure any 200 that
+    // slips through (or the 404 shell itself) is never indexed.
+    return {
+      title: "Best condos — RealData",
+      robots: { index: false, follow: false },
+    };
   }
   const titleChunk = filterObj.titleChunk(cityObj.display);
   const title = `Best ${titleChunk} — RealData`;
@@ -92,13 +108,15 @@ export async function generateMetadata({
     description,
     ...(count === 0 ? { robots: { index: false, follow: true } } : {}),
     alternates: {
-      canonical: `${SEO_SITE_URL}/${lang}/best/${city}/${slug}`,
-      languages: langAlternates(`/best/${city}/${slug}`),
+      // Use the resolved slug so alias URLs (e.g. "chonburi") canonicalize
+      // to the kebab-case slug the site links to everywhere.
+      canonical: `${SEO_SITE_URL}/${lang}/best/${cityObj.slug}/${slug}`,
+      languages: langAlternates(`/best/${cityObj.slug}/${slug}`),
     },
     openGraph: {
       title,
       description,
-      url: `${SEO_SITE_URL}/${lang}/best/${city}/${slug}`,
+      url: `${SEO_SITE_URL}/${lang}/best/${cityObj.slug}/${slug}`,
       type: "website",
     },
   };
@@ -111,7 +129,7 @@ export default async function BestSlicePage({
 }) {
   const { city, slug, lang } = await params;
   if (!isLang(lang)) notFound();
-  const cityObj = getBestCity(city);
+  const cityObj = resolveBestCity(city);
   const filterObj = getBestFilter(slug);
   if (!cityObj || !filterObj) notFound();
 

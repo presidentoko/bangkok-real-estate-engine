@@ -1,7 +1,7 @@
 import { getServerSupabase } from "@/lib/supabase";
 import { SITE_URL, sitemapIndexDoc, xmlResponse, isoDate } from "@/lib/sitemap-helpers";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 export const maxDuration = 15;
 
 const CONDOS_PER_PAGE = 2500;

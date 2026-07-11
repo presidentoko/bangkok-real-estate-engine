@@ -68,17 +68,22 @@ export async function generateMetadata({
     `Every condo in ${display}, ${province}: gross rental ` +
     `yields ranked against Thai MRR, sale/rent medians, flood risk levels, ` +
     `and cross-portal price comparison. Independent data — no developer placement.`;
+  // Canonical always points at the lowercase slug regardless of the
+  // incoming param's casing (resolveRegion matches case-insensitively, so
+  // /district/Pattaya and /district/pattaya both render — but only the
+  // lowercase form should be indexed to avoid duplicate-URL content).
+  const canonicalSlug = encodeURIComponent(region.name.toLowerCase());
   return {
     title,
     description,
     alternates: {
-      canonical: `${SEO_SITE_URL}/${lang}/district/${slug}`,
-      languages: langAlternates(`/district/${slug}`),
+      canonical: `${SEO_SITE_URL}/${lang}/district/${canonicalSlug}`,
+      languages: langAlternates(`/district/${canonicalSlug}`),
     },
     openGraph: {
       title,
       description,
-      url: `${SEO_SITE_URL}/${lang}/district/${slug}`,
+      url: `${SEO_SITE_URL}/${lang}/district/${canonicalSlug}`,
       type: "website",
     },
   };
@@ -139,6 +144,9 @@ export default async function DistrictPage({
 
   const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const provinceDisplay = (region.province ?? "Bangkok").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  // Same lowercase-canonical rule as generateMetadata above — self-referential
+  // URLs in structured data should match the canonical, not the raw param.
+  const canonicalSlug = encodeURIComponent(region.name.toLowerCase());
 
   // JSON-LD Place schema for the district + ItemList of top condos.
   const jsonLd = {
@@ -147,7 +155,7 @@ export default async function DistrictPage({
     name: `${display}, ${provinceDisplay}`,
     description: `${condos.length} condos measured. Median yield ${medianYield != null ? medianYield.toFixed(2) + "%" : "—"}.`,
     containedInPlace: { "@type": "AdministrativeArea", name: provinceDisplay },
-    url: `${SEO_SITE_URL}/${lang}/district/${slug}`,
+    url: `${SEO_SITE_URL}/${lang}/district/${canonicalSlug}`,
     additionalProperty: [
       { "@type": "PropertyValue", name: "Condos measured", value: condos.length },
       ...(medianYield != null

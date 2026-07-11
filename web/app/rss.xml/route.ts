@@ -50,18 +50,14 @@ function escapeXml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
-export async function GET(request: Request) {
-  // Resolve the host the request actually came in on so the
-  // <atom:link rel="self"> matches the URL the caller hit. Naver's RSS
-  // validator (and many others) reject feeds where the self-link host
-  // differs from the document location, even though W3C's validator
-  // treats it as a warning. Falls back to NEXT_PUBLIC_SITE_URL when
-  // headers don't carry a host (build-time / dry-run).
-  const requestHost = request.headers.get("x-forwarded-host") || request.headers.get("host");
-  const requestProto = request.headers.get("x-forwarded-proto") || "https";
-  const FEED_BASE = requestHost ? `${requestProto}://${requestHost}` : SITE_URL;
+export async function GET() {
+  // The feed is only served from the apex domain now (www 308-redirects to
+  // apex), so the self-link host is always SITE_URL. Reading request headers
+  // here would opt the route out of ISR and make every crawler poll a live
+  // function invocation + Supabase query.
+  const FEED_BASE = SITE_URL;
 
   const supabase = getServerSupabase();
   const buildBldgs = await supabase
@@ -126,7 +122,7 @@ export async function GET(request: Request) {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Cache-Control": "public, max-age=3600, s-maxage=86400",
     },
   });
 }

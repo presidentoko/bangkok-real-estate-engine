@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { CitySwitcher } from "@/components/CitySwitcher";
 import { CondoSearch } from "@/components/CondoSearch";
 import { LangSwitcher } from "@/components/LangSwitcher";
@@ -98,7 +99,7 @@ export default async function LangLayout({
 
   const MOBILE_NAV = [
     ...NAV,
-    { href: `/${lang}/saved`, label: "Saved" },
+    { href: `/${lang}/saved`, label: t.footer.saved },
   ];
 
   return (
@@ -120,7 +121,15 @@ export default async function LangLayout({
             <Link href={`/${lang}`} className="font-black text-lg tracking-tight">
               <span className="text-blue-400">Real</span>{t.brand.name.replace("Real", "")}
             </Link>
-            <CitySwitcher lang={lang} />
+            {/* CitySwitcher calls useSearchParams(); without a Suspense
+                boundary that forces EVERY page under this layout to bail out
+                of static rendering into client-side rendering — the SSR'd
+                <body> shipped empty (found 2026-07-11: JSON-LD, h1, all
+                content invisible to non-JS crawlers, killing AEO). The
+                boundary confines the deferral to this one widget. */}
+            <Suspense fallback={null}>
+              <CitySwitcher lang={lang} />
+            </Suspense>
           </div>
           <div className="flex items-center gap-1 sm:gap-3 text-sm">
             <div className="hidden md:block">
@@ -136,7 +145,7 @@ export default async function LangLayout({
                   {n.label}
                 </Link>
               ))}
-              <SavedNavLink lang={lang} />
+              <SavedNavLink lang={lang} label={t.footer.saved} />
             </div>
             <LangSwitcher current={lang} />
             <MobileMenu links={MOBILE_NAV} lang={lang} />
@@ -170,22 +179,22 @@ export default async function LangLayout({
               ))}
               <li>
                 <Link href={`/${lang}/stale`} className="hover:text-zinc-300">
-                  Stale Listings
+                  {t.stale.title}
                 </Link>
               </li>
               <li>
                 <Link href={`/${lang}/press`} className="hover:text-zinc-300">
-                  Press kit
+                  {t.press.title}
                 </Link>
               </li>
               <li>
                 <Link href="/alerts" className="hover:text-zinc-300">
-                  Underpriced alerts
+                  {t.footer.underpricedAlerts}
                 </Link>
               </li>
               <li>
                 <Link href="/rss.xml" className="hover:text-zinc-300">
-                  RSS feed
+                  {t.footer.rssFeed}
                 </Link>
               </li>
             </ul>
@@ -197,11 +206,11 @@ export default async function LangLayout({
             </ul>
           </div>
           <div>
-            <div className="text-zinc-300 font-semibold mb-2">Guides</div>
+            <div className="text-zinc-300 font-semibold mb-2">{t.footer.guidesTitle}</div>
             <ul className="space-y-1 text-zinc-500">
-              <li><Link href={`/${lang}/guide/foreign-ownership`} className="hover:text-zinc-300">Foreign ownership</Link></li>
-              <li><Link href={`/${lang}/guide/investment`} className="hover:text-zinc-300">Investment guide</Link></li>
-              <li><Link href={`/${lang}/glossary`} className="hover:text-zinc-300">Glossary</Link></li>
+              <li><Link href={`/${lang}/guide/foreign-ownership`} className="hover:text-zinc-300">{t.footer.guideForeignOwnership}</Link></li>
+              <li><Link href={`/${lang}/guide/investment`} className="hover:text-zinc-300">{t.footer.guideInvestment}</Link></li>
+              <li><Link href={`/${lang}/glossary`} className="hover:text-zinc-300">{t.footer.guideGlossary}</Link></li>
             </ul>
           </div>
         </div>

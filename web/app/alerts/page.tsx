@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 600;
+export const revalidate = 21600;
 
 type Row = {
   id: string;

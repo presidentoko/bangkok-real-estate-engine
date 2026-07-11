@@ -10,7 +10,7 @@ const SITE_URL = SEO_SITE_URL;
 const SLUG = "bangkok-foreign-buyer-guide-2026";
 const PUBLISHED = "2026-05-07";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const META: Record<Lang, { title: string; desc: string; ogTitle: string; ogDesc: string }> = {
   en: {

@@ -123,7 +123,7 @@ async function _fetchAllCondos(): Promise<CondoSummary[]> {
 export const fetchAllCondos = unstable_cache(
   _fetchAllCondos,
   ["condos:all"],
-  { revalidate: 3600, tags: ["condos"] }
+  { revalidate: 86400, tags: ["condos"] }
 );
 
 // ---------------------------------------------------------------------------
@@ -249,7 +249,7 @@ async function _fetchCondoProvinces(): Promise<string[]> {
 export const fetchCondoProvinces = unstable_cache(
   _fetchCondoProvinces,
   ["condos:provinces"],
-  { revalidate: 3600, tags: ["condos"] }
+  { revalidate: 86400, tags: ["condos"] }
 );
 
 // ---------------------------------------------------------------------------
@@ -309,7 +309,7 @@ async function _fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
 export const fetchCondoMapPoints = unstable_cache(
   _fetchCondoMapPoints,
   ["condos:map-points"],
-  { revalidate: 3600, tags: ["condos"] }
+  { revalidate: 86400, tags: ["condos"] }
 );
 
 export type HomeFeatured = {
@@ -389,7 +389,7 @@ async function _fetchHomeFeatured(): Promise<HomeFeatured> {
 export const fetchHomeFeatured = unstable_cache(
   _fetchHomeFeatured,
   ["home:featured"],
-  { revalidate: 3600, tags: ["condos"] }
+  { revalidate: 86400, tags: ["condos"] }
 );
 
 async function _fetchCondo(id: string): Promise<CondoSummary | null> {
@@ -475,5 +475,5 @@ async function _fetchSiteStats(): Promise<SiteStats> {
 export const fetchSiteStats = unstable_cache(
   _fetchSiteStats,
   ["stats"],
-  { revalidate: 3600, tags: ["stats"] }
+  { revalidate: 86400, tags: ["stats"] }
 );

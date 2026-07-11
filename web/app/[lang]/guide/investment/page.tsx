@@ -9,7 +9,7 @@ import { buildFaqJsonLd, type FaqItem } from "@/lib/seo/faqJsonLd";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { getYieldByArea } from "@/lib/queries/areas";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const FAQ: FaqItem[] = [
   { q: "What rental yield can you get on a Bangkok condo?", a: "Gross rental yields in Bangkok typically range from 4% to 7%, varying by area and building age. Older buildings and outer areas tend to show higher gross yields; prime central buildings trade at lower yields but stronger capital appreciation." },

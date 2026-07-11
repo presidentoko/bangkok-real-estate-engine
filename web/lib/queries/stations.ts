@@ -85,7 +85,7 @@ export const getViableStations = unstable_cache(
     return out;
   },
   ["viable-stations-v1"],
-  { revalidate: 3600 },
+  { revalidate: 86400 },
 );
 
 export type StationData = {
@@ -191,5 +191,5 @@ export const getStationData = unstable_cache(
     };
   },
   ["station-data-v1"],
-  { revalidate: 3600 },
+  { revalidate: 86400 },
 );

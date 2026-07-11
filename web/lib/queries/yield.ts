@@ -6,6 +6,12 @@
  * directly from `condos` to skip needing another migration on the user side.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { canonicalCitySlug, cityProvinceSlugs } from "@/lib/cities";
+import {
+  clampMinYield,
+  resolveYieldSort,
+  type YieldRow,
+} from "@/lib/yields";
 
 const MRR_INDICATORS = [
   "MRR (Minimum Retail Rate) Min",
@@ -67,6 +73,49 @@ export async function getCurrentMortgageRate(
     period: latest,
     series: "FM_RT_001_S2",
   };
+}
+
+/**
+ * Ranked yield rows for /yields and /api/yields. Same sanity bounds as
+ * src/analysis/yield_digest.py — filter out obvious price-parse outliers
+ * (yield > 25%, sale < ฿500k, fewer than 2 sale/rent samples).
+ */
+export async function fetchYieldRows(
+  supabase: SupabaseClient,
+  opts: {
+    province?: string | null;
+    sort?: string | null;
+    minYield?: string | null;
+  } = {},
+): Promise<YieldRow[]> {
+  const sortOpt = resolveYieldSort(opts.sort);
+  const minYield = clampMinYield(opts.minYield);
+
+  let query = supabase
+    .from("condos")
+    .select(
+      "id, slug, name, url, province, " +
+      "gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
+      "yield_sample_sale, yield_sample_rent, regions(name)",
+    )
+    .gte("gross_yield_pct", minYield)
+    .lte("gross_yield_pct", 25)
+    .gte("avg_sale_price", 500_000)
+    .gte("yield_sample_sale", 2)
+    .gte("yield_sample_rent", 2)
+    .eq("is_active", true)
+    .order(sortOpt.column, { ascending: sortOpt.asc })
+    .limit(100);
+
+  if (opts.province && opts.province !== "all") {
+    // DB `province` has two slug conventions (e.g. "chonburi" and
+    // "chon-buri"); match every alias for the selected city, not just the
+    // exact string the chip links to.
+    query = query.in("province", cityProvinceSlugs(canonicalCitySlug(opts.province)));
+  }
+
+  const { data } = await query;
+  return (data ?? []) as unknown as YieldRow[];
 }
 
 export function computeSpread(

@@ -9,7 +9,7 @@ import {
   isoDate,
 } from "@/lib/sitemap-helpers";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 export const maxDuration = 60;
 
 // 2,500 condos × 3 langs = 7,500 entries ≈ ~5MB per page

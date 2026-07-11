@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getSavedCount } from "@/lib/saved-condos";
 
-export function SavedNavLink({ lang }: { lang: string }) {
+export function SavedNavLink({ lang, label = "Saved" }: { lang: string; label?: string }) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function SavedNavLink({ lang }: { lang: string }) {
       href={`/${lang}/saved`}
       className="relative px-2 py-1 rounded text-zinc-300 hover:text-white hover:bg-zinc-800 transition"
     >
-      Saved
+      {label}
       {count > 0 && (
         <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[9px] font-bold text-white flex items-center justify-center tabular-nums">
           {count > 9 ? "9+" : count}

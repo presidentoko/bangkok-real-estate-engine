@@ -27,6 +27,13 @@ const dict: Dict = {
       "สิ่งอำนวยความสะดวก & ขนส่ง: OpenStreetMap (Overpass)",
     ],
     copyright: "วัดข้อมูลอิสระ · ไม่มีโฆษณาดีเวลลอปเปอร์ · ใช้ระบบ referral",
+    saved: "รายการที่บันทึก",
+    underpricedAlerts: "แจ้งเตือนราคาต่ำกว่าตลาด",
+    rssFeed: "RSS ฟีด",
+    guidesTitle: "คู่มือ",
+    guideForeignOwnership: "การเป็นเจ้าของของชาวต่างชาติ",
+    guideInvestment: "คู่มือการลงทุน",
+    guideGlossary: "อภิธานศัพท์",
   },
   home: {
     heroPretitle: "ข้อมูลอิสระ · 4 พอร์ทัล · 9 เมือง",
@@ -343,6 +350,13 @@ const dict: Dict = {
     fullInventoryStat: (n: number) => `ติดตาม ${n.toLocaleString()} อาคาร`,
     pendingPipeline: "ยังไม่มีคอนโดที่ติดตาม กำลังเก็บข้อมูล",
     otherCitiesHeader: "เมืองอื่น",
+    retireeLensLabel: "มุมมองผู้เกษียณ",
+    retireeLensCta: (city: string) => `คอนโดเหมาะกับผู้เกษียณใน${city} →`,
+    retireeLensSub: "จัดอันดับตามการเข้าถึงสถานพยาบาล คุณภาพอากาศ และการเดินทาง",
+    conciergeHeadline: (city: string) => `กำลังมองหาคอนโดใน${city}อยู่ใช่ไหม? รับความเห็นจากผู้เชี่ยวชาญ`,
+    travelFraming: (city: string) =>
+      `วางแผนไปดูสถานที่จริงที่${city}อยู่ใช่ไหม? เทียบเที่ยวบินและโรงแรมในที่เดียว`,
+    travelCta: "หาเที่ยวบิน + โรงแรม →",
   },
   reality: {
     title: "Marketing vs Reality",

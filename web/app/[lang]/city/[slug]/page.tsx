@@ -373,13 +373,13 @@ export default async function CityPage({
         >
           <div>
             <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">
-              Retiree lens
+              {t.retireeLensLabel}
             </div>
             <div className="text-zinc-100 font-semibold group-hover:text-emerald-400 transition">
-              Retiree-friendly condos in {city.name[lang as Lang]} →
+              {t.retireeLensCta(city.name[lang as Lang])}
             </div>
             <div className="text-zinc-500 text-xs mt-0.5">
-              Ranked by healthcare access, air quality &amp; transit
+              {t.retireeLensSub}
             </div>
           </div>
         </Link>
@@ -388,7 +388,7 @@ export default async function CityPage({
       {/* Concierge CTA */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <LeadCaptureCTA
-          headline={`Looking for a condo in ${city.name[lang as Lang]}? Get an expert read.`}
+          headline={t.conciergeHeadline(city.name[lang as Lang])}
         />
       </section>
 
@@ -397,6 +397,8 @@ export default async function CityPage({
         <TravelAffiliateCard
           surface={`city-${slug}`}
           destination={city.name[lang as Lang]}
+          framing={t.travelFraming(city.name[lang as Lang])}
+          ctaText={t.travelCta}
         />
       </section>
 

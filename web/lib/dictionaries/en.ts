@@ -28,6 +28,13 @@ const dict = {
       "Infrastructure & transit: OpenStreetMap (Overpass)",
     ],
     copyright: "Independent measurement · no developer ads · referral funded",
+    saved: "Saved",
+    underpricedAlerts: "Underpriced alerts",
+    rssFeed: "RSS feed",
+    guidesTitle: "Guides",
+    guideForeignOwnership: "Foreign ownership",
+    guideInvestment: "Investment guide",
+    guideGlossary: "Glossary",
   },
   home: {
     heroPretitle: "Independent measurement · 4 portals · 9 cities",
@@ -360,6 +367,13 @@ const dict = {
     fullInventoryStat: (n: number) => `${n.toLocaleString()} tracked`,
     pendingPipeline: "No condos tracked yet. Pipeline running.",
     otherCitiesHeader: "Other cities",
+    retireeLensLabel: "Retiree lens",
+    retireeLensCta: (city: string) => `Retiree-friendly condos in ${city} →`,
+    retireeLensSub: "Ranked by healthcare access, air quality & transit",
+    conciergeHeadline: (city: string) => `Looking for a condo in ${city}? Get an expert read.`,
+    travelFraming: (city: string) =>
+      `Planning a viewing trip to ${city}? Compare flights and hotels in one search.`,
+    travelCta: "Find flights + hotels →",
   },
   reality: {
     title: "Marketing vs Reality",

@@ -5,7 +5,7 @@ import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 // Indicators we surface at the top of the page (concise, decision-relevant set).
 const FEATURED: Array<{ name: string; label: string; series: string }> = [

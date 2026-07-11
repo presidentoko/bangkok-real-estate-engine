@@ -6,7 +6,7 @@ import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { listWeeklyPosts } from "@/lib/weeklyPost";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,

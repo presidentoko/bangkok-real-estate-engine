@@ -4,8 +4,8 @@ import { AskChat } from "@/components/AskChat";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
-// Chat needs to be live; don't ISR/static.
-export const dynamic = "force-dynamic";
+// Static shell — the chat itself is a client component hitting /api/ask.
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,

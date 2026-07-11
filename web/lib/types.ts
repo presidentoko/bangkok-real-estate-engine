@@ -7,13 +7,17 @@ export type Condo = {
   retiree_score?: number | null;
 };
 
+// Note: these three types are only consumed by ReportCard.tsx (and the
+// condo/[slug] page's queries that feed it), so they're trimmed to exactly
+// the columns those call sites select/read — not the full DB row shape.
 export type ValueScore = {
-  condo_id: string;
   bubble_index: number | null;
-  asset_value_score: number | null;
-  livability_rank_pct: number | null;
-  asset_rank_pct: number | null;
-  is_super_value: boolean;
+  is_super_value: boolean | null;
+  liquidity_score: number | null;
+  liquidity_grade: string | null;
+  liquidity_absorption_rate: number | null;
+  liquidity_median_sold_dom: number | null;
+  liquidity_sample_size: number | null;
 };
 
 export type Livability = {
@@ -24,15 +28,12 @@ export type Livability = {
   hospitals_within_1km: number;
   schools_within_1km: number;
   supermarkets_within_1km: number;
-  livability_score: number | null;
 };
 
 export type Risk = {
   flood_risk_level: number | null;
-  flood_risk_source: string | null;
-  active_construction_within_500m: boolean;
-  construction_count: number;
-  risk_penalty: number | null;
+  subsidence_level: number | null;
+  subsidence_source: string | null;
 };
 
 export type LatestListing = {

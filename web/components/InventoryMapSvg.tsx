@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type KhetCount = { name: string; count: number };
 export type CondoPoint = {
@@ -23,6 +23,8 @@ type DistrictsGeoJson = {
   type: string;
   features: Array<Record<string, unknown>>;
 };
+
+const EMPTY_DISTRICTS: DistrictsGeoJson = { type: "FeatureCollection", features: [] };
 
 const VIEW_W = 800;
 const VIEW_H = 600;
@@ -65,14 +67,42 @@ export function InventoryMapSvg({
   points = [],
   totalBuildings,
   condoLinkPrefix = "/condo/",
-  districts,
 }: {
   khetCounts: KhetCount[];
   points?: CondoPoint[];
   totalBuildings?: number;
   condoLinkPrefix?: string;
-  districts: DistrictsGeoJson;
 }) {
+  // The district polygons are a ~326KB static GeoJSON asset. It used to be
+  // read server-side and passed down as a prop — but since this is a "use
+  // client" component, that meant the *entire* FeatureCollection (every
+  // district's full polygon coordinates) got serialized into the RSC flight
+  // payload of every homepage response, in all languages. Fetching it here
+  // instead, from the CDN-served /public copy, keeps it off that payload
+  // entirely (confirmed 2026-07-11 audit). The SSR'd condo dots below don't
+  // depend on this fetch and render immediately; the choropleth district
+  // fills fade in once it resolves.
+  const [districts, setDistricts] = useState<DistrictsGeoJson>(EMPTY_DISTRICTS);
+  const [districtsLoaded, setDistrictsLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/bangkok-districts.geojson")
+      .then((r) => (r.ok ? r.json() : EMPTY_DISTRICTS))
+      .then((data: DistrictsGeoJson) => {
+        if (!cancelled) {
+          setDistricts(data);
+          setDistrictsLoaded(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setDistrictsLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const features = (districts.features ?? []) as unknown as DistrictFeature[];
 
   const countByNorm = useMemo(() => {
@@ -100,6 +130,29 @@ export function InventoryMapSvg({
           }
         }
       }
+    }
+    // District polygons haven't loaded yet (or failed to) — fall back to the
+    // bbox of the SSR'd points so the dots still render in roughly the right
+    // place immediately, instead of collapsing to NaN positions.
+    if (!Number.isFinite(minLng)) {
+      for (const p of points) {
+        if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) continue;
+        if (p.lng < minLng) minLng = p.lng;
+        if (p.lng > maxLng) maxLng = p.lng;
+        if (p.lat < minLat) minLat = p.lat;
+        if (p.lat > maxLat) maxLat = p.lat;
+      }
+      if (Number.isFinite(minLng)) {
+        const padLng = Math.max(0.01, (maxLng - minLng) * 0.05);
+        const padLat = Math.max(0.01, (maxLat - minLat) * 0.05);
+        minLng -= padLng; maxLng += padLng;
+        minLat -= padLat; maxLat += padLat;
+      }
+    }
+    if (!Number.isFinite(minLng)) {
+      // Final fallback: Bangkok bbox so we never NaN-out the SVG.
+      minLng = 100.3; maxLng = 100.9;
+      minLat = 13.5;  maxLat = 14.0;
     }
     const midLat = (minLat + maxLat) / 2;
     const lngFactor = Math.cos((midLat * Math.PI) / 180);
@@ -150,19 +203,26 @@ export function InventoryMapSvg({
         aria-label="Bangkok condo inventory by district"
       >
         <rect width={VIEW_W} height={VIEW_H} fill="#0f172a" />
-        {paths.map((p) => (
-          <path
-            key={p.key}
-            d={p.d}
-            fill={p.color}
-            fillOpacity={hover?.name === p.name ? 0.95 : 0.72}
-            stroke="#0a0a0a"
-            strokeWidth={0.6}
-            onMouseEnter={() => setHover({ name: p.name, count: p.count })}
-            onMouseLeave={() => setHover(null)}
-            style={{ cursor: "default" }}
-          />
-        ))}
+        <g
+          style={{
+            opacity: districtsLoaded ? 1 : 0,
+            transition: "opacity 400ms ease-out",
+          }}
+        >
+          {paths.map((p) => (
+            <path
+              key={p.key}
+              d={p.d}
+              fill={p.color}
+              fillOpacity={hover?.name === p.name ? 0.95 : 0.72}
+              stroke="#0a0a0a"
+              strokeWidth={0.6}
+              onMouseEnter={() => setHover({ name: p.name, count: p.count })}
+              onMouseLeave={() => setHover(null)}
+              style={{ cursor: "default" }}
+            />
+          ))}
+        </g>
         {dots.map((d) => (
           // Every published condo has a /condo/[id] page, so always link the dot.
           <Link key={d.id} href={`${condoLinkPrefix}${d.id}`}>

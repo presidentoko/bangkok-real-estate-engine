@@ -11,7 +11,7 @@ import {
   isoDate,
 } from "@/lib/sitemap-helpers";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 export const maxDuration = 60;
 
 export async function GET(): Promise<Response> {
@@ -100,9 +100,14 @@ export async function GET(): Promise<Response> {
   type RegionRow = { name: string; condos: { id: string }[] | null };
   for (const r of (regionData ?? []) as RegionRow[]) {
     if ((r.condos ?? []).length < 3 || !r.name) continue;
-    // encodeURIComponent keeps XML valid for names with spaces/Thai chars;
-    // Next.js decodes params so resolveRegion() gets the original string.
-    const path = `/district/${encodeURIComponent(r.name)}`;
+    // Lowercase the slug so we only ever publish one canonical casing per
+    // district (DB region.name casing is inconsistent — see
+    // app/[lang]/district/[slug]/page.tsx's resolveRegion comment). Without
+    // this, "Pattaya" and "pattaya" both resolve, risking duplicate-URL
+    // indexing. encodeURIComponent keeps XML valid for names with
+    // spaces/Thai chars; Next.js decodes params so resolveRegion() gets the
+    // original (lowercased) string back and matches case-insensitively.
+    const path = `/district/${encodeURIComponent(r.name.toLowerCase())}`;
     for (const lang of LANGS) {
       entries.push(
         urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "weekly", priority: 0.7, path })

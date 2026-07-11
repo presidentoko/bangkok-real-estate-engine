@@ -9,7 +9,7 @@ import {
   isoDate,
 } from "@/lib/sitemap-helpers";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 export const maxDuration = 30;
 
 const STATIC_PATHS = [
