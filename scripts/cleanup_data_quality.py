@@ -105,6 +105,7 @@ def fix_yield_outliers(client, dry_run: bool) -> int:
                 "id, name, gross_yield_pct, avg_sale_price, avg_monthly_rent, province"
             )
             .not_.is_("gross_yield_pct", "null")
+            .order("id")
             .range(offset, offset + 999)
             .execute()
             .data
@@ -148,7 +149,7 @@ def summarize(client) -> None:
     rows = []
     offset = 0
     while True:
-        chunk = client.table("condos").select("province").range(offset, offset + 999).execute().data or []
+        chunk = client.table("condos").select("province").order("id").range(offset, offset + 999).execute().data or []
         rows.extend(chunk)
         if len(chunk) < 1000:
             break

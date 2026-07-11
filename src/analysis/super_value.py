@@ -20,15 +20,19 @@ def _percentile_rank(values: list[float], v: float) -> float:
     return round(n / len(values) * 100, 2)
 
 
-def _fetch_all(supabase: Client, table: str) -> list[dict]:
+def _fetch_all(supabase: Client, table: str, order_by: str = "condo_id") -> list[dict]:
     """Paginate a select("*") — PostgREST caps every response at 1000 rows
-    regardless of .limit()."""
+    regardless of .limit(). Ordering by the PK (condo_id for value_scores/
+    livability_metrics/risk_factors) is required: without ORDER BY, Postgres
+    doesn't guarantee stable row order across separate .range() requests, so
+    pages can skip or duplicate rows."""
     out: list[dict] = []
     offset = 0
     while True:
         chunk = (
             supabase.table(table)
             .select("*")
+            .order(order_by)
             .range(offset, offset + 999)
             .execute()
             .data

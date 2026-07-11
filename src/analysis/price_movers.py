@@ -31,25 +31,47 @@ def _format_thb(v: float | None) -> str:
 def _fetch_latest_deltas(
     supabase: Client, *, lookback_days: int = 14
 ) -> list[dict]:
-    """Return one row per (condo_id, listing_type), the most recent snapshot
-    inside the lookback window that has a non-null delta_pct.
+    """Return one row per (condo_id, listing_type) from the latest snapshot
+    batch inside the lookback window that has a non-null delta_pct.
 
-    We can't push the dedup into PostgREST cleanly, so we fetch the recent
-    window (small — ~7-14k rows per week) and dedup in Python.
+    PostgREST caps every response at 1000 rows regardless of .limit(), so a
+    big .limit() silently truncates. Instead resolve the most recent
+    captured_at batch first, then paginate through that batch with stable
+    .order("id") + .range() pages.
     """
     from datetime import datetime, timedelta, timezone
     since = (datetime.now(timezone.utc) - timedelta(days=lookback_days)).isoformat()
 
-    rows = (
+    latest = (
         supabase.table("price_history")
-        .select("condo_id, listing_type, price, price_per_sqm, delta_pct, captured_at")
+        .select("captured_at")
         .gte("captured_at", since)
-        .not_.is_("delta_pct", "null")
         .order("captured_at", desc=True)
-        .limit(50000)
+        .limit(1)
         .execute()
         .data
-    ) or []
+    )
+    if not latest:
+        return []
+    last_captured_at = latest[0]["captured_at"]
+
+    rows: list[dict] = []
+    offset = 0
+    while True:
+        chunk = (
+            supabase.table("price_history")
+            .select("condo_id, listing_type, price, price_per_sqm, delta_pct, captured_at")
+            .eq("captured_at", last_captured_at)
+            .not_.is_("delta_pct", "null")
+            .order("id")
+            .range(offset, offset + 999)
+            .execute()
+            .data
+        ) or []
+        rows.extend(chunk)
+        if len(chunk) < 1000:
+            break
+        offset += 1000
 
     latest: dict[tuple[str, str], dict] = {}
     for r in rows:

@@ -55,6 +55,7 @@ def main() -> None:
             .select("condo_id, listing_type, price, price_per_sqm, currency")
             .eq("is_active", True)
             .not_.is_("price", "null")
+            .order("id")
             .range(offset, offset + 999)
             .execute()
             .data
@@ -134,7 +135,17 @@ def main() -> None:
         delta_pct = None
         if prior and prior > 0:
             delta_pct = round((med_price - prior) / prior * 100, 2)
-            if abs(delta_pct) >= 1.0:
+            # Regime-change guard: the prior snapshot batch may have been
+            # written by the old aggregation (mean over mixed USD+THB rows),
+            # so comparing it against the new median-of-THB value produces
+            # phantom deltas up to thousands of percent on hipflat-heavy
+            # condos. Genuine >=60% single-interval moves in Bangkok condo
+            # medians are essentially always data artifacts, so null the
+            # delta rather than bake garbage into price_history (and into
+            # the /reality "total drop" stat that sums these).
+            if abs(delta_pct) >= 60:
+                delta_pct = None
+            elif abs(delta_pct) >= 1.0:
                 price_changes.append((condo_id, ltype, prior, med_price, delta_pct))
 
         inserts.append({

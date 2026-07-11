@@ -59,6 +59,7 @@ def main() -> None:
                 .eq("listing_type", listing_type)
                 .eq("is_active", True)
                 .not_.is_("price", "null")
+                .order("id")
                 .range(offset, offset + page_size - 1)
                 .execute()
                 .data
@@ -148,6 +149,7 @@ def main() -> None:
                 client.table("condos")
                 .select("id")
                 .not_.is_("gross_yield_pct", "null")
+                .order("id")
                 .range(offset, offset + 999)
                 .execute()
                 .data

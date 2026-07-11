@@ -46,27 +46,39 @@ SOURCES = ("dotproperty", "ddproperty", "fazwaz")
 DEFAULT_STALE_DAYS = 21
 
 
-def _count_active(client, source: str) -> int:
-    return (
-        client.table("listings")
-        .select("id", count="exact", head=True)
-        .eq("source", source)
-        .eq("is_active", True)
-        .execute()
-        .count
-    ) or 0
+# Update chunk size. listings.id is uuid (db/schema.sql), so 200 ids in an
+# `in_()` filter is ~7.4KB of URL — comfortably under URL-length limits.
+UPDATE_CHUNK = 200
 
 
-def _count_stale(client, source: str, cutoff: str) -> int:
-    return (
-        client.table("listings")
-        .select("id", count="exact", head=True)
-        .eq("source", source)
-        .eq("is_active", True)
-        .lt("last_seen_at", cutoff)
-        .execute()
-        .count
-    ) or 0
+def _fetch_stale_ids(client, source: str, cutoff: str) -> list[str]:
+    """Return the ids of all stale-active listings for a source.
+
+    NOTE: we deliberately do NOT use `select(..., count="exact", head=True)`;
+    on this supabase-py/postgrest version it returns count=0 even when rows
+    exist, which previously made this whole script a no-op. Paginating the
+    ids gives an accurate count AND the exact rows to update. `.order("id")`
+    is required for stable pagination across separate .range() requests.
+    """
+    ids: list[str] = []
+    offset = 0
+    while True:
+        chunk = (
+            client.table("listings")
+            .select("id")
+            .eq("source", source)
+            .eq("is_active", True)
+            .lt("last_seen_at", cutoff)
+            .order("id")
+            .range(offset, offset + 999)
+            .execute()
+            .data
+        ) or []
+        ids.extend(r["id"] for r in chunk)
+        if len(chunk) < 1000:
+            break
+        offset += 1000
+    return ids
 
 
 def main() -> int:
@@ -85,26 +97,37 @@ def main() -> int:
 
     total_stale = 0
     for source in SOURCES:
-        before_active = _count_active(client, source)
-        stale = _count_stale(client, source, cutoff)
-        logger.info(f"  {source:12s}  active={before_active:>7,}  stale(>{args.days}d)={stale:>7,}")
+        stale_ids = _fetch_stale_ids(client, source, cutoff)
+        stale = len(stale_ids)
+        logger.info(f"  {source:12s}  stale(>{args.days}d)={stale:>7,}")
         total_stale += stale
 
         if dry_run or stale == 0:
             continue
 
-        # Single filtered UPDATE per source — PostgREST applies it server-side
-        # to every matching row in one request, no pagination needed.
-        (
-            client.table("listings")
-            .update({"is_active": False})
-            .eq("source", source)
-            .eq("is_active", True)
-            .lt("last_seen_at", cutoff)
-            .execute()
-        )
-        after_active = _count_active(client, source)
-        logger.info(f"    -> deactivated {stale}; active now {after_active:,}")
+        # Update in chunks of UPDATE_CHUNK ids. A single filtered UPDATE would
+        # default to returning=representation and serialize every updated row
+        # (tens of MB of egress at ~50k rows) in one response, risking a
+        # statement timeout. returning="minimal" skips the response body
+        # entirely (postgrest 0.18.0 supports the kwarg on .update()).
+        deactivated = 0
+        n_chunks = (stale + UPDATE_CHUNK - 1) // UPDATE_CHUNK
+        for i in range(0, stale, UPDATE_CHUNK):
+            chunk = stale_ids[i : i + UPDATE_CHUNK]
+            (
+                client.table("listings")
+                .update({"is_active": False}, returning="minimal")
+                .in_("id", chunk)
+                .execute()
+            )
+            deactivated += len(chunk)
+            chunk_no = i // UPDATE_CHUNK + 1
+            if chunk_no % 10 == 0 or chunk_no == n_chunks:
+                logger.info(
+                    f"    {source}: deactivated {deactivated:,}/{stale:,} "
+                    f"(chunk {chunk_no}/{n_chunks})"
+                )
+        logger.info(f"    -> {source}: {deactivated:,} listings marked inactive")
 
     if dry_run:
         logger.info(f"\nDRY-RUN — {total_stale} listings would be marked inactive. Pass --apply to commit.")

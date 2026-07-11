@@ -42,14 +42,17 @@ PAGE = 1000
 MIN_LISTINGS_FOR_REGION = 5  # below this, region median is not trustworthy
 
 
-def _fetch_all(client, table: str, columns: str, **filters) -> list[dict]:
+def _fetch_all(client, table: str, columns: str, *, order_by: str = "id", **filters) -> list[dict]:
+    # order_by the PK (listings.id / condos.id are uuid PKs) — without ORDER BY,
+    # Postgres doesn't guarantee stable row order across separate .range()
+    # requests, so pages can skip or duplicate rows.
     out: list[dict] = []
     offset = 0
     while True:
         q = client.table(table).select(columns)
         for k, v in filters.items():
             q = q.eq(k, v)
-        page = q.range(offset, offset + PAGE - 1).execute().data or []
+        page = q.order(order_by).range(offset, offset + PAGE - 1).execute().data or []
         out.extend(page)
         if len(page) < PAGE:
             break

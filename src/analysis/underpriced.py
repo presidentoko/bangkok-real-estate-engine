@@ -25,6 +25,7 @@ def detect_underpriced(
             supabase.table("value_scores")
             .select("condo_id, bubble_index")
             .lte("bubble_index", threshold)
+            .order("condo_id")
             .range(offset, offset + 999)
             .execute().data
         ) or []
