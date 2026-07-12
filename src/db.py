@@ -260,7 +260,7 @@ def upsert_dotproperty_listing(
     }
     payload = {k: v for k, v in payload.items() if v is not None}
     client.table("listings").upsert(
-        payload, on_conflict="condo_id,source,source_unit_id"
+        payload, on_conflict="condo_id,source,source_unit_id", returning="minimal"
     ).execute()
 
 
@@ -412,7 +412,7 @@ def upsert_fazwaz_listing(
     }
     payload = {k: v for k, v in payload.items() if v is not None}
     client.table("listings").upsert(
-        payload, on_conflict="condo_id,source,source_unit_id"
+        payload, on_conflict="condo_id,source,source_unit_id", returning="minimal"
     ).execute()
 
 
@@ -445,7 +445,7 @@ def upsert_ddproperty_listing(
     }
     payload = {k: v for k, v in payload.items() if v is not None}
     client.table("listings").upsert(
-        payload, on_conflict="condo_id,source,source_unit_id"
+        payload, on_conflict="condo_id,source,source_unit_id", returning="minimal"
     ).execute()
 
 
@@ -665,9 +665,9 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
         # below flips back the ones we still see. Rows not in the new scrape
         # remain is_active=false but keep their first_seen_at (= we know
         # exactly when they entered AND when they disappeared).
-        client.table("listings").update({"is_active": False}).eq(
-            "condo_id", condo_id
-        ).eq("source", "hipflat").execute()
+        client.table("listings").update(
+            {"is_active": False}, returning="minimal"
+        ).eq("condo_id", condo_id).eq("source", "hipflat").execute()
 
         for i in range(0, len(deduped), 200):
             client.table("listings").upsert(
@@ -696,7 +696,7 @@ def insert_listing(client: Client, condo_id: str, listing: dict[str, Any]) -> No
         "bedrooms": listing.get("bedrooms"),
         "bathrooms": listing.get("bathrooms"),
         "floor_level": listing.get("floor_level"),
-    }).execute()
+    }, returning="minimal").execute()
 
 
 def append_price_history(client: Client, condo_id: str, listing: dict[str, Any]) -> None:
