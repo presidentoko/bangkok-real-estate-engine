@@ -8,6 +8,7 @@ import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 export const revalidate = 86400;
 
@@ -160,7 +161,7 @@ export default async function RetireeCityPage({
     <main className="max-w-5xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(itemListJsonLd) }}
       />
 
       <header className="space-y-2">

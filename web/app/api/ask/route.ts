@@ -103,7 +103,17 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const history = Array.isArray(body.history) ? body.history.slice(-6) : [];
+  // Cap history length AND per-message size — the 6-item slice alone still
+  // lets an abuser send 6 huge blobs per request, burning Anthropic token
+  // spend within the rate limit. Matches the spirit of the 1000-char cap
+  // on the fresh `question` field above.
+  const HISTORY_MESSAGE_MAX_CHARS = 2000;
+  const history = Array.isArray(body.history)
+    ? body.history.slice(-6).map((h) => ({
+        role: h.role,
+        content: (h.content ?? "").slice(0, HISTORY_MESSAGE_MAX_CHARS),
+      }))
+    : [];
 
   const supabase = getServerSupabase();
   const ctx = await retrieveContext(supabase, question);

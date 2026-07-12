@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { renderMarkdownLink } from "@/lib/markdownLinkSafety";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -329,9 +330,8 @@ function SimpleMarkdown({ content }: { content: string }) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(
-      /\[([^\]]+)\]\(([^)\s]+)\)/g,
-      '<a href="$2" class="text-emerald-400 hover:underline">$1</a>',
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) =>
+      renderMarkdownLink(text, url, "text-emerald-400 hover:underline"),
     )
     .replace(/`([^`]+)`/g, '<code class="text-emerald-300">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong class="text-zinc-100">$1</strong>')

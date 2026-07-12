@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { TravelAffiliateCard } from "@/components/TravelAffiliateCard";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import {
   BEST_CITIES,
   BEST_FILTERS,
@@ -272,11 +273,11 @@ export default async function BestSlicePage({
     <main className="max-w-5xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(itemListJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
 
       <header className="space-y-2">

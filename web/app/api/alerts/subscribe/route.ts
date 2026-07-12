@@ -1,5 +1,15 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase";
+import { clientIp, hashIp, isRateLimited } from "@/lib/rateLimit";
+
+export const runtime = "nodejs";
+
+// Each request triggers a Telegram sendMessage plus a DB upsert — cap it so
+// a flood of requests can't spam arbitrary Telegram chats or hammer the
+// bot token (which would start getting rate-limited by Telegram itself,
+// breaking real alerts for everyone) or bloat alert_subscribers.
+const RATE_LIMIT_MAX = 5; // requests per window
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 type Body = {
   chat_id?: string;
@@ -49,6 +59,14 @@ async function verifyTelegramChat(
 }
 
 export async function POST(req: Request) {
+  const ipHash = hashIp(clientIp(req));
+  if (ipHash && isRateLimited(`alerts-subscribe:${ipHash}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again later." },
+      { status: 429, headers: { "Retry-After": "3600" } },
+    );
+  }
+
   let body: Body;
   try {
     body = await req.json();

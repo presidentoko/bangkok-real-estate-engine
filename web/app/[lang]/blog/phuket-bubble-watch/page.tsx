@@ -6,6 +6,7 @@ import { isLang, type Lang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 const SITE_URL = SEO_SITE_URL;
 const SLUG = "phuket-bubble-watch";
@@ -243,18 +244,18 @@ export default async function PhuketBubbleWatch({
     <main className="max-w-3xl mx-auto p-6">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(articleJsonLd) }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, t.h1)),
+          __html: jsonLdString(blogBreadcrumbs(lang, SLUG, t.h1)),
         }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildFaqJsonLd([
+          __html: jsonLdString(buildFaqJsonLd([
             {
               q: "What is the Phuket condo Bubble Index?",
               a: "RealData's Bubble Index measures each condo building's median sale price per sqm relative to its sub-area (tambon) median. 100 = at market. 200 = priced double the local average. In Phuket, buildings catering to foreign vacation-rental buyers — particularly in Patong, Kata, and Kamala — often score 150–350, reflecting the beach-proximity premium.",

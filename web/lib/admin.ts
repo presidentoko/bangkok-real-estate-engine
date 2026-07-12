@@ -8,6 +8,7 @@
 //     page itself is already gated by middleware.ts. Using the cookie means
 //     the client never needs to hold the raw ADMIN_SECRET in JS/localStorage.
 
+import { createHash, timingSafeEqual } from "crypto";
 import { verifyAdminSession } from "@/lib/adminSession";
 
 function parseCookie(req: Request, name: string): string | undefined {
@@ -21,12 +22,25 @@ function parseCookie(req: Request, name: string): string | undefined {
   return undefined;
 }
 
+/**
+ * Constant-time secret comparison — mirrors api/admin/login/route.ts's
+ * constantTimeEqual. Both inputs are SHA256-hashed first so length
+ * differences don't leak timing info, and so we never call
+ * timingSafeEqual on buffers of mismatched length (it throws).
+ */
+function constantTimeEqual(a: string, b: string): boolean {
+  const ah = createHash("sha256").update(a).digest();
+  const bh = createHash("sha256").update(b).digest();
+  if (ah.length !== bh.length) return false;
+  return timingSafeEqual(ah, bh);
+}
+
 export async function checkAdminAuth(req: Request): Promise<boolean> {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) return false; // refuse if misconfigured
 
   const provided = req.headers.get("x-admin-secret");
-  if (provided === secret) return true;
+  if (provided && constantTimeEqual(provided, secret)) return true;
 
   const sessionCookie = parseCookie(req, "admin_session");
   return verifyAdminSession(sessionCookie, secret);

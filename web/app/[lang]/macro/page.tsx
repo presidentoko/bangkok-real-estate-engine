@@ -4,6 +4,7 @@ import { isLang } from "@/lib/i18n";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 export const revalidate = 86400;
 
@@ -148,11 +149,11 @@ export default async function MacroPage({
     <main className="max-w-5xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(datasetJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
       <header className="space-y-2">
         <h1 className="text-3xl font-bold">Thailand mortgage + macro rates</h1>

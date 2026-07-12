@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 export const revalidate = 86400;
 
@@ -116,15 +117,15 @@ export default async function AboutPage({
     <main className="max-w-3xl mx-auto p-6 sm:p-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbsJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(datasetJsonLd) }}
       />
 
       <header className="mb-10">

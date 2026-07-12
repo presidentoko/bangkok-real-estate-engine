@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase";
+import { clientIp, hashIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -62,6 +63,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid json" }, { status: 400 });
   }
 
+  // Honeypot — real users leave this empty; bots fill anything.
+  const website = typeof body.website === "string" ? body.website.trim() : "";
+  if (website.length > 0) {
+    return NextResponse.json({ ok: true, suppressed: true });
+  }
+
   const inquiry_type = String(body.inquiry_type ?? "property");
   const email = String(body.email ?? "").trim().toLowerCase();
   const phone = body.phone ? String(body.phone).trim().slice(0, 50) : null;
@@ -94,7 +101,27 @@ export async function POST(req: Request) {
     );
   }
 
+  const ip = clientIp(req);
+  const ip_hash = hashIp(ip);
+
   const supabase = getServerSupabase();
+
+  // Rate limit — same IP can submit at most 5 contact inquiries / hour.
+  // Mirrors the check in api/leads/route.ts (same underlying table).
+  if (ip_hash) {
+    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from("leads")
+      .select("id", { count: "exact", head: true })
+      .eq("ip_hash", ip_hash)
+      .gte("created_at", since);
+    if ((count ?? 0) >= 5) {
+      return NextResponse.json(
+        { error: "Too many submissions. Try again later." },
+        { status: 429 },
+      );
+    }
+  }
 
   // LINE ID stored in message field (no dedicated column needed)
   const fullMessage = [line_id ? `LINE: ${line_id}` : null, message]
@@ -111,6 +138,7 @@ export async function POST(req: Request) {
     purpose,
     message: fullMessage,
     referrer,
+    ip_hash,
   });
 
   if (error) {

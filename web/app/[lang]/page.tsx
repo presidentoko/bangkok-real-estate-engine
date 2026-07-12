@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import {
   InventoryMapSvg,
   type KhetCount,
@@ -366,7 +367,7 @@ export default async function Home({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLdString({
               "@context": "https://schema.org",
               "@type": "FAQPage",
               inLanguage: lang,

@@ -7,6 +7,7 @@ import { fetchYieldRows, getCurrentMortgageRate } from "@/lib/queries/yield";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 // Static shell — no searchParams read here. Reading searchParams server-side
 // silently opts the whole route out of ISR (every request becomes a live
@@ -107,11 +108,11 @@ export default async function YieldsPage({
     <main className="max-w-5xl mx-auto p-6 space-y-6">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
 
       <header className="space-y-2">

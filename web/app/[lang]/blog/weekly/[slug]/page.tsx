@@ -7,6 +7,8 @@ import { isLang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getWeeklyPost, listWeeklyPosts, type WeeklyPost } from "@/lib/weeklyPost";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { renderMarkdownLink } from "@/lib/markdownLinkSafety";
 
 // Content only changes on deploy (auto-blog publishes via git push), so a
 // daily revalidate is plenty — the deploy itself rebuilds the page anyway.
@@ -93,15 +95,15 @@ export default async function WeeklyPostPage({
     <main className="max-w-3xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(articleJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbsJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
 
       <header className="space-y-3">
@@ -210,9 +212,8 @@ function InlineMd({ text }: { text: string }) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   const html = escaped
-    .replace(
-      /\[([^\]]+)\]\(([^)\s]+)\)/g,
-      '<a href="$2" class="text-emerald-400 hover:underline">$1</a>',
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) =>
+      renderMarkdownLink(text, url, "text-emerald-400 hover:underline"),
     )
     .replace(/`([^`]+)`/g, '<code class="text-emerald-300">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong class="text-zinc-50">$1</strong>');

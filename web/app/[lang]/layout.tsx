@@ -12,6 +12,7 @@ import { CompareTray } from "@/components/CompareTray";
 import { SavedNavLink } from "@/components/SavedNavLink";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
@@ -113,7 +114,7 @@ export default async function LangLayout({
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(siteJsonLd) }}
       />
       <header className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur sticky top-0 z-50">
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">

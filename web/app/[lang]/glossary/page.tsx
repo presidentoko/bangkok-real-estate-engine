@@ -8,6 +8,7 @@ import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildDefinedTermSetJsonLd } from "@/lib/seo/definedTermJsonLd";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { GLOSSARY } from "@/lib/glossary";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 export const revalidate = 86400;
 
@@ -37,8 +38,8 @@ export default async function GlossaryIndex({ params }: { params: Promise<{ lang
   ]);
   return (
     <main className="max-w-3xl mx-auto p-6">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(setJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(setJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbs) }} />
       <h1 className="text-3xl font-bold mb-2">{t.glossary.title}</h1>
       <p className="text-zinc-400 mb-6">{t.glossary.lead}</p>
       <ul className="grid sm:grid-cols-2 gap-3">

@@ -23,6 +23,7 @@ import { decodeEntities } from "@/lib/decode";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { getPortalStats } from "@/lib/queries/portals";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import {
   getCondoYield,
   getCurrentMortgageRate,
@@ -683,19 +684,19 @@ export default async function CondoPage({
     <main className="max-w-3xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbsJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(speakableJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
       {/* Action row: save + share */}
       <div className="px-4 sm:px-6 pt-4 space-y-2">

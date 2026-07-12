@@ -6,6 +6,7 @@ import { isLang, type Lang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 const SITE_URL = SEO_SITE_URL;
 const SLUG = "bangkok-foreigner-best-value";
@@ -269,17 +270,17 @@ export default async function BestValuePost({
     <main className="max-w-3xl mx-auto p-6">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(blogBreadcrumbs(lang, SLUG, t.h1)),
+          __html: jsonLdString(blogBreadcrumbs(lang, SLUG, t.h1)),
         }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
       <article>
         <header className="mb-6">

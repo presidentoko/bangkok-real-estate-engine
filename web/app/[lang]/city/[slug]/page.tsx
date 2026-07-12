@@ -13,6 +13,7 @@ import { type CondoSummary, type PropertyType } from "@/lib/queries/condos";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 export const revalidate = 86400;
 
@@ -220,15 +221,15 @@ export default async function CityPage({
     <main>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(placeJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(itemListJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbsJsonLd) }}
       />
 
       {/* Hero */}
@@ -428,7 +429,7 @@ export default async function CityPage({
           <>
             <script
               type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+              dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
             />
             <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-900">
               <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">
