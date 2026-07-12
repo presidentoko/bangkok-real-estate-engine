@@ -24,8 +24,13 @@ name: Weekly fresh-listing ingest (mid-week)
 # shouldn't kill the rest. Telegram summary flags failures.
 
 on:
-  schedule:
-    - cron: "30 20 * * 3"
+  # PAUSED 2026-07-12: same reason as weekly-refresh.yml -- Supabase
+  # free-tier egress at 4.70/5GB with the period not resetting until
+  # 2026-08-04. Re-enable the `schedule:` trigger after the reset (or
+  # sooner once a manual workflow_dispatch run confirms the per-listing
+  # returning="minimal" fix (commit c9f0374) actually dropped egress).
+  # schedule:
+  #   - cron: "30 20 * * 3"
   workflow_dispatch:
     inputs:
       limit_per_source:
