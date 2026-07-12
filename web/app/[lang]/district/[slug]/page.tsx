@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
@@ -26,18 +27,51 @@ type CondoLite = {
   market_summary_currency: string | null;
 };
 
+// Prebuild the districts with enough condos to matter (same >=3-condo bar
+// sitemap-areas.xml uses to decide which /district/ URLs are worth
+// publishing at all) x 3 langs. Slugs are encodeURIComponent(name.toLowerCase())
+// to match the canonical URL this page and the sitemap both link to (see
+// canonicalSlug below) — since resolveRegion() decodes before matching,
+// prebuilt params round-trip correctly. Anything not in this prebuilt set
+// (smaller districts, alternate casings) still renders fine via on-demand
+// ISR — dynamicParams is left at its default `true`.
+export async function generateStaticParams() {
+  const supabase = getServerSupabase();
+  const { data } = await supabase
+    .from("regions")
+    .select("name, condos(id)")
+    .limit(500);
+  type RegionRow = { name: string; condos: { id: string }[] | null };
+  const rows = (data ?? []) as RegionRow[];
+  const slugs = rows
+    .filter((r) => r.name && (r.condos ?? []).length >= 3)
+    .map((r) => encodeURIComponent(r.name.toLowerCase()));
+  return slugs.flatMap((slug) =>
+    (["en", "ko", "th"] as const).map((lang) => ({ slug, lang }))
+  );
+}
+
 // Slug → region.name lookup. Region names in DB are inconsistent
 // (some 'bang-khen' lowercase, some 'Bang-khun-thian' capitalized) so we
-// match case-insensitively, hyphens preserved.
-async function resolveRegion(
-  supabase: ReturnType<typeof getServerSupabase>,
+// match case-insensitively, hyphens preserved. Wrapped in React's cache() so
+// generateMetadata() and the page body below share one Supabase round trip
+// per request instead of running the lookup twice (same pattern as
+// condo/[slug]/page.tsx's getCondoIdBySlug).
+const resolveRegion = cache(async (
   slug: string,
-): Promise<{ id: string; name: string; province: string | null } | null> {
+): Promise<{ id: string; name: string; province: string | null } | null> => {
+  const supabase = getServerSupabase();
+  // The App Router does not auto-decode dynamic segments, so a URL like
+  // /district/din%20daeng arrives here as the literal string "din%20daeng"
+  // (percent signs intact), not "din daeng" — decode before matching
+  // `regions.name`, or any district whose name contains a space 404s on its
+  // own percent-encoded canonical URL (confirmed live 2026-07-12).
+  const decoded = decodeURIComponent(slug);
   // First try exact (cheap)
   const { data: exact } = await supabase
     .from("regions")
     .select("id, name, province")
-    .eq("name", slug)
+    .eq("name", decoded)
     .limit(1)
     .maybeSingle();
   if (exact) return exact as { id: string; name: string; province: string | null };
@@ -46,11 +80,11 @@ async function resolveRegion(
   const { data: ilike } = await supabase
     .from("regions")
     .select("id, name, province")
-    .ilike("name", slug)
+    .ilike("name", decoded)
     .limit(1)
     .maybeSingle();
   return (ilike as { id: string; name: string; province: string | null } | null) ?? null;
-}
+});
 
 export async function generateMetadata({
   params,
@@ -58,8 +92,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string; lang: string }>;
 }): Promise<Metadata> {
   const { slug, lang } = await params;
-  const supabase = getServerSupabase();
-  const region = await resolveRegion(supabase, slug);
+  const region = await resolveRegion(slug);
   if (!region) return { title: "District — RealData" };
   const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const province = region.province ?? "Bangkok";
@@ -98,7 +131,7 @@ export default async function DistrictPage({
   if (!isLang(lang)) notFound();
 
   const supabase = getServerSupabase();
-  const region = await resolveRegion(supabase, slug);
+  const region = await resolveRegion(slug);
   if (!region) notFound();
 
   const [{ data: condoRows }, mortgage] = await Promise.all([

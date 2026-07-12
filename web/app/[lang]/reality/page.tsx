@@ -90,20 +90,32 @@ async function fetchTopBubblePerProvince(): Promise<Case[]> {
   const out: Case[] = [];
 
   for (const p of PROVINCES) {
-    const { data: condos } = await supabase
-      .from("condos_published")
-      .select("id, name, regions(name)")
-      .eq("province", p.slug)
-      .limit(500);
-    const ids = (condos ?? []).map((c) => (c as { id: string }).id);
+    // PostgREST caps every response at 1000 rows regardless of .limit(), so
+    // the old single .limit(500) call was already inside that cap, but it
+    // still meant "top bubble per province" was ranked from an arbitrary
+    // 500-row sample instead of the full province (Bangkok alone has
+    // ~6,000 condos). Paginate to the full set before ranking.
+    type CondoRow = {
+      id: string;
+      name: string;
+      regions: { name: string } | { name: string }[] | null;
+    };
+    const condos: CondoRow[] = [];
+    const page = 1000;
+    for (let from = 0; ; from += page) {
+      const { data, error } = await supabase
+        .from("condos_published")
+        .select("id, name, regions(name)")
+        .eq("province", p.slug)
+        .order("id", { ascending: true })
+        .range(from, from + page - 1);
+      if (error || !data) break;
+      condos.push(...(data as unknown as CondoRow[]));
+      if (data.length < page) break;
+    }
+    const ids = condos.map((c) => c.id);
     if (!ids.length) continue;
-    const idMap = new Map(
-      ((condos ?? []) as unknown as Array<{
-        id: string;
-        name: string;
-        regions: { name: string } | { name: string }[] | null;
-      }>).map((c) => [c.id, c])
-    );
+    const idMap = new Map(condos.map((c) => [c.id, c]));
 
     type ScoreRow = { condo_id: string; bubble_index: number };
     const scores: ScoreRow[] = [];

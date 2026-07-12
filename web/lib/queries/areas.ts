@@ -16,7 +16,11 @@ function median(xs: number[]): number | null {
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 }
 
-/** Median gross yield + price/sqm grouped by region name, Bangkok only. Cached 1h. */
+/** Median gross yield + price/sqm grouped by region name, Bangkok only.
+ * Cached 24h to match guide/investment/page.tsx's own `revalidate = 86400` —
+ * an unstable_cache window shorter than the page's revalidate silently caps
+ * the page down to the cache's cadence (confirmed live: page was
+ * regenerating hourly, 24x more than intended). */
 export const getYieldByArea = unstable_cache(
   async (minCondos = 5, limit = 25): Promise<AreaYield[]> => {
     const sb = getServerSupabase();
@@ -51,5 +55,5 @@ export const getYieldByArea = unstable_cache(
     return out.slice(0, limit);
   },
   ["yield-by-area-v1"],
-  { revalidate: 3600 },
+  { revalidate: 86400 },
 );

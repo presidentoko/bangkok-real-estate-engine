@@ -92,14 +92,31 @@ export default async function DataShowcase({
   // 2. Per-city stats
   const cityStats: CityStat[] = [];
   for (const p of PROVINCES) {
-    const { data: condos, count: bcount } = await supabase
-      .from("condos_published")
-      .select("id, market_sale_median", { count: "exact" })
-      .in("province", cityProvinceSlugs(canonicalCitySlug(p.slug)))
-      .limit(2000);
-    const ids = (condos ?? []).map((c) => (c as { id: string }).id);
-    const sales = (condos ?? [])
-      .map((c) => (c as { market_sale_median: number | null }).market_sale_median)
+    // PostgREST caps every response at 1000 rows regardless of .limit(), so
+    // the old single .limit(2000) call silently truncated Bangkok (thousands
+    // of condos) to its first ~1000 — medianSale/medianBubble below were
+    // being computed from an incomplete subset. Paginate the fetch; `bcount`
+    // still comes back exact on the first page regardless of how many rows
+    // are actually returned.
+    const condos: Array<{ id: string; market_sale_median: number | null }> = [];
+    let bcount = 0;
+    const provinces = cityProvinceSlugs(canonicalCitySlug(p.slug));
+    const page = 1000;
+    for (let from = 0; ; from += page) {
+      const { data, count, error } = await supabase
+        .from("condos_published")
+        .select("id, market_sale_median", { count: from === 0 ? "exact" : undefined })
+        .in("province", provinces)
+        .order("id", { ascending: true })
+        .range(from, from + page - 1);
+      if (from === 0) bcount = count ?? 0;
+      if (error || !data) break;
+      condos.push(...(data as Array<{ id: string; market_sale_median: number | null }>));
+      if (data.length < page) break;
+    }
+    const ids = condos.map((c) => c.id);
+    const sales = condos
+      .map((c) => c.market_sale_median)
       .filter((v): v is number => v != null);
 
     let bubbles: number[] = [];

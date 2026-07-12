@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
@@ -26,15 +27,42 @@ type Row = {
   foreign_quota_inventory_pct: number | null;
 };
 
+// PostgREST caps every response at 1000 rows regardless of the query shape,
+// so the old unpaginated select silently truncated to an arbitrary ~1000-row
+// slice of developer_slug values (harmless today since missing slugs still
+// fall back to on-demand ISR, but not an intentional top-N). Paginate the
+// same way sitemap-areas.xml's devSlugSet loop already does for the
+// equivalent query.
 export async function generateStaticParams() {
+  const supabase = getServerSupabase();
+  const slugSet = new Set<string>();
+  const page = 1000;
+  for (let offset = 0; ; offset += page) {
+    const { data } = await supabase
+      .from("condos_published")
+      .select("developer_slug")
+      .not("developer_slug", "is", null)
+      .range(offset, offset + page - 1);
+    const chunk = (data ?? []) as Array<{ developer_slug: string }>;
+    for (const r of chunk) slugSet.add(r.developer_slug);
+    if (chunk.length < page) break;
+  }
+  return [...slugSet].map((s) => ({ slug: s }));
+}
+
+// generateMetadata() and the page body both need the same developer-meta
+// row for this slug; wrapping in React's cache() collapses the two call
+// sites into a single Supabase round trip per request (same pattern as
+// condo/[slug]/page.tsx's getCondoFullById).
+const getDevMeta = cache(async (slug: string) => {
   const supabase = getServerSupabase();
   const { data } = await supabase
     .from("condos_published")
-    .select("developer_slug")
-    .not("developer_slug", "is", null);
-  const slugs = [...new Set((data ?? []).map((r: { developer_slug: string }) => r.developer_slug))];
-  return slugs.map((s) => ({ slug: s }));
-}
+    .select("developer, developer_project_count, developer_unit_count")
+    .eq("developer_slug", slug)
+    .limit(1);
+  return data?.[0] ?? null;
+});
 
 export async function generateMetadata({
   params,
@@ -44,14 +72,7 @@ export async function generateMetadata({
   const { slug, lang } = await params;
   if (!isLang(lang)) return { title: "Developer" };
 
-  const supabase = getServerSupabase();
-  const { data } = await supabase
-    .from("condos_published")
-    .select("developer, developer_project_count, developer_unit_count")
-    .eq("developer_slug", slug)
-    .limit(1);
-
-  const dev = data?.[0];
+  const dev = await getDevMeta(slug);
   if (!dev) return { title: "Developer" };
 
   const title = `${dev.developer} Condos in Thailand — Track Record | RealData`;
@@ -92,14 +113,9 @@ export default async function DeveloperPage({
   const rows = (data ?? []) as unknown as Row[];
   if (rows.length === 0) notFound();
 
-  // Developer meta (from first row — same across all rows for this slug)
-  const { data: devMeta } = await supabase
-    .from("condos_published")
-    .select("developer, developer_project_count, developer_unit_count")
-    .eq("developer_slug", slug)
-    .limit(1);
-
-  const dev = devMeta?.[0];
+  // Developer meta (from first row — same across all rows for this slug).
+  // Shares the generateMetadata() lookup via cache() instead of re-querying.
+  const dev = await getDevMeta(slug);
   const devName: string = dev?.developer ?? slug;
   const projectCount: number | null = dev?.developer_project_count ?? null;
   const unitCount: number | null = dev?.developer_unit_count ?? null;

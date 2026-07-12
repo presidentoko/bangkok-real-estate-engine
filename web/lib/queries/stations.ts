@@ -18,23 +18,31 @@ type LivRow = {
 // condo_id -> [station name, best distance within radius]
 type StationToCondos = Map<string, Map<string, number>>;
 
-async function fetchAllLivability(): Promise<LivRow[]> {
-  const sb = getServerSupabase();
-  const out: LivRow[] = [];
-  const page = 1000;
-  for (let from = 0; ; from += page) {
-    const { data, error } = await sb
-      .from("livability_metrics")
-      .select(
-        "condo_id,nearest_bts_station,nearest_bts_distance_m,nearest_mrt_station,nearest_mrt_distance_m",
-      )
-      .range(from, from + page - 1);
-    if (error || !data) break;
-    out.push(...(data as LivRow[]));
-    if (data.length < page) break;
-  }
-  return out;
-}
+// Full livability_metrics walk (~700 rows) — was uncached, so every
+// station-page render/regen (getStationData is called per-station, ~96
+// stations x 3 langs) re-walked the whole table. Cached 7d to match the
+// weekly refresh cadence, same convention as getViableStations below.
+const fetchAllLivability = unstable_cache(
+  async (): Promise<LivRow[]> => {
+    const sb = getServerSupabase();
+    const out: LivRow[] = [];
+    const page = 1000;
+    for (let from = 0; ; from += page) {
+      const { data, error } = await sb
+        .from("livability_metrics")
+        .select(
+          "condo_id,nearest_bts_station,nearest_bts_distance_m,nearest_mrt_station,nearest_mrt_distance_m",
+        )
+        .range(from, from + page - 1);
+      if (error || !data) break;
+      out.push(...(data as LivRow[]));
+      if (data.length < page) break;
+    }
+    return out;
+  },
+  ["all-livability-v1"],
+  { revalidate: 604800 },
+);
 
 /** Build the station -> {condoId: minDist} map, unioning both columns. */
 function indexStations(rows: LivRow[]): StationToCondos {
@@ -61,7 +69,12 @@ export type ViableStation = {
   condoCount: number;
 };
 
-/** Stations with >= MIN_CONDOS distinct condos within RADIUS_M. Cached 1h. */
+/** Stations with >= MIN_CONDOS distinct condos within RADIUS_M. Cached 7d —
+ * this backs condo/[slug]/page.tsx's stationLinkOk check, and an
+ * unstable_cache revalidate shorter than a page's own `revalidate` export
+ * silently caps the page down to the cache's window (confirmed live 2026-07-12:
+ * condo pages built "1d" instead of the intended "1w"). Station distances
+ * only change on the weekly refresh, so 7d is safe. */
 export const getViableStations = unstable_cache(
   async (): Promise<ViableStation[]> => {
     const rows = await fetchAllLivability();
@@ -85,7 +98,7 @@ export const getViableStations = unstable_cache(
     return out;
   },
   ["viable-stations-v1"],
-  { revalidate: 86400 },
+  { revalidate: 604800 },
 );
 
 export type StationData = {
@@ -165,10 +178,14 @@ export const getStationData = unstable_cache(
     const condos = condoRows.map(rowToSummary);
 
     // gross yield per condo from the condos table (not in condos_published)
-    const { data: yieldRows } = await sb
-      .from("condos")
-      .select("id, gross_yield_pct, market_sale_per_sqm")
-      .in("id", ids);
+    const yieldRows: Record<string, any>[] = [];
+    for (let i = 0; i < ids.length; i += chunk) {
+      const { data } = await sb
+        .from("condos")
+        .select("id, gross_yield_pct, market_sale_per_sqm")
+        .in("id", ids.slice(i, i + chunk));
+      if (data) yieldRows.push(...(data as Record<string, any>[]));
+    }
     const yields = (yieldRows ?? [])
       .map((r: any) => r.gross_yield_pct)
       .filter((n: any): n is number => typeof n === "number");

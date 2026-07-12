@@ -9,7 +9,10 @@ import {
   isoDate,
 } from "@/lib/sitemap-helpers";
 
-export const revalidate = 86400;
+// No `revalidate` export here — this route reads `url.searchParams` below,
+// which makes it dynamic regardless, so a revalidate export would be dead
+// code. Actual caching comes from the `s-maxage=86400` the xmlResponse()
+// helper sets directly.
 export const maxDuration = 60;
 
 // 2,500 condos × 3 langs = 7,500 entries ≈ ~5MB per page

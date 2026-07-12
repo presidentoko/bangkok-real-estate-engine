@@ -82,6 +82,32 @@ function regionName(r: CondoRow): string | null {
   return rg.name ?? null;
 }
 
+// PostgREST caps every response at 1000 rows regardless of the requested
+// .range() size, so the old single .range(0, 9999) call silently returned
+// at most 1000 of Bangkok's ~6,000 condos — the flood map/stats were being
+// computed from an incomplete, arbitrary subset. Walk the table in
+// 1000-row pages instead.
+async function fetchAllBangkokCondos(
+  supabase: ReturnType<typeof getServerSupabase>,
+  select: string,
+): Promise<CondoRow[]> {
+  const out: CondoRow[] = [];
+  const page = 1000;
+  for (let from = 0; ; from += page) {
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select(select)
+      .eq("source", "hipflat")
+      .eq("province", "bangkok")
+      .order("id", { ascending: true })
+      .range(from, from + page - 1);
+    if (error || !data) break;
+    out.push(...(data as unknown as CondoRow[]));
+    if (data.length < page) break;
+  }
+  return out;
+}
+
 export default async function FloodPage({
   params,
 }: {
@@ -94,13 +120,8 @@ export default async function FloodPage({
   const supabase = getServerSupabase();
   const condoSelect = "id, name, url, latitude, longitude, region_id, regions(name)";
 
-  const [condosRes, geoRes] = await Promise.all([
-    supabase
-      .from("condos_published")
-      .select(condoSelect)
-      .eq("source", "hipflat")
-      .eq("province", "bangkok")
-      .range(0, 9999),
+  const [condos, geoRes] = await Promise.all([
+    fetchAllBangkokCondos(supabase, condoSelect),
     fetch(
       `${SEO_SITE_URL}/bangkok-districts.geojson`,
       { next: { revalidate: 3600 } }
@@ -109,7 +130,6 @@ export default async function FloodPage({
       .catch(() => ({ features: [] })),
   ]);
 
-  const condos = (condosRes.data ?? []) as unknown as CondoRow[];
   const features = (geoRes.features ?? []) as GeoFeature[];
   const levelByKhet = new Map<string, number>();
   for (const f of features) {
