@@ -22,7 +22,9 @@ const SKIP_PREFIXES = [
 // Pages under /admin that don't require auth (login itself must be open).
 const ADMIN_PUBLIC_PATHS = new Set(["/admin/login"]);
 
-// TEMPORARY (added 2026-07-12, remove after 2026-08-04): Supabase free-tier
+// TEMPORARY (added 2026-07-12, self-expires 2026-08-04 via the Date.now()
+// check below -- safe to delete this block entirely after that date, but
+// it won't misfire if left in place). Supabase free-tier
 // egress hit 4.70/5GB with the period not resetting until 2026-08-04. Live
 // Vercel logs showed a broad bot crawl hammering /condo/[slug] specifically
 // (~68% cache MISS, every hit a distinct never-before-cached page across
@@ -55,7 +57,11 @@ function pickLang(req: NextRequest): Lang {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname.includes("/condo/") && BOT_UA_RE.test(req.headers.get("user-agent") ?? "")) {
+  if (
+    Date.now() < Date.parse(EGRESS_PAUSE_UNTIL) &&
+    pathname.includes("/condo/") &&
+    BOT_UA_RE.test(req.headers.get("user-agent") ?? "")
+  ) {
     return new NextResponse(
       "Temporarily pausing crawl of this section while a free-tier database " +
         "budget resets. Please retry after 2026-08-04.",
