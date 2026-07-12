@@ -275,12 +275,25 @@ async def _run(limit: int | None, force: bool) -> int:
     )
 
     # Refresh per-condo DOM aggregates so the site can sort/filter without a
-    # request-time GROUP BY across the listings table.
-    try:
-        client.rpc("recompute_condo_dom").execute()
-        logger.info("condo DOM aggregates recomputed")
-    except Exception as e:
-        logger.warning(f"recompute_condo_dom RPC raised: {e}")
+    # request-time GROUP BY across the listings table. Retried with backoff
+    # — this RPC has a history of hitting Postgres statement_timeout
+    # (57014) on the free-tier Supabase instance (the function itself now
+    # sets its own SET LOCAL statement_timeout, see
+    # db/schema_phase6_dom.sql, but a transient/contended run can still
+    # miss it). Never fatal to this script either way: DOM is also
+    # recomputed daily by daily-dom.yml, so a miss here just means the
+    # per-condo DOM shown on the site is up to a day stale, not wrong.
+    dom_max_attempts = 3
+    dom_backoff = [5, 15]  # gaps between the 3 attempts
+    for attempt in range(1, dom_max_attempts + 1):
+        try:
+            client.rpc("recompute_condo_dom").execute()
+            logger.info("condo DOM aggregates recomputed")
+            break
+        except Exception as e:
+            logger.warning(f"recompute_condo_dom RPC raised (attempt {attempt}/{dom_max_attempts}): {e}")
+            if attempt < dom_max_attempts:
+                time.sleep(dom_backoff[attempt - 1])
     return 0 if n_ok > 0 else 1
 
 

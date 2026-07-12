@@ -26,6 +26,18 @@ create unique index if not exists listings_condo_unit_uniq
 create index if not exists listings_active_idx on listings(is_active) where is_active = true;
 create index if not exists listings_first_seen_idx on listings(first_seen_at);
 
+-- 4b. recompute_condo_dom() (below) both aggregates active hipflat
+--     listings by condo_id and anti-joins condos against that same set.
+--     Neither query is served well by listings_active_idx alone (it still
+--     has to filter every active row down to source = 'hipflat'), and this
+--     scan is a likely contributor to the RPC's statement_timeout (57014)
+--     failures observed daily since 2026-06-26. A covering partial index
+--     on the exact predicate the function uses lets both the GROUP BY and
+--     the antijoin use an index scan instead of a filtered seq scan.
+create index if not exists listings_hipflat_active_condo_idx
+    on listings(condo_id)
+    where is_active = true and source = 'hipflat';
+
 -- 4. Per-condo aggregate so the site can sort by listing freshness without
 --    a heavy GROUP BY at request time.
 alter table condos
@@ -44,10 +56,35 @@ create or replace view condos_published
 grant select on condos_published to anon, authenticated, service_role;
 
 -- 5. Helper: recompute the per-condo DOM aggregates from currently-active
---    listings. Run after each Tier B pass.
+--    listings. Run after each Tier B pass, plus a daily tick (see
+--    .github/workflows/daily-dom.yml) since the DOM values shift by +1 day
+--    every run even without a new scrape.
+--
+--    This intentionally recomputes across ALL active hipflat listings every
+--    call rather than only condos touched "recently" — DOM (days on
+--    market) increases by one for every still-active listing every day
+--    regardless of whether that listing was rescanned, so a
+--    recency-scoped/incremental version would silently stop advancing DOM
+--    for untouched-but-still-active listings and would change this
+--    function's output contract (web/app/[lang]/condo/[slug]/page.tsx and
+--    web/app/[lang]/stale/page.tsx both read median_listing_dom_days /
+--    max_listing_dom_days expecting a true daily-fresh value for every
+--    published condo). Kept as a full recompute; see the SET LOCAL
+--    statement_timeout below and listings_hipflat_active_condo_idx above
+--    for the actual timeout fix instead.
 create or replace function recompute_condo_dom() returns void
 language plpgsql as $$
 begin
+    -- The free-tier Supabase role-level statement_timeout is what's been
+    -- canceling this RPC (postgrest.exceptions.APIError 57014) on every
+    -- run since 2026-06-26. statement_timeout is a plain USERSET GUC, so a
+    -- SET LOCAL here raises it for the remainder of this transaction only
+    -- (scoped to this RPC call, not a global change) without needing
+    -- direct database/role admin access. 55s leaves headroom under both
+    -- callers' step timeouts (daily-dom.yml's 5-minute job timeout and the
+    -- Tier B step in weekly-refresh.yml).
+    set local statement_timeout = '55s';
+
     with agg as (
         select
             condo_id,
@@ -69,14 +106,23 @@ begin
     from agg
     where c.id = agg.condo_id;
 
-    -- Buildings with zero active listings: clear out so the site shows nothing
-    -- rather than a stale value.
-    update condos
+    -- Buildings with zero active listings: clear out so the site shows
+    -- nothing rather than a stale value. Rewritten from `id not in
+    -- (subquery)` to `not exists`: NOT IN is both a correctness trap (if
+    -- listings.condo_id can ever be null, NOT IN against a subquery
+    -- containing a null makes the whole comparison unknown for every row,
+    -- silently matching nothing) and typically forces a worse plan than an
+    -- anti-join; NOT EXISTS sidesteps both and can use
+    -- listings_hipflat_active_condo_idx above.
+    update condos c
     set active_listings_count = 0,
         median_listing_dom_days = null,
         max_listing_dom_days = null,
         dom_computed_at = now()
-    where id not in (select condo_id from listings where is_active = true and source = 'hipflat')
-      and active_listings_count is not null;
+    where active_listings_count is not null
+      and not exists (
+          select 1 from listings l
+          where l.condo_id = c.id and l.is_active = true and l.source = 'hipflat'
+      );
 end;
 $$;

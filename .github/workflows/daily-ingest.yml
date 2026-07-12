@@ -33,7 +33,7 @@ on:
         default: "100"
 
 concurrency:
-  group: daily-ingest
+  group: weekly-mid-ingest
   cancel-in-progress: false
 
 jobs:
@@ -69,77 +69,124 @@ jobs:
         continue-on-error: true
         run: |
           cmd /c "python scripts\ingest_dotproperty.py --city bangkok --listing-type both --limit $env:LIMIT 2>&1" | Tee-Object -FilePath ingest_dotproperty.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::dotproperty exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::dotproperty exited $LASTEXITCODE"
+            Add-Content -Path ingest_dotproperty.log -Value "CI_STEP_FAILED::dotproperty"
+          }
 
       - name: DDProperty Bangkok (sale, light)
         continue-on-error: true
         run: |
           cmd /c "python scripts\ingest_ddproperty.py --city bangkok --listing-type sale --limit $env:LIMIT 2>&1" | Tee-Object -FilePath ingest_ddproperty.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::ddproperty exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::ddproperty exited $LASTEXITCODE"
+            Add-Content -Path ingest_ddproperty.log -Value "CI_STEP_FAILED::ddproperty"
+          }
 
       - name: FazWaz Bangkok (sale, light)
         continue-on-error: true
         run: |
           cmd /c "python scripts\ingest_fazwaz.py --city bangkok --listing-type sale --limit $env:LIMIT 2>&1" | Tee-Object -FilePath ingest_fazwaz.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::fazwaz exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::fazwaz exited $LASTEXITCODE"
+            Add-Content -Path ingest_fazwaz.log -Value "CI_STEP_FAILED::fazwaz"
+          }
 
       - name: Snapshot prices + recompute yields
         continue-on-error: true
         run: |
           cmd /c "python scripts\snapshot_prices.py 2>&1" | Tee-Object -FilePath snapshot.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::snapshot_prices exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::snapshot_prices exited $LASTEXITCODE"
+            Add-Content -Path snapshot.log -Value "CI_STEP_FAILED::snapshot"
+          }
           cmd /c "python scripts\compute_yields.py 2>&1" | Tee-Object -FilePath yields.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::compute_yields exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::compute_yields exited $LASTEXITCODE"
+            Add-Content -Path yields.log -Value "CI_STEP_FAILED::yields"
+          }
 
       - name: Recompute DOM aggregates
+        # continue-on-error: the recompute_condo_dom RPC has a history of
+        # hitting Postgres statement_timeout on the free-tier Supabase
+        # instance (see db/schema_phase6_dom.sql — now sets its own
+        # SET LOCAL statement_timeout, but keep this soft so a slow RPC
+        # never fails the whole ingest run).
         continue-on-error: true
         run: |
-          python - <<'PY'
+          # PowerShell can't parse a bash `<<'PY'` heredoc (this job's
+          # defaults.run.shell is powershell, not bash) — write the Python
+          # snippet to a temp file instead and run it as a real script.
+          $py = @'
           import os
           from supabase import create_client
           c = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
           c.rpc("recompute_condo_dom").execute()
           print("DOM aggregates recomputed")
-          PY
+          '@
+          Set-Content -Path recompute_dom.py -Value $py -Encoding utf8
+          cmd /c "python recompute_dom.py 2>&1" | Tee-Object -FilePath dom.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::recompute_dom exited $LASTEXITCODE"
+            Add-Content -Path dom.log -Value "CI_STEP_FAILED::dom"
+          }
+          Remove-Item -Path recompute_dom.py -ErrorAction SilentlyContinue
 
       - name: Notify summary
         if: always() && env.TELEGRAM_BOT_TOKEN != ''
-        shell: bash
-        # Use curl + bash for the notify step — the earlier PowerShell +
-        # Invoke-RestMethod combo got 404s in production, almost
-        # certainly URL/string-interpolation flakiness when the token
-        # has special chars. curl with --data-urlencode is the same
-        # pattern that's been confirmed working from the overnight
-        # shell scripts.
+        # PowerShell + Invoke-RestMethod, not bash/curl — bash does not
+        # exist on this Windows runner, so every prior `shell: bash` notify
+        # step has silently no-op'd since 2026-05-19 (production logs show
+        # `##[error]bash: command not found`). The earlier PowerShell
+        # attempt's reported 404s were almost certainly the token being
+        # interpolated into the URL from a single-quoted string (never
+        # expanded) rather than an inherent PowerShell/Telegram problem;
+        # -Body as a hashtable here lets Invoke-RestMethod do the
+        # form-encoding so there's no manual string concatenation to get
+        # wrong.
+        #
+        # Failure detection: each ingest/compute step above now writes a
+        # literal "CI_STEP_FAILED::<label>" line into its own log file via
+        # Add-Content when $LASTEXITCODE is non-zero (the old approach
+        # grepped for "::warning::", but that annotation is written only to
+        # the live workflow console via Write-Output, never into the log
+        # file the grep actually read — so it could never match).
         run: |
-          status() {
-            local path="$1" label="$2"
-            [ ! -f "$path" ] && { echo "${label}=skip"; return; }
-            grep -q '^::warning::' "$path" && { echo "${label}=FAIL"; return; }
-            echo "${label}=ok"
+          function Get-StepStatus($path, $label) {
+            if (-not (Test-Path $path)) { return "$label=skip" }
+            if (Select-String -Path $path -Pattern '^CI_STEP_FAILED::' -Quiet) { return "$label=FAIL" }
+            return "$label=ok"
           }
-          DP=$(status ingest_dotproperty.log dp)
-          DD=$(status ingest_ddproperty.log  dd)
-          FZ=$(status ingest_fazwaz.log      fz)
-          SN=$(status snapshot.log           snap)
-          YL=$(status yields.log             yld)
-          MSG="Daily ingest: $DP $DD $FZ $SN $YL"
-          curl -s --max-time 15 \
-            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "text=${MSG}" \
-            -o /dev/null -w "HTTP %{http_code}\n"
+          $dp = Get-StepStatus "ingest_dotproperty.log" "dp"
+          $dd = Get-StepStatus "ingest_ddproperty.log" "dd"
+          $fz = Get-StepStatus "ingest_fazwaz.log" "fz"
+          $sn = Get-StepStatus "snapshot.log" "snap"
+          $yl = Get-StepStatus "yields.log" "yld"
+          $dm = Get-StepStatus "dom.log" "dom"
+          $msg = "Weekly ingest (Wed): $dp $dd $fz $sn $yl $dm"
+
+          $uri = "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage"
+          try {
+            Invoke-RestMethod -Uri $uri -Method Post -TimeoutSec 15 -ContentType "application/x-www-form-urlencoded" -Body @{
+              chat_id = $env:TELEGRAM_CHAT_ID
+              text    = $msg
+            } | Out-Null
+            Write-Output "Telegram notify: sent"
+          } catch {
+            Write-Output "Telegram notify failed: $($_.Exception.Message)"
+          }
 
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: daily-ingest-${{ github.run_id }}
+          name: weekly-mid-ingest-${{ github.run_id }}
           path: |
             ingest_dotproperty.log
             ingest_ddproperty.log
             ingest_fazwaz.log
             snapshot.log
             yields.log
+            dom.log
           if-no-files-found: ignore
           retention-days: 14

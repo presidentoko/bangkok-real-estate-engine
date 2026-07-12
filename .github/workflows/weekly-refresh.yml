@@ -69,49 +69,92 @@ jobs:
       # steps below. Telegram summary at the bottom flags failures.
       # ─────────────────────────────────────────────────────────────
 
+      # Per-step timeout-minutes on every ingest/scraping step below: the
+      # job-level timeout-minutes: 540 is a hard kill that continue-on-error
+      # cannot override, so without a per-step budget one slow/hanging
+      # source (e.g. a Cloudflare stall) could burn the entire 540-minute
+      # window and starve the scoring/analysis tail (mark_stale onward) of
+      # any runtime at all — which is exactly what's been happening (0%
+      # weekly success in the last 10 runs). Caps below sum to ~450min,
+      # leaving a margin for setup + the scoring tail within the 540min
+      # ceiling, well above the ~425min historical baseline noted below.
+
       - name: Ingest BOT macro indicators
         continue-on-error: true
+        timeout-minutes: 15
         run: |
           cmd /c "python scripts\ingest_bot.py 2>&1" | Tee-Object -FilePath ingest_bot.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::ingest_bot exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::ingest_bot exited $LASTEXITCODE"
+            Add-Content -Path ingest_bot.log -Value "CI_STEP_FAILED::bot"
+          }
 
       - name: Sweep DotProperty (Thailand-wide)
         continue-on-error: true
+        timeout-minutes: 150
         run: |
           cmd /c "python scripts\sweep_dotproperty_thailand.py 2>&1" | Tee-Object -FilePath ingest_dotproperty.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::sweep_dotproperty exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::sweep_dotproperty exited $LASTEXITCODE"
+            Add-Content -Path ingest_dotproperty.log -Value "CI_STEP_FAILED::dp"
+          }
 
       - name: Sweep DDProperty (priority cities, sale)
         continue-on-error: true
+        timeout-minutes: 60
         run: |
           cmd /c "python scripts\sweep_ddproperty_sale_only.py 2>&1" | Tee-Object -FilePath ingest_ddproperty.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::sweep_ddproperty exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::sweep_ddproperty exited $LASTEXITCODE"
+            Add-Content -Path ingest_ddproperty.log -Value "CI_STEP_FAILED::dd"
+          }
 
       - name: Ingest FazWaz (priority cities, sale)
         continue-on-error: true
+        timeout-minutes: 90
         run: |
           $cities = @("bangkok", "phuket", "pattaya", "chiang-mai", "hua-hin", "chonburi")
           foreach ($city in $cities) {
             Write-Output "=== FazWaz sale: $city ==="
             cmd /c "python scripts\ingest_fazwaz.py --city $city --listing-type sale 2>&1" | Tee-Object -FilePath "ingest_fazwaz_$city.log"
-            if ($LASTEXITCODE -ne 0) { Write-Output "::warning::ingest_fazwaz $city exited $LASTEXITCODE" }
+            if ($LASTEXITCODE -ne 0) {
+              Write-Output "::warning::ingest_fazwaz $city exited $LASTEXITCODE"
+              Add-Content -Path "ingest_fazwaz_$city.log" -Value "CI_STEP_FAILED::fz-$city"
+            }
           }
 
       - name: Ingest FazWaz foreign quota (stale only)
         continue-on-error: true
+        timeout-minutes: 45
         run: |
           cmd /c "python scripts\ingest_foreign_quota.py --refresh-days 30 2>&1" | Tee-Object -FilePath ingest_foreign_quota.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::ingest_foreign_quota exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::ingest_foreign_quota exited $LASTEXITCODE"
+            Add-Content -Path ingest_foreign_quota.log -Value "CI_STEP_FAILED::fq"
+          }
 
       - name: Tier B refresh (limited)
         # cmd.exe handles the 2>&1: Windows PowerShell 5.1 wraps native-cmd
         # stderr lines into ErrorRecord objects (NativeCommandError), which
         # makes the script exit 1 even though python ran fine. Letting cmd
         # do the redirect avoids that wrapping.
+        #
+        # continue-on-error: true — this used to `exit $LASTEXITCODE` on
+        # failure, which (without continue-on-error) aborted the whole job
+        # and skipped every step after it: mark_stale_listings, snapshot,
+        # yields, cleanup, rematch, compute_value_scores, run_analysis, and
+        # the auto-blog step. That cascade is why the scoring/analysis tail
+        # has not executed via CI in 10+ weeks. Tier B failing/timing out
+        # should degrade this run, not zero out the whole weekly pipeline.
+        continue-on-error: true
+        timeout-minutes: 90
         run: |
           $limit = $env:TIER_B_LIMIT
           cmd /c "python scripts\enrich_buildings_b.py --limit $limit 2>&1" | Tee-Object -FilePath tier_b.log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::enrich_buildings_b exited $LASTEXITCODE"
+            Add-Content -Path tier_b.log -Value "CI_STEP_FAILED::tierb"
+          }
 
       - name: Mark stale listings inactive
         # dotproperty/ddproperty/fazwaz listings are only ever flipped to
@@ -122,7 +165,10 @@ jobs:
         continue-on-error: true
         run: |
           cmd /c "python scripts\mark_stale_listings.py --apply --days 21 2>&1" | Tee-Object -FilePath stale.log
-          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::mark_stale_listings exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::mark_stale_listings exited $LASTEXITCODE"
+            Add-Content -Path stale.log -Value "CI_STEP_FAILED::stale"
+          }
 
       - name: Snapshot prices + compute yields
         run: |
@@ -151,6 +197,22 @@ jobs:
           cmd /c "python scripts\run_analysis.py 2>&1" | Tee-Object -FilePath analysis.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Prune price_history / condo_market_chart / underpriced_alerts
+        # Unbounded-growth cleanup (price_history ~793k rows and growing
+        # ~1.9M rows/year at current cadence; condo_market_chart re-inserts
+        # its whole series on every Tier-B revisit). Keeps the most recent
+        # 2 snapshots per condo full-resolution, thins price_history beyond
+        # 6 months to 1 row/condo/month, and drops underpriced_alerts older
+        # than 90 days. See scripts/prune_price_history.py's docstring for
+        # the read-path investigation behind these numbers.
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\prune_price_history.py --apply 2>&1" | Tee-Object -FilePath prune.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::prune_price_history exited $LASTEXITCODE"
+            Add-Content -Path prune.log -Value "CI_STEP_FAILED::prune"
+          }
+
       - name: Auto-blog — generate + verify + push
         # Pulls a story off the rotating topic dial (yield-spread,
         # foreign-quota, city-spotlight), generates a JSON post via
@@ -165,61 +227,74 @@ jobs:
 
       - name: Notify on success
         if: success() && env.TELEGRAM_BOT_TOKEN != ''
-        shell: bash
-        # Use curl + bash. The earlier PowerShell + Invoke-RestMethod
-        # pattern returned 404 from Telegram on daily-ingest runs —
-        # almost certainly URL/string-interpolation flakiness in
-        # `https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/...`.
-        # curl with --data-urlencode is the path that's confirmed
-        # working from overnight shell scripts.
+        # PowerShell + Invoke-RestMethod, not bash/curl — bash does not
+        # exist on this Windows runner, so every prior `shell: bash` notify
+        # step has silently no-op'd since 2026-05-19 (production logs show
+        # `##[error]bash: command not found`). The earlier PowerShell
+        # attempt's reported 404s were almost certainly the bot token being
+        # interpolated from a single-quoted string (never expanded) rather
+        # than an inherent PowerShell/Telegram problem; -Body as a hashtable
+        # here lets Invoke-RestMethod form-encode chat_id/text for us so
+        # there's no manual URL string-building to get wrong.
+        #
+        # Failure detection: each ingest step above now writes a literal
+        # "CI_STEP_FAILED::<label>" line into its own log via Add-Content
+        # when $LASTEXITCODE is non-zero (the old approach grepped log
+        # files for "::warning::", but that annotation is written only to
+        # the live workflow console via Write-Output, never into the log
+        # file itself — so the grep could never match, and every run
+        # silently reported "ok").
         run: |
-          status() {
-            local path="$1" label="$2"
-            [ ! -f "$path" ] && { echo "${label}=skip"; return; }
-            grep -q '^::warning::' "$path" && { echo "${label}=FAIL"; return; }
-            echo "${label}=ok"
+          function Get-StepStatus($path, $label) {
+            if (-not (Test-Path $path)) { return "$label=skip" }
+            if (Select-String -Path $path -Pattern '^CI_STEP_FAILED::' -Quiet) { return "$label=FAIL" }
+            return "$label=ok"
           }
-          BOT=$(status ingest_bot.log bot)
-          DP=$(status ingest_dotproperty.log dp)
-          DD=$(status ingest_ddproperty.log  dd)
-          FQ=$(status ingest_foreign_quota.log fq)
-          FAZWAZ=""
-          for f in ingest_fazwaz_*.log; do
-            [ ! -f "$f" ] && continue
-            city=$(basename "$f" .log | sed 's/^ingest_fazwaz_//')
-            if grep -q '^::warning::' "$f"; then
-              FAZWAZ="${FAZWAZ} fz-${city}=FAIL"
-            else
-              FAZWAZ="${FAZWAZ} fz-${city}=ok"
-            fi
-          done
+          $bot = Get-StepStatus "ingest_bot.log" "bot"
+          $dp  = Get-StepStatus "ingest_dotproperty.log" "dp"
+          $dd  = Get-StepStatus "ingest_ddproperty.log" "dd"
+          $fq  = Get-StepStatus "ingest_foreign_quota.log" "fq"
 
-          OK_N=$(grep -oE 'ok=[0-9]+' tier_b.log | tail -1)
-          FAIL_N=$(grep -oE 'fail=[0-9]+' tier_b.log | tail -1)
-          UPSERTED=$(grep -oE 'upserted [0-9]+ value_scores rows' compute.log | tail -1)
-          ALERTS=$(grep -oE 'underpriced: [0-9]+ new alerts' analysis.log | tail -1)
-          SUPER=$(grep -oE 'super_value: [0-9]+ condos' analysis.log | tail -1)
+          $fazwaz = ""
+          Get-ChildItem -Path . -Filter "ingest_fazwaz_*.log" -ErrorAction SilentlyContinue | ForEach-Object {
+            $city = $_.BaseName -replace '^ingest_fazwaz_', ''
+            $status = if (Select-String -Path $_.FullName -Pattern '^CI_STEP_FAILED::' -Quiet) { "FAIL" } else { "ok" }
+            $fazwaz += " fz-$city=$status"
+          }
 
-          MSG="OK RealData weekly refresh
-          Ingest: ${BOT} ${DP} ${DD} ${FQ}${FAZWAZ}
-          Tier B ${OK_N} ${FAIL_N}; ${UPSERTED}; ${ALERTS}; ${SUPER}"
+          $okN = (Select-String -Path "tier_b.log" -Pattern 'ok=\d+' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
+          $failN = (Select-String -Path "tier_b.log" -Pattern 'fail=\d+' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
+          $upserted = (Select-String -Path "compute.log" -Pattern 'upserted \d+ value_scores rows' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
+          $alerts = (Select-String -Path "analysis.log" -Pattern 'underpriced: \d+ new alerts' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
+          $super = (Select-String -Path "analysis.log" -Pattern 'super_value: \d+ condos' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
 
-          curl -s --max-time 15 \
-            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "text=${MSG}" \
-            -o /dev/null -w "HTTP %{http_code}\n"
+          $msg = "OK RealData weekly refresh`nIngest: $bot $dp $dd $fq$fazwaz`nTier B $okN $failN; $upserted; $alerts; $super"
+
+          $uri = "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage"
+          try {
+            Invoke-RestMethod -Uri $uri -Method Post -TimeoutSec 15 -ContentType "application/x-www-form-urlencoded" -Body @{
+              chat_id = $env:TELEGRAM_CHAT_ID
+              text    = $msg
+            } | Out-Null
+            Write-Output "Telegram notify: sent"
+          } catch {
+            Write-Output "Telegram notify failed: $($_.Exception.Message)"
+          }
 
       - name: Notify on failure
         if: failure() && env.TELEGRAM_BOT_TOKEN != ''
-        shell: bash
         run: |
-          MSG="FAIL RealData weekly refresh - see https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          curl -s --max-time 15 \
-            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "text=${MSG}" \
-            -o /dev/null -w "HTTP %{http_code}\n"
+          $msg = "FAIL RealData weekly refresh - see https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          $uri = "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage"
+          try {
+            Invoke-RestMethod -Uri $uri -Method Post -TimeoutSec 15 -ContentType "application/x-www-form-urlencoded" -Body @{
+              chat_id = $env:TELEGRAM_CHAT_ID
+              text    = $msg
+            } | Out-Null
+            Write-Output "Telegram notify: sent"
+          } catch {
+            Write-Output "Telegram notify failed: $($_.Exception.Message)"
+          }
 
       - name: Upload logs
         if: always()
@@ -240,6 +315,7 @@ jobs:
             rematch.log
             compute.log
             analysis.log
+            prune.log
             autoblog.log
             tier_b_dumps/
           if-no-files-found: ignore

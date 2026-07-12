@@ -5,10 +5,26 @@ name: Daily DOM tick
 # numeric DOM values shift by +1 day each run even without a new scrape,
 # so the site shows accurate "X days listed" without waiting for the
 # weekly Tier B run.
+#
+# Saturday is scheduled separately at 14:00 UTC instead of the usual
+# 19:30 UTC: weekly-refresh.yml kicks off at 19:17 UTC Saturday on the
+# self-hosted Windows runner and, via its own Tier B pass, calls this
+# same recompute_condo_dom() RPC against the same `condos` rows. Both
+# workflows run on different runners so it's not a compute-contention
+# issue, but once recompute_condo_dom actually succeeds reliably (see
+# the retry/timeout fix below) there's no reason to court a same-window
+# DB write race — shifting the Saturday tick ~5h earlier keeps it clear
+# of weekly-refresh's ~540-minute run window entirely.
+#
+# NB: this job runs on ubuntu-latest (ubuntu bash is the default shell
+# here — unlike daily-ingest.yml/weekly-refresh.yml, which run on a
+# self-hosted Windows runner where bash isn't available), so the
+# `python - <<'PY' ... PY` heredoc below is valid as-is.
 
 on:
   schedule:
-    - cron: "30 19 * * *"
+    - cron: "30 19 * * 0-5"
+    - cron: "0 14 * * 6"
   workflow_dispatch:
 
 concurrency:
@@ -22,6 +38,8 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       PYTHONUNBUFFERED: "1"
       PYTHONIOENCODING: "utf-8"
     steps:
@@ -32,11 +50,67 @@ jobs:
           cache: pip
       - run: pip install supabase python-dotenv loguru
       - name: Recompute DOM
+        # Retries with exponential backoff around the RPC call: the
+        # `recompute_condo_dom` Postgres function (db/schema_phase6_dom.sql)
+        # has failed every run since 2026-06-26 with
+        # postgrest.exceptions.APIError 57014 (statement timeout) on the
+        # free-tier Supabase instance. The SQL function itself now also
+        # sets its own SET LOCAL statement_timeout so a single attempt gets
+        # more headroom; this retry loop is a second line of defense for
+        # transient slowness (e.g. contention from a concurrent scrape).
+        # Un-caught failure after all attempts exits non-zero so the step
+        # (and job) genuinely fails — see the "Notify on failure" step
+        # below, which previously didn't exist, so these failures were
+        # invisible outside of `gh run list`.
         run: |
           python - <<'PY'
           import os
+          import sys
+          import time
           from supabase import create_client
+
+          MAX_ATTEMPTS = 3
+          BACKOFF_SECONDS = [5, 15]  # gaps between the 3 attempts
+
           c = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
-          c.rpc("recompute_condo_dom").execute()
-          print("DOM aggregates recomputed")
+
+          last_err = None
+          for attempt in range(1, MAX_ATTEMPTS + 1):
+              try:
+                  c.rpc("recompute_condo_dom").execute()
+                  print("DOM aggregates recomputed")
+                  break
+              except Exception as e:
+                  last_err = e
+                  print(f"attempt {attempt}/{MAX_ATTEMPTS} failed: {e}")
+                  if attempt < MAX_ATTEMPTS:
+                      delay = BACKOFF_SECONDS[attempt - 1]
+                      print(f"retrying in {delay}s...")
+                      time.sleep(delay)
+          else:
+              print(f"recompute_condo_dom failed after {MAX_ATTEMPTS} attempts: {last_err}")
+              sys.exit(1)
           PY
+
+      - name: Notify on failure
+        # Only on failure (not every success) to avoid a daily Telegram
+        # ping for a job that runs 365x/year — weekly-refresh and the
+        # mid-week ingest already send success summaries at a lower
+        # cadence. Uses PowerShell + Invoke-RestMethod (explicit
+        # `shell: pwsh`, since this job's default shell is bash) to match
+        # the same fixed notify pattern used in the other two workflows;
+        # ubuntu-latest runners ship pwsh out of the box.
+        if: failure() && env.TELEGRAM_BOT_TOKEN != ''
+        shell: pwsh
+        run: |
+          $msg = "FAIL RealData daily DOM tick - see https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          $uri = "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage"
+          try {
+            Invoke-RestMethod -Uri $uri -Method Post -TimeoutSec 15 -ContentType "application/x-www-form-urlencoded" -Body @{
+              chat_id = $env:TELEGRAM_CHAT_ID
+              text    = $msg
+            } | Out-Null
+            Write-Output "Telegram notify: sent"
+          } catch {
+            Write-Output "Telegram notify failed: $($_.Exception.Message)"
+          }
