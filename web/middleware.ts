@@ -22,6 +22,21 @@ const SKIP_PREFIXES = [
 // Pages under /admin that don't require auth (login itself must be open).
 const ADMIN_PUBLIC_PATHS = new Set(["/admin/login"]);
 
+// TEMPORARY (added 2026-07-12, remove after 2026-08-04): Supabase free-tier
+// egress hit 4.70/5GB with the period not resetting until 2026-08-04. Live
+// Vercel logs showed a broad bot crawl hammering /condo/[slug] specifically
+// (~68% cache MISS, every hit a distinct never-before-cached page across
+// ~111k condo x lang variants) — each cold hit is a fresh Supabase query,
+// and there's no way to rate-limit that away since it's a one-time warm-up
+// cost per page, not a repeat-request problem. Circuit-breaker: 503 any
+// bot-looking UA hitting /condo/ until the budget resets, so already-cached
+// pages keep serving fine for real users while the crawl backlog waits.
+// Mirrors the precedent in web/app/robots.ts's BLOCKED_AGENTS (Bytespider/
+// CCBot were disallowed after an earlier egress-quota lockout).
+const EGRESS_PAUSE_UNTIL = "Tue, 04 Aug 2026 00:00:00 GMT";
+const BOT_UA_RE =
+  /bot|crawl|spider|slurp|facebookexternalhit|ia_archiver|GPTBot|ClaudeBot|PerplexityBot|Bingbot|Googlebot|YandexBot|PetalBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|Amazonbot/i;
+
 function pickLang(req: NextRequest): Lang {
   // 1. Cookie wins (explicit user choice)
   const cookie = req.cookies.get("lang")?.value;
@@ -39,6 +54,17 @@ function pickLang(req: NextRequest): Lang {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (pathname.includes("/condo/") && BOT_UA_RE.test(req.headers.get("user-agent") ?? "")) {
+    return new NextResponse(
+      "Temporarily pausing crawl of this section while a free-tier database " +
+        "budget resets. Please retry after 2026-08-04.",
+      {
+        status: 503,
+        headers: { "Retry-After": EGRESS_PAUSE_UNTIL, "Cache-Control": "no-store" },
+      }
+    );
+  }
 
   // UUID → slug permanent redirect: runs before ISR cache so Googlebot gets 308.
   const uuidMatch = pathname.match(CONDO_UUID_PATH_RE);
