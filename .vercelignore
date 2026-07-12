@@ -3,13 +3,15 @@
 .playwright-profile*/
 
 # Python / data files — not needed for the Next.js deploy
-src/
-scripts/
-logs/
-data/
+# (anchored to repo root — unanchored patterns like "data/" also match
+#  web/app/[lang]/data/, silently dropping that route from every deploy)
+/src/
+/scripts/
+/logs/
+/data/
 spatial_matches.tsv
 debug_html/
-docs/
+/docs/
 *.py
 *.pyc
 *.pyo
