@@ -155,6 +155,7 @@ def compute_liquidity_scores(client: Client, window_days: int = WINDOW_DAYS) -> 
             client.table("listings")
             .select("condo_id, is_active, first_seen_at, last_seen_at")
             .eq("source", "hipflat")
+            .order("id")
             .range(offset, offset + 999)
             .execute()
             .data
@@ -203,7 +204,7 @@ def compute_liquidity_scores(client: Client, window_days: int = WINDOW_DAYS) -> 
 
     for i in range(0, len(upserts), 500):
         client.table("value_scores").upsert(
-            upserts[i:i + 500], on_conflict="condo_id"
+            upserts[i:i + 500], on_conflict="condo_id", returning="minimal"
         ).execute()
     logger.info(
         f"liquidity scored for {len(upserts)} condos "

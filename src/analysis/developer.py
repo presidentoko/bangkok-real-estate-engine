@@ -67,6 +67,7 @@ def compute_developer_stats(client: Client) -> int:
                     "developer_unit_count, gross_yield_pct, "
                     "foreign_quota_inventory_pct")
             .not_.is_("developer_slug", "null")
+            .order("id")
             .range(offset, offset + 999)
             .execute()
             .data

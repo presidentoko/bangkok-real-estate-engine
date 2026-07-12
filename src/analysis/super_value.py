@@ -93,7 +93,7 @@ def compute_super_value(supabase: Client, top_pct: float = 5.0) -> int:
 
     for i in range(0, len(upserts), 500):
         supabase.table("value_scores").upsert(
-            upserts[i:i + 500], on_conflict="condo_id"
+            upserts[i:i + 500], on_conflict="condo_id", returning="minimal"
         ).execute()
     logger.info(
         f"super_value: {super_count}/{len(upserts)} flagged (top {top_pct}% on both axes)"

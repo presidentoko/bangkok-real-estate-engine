@@ -110,6 +110,7 @@ def _paged_yields(client, *, province: str | None, min_yield: float, max_yield: 
             .gte("avg_sale_price", 500_000)
             .gte("yield_sample_sale", 2)
             .gte("yield_sample_rent", 2)
+            .order("id")
             .range(offset, offset + 999)
         )
         if province:
@@ -168,6 +169,7 @@ def candidate_foreign_quota(client) -> dict | None:
             .eq("source", "fazwaz")
             .gte("foreign_quota_inventory_pct", 50)
             .gte("total_quota_listings_observed", 5)
+            .order("id")
             .range(offset, offset + 999)
             .execute()
             .data

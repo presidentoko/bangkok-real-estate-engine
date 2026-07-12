@@ -176,7 +176,7 @@ def main() -> None:
     inserted = 0
     for i in range(0, len(inserts), batch_size):
         batch = inserts[i : i + batch_size]
-        client.table("price_history").insert(batch).execute()
+        client.table("price_history").insert(batch, returning="minimal").execute()
         inserted += len(batch)
         logger.info(f"  inserted {inserted}/{len(inserts)}")
 

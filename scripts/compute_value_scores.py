@@ -206,7 +206,7 @@ def main() -> int:
     if score_rows:
         for i in range(0, len(score_rows), 500):
             client.table("value_scores").upsert(
-                score_rows[i:i+500], on_conflict="condo_id"
+                score_rows[i:i+500], on_conflict="condo_id", returning="minimal"
             ).execute()
         logger.info(f"upserted {len(score_rows)} value_scores rows")
     return 0

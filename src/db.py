@@ -160,6 +160,7 @@ def build_hipflat_name_index(
             client.table("condos")
             .select("id, name")
             .eq("source", "hipflat")
+            .order("id")
             .range(offset, offset + 999)
             .execute()
             .data
@@ -612,7 +613,9 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
     if chart_rows:
         # insert in chunks of 200 to stay under PostgREST limits
         for i in range(0, len(chart_rows), 200):
-            client.table("condo_market_chart").insert(chart_rows[i:i+200]).execute()
+            client.table("condo_market_chart").insert(
+                chart_rows[i:i+200], returning="minimal"
+            ).execute()
 
     # --- listings (UPSERT per unit, days-on-market preserved)
     captured_iso = datetime.now(timezone.utc).isoformat()
@@ -670,6 +673,7 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
             client.table("listings").upsert(
                 deduped[i:i+200],
                 on_conflict="condo_id,source,source_unit_id",
+                returning="minimal",
             ).execute()
         listing_rows = deduped  # so the returned count reflects what was written
 

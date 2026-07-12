@@ -144,6 +144,35 @@ def fix_yield_outliers(client, dry_run: bool) -> int:
     return len(bad)
 
 
+def _count_with_yield(client) -> int:
+    """Paginated count of condos with gross_yield_pct set.
+
+    NOTE: we deliberately do NOT use `.select(..., count="exact", head=True)`;
+    on this supabase-py/postgrest version it returns count=0 even when
+    matching rows exist (the same bug that made scripts/mark_stale_listings.py
+    a no-op before its rewrite — see that file's _fetch_stale_ids). Paginating
+    ids and taking len() gives an accurate count. `.order("id")` is required
+    for stable pagination across separate .range() requests.
+    """
+    n = 0
+    offset = 0
+    while True:
+        chunk = (
+            client.table("condos")
+            .select("id")
+            .not_.is_("gross_yield_pct", "null")
+            .order("id")
+            .range(offset, offset + 999)
+            .execute()
+            .data
+        ) or []
+        n += len(chunk)
+        if len(chunk) < 1000:
+            break
+        offset += 1000
+    return n
+
+
 def summarize(client) -> None:
     """Quick post-cleanup snapshot."""
     rows = []
@@ -159,13 +188,7 @@ def summarize(client) -> None:
     for p, n in pc.most_common(15):
         logger.info(f"  {p:25s}  {n:>6,}")
 
-    ycount = (
-        client.table("condos")
-        .select("id", count="exact", head=True)
-        .not_.is_("gross_yield_pct", "null")
-        .execute()
-        .count
-    )
+    ycount = _count_with_yield(client)
     logger.info(f"condos with valid yield: {ycount}")
 
 

@@ -61,6 +61,29 @@ def _flood_level_geojson(lat: float, lng: float) -> int | None:
 _BUCKET_TO_PENALTY = {"low": 0, "medium": 6, "high": 12}
 _BUCKET_TO_COUNT = {"low": 0, "medium": 1, "high": 3}  # informational only
 
+PAGE = 1000
+
+
+def _fetch_all(client, table: str, columns: str, *, order_by: str = "id", **filters) -> list[dict]:
+    """Paginate a select() — PostgREST caps every response at 1000 rows
+    regardless of table size. order_by the PK is required: without ORDER BY,
+    Postgres doesn't guarantee stable row order across separate .range()
+    requests, so pages can skip or duplicate rows. (Same pattern as
+    scripts/compute_value_scores.py's _fetch_all.)
+    """
+    out: list[dict] = []
+    offset = 0
+    while True:
+        q = client.table(table).select(columns)
+        for k, v in filters.items():
+            q = q.eq(k, v)
+        page = q.order(order_by).range(offset, offset + PAGE - 1).execute().data or []
+        out.extend(page)
+        if len(page) < PAGE:
+            break
+        offset += PAGE
+    return out
+
 
 def _penalty(flood_level: int | None, bucket: str) -> float:
     p = 0.0
@@ -72,11 +95,11 @@ def _penalty(flood_level: int | None, bucket: str) -> float:
 
 def compute_risk(supabase: Client) -> int:
     """Synchronous — hits RSS via feedparser (no event loop required)."""
-    rows = (
-        supabase.table("condos")
-        .select("id, latitude, longitude, address, region_id")
-        .eq("is_active", True)
-        .execute().data
+    rows = _fetch_all(
+        supabase,
+        "condos",
+        "id, latitude, longitude, address, region_id",
+        is_active=True,
     )
     if not rows:
         logger.info("risk: no active condos")
@@ -86,7 +109,7 @@ def compute_risk(supabase: Client) -> int:
     region_name = {r["id"]: r["name"] for r in region_rows}
 
     construction_cache: dict[str, tuple[str, int]] = {}
-    written = 0
+    upsert_rows: list[dict] = []
 
     for r in rows:
         district_text = " ".join(filter(None, [
@@ -119,7 +142,7 @@ def compute_risk(supabase: Client) -> int:
                 construction_cache[district] = district_construction_signal(district)
             bucket, hits = construction_cache[district]
 
-        supabase.table("risk_factors").upsert({
+        upsert_rows.append({
             "condo_id": r["id"],
             "flood_risk_level": flood_level,
             "flood_risk_source": flood_source,
@@ -128,8 +151,21 @@ def compute_risk(supabase: Client) -> int:
             "active_construction_within_500m": bucket in ("medium", "high"),
             "construction_count": _BUCKET_TO_COUNT.get(bucket, 0),
             "risk_penalty": _penalty(flood_level, bucket),
-        }, on_conflict="condo_id").execute()
-        written += 1
+        })
+
+    # Batched upsert instead of one upsert per condo (was ~15,821 HTTP
+    # round-trips/run). Safe: risk_factors.condo_id is the PK and every
+    # other column is nullable (or has a default), so ON CONFLICT DO UPDATE
+    # only ever touches the columns we provide — no NOT NULL column is
+    # left unset (matches scripts/compute_value_scores.py's upsert pattern).
+    UPSERT_CHUNK = 500
+    for i in range(0, len(upsert_rows), UPSERT_CHUNK):
+        supabase.table("risk_factors").upsert(
+            upsert_rows[i:i + UPSERT_CHUNK],
+            on_conflict="condo_id",
+            returning="minimal",
+        ).execute()
+    written = len(upsert_rows)
 
     logger.info(
         f"risk: computed for {written} condos "

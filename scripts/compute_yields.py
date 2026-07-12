@@ -161,15 +161,26 @@ def main() -> None:
         stale_ids = [e["id"] for e in existing if e["id"] not in new_ids]
         if stale_ids:
             logger.info(f"  clearing {len(stale_ids)} stale yield rows...")
-            for sid in stale_ids:
-                client.table("condos").update({
-                    "avg_sale_price": None,
-                    "avg_monthly_rent": None,
-                    "gross_yield_pct": None,
-                    "yield_sample_sale": None,
-                    "yield_sample_rent": None,
-                    "yield_computed_at": None,
-                }).eq("id", sid).execute()
+            # Batched upsert instead of one UPDATE per row (was ~253 HTTP
+            # round-trips/run). Safe: every id here came from a `.select("id")`
+            # against condos (existing above), so ON CONFLICT always resolves
+            # to UPDATE — the INSERT path (which would need every NOT NULL
+            # column without a default, e.g. source/source_listing_id/name)
+            # is never actually taken. Matches scripts/compute_value_scores.py's
+            # chunked-upsert pattern.
+            clear_rows = [{
+                "id": sid,
+                "avg_sale_price": None,
+                "avg_monthly_rent": None,
+                "gross_yield_pct": None,
+                "yield_sample_sale": None,
+                "yield_sample_rent": None,
+                "yield_computed_at": None,
+            } for sid in stale_ids]
+            for i in range(0, len(clear_rows), 500):
+                client.table("condos").upsert(
+                    clear_rows[i:i + 500], on_conflict="id", returning="minimal"
+                ).execute()
 
     if args.dry_run:
         # Show distribution
@@ -184,14 +195,17 @@ def main() -> None:
         logger.info("--dry-run: no DB writes")
         return
 
-    # Update each condo individually (all rows already exist)
-    updated = 0
-    for u in updates:
-        condo_id = u.pop("id")
-        client.table("condos").update(u).eq("id", condo_id).execute()
-        updated += 1
-        if updated % 50 == 0:
-            logger.info(f"  updated {updated}/{len(updates)}")
+    # Batched upsert instead of one UPDATE per condo (was ~3,370 HTTP
+    # round-trips/run at full scrape volume). Safe for the same reason as
+    # the stale-clear pass above: every "id" here comes from listings whose
+    # condo_id already has a row in `condos`, so ON CONFLICT always resolves
+    # to UPDATE and no NOT NULL column is left unset.
+    UPSERT_CHUNK = 500
+    for i in range(0, len(updates), UPSERT_CHUNK):
+        client.table("condos").upsert(
+            updates[i:i + UPSERT_CHUNK], on_conflict="id", returning="minimal"
+        ).execute()
+    updated = len(updates)
 
     logger.info(f"Done. {updated} condos updated with gross yield.")
 

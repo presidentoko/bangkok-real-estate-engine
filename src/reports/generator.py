@@ -67,11 +67,34 @@ def _summarise(condo: dict, score: dict, liv: dict | None, risk: dict | None) ->
     }
 
 
+def _fetch_all(supabase: Client, table: str, order_by: str = "condo_id", **filters) -> list[dict]:
+    """Paginate a select("*") — PostgREST caps every response at 1000 rows
+    regardless of table size. Ordering by the PK is required: without ORDER
+    BY, Postgres doesn't guarantee stable row order across separate
+    .range() requests, so pages can skip or duplicate rows. (Same pattern
+    as src/analysis/super_value.py's _fetch_all / scripts/compute_value_scores.py's.)
+    """
+    out: list[dict] = []
+    offset = 0
+    while True:
+        q = supabase.table(table).select("*")
+        for k, v in filters.items():
+            q = q.eq(k, v)
+        chunk = q.order(order_by).range(offset, offset + 999).execute().data or []
+        out.extend(chunk)
+        if len(chunk) < 1000:
+            break
+        offset += 1000
+    return out
+
+
 def generate_reports(supabase: Client) -> int:
-    condos = supabase.table("condos").select("*").eq("is_active", True).execute().data
-    scores = {r["condo_id"]: r for r in supabase.table("value_scores").select("*").execute().data}
-    livs = {r["condo_id"]: r for r in supabase.table("livability_metrics").select("*").execute().data}
-    risks = {r["condo_id"]: r for r in supabase.table("risk_factors").select("*").execute().data}
+    # condos.id / value_scores.condo_id / livability_metrics.condo_id /
+    # risk_factors.condo_id are each that table's PK (see db/schema.sql).
+    condos = _fetch_all(supabase, "condos", order_by="id", is_active=True)
+    scores = {r["condo_id"]: r for r in _fetch_all(supabase, "value_scores")}
+    livs = {r["condo_id"]: r for r in _fetch_all(supabase, "livability_metrics")}
+    risks = {r["condo_id"]: r for r in _fetch_all(supabase, "risk_factors")}
 
     payloads: list[dict] = []
     for c in condos:
@@ -86,6 +109,8 @@ def generate_reports(supabase: Client) -> int:
             "condo_id", condo_ids[i:i + 200]
         ).execute()
     for i in range(0, len(payloads), 200):
-        supabase.table("developer_reports").insert(payloads[i:i + 200]).execute()
+        supabase.table("developer_reports").insert(
+            payloads[i:i + 200], returning="minimal"
+        ).execute()
     logger.info(f"developer_reports: {len(payloads)} generated")
     return len(payloads)
