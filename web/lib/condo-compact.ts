@@ -22,6 +22,7 @@ export type CompactCondoSummaries = {
   v: 1;
   count: number;
   id: string[];
+  slug: (string | null)[];
   name: string[];
   region: (string | null)[];
   // Optional: server-only callers (stats page) get these; the API route strips
@@ -46,6 +47,7 @@ export function encodeCompact(rows: CondoSummary[]): CompactCondoSummaries {
     v: 1,
     count: n,
     id: new Array(n),
+    slug: new Array(n),
     name: new Array(n),
     region: new Array(n),
     lat: new Array(n),
@@ -64,6 +66,7 @@ export function encodeCompact(rows: CondoSummary[]): CompactCondoSummaries {
   for (let i = 0; i < n; i++) {
     const r = rows[i];
     c.id[i] = r.id;
+    c.slug[i] = r.slug;
     c.name[i] = r.name;
     c.region[i] = r.region;
     if (c.lat) c.lat[i] = r.latitude;
@@ -87,7 +90,7 @@ export function decodeCompact(c: CompactCondoSummaries): CondoSummary[] {
   for (let i = 0; i < c.count; i++) {
     out[i] = {
       id: c.id[i],
-      slug: null,
+      slug: c.slug[i],
       name: c.name[i],
       url: null,
       latitude: c.lat?.[i] ?? null,

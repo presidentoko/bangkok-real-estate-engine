@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
+import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import {
   InventoryMapSvg,
@@ -75,6 +76,7 @@ export default async function Home({
     if (c.latitude != null && c.longitude != null) {
       points.push({
         id: c.id,
+        slug: c.slug,
         name: c.name,
         lat: c.latitude,
         lng: c.longitude,
@@ -200,6 +202,12 @@ export default async function Home({
           condos={superValue}
         />
       )}
+
+      {/* Lead capture — the home page had no conversion path at all before
+          this; every other page type (condo, city, district) has one. */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <LeadCaptureCTA />
+      </section>
 
       {/* Bubble TOP */}
       <FeaturedRow

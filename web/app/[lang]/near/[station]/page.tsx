@@ -10,6 +10,7 @@ import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { getViableStations, getStationData } from "@/lib/queries/stations";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const revalidate = 86400;
 
@@ -93,6 +94,14 @@ export default async function StationPage({
     <main className="max-w-5xl mx-auto p-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(faq)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbs) }} />
+
+      <Breadcrumbs
+        items={[
+          { name: "RealData", href: `/${lang}` },
+          { name: t.near.breadcrumb, href: `/${lang}/inventory` },
+          { name: data.name, href: `/${lang}/near/${station}` },
+        ]}
+      />
 
       <header className="mb-6">
         <h1 className="text-3xl font-bold mb-2">

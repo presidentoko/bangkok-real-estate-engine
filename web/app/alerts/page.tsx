@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { getServerSupabase } from "@/lib/supabase";
+import { DEFAULT_LANG } from "@/lib/i18n";
 
 export const revalidate = 21600;
 
 type Row = {
   id: string;
   condo_id: string;
+  slug: string | null;
   name: string;
   url: string | null;
   region_name: string | null;
@@ -80,7 +82,7 @@ export default async function AlertsPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <Link
-                        href={`/condo/${r.condo_id}`}
+                        href={`/${DEFAULT_LANG}/condo/${r.slug ?? r.condo_id}`}
                         className="font-semibold text-zinc-100 hover:underline truncate"
                       >
                         {r.name}

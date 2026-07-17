@@ -10,6 +10,7 @@ import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 const BANGKOK_CENTER: [number, number] = [100.5018, 13.7563];
 
@@ -55,7 +56,10 @@ export async function generateMetadata({
 // static "coming soon" message with no data, so FloodCityGate (client) can
 // toggle that in purely client-side after reading ?city on mount; no new API
 // route is needed.
-export const revalidate = 3600;
+// 3600 (hourly) regenerated this page ~24x more often than the flood
+// dataset (a static geojson, revalidate 3600 on its own fetch) or the
+// underlying condo data (weekly) actually change — pure wasted ISR writes.
+export const revalidate = 86400;
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[\s\-_]+/g, "");
@@ -63,6 +67,7 @@ function normalize(s: string): string {
 
 type CondoRow = {
   id: string;
+  slug: string | null;
   name: string;
   url: string | null;
   latitude: number | null;
@@ -118,7 +123,7 @@ export default async function FloodPage({
   const t = getDictionary(lang);
 
   const supabase = getServerSupabase();
-  const condoSelect = "id, name, url, latitude, longitude, region_id, regions(name)";
+  const condoSelect = "id, slug, name, url, latitude, longitude, region_id, regions(name)";
 
   const [condos, geoRes] = await Promise.all([
     fetchAllBangkokCondos(supabase, condoSelect),
@@ -151,6 +156,7 @@ export default async function FloodPage({
     else byLevel[level] = (byLevel[level] ?? 0) + 1;
     points.push({
       id: c.id,
+      slug: c.slug,
       name: c.name,
       lat: c.latitude,
       lng: c.longitude,
@@ -231,7 +237,7 @@ export default async function FloodPage({
     <main className="max-w-5xl mx-auto p-6">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(webPageJsonLd) }}
       />
 
       <FloodCityGate
@@ -302,7 +308,7 @@ export default async function FloodPage({
         {/* FAQ — AEO + SEO surface for common Bangkok flood questions */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
         />
         <section className="mt-10">
           <h2 className="text-xl font-semibold mb-4">Bangkok flood risk — frequently asked questions</h2>

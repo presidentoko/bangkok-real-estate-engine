@@ -176,7 +176,8 @@ export async function POST(req: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[leads] insert failed:", error.message);
+    return NextResponse.json({ error: "could not save lead" }, { status: 500 });
   }
 
   await notifyOps({

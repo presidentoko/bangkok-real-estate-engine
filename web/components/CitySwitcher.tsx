@@ -64,7 +64,7 @@ export function CitySwitcher({ lang }: { lang: Lang }) {
 
   const cities: Array<{ slug: string; name: { en: string; ko: string; th: string }; href: string }> = [
     { slug: BANGKOK.slug, name: BANGKOK.name, href: hrefFor("bangkok") },
-    ...CITIES.map((c) => ({
+    ...CITIES.filter((c) => c.slug !== "bangkok").map((c) => ({
       slug: c.slug,
       name: c.name,
       href: hrefFor(c.slug),

@@ -2,8 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { verifyAdminSession } from "./lib/adminSession";
 import { DEFAULT_LANG, LANGS, type Lang } from "./lib/i18n";
 
-const CONDO_UUID_PATH_RE = /^\/([a-z]{2})\/condo\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
-
 // Paths the middleware should NOT touch with the i18n redirect. /admin and
 // /alerts live outside the i18n tree by design (admin is owner-only,
 // /alerts is a single-page subscribe flow).
@@ -85,29 +83,11 @@ export async function middleware(req: NextRequest) {
     );
   }
 
-  // UUID → slug permanent redirect: runs before ISR cache so Googlebot gets 308.
-  const uuidMatch = pathname.match(CONDO_UUID_PATH_RE);
-  if (uuidMatch) {
-    const [, lang, uuid] = uuidMatch;
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (supabaseUrl && supabaseKey) {
-      try {
-        const res = await fetch(
-          `${supabaseUrl}/rest/v1/condos_published?select=slug&id=eq.${uuid}&limit=1`,
-          { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
-        );
-        const data: Array<{ slug: string | null }> = await res.json();
-        if (Array.isArray(data) && data[0]?.slug) {
-          const url = req.nextUrl.clone();
-          url.pathname = `/${lang}/condo/${data[0].slug}`;
-          return NextResponse.redirect(url, { status: 308 });
-        }
-      } catch {
-        // fall through to page handler
-      }
-    }
-  }
+  // UUID → slug redirect used to live here as a live, uncached Supabase
+  // fetch on every request to a legacy /condo/{uuid} URL. condo/[slug]/page.tsx
+  // already handles the same UUID→slug lookup via permanentRedirect(), and
+  // that page is ISR-cached (7d) — so the middleware copy was a pure-cost
+  // duplicate with no correctness benefit (removed 2026-07-17).
 
   // Admin gate — runs BEFORE the SKIP_PREFIXES check so we can protect
   // /admin/* with a cookie. The login page itself is public so the user

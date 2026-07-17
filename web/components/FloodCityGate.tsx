@@ -60,7 +60,7 @@ export function FloodCityGate({
 
   const cityChips: Array<{ slug: string; name: string; href: string }> = [
     { slug: "bangkok", name: BANGKOK_NAME[lang] ?? "Bangkok", href: `/${lang}/flood` },
-    ...CITIES.map((c) => ({
+    ...CITIES.filter((c) => c.slug !== "bangkok").map((c) => ({
       slug: c.slug,
       name: (c.name as Record<string, string>)[lang] ?? c.name.en,
       href: `/${lang}/flood?city=${c.slug}`,

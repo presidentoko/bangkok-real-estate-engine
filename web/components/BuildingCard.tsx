@@ -174,7 +174,7 @@ export function BuildingCard({
               <div className="text-[10px] uppercase tracking-wider text-zinc-500">Rent · median</div>
               <div className="text-sm text-zinc-300 tabular-nums">
                 {condo.market_rent_median
-                  ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_rent_median).toLocaleString()}/mo`
+                  ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_rent_median).toLocaleString("en-US")}/mo`
                   : "—"}
               </div>
             </div>
@@ -203,9 +203,9 @@ export function BuildingCard({
               </div>
               <div className="text-sm text-zinc-300 tabular-nums">
                 {condo.market_sale_median
-                  ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_sale_median).toLocaleString()}`
+                  ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_sale_median).toLocaleString("en-US")}`
                   : condo.market_rent_median
-                    ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_rent_median).toLocaleString()}/mo`
+                    ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_rent_median).toLocaleString("en-US")}/mo`
                     : "—"}
               </div>
             </div>

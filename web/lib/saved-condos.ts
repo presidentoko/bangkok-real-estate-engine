@@ -4,7 +4,10 @@ const MAX = 50;
 export function getSaved(): string[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    const parsed: unknown = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    // Valid JSON that isn't an array (e.g. hand-edited/corrupted storage)
+    // used to reach callers as-is and crash the first `.map()`/`.filter()`.
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }

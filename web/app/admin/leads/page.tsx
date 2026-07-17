@@ -10,6 +10,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSupabase } from "@/lib/supabase";
+import { isSafeMarkdownUrl } from "@/lib/markdownLinkSafety";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin · Leads — RealData" };
@@ -206,7 +207,11 @@ export default async function AdminLeadsPage({
                         {l.message}
                       </p>
                     )}
-                    {l.source_url && (
+                    {/* source_url is attacker-controlled (any string ≤500 chars
+                        via POST /api/leads) — a javascript:/data: scheme would
+                        run in the authenticated admin's session on click.
+                        React doesn't block those schemes on <a href>, only warns. */}
+                    {l.source_url && isSafeMarkdownUrl(l.source_url) && (
                       <a
                         href={l.source_url}
                         target="_blank"

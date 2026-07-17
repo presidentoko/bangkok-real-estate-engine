@@ -5,6 +5,7 @@ import { useMemo } from "react";
 
 export type CityPoint = {
   id: string;
+  slug?: string | null;
   name: string;
   lat: number;
   lng: number;
@@ -78,6 +79,7 @@ export function CityMapSvg({
       const y = VIEW_H - ((p.lat - minLat) * s + offY);
       return {
         id: p.id,
+        slug: p.slug ?? null,
         name: p.name,
         x,
         y,
@@ -109,7 +111,7 @@ export function CityMapSvg({
             />
           );
           return d.url ? (
-            <Link key={d.id} href={`${condoLinkPrefix}${d.id}`}>
+            <Link key={d.id} href={`${condoLinkPrefix}${d.slug ?? d.id}`}>
               {circle}
             </Link>
           ) : (

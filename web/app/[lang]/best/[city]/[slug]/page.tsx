@@ -164,7 +164,7 @@ export default async function BestSlicePage({
 
   const [{ data: rowsData }, mortgage, { data: retireeData }] = await Promise.all([
     query,
-    getCurrentMortgageRate(supabase),
+    getCurrentMortgageRate(),
     supabase
       .from("condos")
       .select("id, slug, name, retiree_score, regions(name)")

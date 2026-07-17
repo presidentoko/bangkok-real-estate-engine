@@ -33,6 +33,7 @@ const fetchAllLivability = unstable_cache(
         .select(
           "condo_id,nearest_bts_station,nearest_bts_distance_m,nearest_mrt_station,nearest_mrt_distance_m",
         )
+        .order("condo_id")
         .range(from, from + page - 1);
       if (error || !data) break;
       out.push(...(data as LivRow[]));
@@ -111,7 +112,7 @@ export type StationData = {
 };
 
 const CONDO_SELECT =
-  "id, name, url, latitude, longitude, hero_image_url, total_units, available_units_count, market_sale_median, market_rent_median, market_summary_currency, property_type, province, source, regions(name), value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
+  "id, slug, name, url, latitude, longitude, hero_image_url, total_units, available_units_count, market_sale_median, market_rent_median, market_summary_currency, property_type, province, source, regions(name), value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
 
 function median(xs: number[]): number | null {
   const v = xs.filter((n) => Number.isFinite(n)).sort((a, b) => a - b);

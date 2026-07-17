@@ -20,7 +20,11 @@ const CONDOS_PER_PAGE = 2500;
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
-  const page = Math.max(0, parseInt(url.searchParams.get("page") ?? "0", 10));
+  const parsedPage = parseInt(url.searchParams.get("page") ?? "0", 10);
+  // A malformed ?page= (e.g. "abc") parses to NaN, which survived
+  // Math.max(0, NaN) === NaN and produced a NaN .range() -> a swallowed
+  // PostgREST error -> an empty-but-200 urlset instead of a clear failure.
+  const page = Math.max(0, Number.isFinite(parsedPage) ? parsedPage : 0);
   const offset = page * CONDOS_PER_PAGE;
 
   const supabase = getServerSupabase();
@@ -42,6 +46,7 @@ export async function GET(request: Request): Promise<Response> {
       .select("slug, last_seen_at")
       .not("slug", "is", null)
       .not("latitude", "is", null)
+      .order("id")
       .range(from, to);
     const chunk = (data ?? []) as Array<{
       slug: string;

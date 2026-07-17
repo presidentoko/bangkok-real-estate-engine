@@ -54,6 +54,7 @@ export async function GET(): Promise<Response> {
         .gte("avg_sale_price", 500_000)
         .gte("yield_sample_sale", 2)
         .gte("yield_sample_rent", 2)
+        .order("id")
         .range(offset, offset + 999);
       const chunk = (data ?? []) as BestCandidateRow[];
       bestRows.push(...chunk);
@@ -135,6 +136,7 @@ export async function GET(): Promise<Response> {
         .from("condos_published")
         .select("developer_slug")
         .not("developer_slug", "is", null)
+        .order("id")
         .range(offset, offset + 999);
       const chunk = (data ?? []) as Array<{ developer_slug: string }>;
       for (const r of chunk) devSlugSet.add(r.developer_slug);

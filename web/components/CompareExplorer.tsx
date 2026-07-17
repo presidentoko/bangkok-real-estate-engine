@@ -123,7 +123,7 @@ export function CompareExplorer({ lang }: { lang: string }) {
               {condos.map((c) => <td key={c.id} className="px-4 py-3 tabular-nums">{c.completion_year ?? "—"}</td>)}
             </tr>
             <tr><td className="px-4 py-3 text-zinc-500">Total units</td>
-              {condos.map((c) => <td key={c.id} className="px-4 py-3 tabular-nums">{c.total_units?.toLocaleString() ?? "—"}</td>)}
+              {condos.map((c) => <td key={c.id} className="px-4 py-3 tabular-nums">{c.total_units?.toLocaleString("en-US") ?? "—"}</td>)}
             </tr>
 
             {/* Price */}

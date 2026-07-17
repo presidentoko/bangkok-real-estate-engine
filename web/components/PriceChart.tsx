@@ -161,7 +161,7 @@ export function PriceChart({ points }: { points: ChartPoint[] }) {
 
       <div className="flex items-baseline gap-3 mb-2">
         <div className="text-2xl font-bold tabular-nums">
-          {visible.currency ?? "USD"} {Math.round(last.value).toLocaleString()}
+          {visible.currency ?? "USD"} {Math.round(last.value).toLocaleString("en-US")}
         </div>
         <div
           className={`text-xs font-semibold ${
@@ -203,7 +203,7 @@ export function PriceChart({ points }: { points: ChartPoint[] }) {
               fontSize="10"
               textAnchor="end"
             >
-              {Math.round(v).toLocaleString()}
+              {Math.round(v).toLocaleString("en-US")}
             </text>
           </g>
         ))}

@@ -21,7 +21,7 @@ export async function GET(req: Request) {
   const supabase = getServerSupabase();
   const [{ condos, scores, risks, liv }, mortgage] = await Promise.all([
     fetchCompareCondos(supabase, ids),
-    getCurrentMortgageRate(supabase),
+    getCurrentMortgageRate(),
   ]);
 
   const payload: CompareData = {

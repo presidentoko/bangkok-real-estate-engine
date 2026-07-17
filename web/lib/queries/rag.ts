@@ -10,6 +10,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 type Condo = {
   id: string;
+  slug: string | null;
   name: string;
   province: string | null;
   region_name: string | null;
@@ -27,6 +28,7 @@ type Condo = {
 
 type ConsoleRow = {
   id: string;
+  slug: string | null;
   name: string;
   province: string | null;
   url: string | null;
@@ -46,6 +48,7 @@ function regionOf(r: ConsoleRow): string | null {
 function asCondo(r: ConsoleRow, vs?: Map<string, number>, rf?: Map<string, number>): Condo {
   return {
     id: r.id,
+    slug: r.slug,
     name: r.name,
     province: r.province,
     region_name: regionOf(r),
@@ -84,7 +87,7 @@ async function hydrate(
 }
 
 const SELECT = (
-  "id, name, province, url, " +
+  "id, slug, name, province, url, " +
   "gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
   "completion_year, total_units, regions(name)"
 );
@@ -277,7 +280,7 @@ export function formatContext(ctx: RetrievalContext): string {
       c.avg_monthly_rent != null ? `rent=฿${Math.round(c.avg_monthly_rent).toLocaleString()}/mo` : "",
       c.flood_risk_level != null ? `flood=L${c.flood_risk_level}` : "",
       c.completion_year != null ? `built=${c.completion_year}` : "",
-      `url=/condo/${c.id}`,
+      `url=/condo/${c.slug ?? c.id}`,
     ].filter(Boolean);
     return parts.join(" ");
   };

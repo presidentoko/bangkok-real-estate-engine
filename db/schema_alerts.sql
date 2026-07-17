@@ -39,7 +39,7 @@ create index if not exists alerts_condo_recent_idx
 -- Recent alerts for the public feed (suppress dupes within 14 days).
 create or replace view v_recent_alerts as
 select distinct on (a.condo_id)
-    a.id, a.condo_id, c.name, c.url, a.region_name,
+    a.id, a.condo_id, c.slug, c.name, c.url, a.region_name,
     a.bubble_index, a.price, a.price_per_sqm, a.region_avg_pps,
     a.detected_at, a.sent_to_count
 from underpriced_alerts a

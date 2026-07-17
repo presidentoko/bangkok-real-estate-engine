@@ -3,16 +3,21 @@ import { getServerSupabase } from "@/lib/supabase";
 import { encodeCompact } from "@/lib/condo-compact";
 import type { CondoSummary, PropertyType } from "@/lib/queries/condos";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // GET /api/condos/batch?ids=id1,id2,id3
 // Returns compact condo summaries for explicit IDs (max 50).
 // Used by the saved-condos page to hydrate localStorage IDs server-side.
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const raw = url.searchParams.get("ids") ?? "";
+  // Filtering by length>8 let a single junk id (e.g. corrupted localStorage)
+  // reach `.in("id", ids)` against a uuid column and 500 the whole request —
+  // require actual UUID shape so bad ids are just dropped instead.
   const ids = raw
     .split(",")
     .map((s) => s.trim())
-    .filter((s) => s.length > 8)
+    .filter((s) => UUID_RE.test(s))
     .slice(0, 50);
 
   if (ids.length === 0) {
@@ -21,6 +26,7 @@ export async function GET(req: Request) {
         v: 1,
         count: 0,
         id: [],
+        slug: [],
         name: [],
         region: [],
         hero: [],

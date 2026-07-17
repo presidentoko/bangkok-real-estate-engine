@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import sanitizeHtml from "sanitize-html";
 import { CondoFacilities } from "@/components/CondoFacilities";
@@ -22,7 +22,7 @@ import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
-import { getPortalStats } from "@/lib/queries/portals";
+import { computePortalStats, type Listing as PortalListing } from "@/lib/queries/portals";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import {
   getCondoYield,
@@ -38,6 +38,7 @@ import { stationSlug } from "@/lib/stations";
 import type { Livability, Risk, ValueScore } from "@/lib/types";
 import { getViableStations } from "@/lib/queries/stations";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
+import { Breadcrumbs, type BreadcrumbItem } from "@/components/Breadcrumbs";
 import { SaveButton } from "@/components/SaveButton";
 import { CompareButton } from "@/components/CompareButton";
 
@@ -103,6 +104,23 @@ const getSlugByLegacyId = cache(async (id: string): Promise<string | null> => {
   return (data as { slug: string } | null)?.slug ?? null;
 });
 
+// value_scores / risk_factors / livability_metrics were each a separate
+// round trip (plus a 4th for the metadata-only duplicates below) even
+// though every one of them is a 1:1 row keyed on condo_id with a real FK to
+// condos(id) — the same embedded-join pattern lib/queries/condos.ts already
+// uses for value_scores/risk_factors on condos_published. Embedding all
+// three here collapses 3 extra Supabase round trips into the one
+// getCondoFullById() call, shared by both generateMetadata() and the page
+// body via React's cache().
+const VALUE_SCORE_SELECT =
+  "bubble_index, is_super_value, liquidity_score, liquidity_grade, " +
+  "liquidity_absorption_rate, liquidity_median_sold_dom, liquidity_sample_size";
+const RISK_FACTORS_SELECT = "flood_risk_level, subsidence_level, subsidence_source";
+const LIVABILITY_SELECT =
+  "nearest_bts_distance_m, nearest_bts_station, nearest_mrt_distance_m, " +
+  "nearest_mrt_station, hospitals_within_1km, schools_within_1km, " +
+  "supermarkets_within_1km";
+
 // Union of the columns generateMetadata() and the page body each need, so
 // both call sites share one cached query against `condos_published` instead
 // of running two overlapping (and both fairly wide) SELECTs on the same row.
@@ -120,7 +138,14 @@ const CONDO_FULL_SELECT =
   "total_quota_listings_observed, foreign_quota_inventory_pct, " +
   "foreign_quota_fetched_at, " +
   "developer_slug, developer_project_count, developer_unit_count, " +
-  "google_rating, google_review_count, gross_yield_pct";
+  "google_rating, google_review_count, gross_yield_pct, " +
+  `value_scores(${VALUE_SCORE_SELECT}), risk_factors(${RISK_FACTORS_SELECT}), ` +
+  `livability_metrics(${LIVABILITY_SELECT})`;
+
+type EmbeddedOneOrMany<T> = T | T[] | null;
+function one<T>(v: EmbeddedOneOrMany<T>): T | null {
+  return (Array.isArray(v) ? v[0] : v) ?? null;
+}
 
 const getCondoFullById = cache(async (id: string) => {
   const supabase = getServerSupabase();
@@ -130,35 +155,6 @@ const getCondoFullById = cache(async (id: string) => {
     .eq("id", id)
     .maybeSingle();
   return data;
-});
-
-// value_scores / risk_factors were both `select("*")` — narrowed to just the
-// columns actually read anywhere on this page (page body + ReportCard /
-// ResaleLiquidityCard / GroundStabilityCard props), after auditing every
-// read site.
-const VALUE_SCORE_SELECT =
-  "bubble_index, is_super_value, liquidity_score, liquidity_grade, " +
-  "liquidity_absorption_rate, liquidity_median_sold_dom, liquidity_sample_size";
-const RISK_FACTORS_SELECT = "flood_risk_level, subsidence_level, subsidence_source";
-
-const getValueScoreByCondoId = cache(async (id: string): Promise<ValueScore | null> => {
-  const supabase = getServerSupabase();
-  const { data } = await supabase
-    .from("value_scores")
-    .select(VALUE_SCORE_SELECT)
-    .eq("condo_id", id)
-    .maybeSingle();
-  return data as unknown as ValueScore | null;
-});
-
-const getRiskFactorsByCondoId = cache(async (id: string): Promise<Risk | null> => {
-  const supabase = getServerSupabase();
-  const { data } = await supabase
-    .from("risk_factors")
-    .select(RISK_FACTORS_SELECT)
-    .eq("condo_id", id)
-    .maybeSingle();
-  return data as unknown as Risk | null;
 });
 
 // AEO/SEO metadata. Each condo page gets a unique title + description that
@@ -171,10 +167,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, lang } = await params;
 
-  // Legacy UUID URL — redirect to slug-based URL.
+  // Legacy UUID URL — redirect to slug-based URL. Permanent so crawlers
+  // consolidate link equity onto the slug URL instead of re-checking the
+  // UUID URL on every visit (matches the page body's permanentRedirect below).
   if (UUID_RE.test(slug)) {
     const legacySlug = await getSlugByLegacyId(slug);
-    if (legacySlug) redirect(`/${lang}/condo/${legacySlug}`);
+    if (legacySlug) permanentRedirect(`/${lang}/condo/${legacySlug}`);
     return { title: "Condo report — RealData" };
   }
 
@@ -182,11 +180,16 @@ export async function generateMetadata({
   if (!id) return { title: "Condo report — RealData" };
   const condo = await getCondoFullById(id);
   if (!condo) return { title: "Condo report — RealData" };
-  const condoForMeta = condo as unknown as { id: string; name: string; province: string | null; regions: { name: string } | { name: string }[] | null; market_sale_median: number | null; market_summary_currency: string | null; total_units: number | null; completion_year: number | null; gross_yield_pct: number | null };
-  const [scoreMeta, riskMeta] = await Promise.all([
-    getValueScoreByCondoId(id),
-    getRiskFactorsByCondoId(id),
-  ]);
+  const condoForMeta = condo as unknown as {
+    id: string; name: string; province: string | null;
+    regions: { name: string } | { name: string }[] | null;
+    market_sale_median: number | null; market_summary_currency: string | null;
+    total_units: number | null; completion_year: number | null; gross_yield_pct: number | null;
+    value_scores: EmbeddedOneOrMany<ValueScore>;
+    risk_factors: EmbeddedOneOrMany<Risk>;
+  };
+  const scoreMeta = one(condoForMeta.value_scores);
+  const riskMeta = one(condoForMeta.risk_factors);
   const c = condoForMeta;
   const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
   const provinceDisplay = c.province
@@ -267,35 +270,26 @@ export default async function CondoPage({
   if (!id) notFound();
 
   const [
-    condoData, scoreData, livRes, riskData, latestRes,
-    listingsRes, chartRes, amenitiesRes, parkingRes, neighboursRes,
-    yieldData, mortgageRate, portalStats,
+    condoData, latestRes,
+    allListingsRes, chartRes, amenitiesRes, parkingRes, neighboursRes,
+    yieldData, mortgageRate,
   ] = await Promise.all([
     getCondoFullById(id),
-    getValueScoreByCondoId(id),
-    supabase
-      .from("livability_metrics")
-      .select(
-        "nearest_bts_distance_m, nearest_bts_station, nearest_mrt_distance_m, " +
-        "nearest_mrt_station, hospitals_within_1km, schools_within_1km, " +
-        "supermarkets_within_1km"
-      )
-      .eq("condo_id", id)
-      .maybeSingle(),
-    getRiskFactorsByCondoId(id),
     supabase
       .from("v_latest_listings")
       .select("price, area_sqm, price_per_sqm")
       .eq("condo_id", id)
       .maybeSingle(),
+    // Every listing for this condo, any source, active or not — a single
+    // building will never approach the 1000-row PostgREST cap. Derives both
+    // the hipflat-only units table AND the cross-portal comparison below
+    // instead of running two separate queries against the same table.
     supabase
       .from("listings")
-      .select("listing_type, price, currency, area_sqm, price_per_sqm, " +
-              "bedrooms, bathrooms, floor_level, publisher, listing_url, source_unit_id")
+      .select("source, listing_type, price, currency, area_sqm, price_per_sqm, " +
+              "bedrooms, bathrooms, floor_level, publisher, listing_url, source_unit_id, is_active")
       .eq("condo_id", id)
-      .eq("source", "hipflat")
-      .order("price", { ascending: true })
-      .range(0, 199),
+      .range(0, 999),
     supabase
       .from("condo_market_chart")
       .select("period, metric, currency, year_month, value")
@@ -317,13 +311,22 @@ export default async function CondoPage({
       .eq("condo_id", id)
       .range(0, 19),
     getCondoYield(supabase, id),
-    getCurrentMortgageRate(supabase),
-    getPortalStats(supabase, id),
+    getCurrentMortgageRate(),
   ]);
 
   if (!condoData) notFound();
 
-  const livData = livRes.data as unknown as Livability | null;
+  const condoWithEmbeds = condoData as unknown as {
+    value_scores: EmbeddedOneOrMany<ValueScore>;
+    risk_factors: EmbeddedOneOrMany<Risk>;
+    livability_metrics: EmbeddedOneOrMany<Livability>;
+  };
+  const scoreData = one(condoWithEmbeds.value_scores);
+  const riskData = one(condoWithEmbeds.risk_factors);
+  const livData = one(condoWithEmbeds.livability_metrics);
+
+  const allListings = (allListingsRes.data ?? []) as unknown as PortalListing[];
+  const portalStats = computePortalStats(allListings);
 
   // supabase-js types `regions` as an array on joins; collapse to single.
   const condoRaw = condoData as unknown as {
@@ -375,7 +378,10 @@ export default async function CondoPage({
     ? condoRaw.regions[0] ?? null
     : condoRaw.regions;
 
-  const listings = (listingsRes.data ?? []) as unknown as Array<{
+  // hipflat-only slice, price-ascending, capped at 200 — same filter/sort/cap
+  // as the old dedicated query, now derived from the shared allListings pull.
+  const listings = (allListings as unknown as Array<{
+    source: string;
     listing_type: string;
     price: number;
     currency: string;
@@ -387,7 +393,10 @@ export default async function CondoPage({
     publisher: string | null;
     listing_url: string | null;
     source_unit_id: string | null;
-  }>;
+  }>)
+    .filter((r) => r.source === "hipflat")
+    .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity))
+    .slice(0, 200);
   const chart = (chartRes.data ?? []) as Array<{
     period: string;
     metric: string;
@@ -476,6 +485,19 @@ export default async function CondoPage({
     condoSlug,
     condoName: condoRaw.name,
   });
+  // Visible counterpart to breadcrumbsJsonLd above — same path, relative
+  // hrefs instead of absolute URLs.
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { name: "RealData", href: `/${lang}` },
+    { name: "Inventory", href: `/${lang}/inventory` },
+    {
+      name: region,
+      href: regions?.name
+        ? `/${lang}/district/${encodeURIComponent(regions.name)}`
+        : `/${lang}/inventory`,
+    },
+    { name: condoRaw.name, href: `/${lang}/condo/${condoSlug}` },
+  ];
 
   // Backlink target: this condo's nearest rail station spoke (only if viable).
   const stationName =
@@ -698,6 +720,10 @@ export default async function CondoPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
+      <div className="px-4 sm:px-6 pt-4">
+        <Breadcrumbs items={breadcrumbItems} />
+      </div>
+
       {/* Action row: save + share */}
       <div className="px-4 sm:px-6 pt-4 space-y-2">
         <div className="flex gap-2">
@@ -710,6 +736,25 @@ export default async function CondoPage({
         />
       </div>
 
+      {condoRaw.hero_image_url && (
+        // hero_image_url was already selected/typed but never rendered on
+        // the detail page (BuildingCard shows it everywhere else) — a
+        // photo-less page on a ~37k-page property site reads as thin/scraped
+        // to both readers and search quality raters. Plain <img>, same
+        // reasoning as BuildingCard: hipcdn is preconnected in the root
+        // layout, so the Vercel image pipeline would add cost with no gain.
+        <div className="px-4 sm:px-6 pt-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={condoRaw.hero_image_url}
+            alt={condoRaw.name}
+            width={960}
+            height={540}
+            className="w-full aspect-[16/9] object-cover rounded-2xl border border-zinc-800"
+          />
+        </div>
+      )}
+
       <div data-speakable="report-card">
         <ReportCard
           condo={{ ...condoRaw, regions }}
@@ -720,6 +765,14 @@ export default async function CondoPage({
           lang={lang}
         />
       </div>
+
+      {/* Lead capture — was buried near the bottom of a ~24-section page
+          (position ~20/24); most readers never scrolled that far. Collapses
+          to a one-line headline+button by default (see LeadCaptureCTA's
+          `!open` state) so it doesn't compete with the report card above the
+          fold. A second instance stays at the bottom for readers who scroll
+          the full report before deciding. */}
+      <LeadCaptureCTA condoId={condoRaw.id} condoName={condoRaw.name} />
 
       {/* Building facts */}
       <section data-speakable="building-facts" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
@@ -834,7 +887,7 @@ export default async function CondoPage({
         nearestTransitM={nearestTransitM}
       />
 
-      {retiree != null && retiree.score >= 55 && (
+      {retiree != null && retiree.score >= 55 && getCity(condoCitySlug) && (
         <Link
           href={`/${lang}/retiree/${condoCitySlug}`}
           className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 hover:border-zinc-600 transition group"
@@ -1013,6 +1066,28 @@ export default async function CondoPage({
           <li><Link href={`/${lang}/glossary/developer-track-record`}>What is a developer track record?</Link></li>
         </ul>
       </section>
+
+      {faqItems.length > 0 && (
+        <section>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">
+            Frequently asked questions
+          </h2>
+          <div className="space-y-3">
+            {faqItems.map((f, i) => (
+              <details
+                key={i}
+                className="group bg-zinc-900 border border-zinc-800 rounded-xl p-4 [&_summary]:cursor-pointer"
+              >
+                <summary className="font-semibold list-none flex items-baseline justify-between gap-3">
+                  <span>{f.q}</span>
+                  <span className="text-zinc-500 group-open:rotate-180 transition shrink-0">▾</span>
+                </summary>
+                <p className="text-zinc-400 text-sm mt-3 leading-relaxed">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
 
       {condoRaw.url && (
         <div className="text-xs text-zinc-500">

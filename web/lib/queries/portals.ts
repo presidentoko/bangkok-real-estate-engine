@@ -1,10 +1,9 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-type Listing = {
+export type Listing = {
   source: string;
   listing_type: string;
   price: number;
   currency: string | null;
+  is_active: boolean;
 };
 
 export type PortalStat = {
@@ -53,18 +52,12 @@ function median(arr: number[]): number | null {
     : sorted[mid];
 }
 
-export async function getPortalStats(
-  supabase: SupabaseClient,
-  condoId: string,
-): Promise<PortalStat[]> {
-  const { data } = await supabase
-    .from("listings")
-    .select("source, listing_type, price, currency")
-    .eq("condo_id", condoId)
-    .eq("is_active", true)
-    .not("price", "is", null);
-
-  const rows = (data ?? []) as Listing[];
+// Takes rows already fetched by the caller (condo/[slug]/page.tsx fetches
+// every listing for the condo once and derives both the hipflat units table
+// and this cross-portal comparison from it, instead of two separate
+// Supabase round trips against the same `listings` table).
+export function computePortalStats(allRows: Listing[]): PortalStat[] {
+  const rows = allRows.filter((r) => r.is_active && r.price != null);
   const out: PortalStat[] = SOURCES.map((src) => {
     const sale = rows
       .filter((r) => r.source === src && r.listing_type === "sale")

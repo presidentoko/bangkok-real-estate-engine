@@ -51,7 +51,7 @@ export default async function YieldsPage({
   const supabase = getServerSupabase();
   const [rows, mortgage] = await Promise.all([
     fetchYieldRows(supabase),
-    getCurrentMortgageRate(supabase),
+    getCurrentMortgageRate(),
   ]);
   const mrr = mortgage?.rate ?? null;
 

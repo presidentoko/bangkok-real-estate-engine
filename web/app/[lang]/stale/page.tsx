@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CITIES } from "@/lib/cities";
+import { CITIES, canonicalCitySlug } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
@@ -44,7 +44,7 @@ export default async function StalePage({
 
   const { data } = await supabase
     .from("condos_published")
-    .select("id, name, province, regions(name), active_listings_count, median_listing_dom_days, max_listing_dom_days")
+    .select("id, slug, name, province, regions(name), active_listings_count, median_listing_dom_days, max_listing_dom_days")
     .gt("active_listings_count", 0)
     .not("median_listing_dom_days", "is", null)
     .order("median_listing_dom_days", { ascending: false })
@@ -52,6 +52,7 @@ export default async function StalePage({
 
   type Row = {
     id: string;
+    slug: string | null;
     name: string;
     province: string;
     regions: { name: string } | { name: string }[] | null;
@@ -62,7 +63,9 @@ export default async function StalePage({
   const rows = (data ?? []) as unknown as Row[];
 
   const provLabel = (slug: string) => {
-    const p = PROVINCE_LABELS[slug];
+    // DB `province` values aren't always the compact UI slug PROVINCE_LABELS
+    // is keyed by (e.g. kebab-cased "chiang-mai") — normalize first.
+    const p = PROVINCE_LABELS[slug] ?? PROVINCE_LABELS[canonicalCitySlug(slug)];
     if (!p) return slug;
     return p[lang as Lang] ?? p.en;
   };
@@ -107,7 +110,7 @@ export default async function StalePage({
                   <td className="py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                   <td className="py-3">
                     <Link
-                      href={`/${lang}/condo/${r.id}`}
+                      href={`/${lang}/condo/${r.slug ?? r.id}`}
                       className="text-zinc-100 hover:text-blue-300 transition"
                     >
                       {r.name}

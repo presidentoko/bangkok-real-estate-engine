@@ -48,7 +48,11 @@ function isRateLimited(hash: string): boolean {
 const MODEL = "claude-haiku-4-5-20251001";  // fast + cheap; switch to claude-sonnet-4-6 for higher quality
 const MAX_TOKENS = 1500;
 
-const SYSTEM_PROMPT_PREFIX = `You are RealData's property research assistant for Thailand.
+// Built per-request (not a module-level template literal) so the "as of"
+// date doesn't freeze at cold-start — a warm serverless instance could
+// otherwise serve a date days stale to every request it handles.
+function buildSystemPromptPrefix(): string {
+  return `You are RealData's property research assistant for Thailand.
 Your only knowledge of the Thai condo market is the DATABASE SNAPSHOT below — never
 invent buildings, yields, or prices. If a user asks about a condo not in the
 snapshot, say so explicitly and suggest broadening the search.
@@ -67,6 +71,7 @@ LANGUAGE: Match the language of the user's question (English, Thai, or Korean).
 
 DATABASE SNAPSHOT (as of ${new Date().toISOString().slice(0, 10)}):
 `;
+}
 
 export async function POST(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY;
@@ -117,7 +122,7 @@ export async function POST(req: Request) {
 
   const supabase = getServerSupabase();
   const ctx = await retrieveContext(supabase, question);
-  const system = SYSTEM_PROMPT_PREFIX + formatContext(ctx);
+  const system = buildSystemPromptPrefix() + formatContext(ctx);
 
   const client = new Anthropic({ apiKey: key });
 

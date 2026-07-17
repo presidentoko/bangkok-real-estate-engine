@@ -82,13 +82,11 @@ export function ReportCard({ condo, score, liv, risk, latest, lang }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto -mx-6 px-6">
-        <div
-          ref={cardRef}
-          className="bg-zinc-950 p-6 rounded-3xl border border-zinc-800"
-          style={{ width: 540, height: 540 }}
-        >
-          <div className="flex flex-col h-full">
+      <div
+        ref={cardRef}
+        className="w-full max-w-[540px] bg-zinc-950 p-6 rounded-3xl border border-zinc-800"
+      >
+        <div className="flex flex-col h-full">
             <div className="flex items-start justify-between">
               <div>
                 <div className="text-zinc-500 text-[10px] uppercase tracking-widest">
@@ -173,7 +171,6 @@ export function ReportCard({ condo, score, liv, risk, latest, lang }: Props) {
             </div>
           </div>
         </div>
-      </div>
 
       <ShareButton
         targetRef={cardRef}

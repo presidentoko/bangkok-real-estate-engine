@@ -19,6 +19,7 @@ type CondoLite = {
   province?: string | null;
   google_rating?: number | null;
   google_review_count?: number | null;
+  hero_image_url?: string | null;
 };
 
 type AnalyticalSignals = {
@@ -149,6 +150,7 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
     "@type": "ApartmentComplex",
     name: condo.name,
     url: `${siteUrl}/${lang}/condo/${condo.slug ?? condo.id}`,
+    ...(condo.hero_image_url ? { image: condo.hero_image_url } : {}),
     address: {
       "@type": "PostalAddress",
       addressLocality: region,

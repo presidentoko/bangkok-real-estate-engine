@@ -42,12 +42,18 @@ export function CondoSearch({ lang }: { lang: string }) {
           signal: ctrl.signal,
         });
         const data = (await res.json()) as { results?: SearchResult[] };
-        setResults(data.results ?? []);
-        setOpen(true);
+        // A superseded request's `finally` used to always fire and clear
+        // loading, so an aborted request could flash "No matches" while the
+        // newer request it lost to was still in flight. Only the request
+        // that's still current gets to touch state.
+        if (abortRef.current === ctrl) {
+          setResults(data.results ?? []);
+          setOpen(true);
+        }
       } catch {
         /* aborted or network */
       } finally {
-        setLoading(false);
+        if (abortRef.current === ctrl) setLoading(false);
       }
     }, 250);
     return () => clearTimeout(t);

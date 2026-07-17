@@ -6,6 +6,7 @@ import { colorForLevel, descriptorForLevel } from "@/lib/floodColors";
 
 export type FloodPoint = {
   id: string;
+  slug?: string | null;
   name: string;
   lat: number;
   lng: number;
@@ -157,6 +158,7 @@ export function FloodMapSvg({
         const [x, y] = project(p.lng, p.lat);
         return {
           id: p.id,
+          slug: p.slug ?? null,
           name: p.name,
           x,
           y,
@@ -207,7 +209,7 @@ export function FloodMapSvg({
             />
           );
           return d.url ? (
-            <Link key={d.id} href={`${condoLinkPrefix}${d.id}`}>
+            <Link key={d.id} href={`${condoLinkPrefix}${d.slug ?? d.id}`}>
               {circle}
             </Link>
           ) : (

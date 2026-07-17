@@ -6,6 +6,8 @@ import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 // Developer stats only recompute weekly (compute_developer_stats.py runs in
 // weekly-refresh POST_STEPS) — see condo/[slug]/page.tsx for the full
@@ -42,6 +44,7 @@ export async function generateStaticParams() {
       .from("condos_published")
       .select("developer_slug")
       .not("developer_slug", "is", null)
+      .order("id")
       .range(offset, offset + page - 1);
     const chunk = (data ?? []) as Array<{ developer_slug: string }>;
     for (const r of chunk) slugSet.add(r.developer_slug);
@@ -152,7 +155,15 @@ export default async function DeveloperPage({
     <main className="max-w-5xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(itemListJsonLd) }}
+      />
+
+      <Breadcrumbs
+        items={[
+          { name: "RealData", href: `/${lang}` },
+          { name: "Inventory", href: `/${lang}/inventory` },
+          { name: devName, href: `/${lang}/developer/${slug}` },
+        ]}
       />
 
       <header className="space-y-2">

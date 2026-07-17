@@ -5,9 +5,12 @@ import { cache } from "react";
 import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
+import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 // ~183 districts x 3 langs = ~550 pages; data only refreshes weekly (see
 // condo/[slug]/page.tsx for the full ISR-overage context from 2026-07-10).
@@ -66,7 +69,14 @@ const resolveRegion = cache(async (
   // (percent signs intact), not "din daeng" — decode before matching
   // `regions.name`, or any district whose name contains a space 404s on its
   // own percent-encoded canonical URL (confirmed live 2026-07-12).
-  const decoded = decodeURIComponent(slug);
+  // Malformed percent-encoding (e.g. a stray "%" from a crawler/scanner)
+  // throws URIError — treat that as "no such district" instead of a 500.
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(slug);
+  } catch {
+    return null;
+  }
   // First try exact (cheap)
   const { data: exact } = await supabase
     .from("regions")
@@ -144,8 +154,9 @@ export default async function DistrictPage({
       )
       .eq("region_id", region.id)
       .eq("is_active", true)
+      .order("id")
       .range(0, 999),
-    getCurrentMortgageRate(supabase),
+    getCurrentMortgageRate(),
   ]);
 
   const condos = (condoRows ?? []) as unknown as CondoLite[];
@@ -241,11 +252,19 @@ export default async function DistrictPage({
     <main className="max-w-5xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
+      />
+
+      <Breadcrumbs
+        items={[
+          { name: "RealData", href: `/${lang}` },
+          { name: "Inventory", href: `/${lang}/inventory` },
+          { name: display, href: `/${lang}/district/${canonicalSlug}` },
+        ]}
       />
 
       <header className="space-y-2">
@@ -374,10 +393,13 @@ export default async function DistrictPage({
         </ul>
       </section>
 
+      <LeadCaptureCTA
+        headline={`Looking to buy in ${display}? Get an expert read.`}
+      />
+
       <p className="text-xs text-zinc-500">
         Source: RealData measurement across hipflat, dotproperty, ddproperty,
-        fazwaz · MRR benchmark from Bank of Thailand · last updated{" "}
-        {new Date().toISOString().slice(0, 10)}.
+        fazwaz · MRR benchmark from Bank of Thailand · refreshed weekly.
       </p>
     </main>
   );

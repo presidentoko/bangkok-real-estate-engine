@@ -46,7 +46,7 @@ function fmtMoney(n: number | null, currency: string | null | undefined): string
   const sym = currency === "THB" ? "฿" : currency === "USD" ? "$" : `${currency ?? ""} `;
   if (n >= 1_000_000) return `${sym}${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${sym}${(n / 1_000).toFixed(0)}k`;
-  return `${sym}${Math.round(n).toLocaleString()}`;
+  return `${sym}${Math.round(n).toLocaleString("en-US")}`;
 }
 
 export function InventoryGrid({
@@ -221,11 +221,11 @@ export function InventoryGrid({
           {cityLabel} · inventory snapshot
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Stat label="Buildings" value={totalCount.toLocaleString()} />
-          <Stat label="Districts" value={districts.length.toLocaleString()} />
+          <Stat label="Buildings" value={totalCount.toLocaleString("en-US")} />
+          <Stat label="Districts" value={districts.length.toLocaleString("en-US")} />
           <Stat
             label="Geo-located"
-            value={stats.geoLocated.toLocaleString()}
+            value={stats.geoLocated.toLocaleString("en-US")}
             sub={`${totalCount ? Math.round((stats.geoLocated / totalCount) * 100) : 0}%`}
           />
           <Stat label="Median sale" value={fmtMoney(stats.saleMedian, stats.currency)} />
@@ -233,7 +233,7 @@ export function InventoryGrid({
           <Stat
             label="Bubble avg"
             value={stats.bubbleAvg != null ? stats.bubbleAvg.toFixed(0) : "—"}
-            sub={stats.bubbleSampleSize > 0 ? `${stats.bubbleSampleSize.toLocaleString()} scored` : undefined}
+            sub={stats.bubbleSampleSize > 0 ? `${stats.bubbleSampleSize.toLocaleString("en-US")} scored` : undefined}
             tint={
               stats.bubbleAvg == null
                 ? "text-zinc-400"
@@ -247,7 +247,7 @@ export function InventoryGrid({
         </div>
         {stats.superValue > 0 && (
           <div className="mt-3 text-xs text-emerald-300">
-            ★ {stats.superValue.toLocaleString()} super-value picks · scored under market
+            ★ {stats.superValue.toLocaleString("en-US")} super-value picks · scored under market
           </div>
         )}
       </div>
@@ -342,9 +342,9 @@ export function InventoryGrid({
           <span className="text-xs text-zinc-500 ml-auto tabular-nums">
             {showGrid
               ? loaded
-                ? `${filtered.length.toLocaleString()} / ${totalCount.toLocaleString()}`
+                ? `${filtered.length.toLocaleString("en-US")} / ${totalCount.toLocaleString("en-US")}`
                 : "loading…"
-              : `${totalCount.toLocaleString()} total`}
+              : `${totalCount.toLocaleString("en-US")} total`}
           </span>
         </div>
       </div>
@@ -374,7 +374,7 @@ export function InventoryGrid({
 
           <div className="bg-zinc-900/50 border border-dashed border-zinc-800 rounded-2xl p-8 text-center">
             <div className="text-zinc-400 text-sm mb-3">
-              {totalCount.toLocaleString()} buildings in {cityLabel}.
+              {totalCount.toLocaleString("en-US")} buildings in {cityLabel}.
               <br />
               Search by name or pick a filter above to drill in.
             </div>
@@ -382,7 +382,7 @@ export function InventoryGrid({
               onClick={() => setRevealAll(true)}
               className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-medium px-4 py-2 rounded-lg transition"
             >
-              Show all {totalCount.toLocaleString()} →
+              Show all {totalCount.toLocaleString("en-US")} →
             </button>
           </div>
         </>
@@ -424,8 +424,8 @@ export function InventoryGrid({
             {hasMore && (
               <div className="flex flex-col items-center gap-2 pt-6">
                 <div className="text-xs text-zinc-500 tabular-nums">
-                  Showing {visible.length.toLocaleString()} of{" "}
-                  {filtered.length.toLocaleString()}
+                  Showing {visible.length.toLocaleString("en-US")} of{" "}
+                  {filtered.length.toLocaleString("en-US")}
                 </div>
                 <button
                   onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}

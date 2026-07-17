@@ -31,6 +31,7 @@ export const getYieldByArea = unstable_cache(
         .from("condos")
         .select("gross_yield_pct, market_sale_per_sqm, region_name, province")
         .eq("province", "bangkok")
+        .order("id")
         .range(from, from + page - 1);
       if (error || !data) break;
       rows.push(...(data as any[]));

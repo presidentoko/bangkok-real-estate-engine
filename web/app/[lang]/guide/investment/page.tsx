@@ -8,6 +8,7 @@ import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd, type FaqItem } from "@/lib/seo/faqJsonLd";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { getYieldByArea } from "@/lib/queries/areas";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 export const revalidate = 86400;
 
@@ -44,8 +45,8 @@ export default async function InvestmentPage({ params }: { params: Promise<{ lan
   ]);
   return (
     <main className="max-w-4xl mx-auto p-6">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildFaqJsonLd(FAQ)) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(FAQ)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbs) }} />
       <h1 className="text-3xl font-bold mb-2">{t.guide.investment.title}</h1>
       <p className="text-zinc-400 mb-6">{t.guide.investment.lead}</p>
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { BuildingCard } from "@/components/BuildingCard";
 import { CityMapSvg, type CityPoint } from "@/components/CityMapSvg";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
@@ -78,7 +79,7 @@ function flatten(r: Joined): CondoSummary {
   };
 }
 
-async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
+const _fetchCityCondos = async (province: CitySlug): Promise<CondoSummary[]> => {
   const supabase = getServerSupabase();
   const out: CondoSummary[] = [];
   const PAGE = 1000;
@@ -93,6 +94,7 @@ async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
       .select(SELECT)
       .eq("source", "hipflat")
       .in("province", provinces)
+      .order("id")
       .range(offset, offset + PAGE - 1);
     if (error) throw new Error(`city condo fetch failed: ${error.message}`);
     const rows = (data ?? []) as unknown as Joined[];
@@ -101,6 +103,29 @@ async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
     offset += PAGE;
   }
   return out;
+};
+
+// Was an uncached plain function — every 86400s ISR regen re-pulled the
+// whole city (Bangkok ~6k rows) with no memoisation between requests inside
+// that window. Cached to match the page's own revalidate.
+const fetchCityCondos = unstable_cache(
+  _fetchCityCondos,
+  ["city:condos"],
+  { revalidate: 86400, tags: ["condos"] }
+);
+
+// Every published condo has a detail page regardless of whether it's
+// rendered here, so cap what actually gets SSR'd into the HTML — unlike
+// home's dot map, this is plain uncapped BuildingCard markup (image + text
+// per card), and Bangkok alone runs ~6k condos with no limit before this.
+// Stride-sample instead of truncating so the on-page sample still reads as
+// geographically/score representative.
+const GRID_CAP = 400;
+const MAP_DOT_CAP = 600;
+function sample<T>(arr: T[], cap: number): T[] {
+  return arr.length > cap
+    ? arr.filter((_, i) => i % Math.ceil(arr.length / cap) === 0)
+    : arr;
 }
 
 export async function generateMetadata({
@@ -165,12 +190,15 @@ export default async function CityPage({
     .filter((c) => c.latitude != null && c.longitude != null)
     .map((c) => ({
       id: c.id,
+      slug: c.slug,
       name: c.name,
       lat: c.latitude as number,
       lng: c.longitude as number,
       bubbleIndex: c.bubble_index,
       url: c.url,
     }));
+  const mapDots = sample(points, MAP_DOT_CAP);
+  const gridCondos = sample(condos, GRID_CAP);
 
   const cityName = city.name[lang];
   const tagline = city.tagline[lang];
@@ -294,7 +322,7 @@ export default async function CityPage({
             <span className="text-zinc-500 text-sm">{t.mapSubtitle(points.length)}</span>
           </div>
           <CityMapSvg
-            points={points}
+            points={mapDots}
             fallbackCenter={city.center}
             condoLinkPrefix={`/${lang}/condo/`}
             cityName={cityName}
@@ -353,16 +381,28 @@ export default async function CityPage({
         {condos.length === 0 ? (
           <div className="text-zinc-500 text-sm">{t.pendingPipeline}</div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {condos.map((c) => (
-              <BuildingCard
-                key={c.id}
-                condo={c}
-                hrefPrefix={`/${lang}/condo/`}
-                size="sm"
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {gridCondos.map((c) => (
+                <BuildingCard
+                  key={c.id}
+                  condo={c}
+                  hrefPrefix={`/${lang}/condo/`}
+                  size="sm"
+                />
+              ))}
+            </div>
+            {condos.length > gridCondos.length && (
+              <div className="mt-4 text-center">
+                <Link
+                  href={`/${lang}/inventory?city=${slug}`}
+                  className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
+                >
+                  {t.fullInventoryStat(total)} →
+                </Link>
+              </div>
+            )}
+          </>
         )}
       </section>
 

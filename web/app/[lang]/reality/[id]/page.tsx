@@ -76,7 +76,7 @@ export default async function RealityPage({
 
   const condo_id = promo.condo_id;
 
-  const [condoRes, scoreRes, livRes, riskRes, latestRes, regionRes, historyRes] =
+  const [condoRes, scoreRes, livRes, riskRes, latestRes, historyRes] =
     await Promise.all([
       supabase
         .from("condos_published")
@@ -105,7 +105,6 @@ export default async function RealityPage({
         .select("price, area_sqm, price_per_sqm")
         .eq("condo_id", condo_id)
         .maybeSingle(),
-      supabase.from("regions").select("avg_price_per_sqm"),
       // Sale rows only — price_history mixes sale and rent snapshots
       // (listing_type column), and summing both would blend rent deltas
       // (small THB moves, huge % swings) into the "total drop" figure.

@@ -6,7 +6,9 @@
  * directly from `condos` to skip needing another migration on the user side.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import { canonicalCitySlug, cityProvinceSlugs } from "@/lib/cities";
+import { getServerSupabase } from "@/lib/supabase";
 import {
   clampMinYield,
   resolveYieldSort,
@@ -48,32 +50,39 @@ export async function getCondoYield(
   return (data as CondoYield | null) ?? null;
 }
 
-export async function getCurrentMortgageRate(
-  supabase: SupabaseClient,
-): Promise<MortgageRate | null> {
-  const { data } = await supabase
-    .from("macro_indicators")
-    .select("indicator_name, value, period")
-    .eq("source", "bot")
-    .eq("series_code", "FM_RT_001_S2")
-    .in("indicator_name", MRR_INDICATORS as unknown as string[])
-    .order("period", { ascending: false })
-    .limit(20);
-  const rows = (data ?? []) as Array<{
-    indicator_name: string;
-    value: number;
-    period: string;
-  }>;
-  if (rows.length === 0) return null;
-  const latest = rows[0].period;
-  const same = rows.filter((r) => r.period === latest).map((r) => Number(r.value));
-  if (same.length === 0) return null;
-  return {
-    rate: same.reduce((a, b) => a + b, 0) / same.length,
-    period: latest,
-    series: "FM_RT_001_S2",
-  };
-}
+// The BOT MRR series updates at most monthly, and this same query previously
+// ran once per condo/district/yields/compare page render (no dedup) — cached
+// 7d like the other cross-page reference data on this site (getViableStations,
+// getYieldByArea) since staleness only matters to the day, not the request.
+export const getCurrentMortgageRate = unstable_cache(
+  async (): Promise<MortgageRate | null> => {
+    const supabase = getServerSupabase();
+    const { data } = await supabase
+      .from("macro_indicators")
+      .select("indicator_name, value, period")
+      .eq("source", "bot")
+      .eq("series_code", "FM_RT_001_S2")
+      .in("indicator_name", MRR_INDICATORS as unknown as string[])
+      .order("period", { ascending: false })
+      .limit(20);
+    const rows = (data ?? []) as Array<{
+      indicator_name: string;
+      value: number;
+      period: string;
+    }>;
+    if (rows.length === 0) return null;
+    const latest = rows[0].period;
+    const same = rows.filter((r) => r.period === latest).map((r) => Number(r.value));
+    if (same.length === 0) return null;
+    return {
+      rate: same.reduce((a, b) => a + b, 0) / same.length,
+      period: latest,
+      series: "FM_RT_001_S2",
+    };
+  },
+  ["mortgage-rate-v1"],
+  { revalidate: 604800 },
+);
 
 /**
  * Ranked yield rows for /yields and /api/yields. Same sanity bounds as

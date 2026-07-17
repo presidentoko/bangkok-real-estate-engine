@@ -23,7 +23,10 @@ import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 // time; InventoryExplorer (client) reads ?city after hydration and fetches
 // the city's compact condo set from /api/condos/inventory when it differs
 // from Bangkok, recomputing the dashboard stats client-side.
-export const revalidate = 3600;
+// 3600 (hourly) regenerated this page ~24x more often than the weekly
+// scrape cadence + the underlying fetchCondoSummariesCompactByCity cache
+// (86400) actually change — pure wasted ISR writes with zero freshness gain.
+export const revalidate = 86400;
 
 const BANGKOK_LABEL: Record<string, string> = {
   en: "Bangkok",
@@ -107,7 +110,7 @@ export default async function InventoryPage({
       count: counts.get("bangkok") ?? 0,
       href: `/${lang}/inventory`,
     },
-    ...CITIES.map((c) => ({
+    ...CITIES.filter((c) => c.slug !== "bangkok").map((c) => ({
       slug: c.slug,
       name: c.name[lang],
       count: counts.get(c.slug) ?? 0,

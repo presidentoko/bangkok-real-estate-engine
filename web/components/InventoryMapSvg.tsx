@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 export type KhetCount = { name: string; count: number };
 export type CondoPoint = {
   id: string;
+  slug?: string | null;
   name: string;
   lat: number;
   lng: number;
@@ -186,7 +187,7 @@ export function InventoryMapSvg({
         const [x, y] = project(p.lng, p.lat);
         // Round to 1dp — plenty of precision at this viewBox scale, and
         // shaves the long float tails off every point's SSR'd markup.
-        return { id: p.id, name: p.name, x: +x.toFixed(1), y: +y.toFixed(1) };
+        return { id: p.id, slug: p.slug, name: p.name, x: +x.toFixed(1), y: +y.toFixed(1) };
       });
 
     return { paths, dots };
@@ -224,8 +225,8 @@ export function InventoryMapSvg({
           ))}
         </g>
         {dots.map((d) => (
-          // Every published condo has a /condo/[id] page, so always link the dot.
-          <Link key={d.id} href={`${condoLinkPrefix}${d.id}`}>
+          // Every published condo has a /condo/[slug] page, so always link the dot.
+          <Link key={d.id} href={`${condoLinkPrefix}${d.slug ?? d.id}`}>
             <circle
               cx={d.x}
               cy={d.y}

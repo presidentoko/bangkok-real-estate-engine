@@ -123,7 +123,7 @@ export function InventoryExplorer({
           {cityName} <span className="text-zinc-500">inventory</span>
         </h1>
         <p className="text-zinc-500 text-sm mt-1">
-          {view.totalCount.toLocaleString()} condo buildings tracked across 4 portals
+          {view.totalCount.toLocaleString("en-US")} condo buildings tracked across 4 portals
           {view.slug !== "bangkok" ? ` in ${cityName}` : " in Thailand's capital"}
         </p>
         <div className="flex flex-wrap gap-1.5 mt-3">
@@ -160,7 +160,7 @@ export function InventoryExplorer({
                   {c.name}
                 </span>
                 <span className={active ? "tabular-nums opacity-80" : "text-zinc-500 tabular-nums"}>
-                  {c.count.toLocaleString()}
+                  {c.count.toLocaleString("en-US")}
                 </span>
               </a>
             );

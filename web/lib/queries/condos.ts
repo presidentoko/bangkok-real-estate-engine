@@ -110,6 +110,7 @@ async function _fetchAllCondos(): Promise<CondoSummary[]> {
     const { data, error } = await supabase
       .from("condos_published")
       .select(SELECT)
+      .order("id")
       .range(offset, offset + PAGE - 1);
     if (error) throw new Error(`condo fetch failed: ${error.message}`);
     const rows = (data ?? []) as unknown as Joined[];
@@ -143,7 +144,7 @@ export const fetchAllCondos = unstable_cache(
 // Lean projection: no `url`, no `available_units_count` (unused by the grid /
 // cards / dashboard stats). Keeps lat/lng for the geo-located stat.
 const SELECT_LEAN =
-  "id, name, latitude, longitude, hero_image_url, total_units, " +
+  "id, slug, name, latitude, longitude, hero_image_url, total_units, " +
   "market_sale_median, market_rent_median, market_summary_currency, " +
   "property_type, province, source, regions(name), " +
   "value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
@@ -170,6 +171,7 @@ async function _fetchCondoSummariesByCity(citySlug: string): Promise<CondoSummar
         .from("condos_published")
         .select(SELECT_LEAN)
         .in("province", provinces)
+        .order("id")
         .range(offset, offset + PAGE - 1);
       if (error) throw new Error(`city condo fetch failed: ${error.message}`);
       const rows = (data ?? []) as unknown as Joined[];
@@ -187,6 +189,7 @@ async function _fetchCondoSummariesByCity(citySlug: string): Promise<CondoSummar
         .from("condos_published")
         .select(SELECT_LEAN)
         .in("province", provinces)
+        .order("id")
         .range(i * PAGE, i * PAGE + PAGE - 1)
     )
   );
@@ -236,6 +239,7 @@ async function _fetchCondoProvinces(): Promise<string[]> {
     const { data, error } = await supabase
       .from("condos_published")
       .select("province")
+      .order("id")
       .range(offset, offset + PAGE - 1);
     if (error) throw new Error(`province fetch failed: ${error.message}`);
     const rows = (data ?? []) as Array<{ province: string | null }>;
@@ -267,6 +271,7 @@ export const fetchCondoProvinces = unstable_cache(
 
 export type CondoMapPoint = {
   id: string;
+  slug: string | null;
   name: string;
   latitude: number | null;
   longitude: number | null;
@@ -280,11 +285,13 @@ async function _fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
   while (true) {
     const { data, error } = await supabase
       .from("condos_published")
-      .select("id, name, latitude, longitude, regions(name)")
+      .select("id, slug, name, latitude, longitude, regions(name)")
+      .order("id")
       .range(offset, offset + PAGE - 1);
     if (error) throw new Error(`map points fetch failed: ${error.message}`);
     const rows = (data ?? []) as Array<{
       id: string;
+      slug: string | null;
       name: string;
       latitude: number | null;
       longitude: number | null;
@@ -294,6 +301,7 @@ async function _fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
       const reg = Array.isArray(r.regions) ? r.regions[0] : r.regions;
       out.push({
         id: r.id,
+        slug: r.slug ?? null,
         name: r.name,
         latitude: r.latitude,
         longitude: r.longitude,
