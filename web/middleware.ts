@@ -35,9 +35,20 @@ const ADMIN_PUBLIC_PATHS = new Set(["/admin/login"]);
 // pages keep serving fine for real users while the crawl backlog waits.
 // Mirrors the precedent in web/app/robots.ts's BLOCKED_AGENTS (Bytespider/
 // CCBot were disallowed after an earlier egress-quota lockout).
+//
+// 2026-07-17: dropped Googlebot/Bingbot from the block list. GSC's page-
+// indexing report showed "Discovered - currently not indexed" at 21,505
+// pages and climbing since this block went live -- Google was getting the
+// same 503 as every other bot and backing off crawl. Ranking on Google is
+// the whole point of this site, so that outweighs a few extra days of
+// Supabase read load before the 8/4 reset. Cloudflare Bot Fight Mode
+// (enabled 2026-07-13) now absorbs most of the non-Google bot volume at
+// the edge anyway, so the remaining UA-regex block matters less than it
+// did when this was first added.
 const EGRESS_PAUSE_UNTIL = "Tue, 04 Aug 2026 00:00:00 GMT";
 const BOT_UA_RE =
-  /bot|crawl|spider|slurp|facebookexternalhit|ia_archiver|GPTBot|ClaudeBot|PerplexityBot|Bingbot|Googlebot|YandexBot|PetalBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|Amazonbot/i;
+  /bot|crawl|spider|slurp|facebookexternalhit|ia_archiver|GPTBot|ClaudeBot|PerplexityBot|YandexBot|PetalBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|Amazonbot/i;
+const SEARCH_ENGINE_UA_RE = /Googlebot|GoogleOther|Google-Extended|Bingbot/i;
 
 function pickLang(req: NextRequest): Lang {
   // 1. Cookie wins (explicit user choice)
@@ -57,10 +68,12 @@ function pickLang(req: NextRequest): Lang {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  const ua = req.headers.get("user-agent") ?? "";
   if (
     Date.now() < Date.parse(EGRESS_PAUSE_UNTIL) &&
     pathname.includes("/condo/") &&
-    BOT_UA_RE.test(req.headers.get("user-agent") ?? "")
+    BOT_UA_RE.test(ua) &&
+    !SEARCH_ENGINE_UA_RE.test(ua)
   ) {
     return new NextResponse(
       "Temporarily pausing crawl of this section while a free-tier database " +
