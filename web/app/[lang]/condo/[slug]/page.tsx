@@ -86,11 +86,12 @@ const SITE_URL =
 // body) into a single Supabase round trip each, per request.
 const getCondoIdBySlug = cache(async (slug: string): Promise<string | null> => {
   const supabase = getServerSupabase();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("condos_published")
     .select("id")
     .eq("slug", slug)
     .maybeSingle();
+  if (error) console.error(`[condo] getCondoIdBySlug(${slug}) failed:`, error.message, error.code, error.details);
   return (data as { id: string } | null)?.id ?? null;
 });
 
@@ -124,23 +125,25 @@ const LIVABILITY_SELECT =
 // Union of the columns generateMetadata() and the page body each need, so
 // both call sites share one cached query against `condos_published` instead
 // of running two overlapping (and both fairly wide) SELECTs on the same row.
-const CONDO_FULL_SELECT =
-  "id, name, developer, url, regions(name), latitude, longitude, " +
-  "province, retiree_score, slug, " +
-  "floors, total_units, completion_year, description, hero_image_url, " +
-  "market_rent_median, market_rent_per_sqm, market_rent_yoy_pct, " +
-  "market_sale_median, market_sale_per_sqm, market_sale_yoy_pct, " +
-  "market_summary_currency, available_units_count, " +
-  "active_listings_count, median_listing_dom_days, max_listing_dom_days, " +
-  "cam_fee_per_month, sinking_fund, building_ownership, " +
-  "aqi_score, pm25_value, aqi_station_name, aqi_fetched_at, " +
-  "foreign_quota_listings_available, thai_quota_listings_available, " +
-  "total_quota_listings_observed, foreign_quota_inventory_pct, " +
-  "foreign_quota_fetched_at, " +
-  "developer_slug, developer_project_count, developer_unit_count, " +
-  "google_rating, google_review_count, gross_yield_pct, " +
-  `value_scores(${VALUE_SCORE_SELECT}), risk_factors(${RISK_FACTORS_SELECT}), ` +
-  `livability_metrics(${LIVABILITY_SELECT})`;
+const CONDO_FULL_SELECT = [
+  "id", "name", "developer", "url", "regions(name)", "latitude", "longitude",
+  "province", "retiree_score", "slug",
+  "floors", "total_units", "completion_year", "description", "hero_image_url",
+  "market_rent_median", "market_rent_per_sqm", "market_rent_yoy_pct",
+  "market_sale_median", "market_sale_per_sqm", "market_sale_yoy_pct",
+  "market_summary_currency", "available_units_count",
+  "active_listings_count", "median_listing_dom_days", "max_listing_dom_days",
+  "cam_fee_per_month", "sinking_fund", "building_ownership",
+  "aqi_score", "pm25_value", "aqi_station_name", "aqi_fetched_at",
+  "foreign_quota_listings_available", "thai_quota_listings_available",
+  "total_quota_listings_observed", "foreign_quota_inventory_pct",
+  "foreign_quota_fetched_at",
+  "developer_slug", "developer_project_count", "developer_unit_count",
+  "google_rating", "google_review_count", "gross_yield_pct",
+  `value_scores(${VALUE_SCORE_SELECT})`,
+  `risk_factors(${RISK_FACTORS_SELECT})`,
+  `livability_metrics(${LIVABILITY_SELECT})`,
+].join(", ");
 
 type EmbeddedOneOrMany<T> = T | T[] | null;
 function one<T>(v: EmbeddedOneOrMany<T>): T | null {
@@ -149,11 +152,12 @@ function one<T>(v: EmbeddedOneOrMany<T>): T | null {
 
 const getCondoFullById = cache(async (id: string) => {
   const supabase = getServerSupabase();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("condos_published")
     .select(CONDO_FULL_SELECT)
     .eq("id", id)
     .maybeSingle();
+  if (error) console.error(`[condo] getCondoFullById(${id}) failed:`, error.message, error.code, error.details);
   return data;
 });
 
