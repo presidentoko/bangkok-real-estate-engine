@@ -13,18 +13,14 @@ name: Weekly Tier B + score refresh
 # passes through transparently.
 
 on:
-  # PAUSED 2026-07-12: Supabase free-tier egress at 4.70/5GB (94%) with the
-  # billing period not resetting until 2026-08-04 -- ~587MB/day burned in
-  # the first 8 days of this period vs. only 300MB of headroom left for the
-  # remaining 23. The likely dominant cause (per-listing writes echoing
-  # full rows back across 40+ cities of scraping) was just fixed
-  # (returning="minimal" added to 5 sites in src/db.py, commit c9f0374),
-  # but automatic full-scale runs are too risky to resume unverified this
-  # close to the cap. Re-enable the `schedule:` trigger below after the
-  # 2026-08-04 reset (or sooner, once a manual workflow_dispatch run with a
-  # small tier_b_limit confirms egress per run has actually dropped).
-  # schedule:
-  #   - cron: "17 19 * * 6"
+  # RE-ENABLED 2026-07-21: was paused since 2026-07-12 for the old Supabase
+  # project's egress overage (94%+, reset not due until 2026-08-04). Migrated
+  # to a fresh Supabase project instead of waiting for the reset, so the
+  # egress counter is back to 0 -- no need to wait for 8/4 anymore. The
+  # per-listing write fix (returning="minimal", commit c9f0374) is still in
+  # place, so per-run egress should be lower than before the pause too.
+  schedule:
+    - cron: "17 19 * * 6"
   workflow_dispatch:
     inputs:
       tier_b_limit:
