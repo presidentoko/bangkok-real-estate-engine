@@ -314,11 +314,78 @@ async function _fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
   return out;
 }
 
-export const fetchCondoMapPoints = unstable_cache(
-  _fetchCondoMapPoints,
-  ["condos:map-points"],
+// Struct-of-arrays encoding of the same points, same rationale as
+// lib/condo-compact.ts's CompactCondoSummaries: an array-of-objects payload
+// spends real bytes on the same 6 key names repeated once per row. The
+// catalog has grown past the size that used to fit under Next's 2MB
+// unstable_cache ceiling as-objects (confirmed in production logs 2026-07-24:
+// "items over 2MB can not be cached (2451098 bytes)"), which meant this feed
+// silently stopped caching and every single home-page hit re-ran the full
+// condos_published scan. Columnar encoding drops the per-row key overhead
+// the same way it did for the city inventory feed.
+type CompactMapPoints = {
+  v: 1;
+  count: number;
+  id: string[];
+  slug: (string | null)[];
+  name: string[];
+  lat: (number | null)[];
+  lng: (number | null)[];
+  region: (string | null)[];
+};
+
+function encodeMapPoints(rows: CondoMapPoint[]): CompactMapPoints {
+  const n = rows.length;
+  const c: CompactMapPoints = {
+    v: 1,
+    count: n,
+    id: new Array(n),
+    slug: new Array(n),
+    name: new Array(n),
+    lat: new Array(n),
+    lng: new Array(n),
+    region: new Array(n),
+  };
+  for (let i = 0; i < n; i++) {
+    const r = rows[i];
+    c.id[i] = r.id;
+    c.slug[i] = r.slug;
+    c.name[i] = r.name;
+    c.lat[i] = r.latitude;
+    c.lng[i] = r.longitude;
+    c.region[i] = r.region;
+  }
+  return c;
+}
+
+function decodeMapPoints(c: CompactMapPoints): CondoMapPoint[] {
+  const out: CondoMapPoint[] = new Array(c.count);
+  for (let i = 0; i < c.count; i++) {
+    out[i] = {
+      id: c.id[i],
+      slug: c.slug[i],
+      name: c.name[i],
+      latitude: c.lat[i],
+      longitude: c.lng[i],
+      region: c.region[i],
+    };
+  }
+  return out;
+}
+
+async function _fetchCondoMapPointsCompact(): Promise<CompactMapPoints> {
+  return encodeMapPoints(await _fetchCondoMapPoints());
+}
+
+const fetchCondoMapPointsCompactCached = unstable_cache(
+  _fetchCondoMapPointsCompact,
+  ["condos:map-points-compact"],
   { revalidate: 86400, tags: ["condos"] }
 );
+
+export async function fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
+  return decodeMapPoints(await fetchCondoMapPointsCompactCached());
+}
 
 export type HomeFeatured = {
   superValue: CondoSummary[];
