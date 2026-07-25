@@ -12,7 +12,12 @@ import { getViableStations, getStationData } from "@/lib/queries/stations";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 
-export const revalidate = 86400;
+// Was 86400 — station/condo data only changes on the weekly refresh, and
+// getStationData's own cache is now 604800 too (bumped together 2026-07-25;
+// a page revalidate shorter than its backing unstable_cache window is fine,
+// but longer was previously capped down to the cache's cadence — see
+// lib/queries/stations.ts).
+export const revalidate = 604800;
 
 export async function generateStaticParams() {
   const stations = await getViableStations();

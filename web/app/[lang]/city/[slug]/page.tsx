@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { unstable_cache } from "next/cache";
+import { warnIfNearCacheCeiling } from "@/lib/condo-compact";
 import { BuildingCard } from "@/components/BuildingCard";
 import { CityMapSvg, type CityPoint } from "@/components/CityMapSvg";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
@@ -16,7 +17,11 @@ import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
-export const revalidate = 86400;
+// Was 86400 — every city is prebuilt at build time (generateStaticParams
+// below), so this only controls background ISR regen frequency. Underlying
+// data only changes on the weekly refresh; bumped alongside the
+// fetchCityCondos cache fix above (2026-07-25) to match.
+export const revalidate = 604800;
 
 export function generateStaticParams() {
   return CITIES.map((c) => ({ slug: c.slug }));
@@ -108,11 +113,96 @@ const _fetchCityCondos = async (province: CitySlug): Promise<CondoSummary[]> => 
 // Was an uncached plain function — every 86400s ISR regen re-pulled the
 // whole city (Bangkok ~6k rows) with no memoisation between requests inside
 // that window. Cached to match the page's own revalidate.
-const fetchCityCondos = unstable_cache(
-  _fetchCityCondos,
-  ["city:condos"],
-  { revalidate: 86400, tags: ["condos"] }
+//
+// Array-of-objects blew past Next's 2MB unstable_cache ceiling for Bangkok
+// (this SELECT includes `url` + `hero_image_url` across ~6k rows — heavier
+// than the "lean" per-city projection in lib/queries/condos.ts that its own
+// comments already say "may still exceed 2MB" as objects), so this silently
+// never cached. Same columnar fix as fetchCondoMapPoints (2026-07-25):
+// encode struct-of-arrays across the cache boundary, decode at the call site.
+// A page-local codec (not lib/condo-compact.ts's CompactCondoSummaries) —
+// this page reads `url` (map dot links, below) which that shared shape omits
+// by design; `province`/`available_units_count` are dropped here since
+// nothing in this file reads them (grep-verified).
+type CompactCityCondos = {
+  v: 1;
+  count: number;
+  id: string[];
+  slug: (string | null)[];
+  name: string[];
+  url: (string | null)[];
+  lat: (number | null)[];
+  lng: (number | null)[];
+  region: (string | null)[];
+  hero: (string | null)[];
+  bubble: (number | null)[];
+  superValue: (boolean | null)[];
+  flood: (number | null)[];
+  units: (number | null)[];
+  sale: (number | null)[];
+  rent: (number | null)[];
+  currency: (string | null)[];
+  type: PropertyType[];
+  source: string[];
+};
+
+function encodeCityCondos(rows: CondoSummary[]): CompactCityCondos {
+  const n = rows.length;
+  const c: CompactCityCondos = {
+    v: 1, count: n,
+    id: new Array(n), slug: new Array(n), name: new Array(n), url: new Array(n),
+    lat: new Array(n), lng: new Array(n), region: new Array(n), hero: new Array(n),
+    bubble: new Array(n), superValue: new Array(n), flood: new Array(n),
+    units: new Array(n), sale: new Array(n), rent: new Array(n),
+    currency: new Array(n), type: new Array(n), source: new Array(n),
+  };
+  for (let i = 0; i < n; i++) {
+    const r = rows[i];
+    c.id[i] = r.id; c.slug[i] = r.slug; c.name[i] = r.name; c.url[i] = r.url;
+    c.lat[i] = r.latitude; c.lng[i] = r.longitude; c.region[i] = r.region;
+    c.hero[i] = r.hero_image_url; c.bubble[i] = r.bubble_index;
+    c.superValue[i] = r.is_super_value; c.flood[i] = r.flood_risk_level;
+    c.units[i] = r.total_units; c.sale[i] = r.market_sale_median;
+    c.rent[i] = r.market_rent_median; c.currency[i] = r.market_summary_currency;
+    c.type[i] = r.property_type; c.source[i] = r.source;
+  }
+  return c;
+}
+
+function decodeCityCondos(c: CompactCityCondos): CondoSummary[] {
+  const out: CondoSummary[] = new Array(c.count);
+  for (let i = 0; i < c.count; i++) {
+    out[i] = {
+      id: c.id[i], slug: c.slug[i], name: c.name[i], url: c.url[i],
+      latitude: c.lat[i], longitude: c.lng[i], region: c.region[i],
+      province: "", hero_image_url: c.hero[i], bubble_index: c.bubble[i],
+      is_super_value: c.superValue[i], flood_risk_level: c.flood[i],
+      total_units: c.units[i], available_units_count: null,
+      market_sale_median: c.sale[i], market_rent_median: c.rent[i],
+      market_summary_currency: c.currency[i], property_type: c.type[i],
+      source: c.source[i],
+    };
+  }
+  return out;
+}
+
+async function _fetchCityCondosCompact(province: CitySlug): Promise<CompactCityCondos> {
+  const compact = encodeCityCondos(await _fetchCityCondos(province));
+  warnIfNearCacheCeiling(`city:condos-compact(${province})`, compact);
+  return compact;
+}
+
+const fetchCityCondosCompactCached = unstable_cache(
+  _fetchCityCondosCompact,
+  ["city:condos-compact"],
+  // Matches the page's own revalidate above — a shorter cache window here
+  // would silently cap the page's regen cadence down to it.
+  { revalidate: 604800, tags: ["condos"] }
 );
+
+async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
+  return decodeCityCondos(await fetchCityCondosCompactCached(province));
+}
 
 // Every published condo has a detail page regardless of whether it's
 // rendered here, so cap what actually gets SSR'd into the HTML — unlike

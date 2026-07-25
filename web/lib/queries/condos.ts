@@ -11,7 +11,7 @@
 
 import { unstable_cache } from "next/cache";
 import { cityProvinceSlugs } from "@/lib/cities";
-import { encodeCompact, type CompactCondoSummaries } from "@/lib/condo-compact";
+import { encodeCompact, warnIfNearCacheCeiling, type CompactCondoSummaries } from "@/lib/condo-compact";
 import { getServerSupabase } from "@/lib/supabase";
 
 const PAGE = 1000; // PostgREST per-request cap.
@@ -97,43 +97,17 @@ const SELECT =
   "market_summary_currency, property_type, province, source, regions(name), " +
   "value_scores(bubble_index,is_super_value), risk_factors(flood_risk_level)";
 
-// Pulls every published row from every source. Hipflat remains the trusted
-// scoring source (it's the only one with bubble_index + value_scores), so
-// non-hipflat rows surface with `bubble_index=null` — the UI renders a
-// "no score" placeholder for those. This is intentional: we'd rather show
-// a real building with a portal badge than pretend the inventory is empty.
-async function _fetchAllCondos(): Promise<CondoSummary[]> {
-  const supabase = getServerSupabase();
-  const out: CondoSummary[] = [];
-  let offset = 0;
-  while (true) {
-    const { data, error } = await supabase
-      .from("condos_published")
-      .select(SELECT)
-      .order("id")
-      .range(offset, offset + PAGE - 1);
-    if (error) throw new Error(`condo fetch failed: ${error.message}`);
-    const rows = (data ?? []) as unknown as Joined[];
-    out.push(...rows.map(flatten));
-    if (rows.length < PAGE) break;
-    offset += PAGE;
-  }
-  return out;
-}
-
-export const fetchAllCondos = unstable_cache(
-  _fetchAllCondos,
-  ["condos:all"],
-  { revalidate: 86400, tags: ["condos"] }
-);
-
 // ---------------------------------------------------------------------------
 // City-scoped inventory feed
 // ---------------------------------------------------------------------------
-// The inventory page + /api/condos/inventory previously called fetchAllCondos()
-// (every row, every source, ~6.4MB) and filtered to one city in JS. That blew
-// past the 2MB unstable_cache ceiling — so nothing cached and every request
-// re-pulled the whole table from Supabase (page TTFB ~2.4s, API ~39s).
+// A prior fetchAllCondos() (every row, every source, ~6.4MB, filtered to one
+// city in JS) blew past the 2MB unstable_cache ceiling — so nothing cached
+// and every request re-pulled the whole table from Supabase (page TTFB
+// ~2.4s, API ~39s). Removed 2026-07-25 once nothing called it anymore: an
+// unused all-cities/all-columns query is a landmine, not dead weight — any
+// future caller reaching for "just pull everything" reintroduces the exact
+// bug class this file exists to avoid. Scope every fetch to a city (or use
+// the compact-encoded feeds below) instead.
 //
 // These two helpers scope the fetch to a single city *at the DB level* and drop
 // the `url` + `available_units_count` columns the inventory UI never reads. That
@@ -201,16 +175,16 @@ async function _fetchCondoSummariesByCity(citySlug: string): Promise<CondoSummar
   return out;
 }
 
-// `citySlug` is part of the cache key automatically — Next.js includes the
-// function arguments alongside the keyParts.
-export const fetchCondoSummariesByCity = unstable_cache(
-  _fetchCondoSummariesByCity,
-  ["condos:by-city"],
-  { revalidate: 86400, tags: ["condos"] }
-);
-
+// No plain (array-of-objects) exported cache wrapper here on purpose —
+// Bangkok's SELECT_LEAN payload can still flirt with the 2MB ceiling as
+// objects (see warnIfNearCacheCeiling below), and an uncompacted alternative
+// sitting next to the compact one is exactly the kind of unused-but-tempting
+// export finding 7 flagged: the next caller who reaches for "the simple
+// version" silently reintroduces the same never-caches bug. Only the compact
+// form is exported; callers `decodeCompact()` it back to CondoSummary[].
+//
 // Compact (columnar) variant of the city feed. Same rows as
-// fetchCondoSummariesByCity, but encoded struct-of-arrays so the serialised
+// _fetchCondoSummariesByCity above, but encoded struct-of-arrays so the serialised
 // payload drops under Next's 2MB unstable_cache ceiling (the array-of-objects
 // form spent ~1.1MB on repeated key names alone). Caching it means even
 // Bangkok's cold requests are memoised instead of re-running a ~4.5s Supabase
@@ -219,7 +193,9 @@ export const fetchCondoSummariesByCity = unstable_cache(
 async function _fetchCondoSummariesCompactByCity(
   citySlug: string
 ): Promise<CompactCondoSummaries> {
-  return encodeCompact(await _fetchCondoSummariesByCity(citySlug));
+  const compact = encodeCompact(await _fetchCondoSummariesByCity(citySlug));
+  warnIfNearCacheCeiling(`condos:by-city-compact(${citySlug})`, compact);
+  return compact;
 }
 
 export const fetchCondoSummariesCompactByCity = unstable_cache(
@@ -374,7 +350,9 @@ function decodeMapPoints(c: CompactMapPoints): CondoMapPoint[] {
 }
 
 async function _fetchCondoMapPointsCompact(): Promise<CompactMapPoints> {
-  return encodeMapPoints(await _fetchCondoMapPoints());
+  const compact = encodeMapPoints(await _fetchCondoMapPoints());
+  warnIfNearCacheCeiling("condos:map-points-compact", compact);
+  return compact;
 }
 
 const fetchCondoMapPointsCompactCached = unstable_cache(

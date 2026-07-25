@@ -73,6 +73,25 @@ DATABASE SNAPSHOT (as of ${new Date().toISOString().slice(0, 10)}):
 `;
 }
 
+// Blocks the trivial case of a scripted cross-origin caller hammering this
+// endpoint directly (bypassing the browser UI entirely) — cheap to check
+// before any DB/LLM work runs. Only rejects when Origin is PRESENT and
+// mismatched; a same-origin browser POST always sends Origin per the Fetch
+// spec, but plenty of legitimate non-browser calls (curl, uptime checks)
+// omit it entirely, so an absent Origin is let through rather than guessed
+// at. Not a security boundary — Cloudflare Bot Fight Mode + the per-IP rate
+// limit below do the real work — just cuts the easy case.
+function isAllowedOrigin(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return true;
+  try {
+    const host = new URL(origin).host;
+    return host === "passionaryestate.com" || host.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
@@ -80,6 +99,10 @@ export async function POST(req: Request) {
       { error: "ANTHROPIC_API_KEY not configured on the server" },
       { status: 503 },
     );
+  }
+
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // Rate limit before doing any retrieval or model work — the whole point

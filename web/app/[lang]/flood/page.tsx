@@ -59,7 +59,9 @@ export async function generateMetadata({
 // 3600 (hourly) regenerated this page ~24x more often than the flood
 // dataset (a static geojson, revalidate 3600 on its own fetch) or the
 // underlying condo data (weekly) actually change — pure wasted ISR writes.
-export const revalidate = 86400;
+// Bumped 86400->604800 for the same reason (2026-07-25): condo data only
+// moves on the weekly refresh.
+export const revalidate = 604800;
 
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[\s\-_]+/g, "");

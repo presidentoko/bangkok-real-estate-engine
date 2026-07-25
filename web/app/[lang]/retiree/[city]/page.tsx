@@ -10,7 +10,11 @@ import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
-export const revalidate = 86400;
+// Was 86400 — every city is prebuilt at build time (generateStaticParams
+// below), so this only controls background ISR regen frequency. Underlying
+// data (retiree_score, yields, livability) only changes on the weekly
+// refresh.
+export const revalidate = 604800;
 
 export function generateStaticParams() {
   return CITIES.map((c) => ({ city: c.slug }));

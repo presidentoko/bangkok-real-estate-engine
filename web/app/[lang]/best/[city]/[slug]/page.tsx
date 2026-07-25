@@ -20,7 +20,12 @@ import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 86400;
+// Was 86400 — every (city, filter) combo is prebuilt at build time (see
+// generateStaticParams below), so this only controls background ISR regen
+// frequency, not first-visit latency. Underlying data only changes on the
+// weekly refresh; getCurrentMortgageRate (used in the body) is already
+// cached 604800, so this matches rather than gets capped down to it.
+export const revalidate = 604800;
 
 // Pre-render every (city, slug) combination at build time. With 9 cities
 // × 7 slugs = 63 combos per language, that's a 1-shot static export

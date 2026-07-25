@@ -113,6 +113,27 @@ export function decodeCompact(c: CompactCondoSummaries): CondoSummary[] {
   return out;
 }
 
+// Next's unstable_cache silently drops (never throws) any payload over 2MB
+// -- that's exactly the bug class this file exists to fix, and it already
+// bit two different queries (fetchCondoMapPoints, city/[slug]'s condo feed)
+// as the catalog grew past the row count that used to fit as plain objects.
+// Columnar encoding buys headroom, not immunity: the same growth will
+// eventually push a compact payload over 2MB too. Call this right after
+// encoding so that failure mode becomes a loud log instead of a silent
+// never-cached query, with enough runway (warns at 1.8MB, ~10% margin) to
+// fix it before it actually breaches.
+const CACHE_WARN_BYTES = 1_800_000;
+
+export function warnIfNearCacheCeiling(label: string, payload: unknown): void {
+  const size = JSON.stringify(payload).length;
+  if (size > CACHE_WARN_BYTES) {
+    console.warn(
+      `[cache-ceiling] ${label} is ${(size / 1_000_000).toFixed(2)}MB, ` +
+      `approaching Next's 2MB unstable_cache limit — will silently stop caching soon.`
+    );
+  }
+}
+
 // Type guard so callers can accept either the legacy `{ condos: [...] }` shape
 // (a stale CDN entry served right after deploy) or the new compact payload.
 export function isCompact(x: unknown): x is CompactCondoSummaries {

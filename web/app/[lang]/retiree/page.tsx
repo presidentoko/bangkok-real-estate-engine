@@ -6,7 +6,8 @@ import { isLang, type Lang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
-export const revalidate = 86400;
+// Data only changes on the weekly refresh; matches retiree/[city]/page.tsx.
+export const revalidate = 604800;
 
 export async function generateMetadata({
   params,

@@ -7,6 +7,8 @@
  * system prompt. The LLM filters/quotes what matters for the user's question.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
+import { getServerSupabase } from "@/lib/supabase";
 
 type Condo = {
   id: string;
@@ -103,10 +105,17 @@ export type RetrievalContext = {
   totalListings: number;
 };
 
-export async function retrieveContext(
-  supabase: SupabaseClient,
-  question: string,
-): Promise<RetrievalContext> {
+// Everything below except step 5 (name matches) is the same snapshot for
+// every caller — the data only changes on the weekly scrape + Wednesday
+// catch-pass. /api/ask was re-running this whole fan-out (counts + MRR +
+// topYields + underpriced + recentMovers + 9 province head-counts — ~16
+// queries) on every single chat message, question-independent or not.
+// Caching this portion cuts that to 1 live query (name-match) per request
+// once the cache is warm.
+type StaticRagContext = Omit<RetrievalContext, "nameMatches">;
+
+async function _fetchStaticRagContext(): Promise<StaticRagContext> {
+  const supabase = getServerSupabase();
   // 0) Cheap counts
   const [{ count: totalCondos }, { count: totalListings }] = await Promise.all([
     supabase.from("condos").select("id", { count: "exact", head: true }),
@@ -195,23 +204,6 @@ export async function retrieveContext(
     recentMovers = await hydrate(supabase, (mvRows ?? []) as unknown as ConsoleRow[]);
   }
 
-  // 5) Name matches in the question (tokens ≥ 3 chars, ILIKE)
-  const tokens = question
-    .toLowerCase()
-    .split(/[^a-zA-Z0-9ก-๙]+/)
-    .filter((t) => t.length >= 3)
-    .slice(0, 6);
-  let nameMatches: Condo[] = [];
-  if (tokens.length > 0) {
-    const ors = tokens.map((t) => `name.ilike.%${t}%`).join(",");
-    const { data: nmRows } = await supabase
-      .from("condos")
-      .select(SELECT)
-      .or(ors)
-      .limit(10);
-    nameMatches = await hydrate(supabase, (nmRows ?? []) as unknown as ConsoleRow[]);
-  }
-
   // 6) City counts — use head-only count queries (zero row egress) instead of
   // fetching 10k province strings and counting in JS.
   const PROVINCE_GROUPS: Array<{ key: string; aliases: string[] }> = [
@@ -244,11 +236,43 @@ export async function retrieveContext(
     topYields,
     underpriced,
     recentMovers,
-    nameMatches,
     cityCounts,
     totalCondos: totalCondos ?? 0,
     totalListings: totalListings ?? 0,
   };
+}
+
+const fetchStaticRagContextCached = unstable_cache(
+  _fetchStaticRagContext,
+  ["rag:static-context"],
+  { revalidate: 86400, tags: ["condos", "macro"] }
+);
+
+export async function retrieveContext(
+  supabase: SupabaseClient,
+  question: string,
+): Promise<RetrievalContext> {
+  // 5) Name matches in the question (tokens ≥ 3 chars, ILIKE) — the only
+  // part of the context that actually depends on `question`, so it's the
+  // only part that has to run live on every request.
+  const tokens = question
+    .toLowerCase()
+    .split(/[^a-zA-Z0-9ก-๙]+/)
+    .filter((t) => t.length >= 3)
+    .slice(0, 6);
+  let nameMatches: Condo[] = [];
+  if (tokens.length > 0) {
+    const ors = tokens.map((t) => `name.ilike.%${t}%`).join(",");
+    const { data: nmRows } = await supabase
+      .from("condos")
+      .select(SELECT)
+      .or(ors)
+      .limit(10);
+    nameMatches = await hydrate(supabase, (nmRows ?? []) as unknown as ConsoleRow[]);
+  }
+
+  const staticCtx = await fetchStaticRagContextCached();
+  return { ...staticCtx, nameMatches };
 }
 
 export function formatContext(ctx: RetrievalContext): string {

@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase";
 
-// Cache identical queries on the edge for 5 minutes and serve stale for
-// another 10 minutes while revalidating. Same `?q=` value within the window
-// reuses the cached response instead of invoking the function.
+// Cache identical `?q=` queries on the edge for 1 day, serving stale for up
+// to a week while revalidating. Underlying condo names only change on the
+// weekly scrape + Wednesday catch-pass, so the original 5-minute window
+// bought almost no reuse — nearly every debounced keystroke-final query
+// still invoked the function. Matches the same s-maxage pattern already
+// used by the compare/inventory/yields routes.
 const CACHE_HEADERS = {
-  "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+  "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800",
 };
 
 export async function GET(req: Request) {

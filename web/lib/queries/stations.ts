@@ -209,5 +209,11 @@ export const getStationData = unstable_cache(
     };
   },
   ["station-data-v1"],
-  { revalidate: 86400 },
+  // Was 86400 — the underlying livability/condo data only moves on the
+  // weekly refresh (+ Wednesday catch-pass), same reasoning as
+  // fetchAllLivability/getViableStations above (both already 604800). A
+  // shorter cache here dragged near/[station]/page.tsx's own 7d `revalidate`
+  // export down to daily regens per the coherence note above — bumped both
+  // together 2026-07-25.
+  { revalidate: 604800 },
 );
