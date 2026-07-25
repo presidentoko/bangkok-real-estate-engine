@@ -53,10 +53,16 @@ export const revalidate = 604800;
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Prebuild the 50 most-listed condos × 3 langs = 150 pages at build time.
+// Prebuild the 300 most-listed condos × 3 langs = 900 pages at build time.
 // These are the pages most likely to be hit by search/social/AI crawlers —
 // serving them as static HTML keeps function invocations off the free-plan
-// budget. The long tail still falls back to on-demand ISR.
+// budget. Bumped from 50->300 on 2026-07-25: production logs showed cold
+// (never-cached) serverless renders of condo pages -- mostly Googlebot
+// working through the long tail, since Googlebot/Bingbot are deliberately
+// exempt from the bot circuit-breaker below for SEO reasons -- as ~21% of
+// sampled traffic, a meaningful slice of the Fluid Active CPU usage that hit
+// 3h14m/4h (free-tier monthly cap) on 2026-07-25. The long tail still falls
+// back to on-demand ISR either way.
 export async function generateStaticParams() {
   const supabase = getServerSupabase();
   const { data } = await supabase
@@ -64,7 +70,7 @@ export async function generateStaticParams() {
     .select("slug, active_listings_count")
     .not("slug", "is", null)
     .order("active_listings_count", { ascending: false, nullsFirst: false })
-    .limit(50);
+    .limit(300);
   const slugs = (data ?? []).map((r) => String(r.slug));
   return slugs.flatMap((slug) =>
     (["en", "ko", "th"] as const).map((lang) => ({ slug, lang }))
