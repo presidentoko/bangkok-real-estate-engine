@@ -76,10 +76,17 @@ export function BuildingCard({
   condo,
   hrefPrefix = "/condo/",
   size = "md",
+  priority = false,
 }: {
   condo: CondoSummary;
   hrefPrefix?: string;
   size?: "sm" | "md";
+  // Every card defaulted to loading="lazy", including the ones in the first
+  // above-the-fold grid row — the browser deliberately delayed the LCP
+  // candidate image instead of fetching it eagerly (found 2026-07-31 audit).
+  // Callers rendering the first 1-2 cards of the first above-the-fold grid
+  // should pass true.
+  priority?: boolean;
 }) {
   const above = condo.bubble_index != null ? Math.round(condo.bubble_index - 100) : null;
   const compact = size === "sm";
@@ -99,7 +106,8 @@ export function BuildingCard({
           <img
             src={condo.hero_image_url}
             alt={condo.name}
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             decoding="async"
             width={400}
             height={240}

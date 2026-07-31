@@ -14,6 +14,11 @@ const dict: Dict = {
     about: "วิธีการ",
     contact: "ติดต่อ",
     retiree: "ผู้เกษียณ",
+    home: "หน้าแรก",
+    search: "ค้นหา",
+    askAi: "ถาม AI",
+    saved: "บันทึกไว้",
+    yields: "ผลตอบแทน",
   },
   footer: {
     about:
@@ -233,6 +238,15 @@ const dict: Dict = {
     table: { rank: "#", condo: "อาคาร", city: "เมือง", listings: "ที่ใช้งาน", dom: "DOM มัธยฐาน", maxDom: "ยาวสุด" },
     domDays: (n: number) => `${n} วัน`,
     empty: "ยังไม่มีอาคารค้างนาน — ข้อมูล DOM กำลังสะสม กลับมาดูสัปดาห์หน้า",
+  },
+  developerTable: {
+    condo: "คอนโด", year: "ปีสร้างเสร็จ", units: "ยูนิต", sale: "ราคาขาย", yield: "ผลตอบแทน", rating: "คะแนน", retiree: "เหมาะเกษียณ",
+  },
+  retireeTable: {
+    rank: "#", condo: "คอนโด", district: "เขต", score: "คะแนน", fq: "โควตาต่างชาติ %", sale: "ราคาขาย", yield: "ผลตอบแทน",
+  },
+  bestTable: {
+    rank: "#", condo: "คอนโด", district: "เขต", yield: "ผลตอบแทน", spread: "ส่วนต่าง", sale: "ราคาขาย", rent: "ค่าเช่า", fq: "โควตาต่างชาติ",
   },
   press: {
     title: "ชุดข้อมูลสำหรับสื่อ",
@@ -474,6 +488,14 @@ const dict: Dict = {
     howWeCalculate: "How we calculate it",
     relatedTitle: "Related terms",
     backToIndex: "All terms",
+  },
+  notFound: {
+    title: "ไม่พบหน้านี้",
+    body: "คอนโด เขต หรือหน้าที่คุณกำลังหาไม่มีในฐานข้อมูลของเรา — URL อาจเปลี่ยนไป หรือเรายังไม่เคยวัดข้อมูลนี้",
+    home: "หน้าแรก",
+    yields: "ผลตอบแทนสูงสุด",
+    ask: "ถาม RealData",
+    inventory: "ดูทั้งหมด",
   },
 };
 

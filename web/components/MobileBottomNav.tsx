@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getSavedCount } from "@/lib/saved-condos";
+import { getDictionary } from "@/lib/getDictionary";
+import type { Lang } from "@/lib/i18n";
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -49,9 +51,10 @@ function TrendIcon(_: { active: boolean }) {
   );
 }
 
-export function MobileBottomNav({ lang }: { lang: string }) {
+export function MobileBottomNav({ lang }: { lang: Lang }) {
   const pathname = usePathname();
   const [savedCount, setSavedCount] = useState(0);
+  const t = getDictionary(lang).nav;
 
   useEffect(() => {
     const update = () => setSavedCount(getSavedCount());
@@ -70,11 +73,11 @@ export function MobileBottomNav({ lang }: { lang: string }) {
   };
 
   const nav = [
-    { href: `/${lang}`,           label: "Home",     Icon: HomeIcon },
-    { href: `/${lang}/inventory`, label: "Search",   Icon: SearchIcon },
-    { href: `/${lang}/ask`,       label: "Ask AI",   Icon: ChatIcon },
-    { href: `/${lang}/saved`,     label: "Saved",    Icon: HeartIcon, badge: savedCount },
-    { href: `/${lang}/yields`,    label: "Yields",   Icon: TrendIcon },
+    { href: `/${lang}`,           label: t.home,   Icon: HomeIcon },
+    { href: `/${lang}/inventory`, label: t.search, Icon: SearchIcon },
+    { href: `/${lang}/ask`,       label: t.askAi,  Icon: ChatIcon },
+    { href: `/${lang}/saved`,     label: t.saved,  Icon: HeartIcon, badge: savedCount },
+    { href: `/${lang}/yields`,    label: t.yields, Icon: TrendIcon },
   ];
 
   return (
@@ -97,7 +100,10 @@ export function MobileBottomNav({ lang }: { lang: string }) {
               }`}
             >
               <Icon active={active} />
-              <span className="text-[10px] font-medium">{label}</span>
+              {/* 11px, not 10 — Thai stacks tone/vowel marks above and below
+                  the base glyph, so it needs a hair more room than en/ko to
+                  stay legible at this size. */}
+              <span className="text-[11px] font-medium">{label}</span>
               {badge != null && badge > 0 && (
                 <span
                   aria-label={`${badge} saved`}

@@ -57,6 +57,7 @@ export function InventoryGrid({
   totalCount,
   stats,
   topPicks,
+  browsePreview,
   availableTypes,
 }: {
   citySlug: string;
@@ -66,6 +67,7 @@ export function InventoryGrid({
   totalCount: number;
   stats: InventoryStats;
   topPicks: CondoSummary[];
+  browsePreview: CondoSummary[];
   availableTypes: PropertyType[];
 }) {
   const [q, setQ] = useState("");
@@ -366,6 +368,26 @@ export function InventoryGrid({
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {topPicks.map((c) => (
+                  <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} size="sm" />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Server-rendered starter set so the default view always has real
+              /condo/<slug> links to crawl, even when topPicks above is thin
+              (found 2026-07-31: the strict super-value+photo filter left
+              some cities with 0-1 picks, so a crawler landing on /inventory
+              had almost nothing to follow into the catalog). */}
+          {browsePreview.length > 0 && (
+            <section>
+              <div className="mb-3">
+                <h2 className="text-lg font-semibold text-zinc-100">
+                  Browse {cityLabel}
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {browsePreview.map((c) => (
                   <BuildingCard key={c.id} condo={c} hrefPrefix={hrefPrefix} size="sm" />
                 ))}
               </div>

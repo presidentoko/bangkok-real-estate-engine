@@ -20,6 +20,7 @@ import { canonicalCitySlug, getCity } from "@/lib/cities";
 import { decodeCompact, isCompact } from "@/lib/condo-compact";
 import {
   availablePropertyTypes,
+  browsePreview,
   computeInventoryStats,
   extractDistricts,
   topPicks as computeTopPicks,
@@ -42,6 +43,7 @@ export type CityView = {
   districts: string[];
   stats: InventoryStats;
   picks: CondoSummary[];
+  preview: CondoSummary[];
   availableTypes: PropertyType[];
 };
 
@@ -87,13 +89,15 @@ export function InventoryExplorer({
         const condos = isCompact(data)
           ? decodeCompact(data)
           : ((data as { condos?: CondoSummary[] }).condos ?? []);
+        const picks = computeTopPicks(condos);
         setView({
           slug: target,
           name: resolveCityName(target, lang),
           totalCount: condos.length,
           districts: extractDistricts(condos),
           stats: computeInventoryStats(condos),
-          picks: computeTopPicks(condos),
+          picks,
+          preview: browsePreview(condos, picks),
           availableTypes: availablePropertyTypes(condos),
         });
       })
@@ -193,6 +197,7 @@ export function InventoryExplorer({
           totalCount={view.totalCount}
           stats={view.stats}
           topPicks={view.picks}
+          browsePreview={view.preview}
           availableTypes={view.availableTypes}
         />
       )}

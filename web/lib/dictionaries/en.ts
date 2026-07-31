@@ -15,6 +15,11 @@ const dict = {
     about: "Methodology",
     contact: "Contact",
     retiree: "Retiree",
+    home: "Home",
+    search: "Search",
+    askAi: "Ask AI",
+    saved: "Saved",
+    yields: "Yields",
   },
   footer: {
     about:
@@ -250,6 +255,15 @@ const dict = {
     table: { rank: "#", condo: "Building", city: "City", listings: "Active", dom: "Median DOM", maxDom: "Longest" },
     domDays: (n: number) => (n === 1 ? "1 day" : `${n} days`),
     empty: "No stale buildings yet — DOM data is still accumulating. Check back next week.",
+  },
+  developerTable: {
+    condo: "Condo", year: "Year", units: "Units", sale: "Sale", yield: "Yield", rating: "Rating", retiree: "Retiree",
+  },
+  retireeTable: {
+    rank: "#", condo: "Condo", district: "District", score: "Score", fq: "FQ %", sale: "Sale", yield: "Yield",
+  },
+  bestTable: {
+    rank: "#", condo: "Condo", district: "District", yield: "Yield", spread: "Spread", sale: "Sale", rent: "Rent", fq: "FQ",
   },
   press: {
     title: "Press kit",
@@ -491,6 +505,14 @@ const dict = {
     howWeCalculate: "How we calculate it",
     relatedTitle: "Related terms",
     backToIndex: "All terms",
+  },
+  notFound: {
+    title: "Page not found",
+    body: "The condo, district, or page you're looking for isn't on our index — maybe the URL changed, or maybe we never measured it.",
+    home: "Home",
+    yields: "Top yields",
+    ask: "Ask RealData",
+    inventory: "Browse all",
   },
 };
 

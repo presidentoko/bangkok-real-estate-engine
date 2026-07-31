@@ -18,6 +18,65 @@
 
 import type { CondoSummary, PropertyType } from "./queries/condos";
 
+// hero_image_url values from img.hipcdn.com are a base64-encoded JSON blob
+// like {"bucket":"prd-lifullconnect-projects-admin-images","key":"<uuid>/
+// <uuid>_<file>.jpg","brand":"hipflat","edits":{"rotate":null,"resize":
+// {"width":936,"height":505,"fit":"cover"}}} — everything except `key` is
+// identical across every row (confirmed 2026-07-31 against a 1000-row
+// sample: single bucket, single brand, single edits config). At ~371 chars
+// average and hero_image_url present on ~15% of condos, this redundancy was
+// the single biggest contributor to condos:by-city-compact(bangkok) sitting
+// at 1.99MB, 0.01MB under Next's 2MB unstable_cache ceiling. Storing just
+// `key` (avg ~130 chars) and rebuilding the full URL on decode recovers
+// most of that without dropping the field or changing what renders.
+const HIPCDN_PREFIX = "https://img.hipcdn.com/";
+const HIPCDN_BUCKET = "prd-lifullconnect-projects-admin-images";
+const HIPCDN_BRAND = "hipflat";
+const HIPCDN_EDITS = { rotate: null, resize: { width: 936, height: 505, fit: "cover" } };
+const KEY_MARKER = "k:"; // compact form is stored as this marker + the raw `key`
+
+// btoa/atob (not Buffer) so this runs identically on the server AND in the
+// browser — decodeCompact() is called from both (the inventory page's
+// client-side city-switch path decodes in-browser). Every value that passes
+// through here is plain ASCII (UUIDs, filenames, JSON punctuation), so the
+// Latin1-only semantics of atob/btoa are safe — no UTF-8 multibyte content.
+function base64UrlEncode(s: string): string {
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function base64UrlDecode(s: string): string {
+  const pad = "=".repeat((4 - (s.length % 4)) % 4);
+  return atob(s.replace(/-/g, "+").replace(/_/g, "/") + pad);
+}
+
+export function shrinkHeroUrl(url: string | null): string | null {
+  if (!url || !url.startsWith(HIPCDN_PREFIX)) return url;
+  const seg = url.slice(HIPCDN_PREFIX.length).split("?")[0];
+  try {
+    const decoded = JSON.parse(base64UrlDecode(seg)) as {
+      bucket?: string; key?: string; brand?: string; edits?: unknown;
+    };
+    if (
+      decoded.bucket !== HIPCDN_BUCKET ||
+      decoded.brand !== HIPCDN_BRAND ||
+      JSON.stringify(decoded.edits) !== JSON.stringify(HIPCDN_EDITS) ||
+      !decoded.key
+    ) {
+      return url; // doesn't match the known shape — keep the full URL, don't guess
+    }
+    return KEY_MARKER + decoded.key;
+  } catch {
+    return url; // malformed/unexpected encoding — keep the full URL
+  }
+}
+
+export function expandHeroUrl(stored: string | null): string | null {
+  if (!stored || !stored.startsWith(KEY_MARKER)) return stored;
+  const key = stored.slice(KEY_MARKER.length);
+  const json = JSON.stringify({ bucket: HIPCDN_BUCKET, key, brand: HIPCDN_BRAND, edits: HIPCDN_EDITS });
+  return HIPCDN_PREFIX + base64UrlEncode(json);
+}
+
 export type CompactCondoSummaries = {
   v: 1;
   count: number;
@@ -71,7 +130,7 @@ export function encodeCompact(rows: CondoSummary[]): CompactCondoSummaries {
     c.region[i] = r.region;
     if (c.lat) c.lat[i] = r.latitude;
     if (c.lng) c.lng[i] = r.longitude;
-    c.hero[i] = r.hero_image_url;
+    c.hero[i] = shrinkHeroUrl(r.hero_image_url);
     c.bubble[i] = r.bubble_index;
     c.superValue[i] = r.is_super_value;
     c.flood[i] = r.flood_risk_level;
@@ -97,7 +156,7 @@ export function decodeCompact(c: CompactCondoSummaries): CondoSummary[] {
       longitude: c.lng?.[i] ?? null,
       region: c.region[i],
       province: "",
-      hero_image_url: c.hero[i],
+      hero_image_url: expandHeroUrl(c.hero[i]),
       bubble_index: c.bubble[i],
       is_super_value: c.superValue[i],
       flood_risk_level: c.flood[i],

@@ -41,11 +41,15 @@ export async function GET(request: Request): Promise<Response> {
   for (let sub = 0; sub < CONDOS_PER_PAGE; sub += SUB_PAGE) {
     const from = offset + sub;
     const to = offset + Math.min(sub + SUB_PAGE, CONDOS_PER_PAGE) - 1;
+    // latitude is NOT required here — 3,538 published condos have a slug
+    // but no coordinates yet, and excluding them dropped ~10.6K URLs
+    // (×3 langs) from discovery for no SEO reason; the page itself renders
+    // fine without a map pin. Coordinates gate the /inventory map marker,
+    // not indexability.
     const { data } = await supabase
       .from("condos_published")
       .select("slug, last_seen_at")
       .not("slug", "is", null)
-      .not("latitude", "is", null)
       .order("id")
       .range(from, to);
     const chunk = (data ?? []) as Array<{

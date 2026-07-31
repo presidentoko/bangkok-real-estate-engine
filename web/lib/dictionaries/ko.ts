@@ -14,6 +14,11 @@ const dict: Dict = {
     about: "방법론",
     contact: "문의",
     retiree: "은퇴자",
+    home: "홈",
+    search: "검색",
+    askAi: "AI에게 묻기",
+    saved: "저장됨",
+    yields: "수익률",
   },
   footer: {
     about:
@@ -233,6 +238,15 @@ const dict: Dict = {
     table: { rank: "#", condo: "빌딩", city: "도시", listings: "활성", dom: "DOM 중간값", maxDom: "최장" },
     domDays: (n: number) => `${n}일`,
     empty: "아직 stale 빌딩 없음 — DOM 데이터 누적 중. 다음 주 다시 확인.",
+  },
+  developerTable: {
+    condo: "콘도", year: "준공년도", units: "세대수", sale: "매매가", yield: "수익률", rating: "평점", retiree: "은퇴 적합도",
+  },
+  retireeTable: {
+    rank: "#", condo: "콘도", district: "지역", score: "점수", fq: "외국인 쿼터 %", sale: "매매가", yield: "수익률",
+  },
+  bestTable: {
+    rank: "#", condo: "콘도", district: "지역", yield: "수익률", spread: "스프레드", sale: "매매가", rent: "임대료", fq: "외국인 쿼터",
   },
   press: {
     title: "Press kit",
@@ -474,6 +488,14 @@ const dict: Dict = {
     howWeCalculate: "계산 방식",
     relatedTitle: "관련 용어",
     backToIndex: "전체 용어",
+  },
+  notFound: {
+    title: "페이지를 찾을 수 없습니다",
+    body: "찾으시는 콘도, 지역, 또는 페이지가 저희 인덱스에 없습니다 — URL이 바뀌었거나, 아직 측정하지 않은 곳일 수 있어요.",
+    home: "홈으로",
+    yields: "수익률 상위",
+    ask: "RealData에 물어보기",
+    inventory: "전체 보기",
   },
 };
 

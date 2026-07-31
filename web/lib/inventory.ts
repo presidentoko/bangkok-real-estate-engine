@@ -75,6 +75,33 @@ export function topPicks(condos: CondoSummary[], limit = 6): CondoSummary[] {
     .slice(0, limit);
 }
 
+// The default (pre-"Show all") /inventory view only rendered topPicks —
+// often just 0-2 buildings, since is_super_value+hero_image_url is a narrow
+// intersection (~15% of condos have a hero image at all). A crawler landing
+// on /inventory saw almost no real /condo/<slug> links in the server-rendered
+// HTML (found in the 2026-07-31 audit: 1 unique condo link server-wide on the
+// Bangkok default view). This backfills the default view with real listings
+// — any condo, no super-value/photo requirement — up to `limit`, skipping
+// whatever topPicks already surfaced so the two sections don't repeat a
+// building. Sorted by available unit count (more inventory = more likely to
+// be a real, active building) with a photo tiebreak so the visual result
+// still leans toward cards that have a hero image.
+export function browsePreview(
+  condos: CondoSummary[],
+  exclude: CondoSummary[],
+  limit = 24,
+): CondoSummary[] {
+  const excludeIds = new Set(exclude.map((c) => c.id));
+  return [...condos]
+    .filter((c) => !excludeIds.has(c.id))
+    .sort((a, b) => {
+      const byUnits = (b.available_units_count ?? 0) - (a.available_units_count ?? 0);
+      if (byUnits !== 0) return byUnits;
+      return (b.hero_image_url ? 1 : 0) - (a.hero_image_url ? 1 : 0);
+    })
+    .slice(0, limit);
+}
+
 // Collapses case/whitespace/hyphen variants of a district name to a single
 // comparison key (e.g. "Bang Khun Thian" and "bang-khun-thian" both map to
 // "bangkhunthian"). Shared by extractDistricts (which builds the dropdown

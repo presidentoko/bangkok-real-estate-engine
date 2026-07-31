@@ -20,13 +20,14 @@ const THROTTLED_MAX_PAGES = 2;
 export async function GET(): Promise<Response> {
   const lastmod = isoDate(new Date());
 
-  // Count live condos to avoid listing empty pages in the index.
+  // Count live condos to avoid listing empty pages in the index. No
+  // latitude filter — matches sitemap-condos.xml/route.ts (coordinates gate
+  // the map marker, not indexability; see comment there).
   const supabase = getServerSupabase();
   const { count } = await supabase
     .from("condos_published")
     .select("id", { count: "exact", head: true })
-    .not("slug", "is", null)
-    .not("latitude", "is", null);
+    .not("slug", "is", null);
 
   let totalPages = Math.ceil((count ?? 0) / CONDOS_PER_PAGE);
   if (Date.now() < Date.parse(SITEMAP_THROTTLE_UNTIL)) {
