@@ -161,25 +161,27 @@ def main() -> None:
         stale_ids = [e["id"] for e in existing if e["id"] not in new_ids]
         if stale_ids:
             logger.info(f"  clearing {len(stale_ids)} stale yield rows...")
-            # Batched upsert instead of one UPDATE per row (was ~253 HTTP
-            # round-trips/run). Safe: every id here came from a `.select("id")`
-            # against condos (existing above), so ON CONFLICT always resolves
-            # to UPDATE — the INSERT path (which would need every NOT NULL
-            # column without a default, e.g. source/source_listing_id/name)
-            # is never actually taken. Matches scripts/compute_value_scores.py's
-            # chunked-upsert pattern.
-            clear_rows = [{
-                "id": sid,
+            # Plain UPDATE, not upsert. This used to upsert on the assumption
+            # that an id from `.select("id")` against condos (existing above)
+            # could never take the INSERT path — but that race is real: if a
+            # concurrent writer (e.g. the overnight discovery loop's own
+            # scoring pass) deletes/replaces that condo row between the
+            # SELECT and this UPSERT, PostgREST's ON CONFLICT falls through
+            # to INSERT instead of UPDATE, and the INSERT fails on every
+            # NOT NULL column this payload doesn't set (source, name, ...) —
+            # hit in production 2026-08-01. UPDATE has no insert path: a
+            # vanished id just matches zero rows instead of erroring.
+            clear_fields = {
                 "avg_sale_price": None,
                 "avg_monthly_rent": None,
                 "gross_yield_pct": None,
                 "yield_sample_sale": None,
                 "yield_sample_rent": None,
                 "yield_computed_at": None,
-            } for sid in stale_ids]
-            for i in range(0, len(clear_rows), 500):
-                client.table("condos").upsert(
-                    clear_rows[i:i + 500], on_conflict="id", returning="minimal"
+            }
+            for i in range(0, len(stale_ids), 500):
+                client.table("condos").update(clear_fields).in_(
+                    "id", stale_ids[i:i + 500]
                 ).execute()
 
     if args.dry_run:
