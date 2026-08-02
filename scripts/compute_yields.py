@@ -140,8 +140,40 @@ def main() -> None:
     logger.info(f"  {len(updates)} condos will get yield computed ({dropped_outlier} dropped as > {args.max_yield_pct}% outlier)")
 
     if not args.dry_run:
-        # Clear stale yields first so re-runs with tighter criteria don't leave old values behind.
         new_ids = {u["id"] for u in updates}
+
+        # `updates` is built purely from listings (sale_map/rent_map above) —
+        # it never checked that each condo_id still has a row in `condos`.
+        # A listing can outlive its condo (e.g. cleaned up by an earlier step
+        # in this same pipeline, or by a concurrent writer like the overnight
+        # discovery loop's own scoring pass) while still carrying the old
+        # condo_id. Upserting those ids used to hit PostgREST's INSERT
+        # fallback and die on every NOT NULL column this payload doesn't set
+        # (source, name, ...) — hit in production 2026-08-01/02 twice, both
+        # times on a condo_id with no matching condos row. Filtering to ids
+        # confirmed to exist right now closes off the common case; a race in
+        # the few seconds between this check and the upsert below is still
+        # theoretically possible but far narrower than the current bug.
+        # Chunked, not one big .in_() — new_ids can run into the thousands,
+        # and a single query string with that many UUIDs risks hitting a URL
+        # length limit.
+        live_ids: set[str] = set()
+        new_ids_list = list(new_ids)
+        for i in range(0, len(new_ids_list), 300):
+            chunk = (
+                client.table("condos")
+                .select("id")
+                .in_("id", new_ids_list[i:i + 300])
+                .execute()
+                .data
+            ) or []
+            live_ids.update(r["id"] for r in chunk)
+        orphaned = new_ids - live_ids
+        if orphaned:
+            logger.warning(f"  {len(orphaned)} condo_id(s) in listings have no matching condos row — skipping: {sorted(orphaned)[:10]}{'...' if len(orphaned) > 10 else ''}")
+            updates = [u for u in updates if u["id"] in live_ids]
+
+        # Clear stale yields first so re-runs with tighter criteria don't leave old values behind.
         existing: list[dict] = []
         offset = 0
         while True:
