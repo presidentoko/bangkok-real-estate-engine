@@ -200,12 +200,14 @@ def main() -> None:
 
     # Was a batched upsert(on_conflict="id") — removed after it kept killing
     # the whole run (2026-08-01/02, 3 separate occasions, each a different
-    # condo_id): the pre-upsert existence check above narrows the window but
-    # doesn't close it, and PostgREST batches the whole chunk as one SQL
-    # statement, so a single id taking the INSERT path fails all 500 rows in
-    # that chunk on a NOT NULL violation. Per-row UPDATE has no insert path
-    # at all — worth the extra HTTP round-trips (thousands vs. ~7/run) to
-    # stop losing entire pipeline runs to one bad id.
+    # condo_id). A prior fix pre-checked which ids still existed in `condos`
+    # before upserting, which narrowed the window but didn't close it (a
+    # third failure still got through), and PostgREST batches an upsert's
+    # whole chunk as one SQL statement, so a single id taking the INSERT
+    # path fails all 500 rows in that chunk on a NOT NULL violation. Per-row
+    # UPDATE has no insert path at all — worth the extra HTTP round-trips
+    # (thousands vs. ~7/run) to stop losing entire pipeline runs to one bad
+    # id, and it made the pre-check moot so that's gone too.
     for u in updates:
         payload = {k: v for k, v in u.items() if k != "id"}
         client.table("condos").update(payload).eq("id", u["id"]).execute()
