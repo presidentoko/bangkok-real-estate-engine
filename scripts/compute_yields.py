@@ -142,37 +142,6 @@ def main() -> None:
     if not args.dry_run:
         new_ids = {u["id"] for u in updates}
 
-        # `updates` is built purely from listings (sale_map/rent_map above) —
-        # it never checked that each condo_id still has a row in `condos`.
-        # A listing can outlive its condo (e.g. cleaned up by an earlier step
-        # in this same pipeline, or by a concurrent writer like the overnight
-        # discovery loop's own scoring pass) while still carrying the old
-        # condo_id. Upserting those ids used to hit PostgREST's INSERT
-        # fallback and die on every NOT NULL column this payload doesn't set
-        # (source, name, ...) — hit in production 2026-08-01/02 twice, both
-        # times on a condo_id with no matching condos row. Filtering to ids
-        # confirmed to exist right now closes off the common case; a race in
-        # the few seconds between this check and the upsert below is still
-        # theoretically possible but far narrower than the current bug.
-        # Chunked, not one big .in_() — new_ids can run into the thousands,
-        # and a single query string with that many UUIDs risks hitting a URL
-        # length limit.
-        live_ids: set[str] = set()
-        new_ids_list = list(new_ids)
-        for i in range(0, len(new_ids_list), 300):
-            chunk = (
-                client.table("condos")
-                .select("id")
-                .in_("id", new_ids_list[i:i + 300])
-                .execute()
-                .data
-            ) or []
-            live_ids.update(r["id"] for r in chunk)
-        orphaned = new_ids - live_ids
-        if orphaned:
-            logger.warning(f"  {len(orphaned)} condo_id(s) in listings have no matching condos row — skipping: {sorted(orphaned)[:10]}{'...' if len(orphaned) > 10 else ''}")
-            updates = [u for u in updates if u["id"] in live_ids]
-
         # Clear stale yields first so re-runs with tighter criteria don't leave old values behind.
         existing: list[dict] = []
         offset = 0
@@ -229,16 +198,17 @@ def main() -> None:
         logger.info("--dry-run: no DB writes")
         return
 
-    # Batched upsert instead of one UPDATE per condo (was ~3,370 HTTP
-    # round-trips/run at full scrape volume). Safe for the same reason as
-    # the stale-clear pass above: every "id" here comes from listings whose
-    # condo_id already has a row in `condos`, so ON CONFLICT always resolves
-    # to UPDATE and no NOT NULL column is left unset.
-    UPSERT_CHUNK = 500
-    for i in range(0, len(updates), UPSERT_CHUNK):
-        client.table("condos").upsert(
-            updates[i:i + UPSERT_CHUNK], on_conflict="id", returning="minimal"
-        ).execute()
+    # Was a batched upsert(on_conflict="id") — removed after it kept killing
+    # the whole run (2026-08-01/02, 3 separate occasions, each a different
+    # condo_id): the pre-upsert existence check above narrows the window but
+    # doesn't close it, and PostgREST batches the whole chunk as one SQL
+    # statement, so a single id taking the INSERT path fails all 500 rows in
+    # that chunk on a NOT NULL violation. Per-row UPDATE has no insert path
+    # at all — worth the extra HTTP round-trips (thousands vs. ~7/run) to
+    # stop losing entire pipeline runs to one bad id.
+    for u in updates:
+        payload = {k: v for k, v in u.items() if k != "id"}
+        client.table("condos").update(payload).eq("id", u["id"]).execute()
     updated = len(updates)
 
     logger.info(f"Done. {updated} condos updated with gross yield.")
