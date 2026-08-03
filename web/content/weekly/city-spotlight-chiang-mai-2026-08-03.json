@@ -1,0 +1,62 @@
+{
+  "slug": "city-spotlight-chiang-mai-2026-08-03",
+  "title": "Chiang Mai Tops the Yield Table at 14.2%",
+  "description": "Five Chiang Mai condos measured against a 7.1% MRR benchmark — two buildings clear double-digit gross yields with entry prices under ฿1.3M.",
+  "published_at": "2026-08-03",
+  "topic": "city-spotlight",
+  "lead": "Chiang Mai is leading RealData's national yield ranking this week. Two buildings in Mueang and San Sai districts are printing gross yields above 14% on sub-฿1.3M average sale prices — a spread of more than 7 percentage points over the current Bank of Thailand MRR of 7.1%. That gap is wide enough to matter even after vacancy and management friction.",
+  "sections": [
+    {
+      "heading": "The High-Yield Pair: Entry Price vs. Return",
+      "body": "[SR Complex](/condo/8402798c-1729-46cc-83a0-c757d206ab7f) leads at 14.2% gross yield on an average sale price of ฿1,267,180 and ฿15,000/month rent — the cheapest route to the top of this week's table. [The Private Condo](/condo/2a89868f-ee32-4a6a-bf25-96e454693e53) in San Sai is nearly identical: 14.01% yield, ฿1,208,413 average price, ฿14,106/month rent. The difference between the two is noise; execution risk — vacancy rate, lease terms, management quality — will determine which outperforms.\n\nBoth buildings are priced well below [The Spring Loft](/condo/63a6e160-6ff5-49a8-b742-7201f83209c9), which commands ฿3,097,000 average sale price but still delivers 10.53% gross yield on ฿27,185/month rent. That is a larger absolute rent, not a larger return — important if capital allocation rather than cash quantum is the objective."
+    },
+    {
+      "heading": "Spread to MRR and What It Implies",
+      "body": "At 7.1% MRR, the spread on SR Complex is +7.1 pp and on The Private Condo is +6.9 pp. [The Green City Condo](/condo/dd86d00c-2632-4292-ac23-939f84d6b948) at 8.81% and [SR Land Condominium](/condo/b956a205-6c11-4e2a-b739-733d6d256e03) at 7.98% still clear the benchmark, but the buffer shrinks fast once you model a single vacant month per year.\n\nChiang Mai's rental market is driven by a mix of digital nomads, university students, and retirees — demand that is real but seasonal. Buyers chasing the 14% headline should confirm whether the rent figures in our dataset reflect year-round occupancy or peak-season listings before committing capital."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "SR Complex — gross yield",
+      "value": "14.2%",
+      "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
+      "metric": "gross_yield_pct",
+      "expected": 14.2
+    },
+    {
+      "label": "SR Complex — avg sale price",
+      "value": "฿1,267,180",
+      "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
+      "metric": "avg_sale_price",
+      "expected": 1267180
+    },
+    {
+      "label": "The Private Condo — gross yield",
+      "value": "14.01%",
+      "condo_id": "2a89868f-ee32-4a6a-bf25-96e454693e53",
+      "metric": "gross_yield_pct",
+      "expected": 14.01
+    },
+    {
+      "label": "The Spring Loft — avg monthly rent",
+      "value": "฿27,185",
+      "condo_id": "63a6e160-6ff5-49a8-b742-7201f83209c9",
+      "metric": "avg_monthly_rent",
+      "expected": 27185
+    },
+    {
+      "label": "SR Complex — spread to MRR",
+      "value": "+7.1 pp",
+      "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
+      "metric": "spread_pp",
+      "expected": 7.1
+    },
+    {
+      "label": "SR Land Condominium — gross yield",
+      "value": "7.98%",
+      "condo_id": "b956a205-6c11-4e2a-b739-733d6d256e03",
+      "metric": "gross_yield_pct",
+      "expected": 7.98
+    }
+  ]
+}
