@@ -181,7 +181,7 @@ def main() -> None:
                 "yield_computed_at": None,
             }
             for i in range(0, len(stale_ids), 500):
-                client.table("condos").update(clear_fields).in_(
+                client.table("condos").update(clear_fields, returning="minimal").in_(
                     "id", stale_ids[i:i + 500]
                 ).execute()
 
@@ -210,7 +210,7 @@ def main() -> None:
     # id, and it made the pre-check moot so that's gone too.
     for u in updates:
         payload = {k: v for k, v in u.items() if k != "id"}
-        client.table("condos").update(payload).eq("id", u["id"]).execute()
+        client.table("condos").update(payload, returning="minimal").eq("id", u["id"]).execute()
     updated = len(updates)
 
     logger.info(f"Done. {updated} condos updated with gross yield.")
