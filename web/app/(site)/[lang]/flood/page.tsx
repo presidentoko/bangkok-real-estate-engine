@@ -198,6 +198,7 @@ export default async function FloodPage({
       name: "Bangkok District Monsoon Flood Risk Dataset",
       description: "Flood risk scores (0–5) for all 50 Bangkok khet (districts), calibrated against BMA Drainage Department records, JICA hydrological reports, and 2011 great flood inundation mapping. Reviewed annually.",
       creator: { "@type": "Organization", name: "RealData", url: SEO_SITE_URL },
+      license: `${SEO_SITE_URL}/${lang}/about`,
       keywords: ["Bangkok flood risk", "Bangkok khet flood", "BMA flood data", "2011 Bangkok flood", "monsoon flooding Bangkok", "Bangkok district flood map"],
       spatialCoverage: { "@type": "Place", name: "Bangkok Metropolitan Region", addressCountry: "TH" },
       temporalCoverage: "2011/",
