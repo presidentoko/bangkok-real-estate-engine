@@ -20,30 +20,28 @@ const SKIP_PREFIXES = [
 // Pages under /admin that don't require auth (login itself must be open).
 const ADMIN_PUBLIC_PATHS = new Set(["/admin/login"]);
 
-// TEMPORARY (added 2026-07-12, self-expires 2026-08-04 via the Date.now()
-// check below -- safe to delete this block entirely after that date, but
-// it won't misfire if left in place). Supabase free-tier
-// egress hit 4.70/5GB with the period not resetting until 2026-08-04. Live
-// Vercel logs showed a broad bot crawl hammering /condo/[slug] specifically
-// (~68% cache MISS, every hit a distinct never-before-cached page across
-// ~111k condo x lang variants) — each cold hit is a fresh Supabase query,
-// and there's no way to rate-limit that away since it's a one-time warm-up
-// cost per page, not a repeat-request problem. Circuit-breaker: 503 any
-// bot-looking UA hitting /condo/ until the budget resets, so already-cached
-// pages keep serving fine for real users while the crawl backlog waits.
-// Mirrors the precedent in web/app/robots.ts's BLOCKED_AGENTS (Bytespider/
-// CCBot were disallowed after an earlier egress-quota lockout).
+// PERMANENT circuit-breaker (originally added 2026-07-12 as a temporary
+// Supabase-egress fix, self-expiring 2026-08-04 -- converted to permanent
+// 2026-08-06 once it became clear the underlying driver isn't the old
+// Supabase quota at all). Only ~300 condos (x3 langs = 900 pages) are
+// prebuilt via generateStaticParams (condo/[slug]/page.tsx); the other
+// ~97% of condos render on-demand ISR on first request. A broad bot crawl
+// hitting distinct never-before-cached /condo/[slug] URLs means every hit
+// is a fresh render + ISR write + origin transfer -- there's no way to
+// cache this away since it's a one-time cold-start cost per page, not a
+// repeat-request problem. Confirmed 2026-08-06: with this block expired,
+// ISR Writes climbed 187K -> 379K and Fast Origin Transfer to 7.59/10GB
+// within days. 503 any bot-looking UA hitting /condo/ so already-cached
+// pages keep serving real users while bots get turned away before they
+// cost anything. Mirrors the precedent in web/app/robots.ts's
+// BLOCKED_AGENTS (Bytespider/CCBot were disallowed after an earlier
+// egress-quota lockout).
 //
-// 2026-07-17: dropped Googlebot/Bingbot from the block list. GSC's page-
-// indexing report showed "Discovered - currently not indexed" at 21,505
-// pages and climbing since this block went live -- Google was getting the
-// same 503 as every other bot and backing off crawl. Ranking on Google is
-// the whole point of this site, so that outweighs a few extra days of
-// Supabase read load before the 8/4 reset. Cloudflare Bot Fight Mode
-// (enabled 2026-07-13) now absorbs most of the non-Google bot volume at
-// the edge anyway, so the remaining UA-regex block matters less than it
-// did when this was first added.
-const EGRESS_PAUSE_UNTIL = "Tue, 04 Aug 2026 00:00:00 GMT";
+// Googlebot/Bingbot are exempted (see SEARCH_ENGINE_UA_RE) -- 2026-07-17
+// dropping them from the block list was a direct fix for GSC's "Discovered
+// - currently not indexed" count climbing to 21,505 pages while they were
+// included. Ranking on Google is the whole point of this site, so those
+// two must always pass through regardless of what's driving this block.
 const BOT_UA_RE =
   /bot|crawl|spider|slurp|facebookexternalhit|ia_archiver|GPTBot|ClaudeBot|PerplexityBot|YandexBot|PetalBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|Amazonbot/i;
 const SEARCH_ENGINE_UA_RE = /Googlebot|GoogleOther|Google-Extended|Bingbot/i;
@@ -68,17 +66,16 @@ export async function middleware(req: NextRequest) {
 
   const ua = req.headers.get("user-agent") ?? "";
   if (
-    Date.now() < Date.parse(EGRESS_PAUSE_UNTIL) &&
     pathname.includes("/condo/") &&
     BOT_UA_RE.test(ua) &&
     !SEARCH_ENGINE_UA_RE.test(ua)
   ) {
     return new NextResponse(
-      "Temporarily pausing crawl of this section while a free-tier database " +
-        "budget resets. Please retry after 2026-08-04.",
+      "Crawling of this section is limited to search engines to protect a " +
+        "free-tier hosting budget. Please retry later or contact the site owner.",
       {
         status: 503,
-        headers: { "Retry-After": EGRESS_PAUSE_UNTIL, "Cache-Control": "no-store" },
+        headers: { "Retry-After": "86400", "Cache-Control": "no-store" },
       }
     );
   }
