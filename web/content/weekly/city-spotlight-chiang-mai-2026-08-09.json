@@ -1,0 +1,62 @@
+{
+  "slug": "city-spotlight-chiang-mai-2026-08-09",
+  "title": "Chiang Mai Tops the Yield Table: 5 Buildings Measured",
+  "description": "Chiang Mai condos are leading RealData's national yield ranking. We break down gross yields, rents, and spread vs. the 7.1% MRR benchmark.",
+  "published_at": "2026-08-09",
+  "topic": "city-spotlight",
+  "lead": "Chiang Mai is the highest-yielding city in this week's RealData scan, with two buildings clearing 14% gross yield against a Bank of Thailand MRR of 7.1%. Entry prices across the top five range from ฿839,000 to ฿3.1M — unusually low capital thresholds for double-digit income returns. The spread between the best performer and the MRR benchmark sits at +7.1 percentage points.",
+  "sections": [
+    {
+      "heading": "Two Buildings Above 14% Gross Yield",
+      "body": "[SR Complex](/condo/8402798c-1729-46cc-83a0-c757d206ab7f) leads at 14.2% gross yield on an average sale price of ฿1.27M and monthly rent of ฿15,000 — a spread of +7.1 pp over the 7.1% MRR. [The Private Condo](/condo/2a89868f-ee32-4a6a-bf25-96e454693e53) in San Sai follows at 14.0% yield, with a slightly lower entry at ฿1.21M and rent of ฿14,106.\n\nBoth assets sit in the sub-฿1.3M bracket, meaning total acquisition exposure is limited even for buyers using partial leverage. At these yields, gross rent covers MRR cost roughly twice over — before taxes and vacancy."
+    },
+    {
+      "heading": "Mid-Tier Range: 8.8%–10.5% Still Beats Benchmark",
+      "body": "[The Spring Loft](/condo/63a6e160-6ff5-49a8-b742-7201f83209c9) is the premium outlier: ฿3.1M average sale price, ฿27,185 monthly rent, 10.5% yield. It trades at roughly 2.5× the capital cost of SR Complex but still posts a +3.4 pp spread over the MRR — respectable for a higher-grade asset.\n\n[The Green City Condo](/condo/dd86d00c-2632-4292-ac23-939f84d6b948) at 8.8% and [SR Land Condominium](/condo/b956a205-6c11-4e2a-b739-733d6d256e03) at 8.0% both remain above the 7.1% MRR threshold. SR Land carries the lowest average sale price in the set at ฿839,000, making it the lowest-barrier entry point despite its position at the bottom of the yield table."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "SR Complex — gross yield",
+      "value": "14.2%",
+      "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
+      "metric": "gross_yield_pct",
+      "expected": 14.2
+    },
+    {
+      "label": "SR Complex — avg sale price",
+      "value": "฿1,267,180",
+      "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
+      "metric": "avg_sale_price",
+      "expected": 1267180
+    },
+    {
+      "label": "The Private Condo — gross yield",
+      "value": "14.0%",
+      "condo_id": "2a89868f-ee32-4a6a-bf25-96e454693e53",
+      "metric": "gross_yield_pct",
+      "expected": 14.01
+    },
+    {
+      "label": "The Spring Loft — avg monthly rent",
+      "value": "฿27,185",
+      "condo_id": "63a6e160-6ff5-49a8-b742-7201f83209c9",
+      "metric": "avg_monthly_rent",
+      "expected": 27185
+    },
+    {
+      "label": "SR Land Condominium — avg sale price",
+      "value": "฿839,000",
+      "condo_id": "b956a205-6c11-4e2a-b739-733d6d256e03",
+      "metric": "avg_sale_price",
+      "expected": 839000
+    },
+    {
+      "label": "SR Complex — yield spread vs MRR",
+      "value": "+7.1 pp",
+      "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
+      "metric": "spread_pp",
+      "expected": 7.1
+    }
+  ]
+}
