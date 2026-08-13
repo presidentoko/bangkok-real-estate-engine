@@ -23,12 +23,8 @@ export async function generateMetadata({
   if (!isLang(lang)) return { title: "Flood map — RealData" };
   const t = getDictionary(lang);
 
-  const title = lang === "en"
-    ? "Bangkok Flood Risk Map — All 50 Districts Scored | RealData"
-    : "Bangkok Flood Risk Map | RealData";
-  const description = lang === "en"
-    ? "Which Bangkok districts flood every monsoon season — and which stay dry. All 50 khet scored 0–5 using BMA Drainage Dept, JICA, and 2011 great flood records. Every condo plotted on the risk map."
-    : t.flood.lead;
+  const title = t.seo.floodTitle;
+  const description = t.seo.floodDesc;
 
   return {
     title,

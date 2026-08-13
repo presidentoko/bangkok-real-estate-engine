@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { InventoryExplorer, type CityChip } from "@/components/InventoryExplorer";
 import { canonicalCitySlug, CITIES, getCity } from "@/lib/cities";
 import { decodeCompact } from "@/lib/condo-compact";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import {
   availablePropertyTypes,
@@ -57,10 +58,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Inventory — RealData" };
-  const title = "Bangkok Condo List — All Buildings with Yield, Price & Flood Risk | RealData";
-  const description =
-    "Browse 1,800+ condos across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin and Chonburi. " +
-    "Each card shows rental yield, Bubble Index, flood risk, and foreign quota. Filter by city and district.";
+  const t = getDictionary(lang);
+  const title = t.seo.inventoryTitle;
+  const description = t.seo.inventoryDesc;
   return {
     title,
     description,

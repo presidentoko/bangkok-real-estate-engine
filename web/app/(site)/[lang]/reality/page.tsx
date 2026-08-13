@@ -16,12 +16,8 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Marketing vs Reality — RealData" };
   const t = getDictionary(lang);
-  const title = lang === "en"
-    ? "Bangkok Condo Marketing vs Reality — Influencer Claims Fact-Checked | RealData"
-    : `${t.reality.title} — RealData`;
-  const description = lang === "en"
-    ? "Influencer and advertiser-promoted Bangkok condos placed next to our measured Bubble Index and yield data. We don't attack the influencer — only the numbers. Independent data, no developer money."
-    : t.reality.lead;
+  const title = t.seo.realityTitle;
+  const description = t.seo.realityDesc;
   return {
     title,
     description,

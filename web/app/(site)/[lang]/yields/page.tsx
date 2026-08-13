@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { YieldsExplorer } from "@/components/YieldsExplorer";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { fetchYieldRows, getCurrentMortgageRate } from "@/lib/queries/yield";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -24,11 +25,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Yields — RealData" };
-  const title = "Top Rental Yield Condos in Bangkok & Thailand — Ranked vs Bank of Thailand Rate | RealData";
-  const description =
-    "Bangkok and Thailand condos ranked by gross rental yield (annual rent ÷ sale price). " +
-    "Each building compared against the live Bank of Thailand MRR mortgage benchmark — positive spread means rent covers the mortgage. " +
-    "Independent measurement across hipflat, dotproperty, ddproperty, fazwaz.";
+  const t = getDictionary(lang);
+  const title = t.seo.yieldsTitle;
+  const description = t.seo.yieldsDesc;
   return {
     title,
     description,

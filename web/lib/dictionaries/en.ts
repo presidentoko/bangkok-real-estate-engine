@@ -544,6 +544,28 @@ const dict = {
       `Every condo in ${district}, ${province}: gross rental yields ranked ` +
       `against Thai MRR, sale/rent medians, flood risk levels, and ` +
       `cross-portal price comparison. Independent data — no developer placement.`,
+    yieldsTitle:
+      "Top Rental Yield Condos in Bangkok & Thailand — Ranked vs Bank of Thailand Rate | RealData",
+    yieldsDesc:
+      "Bangkok and Thailand condos ranked by gross rental yield (annual rent ÷ sale price). " +
+      "Each building compared against the live Bank of Thailand MRR mortgage benchmark — positive spread means rent covers the mortgage. " +
+      "Independent measurement across hipflat, dotproperty, ddproperty, fazwaz.",
+    inventoryTitle:
+      "Bangkok Condo List — All Buildings with Yield, Price & Flood Risk | RealData",
+    inventoryDesc:
+      "Browse 12,000+ condos across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin and Chonburi. " +
+      "Each card shows rental yield, Bubble Index, flood risk, and foreign quota. Filter by city and district.",
+    macroTitle: "Thailand mortgage + macro rates (BOT data) — RealData",
+    macroDesc:
+      "Bank of Thailand benchmark rates: Policy Rate, MRR, MLR, MOR, household debt. " +
+      "The macro backdrop every Thai condo buyer needs before signing a loan.",
+    floodTitle: "Bangkok Flood Risk Map — All 50 Districts Scored | RealData",
+    floodDesc:
+      "Which Bangkok districts flood every monsoon season — and which stay dry. All 50 khet scored 0–5 using BMA Drainage Dept, JICA, and 2011 great flood records. Every condo plotted on the risk map.",
+    realityTitle:
+      "Bangkok Condo Marketing vs Reality — Influencer Claims Fact-Checked | RealData",
+    realityDesc:
+      "Influencer and advertiser-promoted Bangkok condos placed next to our measured Bubble Index and yield data. We don't attack the influencer — only the numbers. Independent data, no developer money.",
   },
 };
 

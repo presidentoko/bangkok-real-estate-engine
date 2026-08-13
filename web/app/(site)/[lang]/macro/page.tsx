@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
@@ -34,10 +35,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Macro — RealData" };
-  const title = "Thailand mortgage + macro rates (BOT data) — RealData";
-  const description =
-    "Bank of Thailand benchmark rates: Policy Rate, MRR, MLR, MOR, household debt. " +
-    "The macro backdrop every Thai condo buyer needs before signing a loan.";
+  const t = getDictionary(lang);
+  const title = t.seo.macroTitle;
+  const description = t.seo.macroDesc;
   return {
     title,
     description,
