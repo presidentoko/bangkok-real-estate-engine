@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { provinceDisplayName } from "@/lib/cities";
 import { fmtTHB } from "@/lib/fmt";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
@@ -55,47 +56,74 @@ export async function generateStaticParams() {
   );
 }
 
-// Slug → region.name lookup. Region names in DB are inconsistent
-// (some 'bang-khen' lowercase, some 'Bang-khun-thian' capitalized) so we
-// match case-insensitively, hyphens preserved. Wrapped in React's cache() so
-// generateMetadata() and the page body below share one Supabase round trip
-// per request instead of running the lookup twice (same pattern as
-// condo/[slug]/page.tsx's getCondoIdBySlug).
-const resolveRegion = cache(async (
-  slug: string,
-): Promise<{ id: string; name: string; province: string | null } | null> => {
-  const supabase = getServerSupabase();
-  // The App Router does not auto-decode dynamic segments, so a URL like
-  // /district/din%20daeng arrives here as the literal string "din%20daeng"
-  // (percent signs intact), not "din daeng" — decode before matching
-  // `regions.name`, or any district whose name contains a space 404s on its
-  // own percent-encoded canonical URL (confirmed live 2026-07-12).
-  // Malformed percent-encoding (e.g. a stray "%" from a crawler/scanner)
-  // throws URIError — treat that as "no such district" instead of a 500.
+/** The one URL form a district is allowed to be indexed under.
+ *
+ *  regions.name used to hold "Pathum Wan", "Pathum-wan" and "pathum-wan" as
+ *  three separate rows, so the sitemap published both
+ *  /district/pathum%20wan and /district/pathum-wan — two live 200s with
+ *  identical content, each declaring itself canonical. Google reported the
+ *  fallout as "Duplicate, Google chose different canonical" (393 pages) and
+ *  "Alternate page with proper canonical" (1,219).
+ *
+ *  scripts/normalize_regions_and_provinces.py collapsed those rows onto the
+ *  lowercase-hyphen spelling, which means the space and mixed-case forms
+ *  Google already has indexed no longer match any region. This mirrors the
+ *  same rule in the URL so those hits can be 301'd to the survivor instead
+ *  of turning into ~180 fresh 404s. */
+function canonicalDistrictSlug(raw: string): string | null {
   let decoded: string;
   try {
-    decoded = decodeURIComponent(slug);
+    decoded = decodeURIComponent(raw);
   } catch {
+    // Malformed percent-encoding from a crawler/scanner — not a district.
     return null;
   }
-  // First try exact (cheap)
-  const { data: exact } = await supabase
-    .from("regions")
-    .select("id, name, province")
-    .eq("name", decoded)
-    .limit(1)
-    .maybeSingle();
-  if (exact) return exact as { id: string; name: string; province: string | null };
+  return decoded.trim().toLowerCase().replace(/[\s_-]+/g, "-");
+}
 
-  // Then case-insensitive
-  const { data: ilike } = await supabase
+// Canonical slug → region lookup. Every regions.name is now the
+// lowercase-hyphen form (enforced on write by src/db.canonical_region_name
+// and backfilled by scripts/normalize_regions_and_provinces.py), so this is
+// a single exact match — the old two-query exact-then-ilike dance existed
+// only to cope with the mixed casings that migration removed. Wrapped in
+// React's cache() so generateMetadata() and the page body share one Supabase
+// round trip per request (same pattern as condo/[slug]/page.tsx's
+// getCondoIdBySlug).
+const resolveRegion = cache(async (
+  canonicalSlug: string,
+): Promise<{ id: string; name: string; province: string | null } | null> => {
+  const supabase = getServerSupabase();
+  const { data } = await supabase
     .from("regions")
     .select("id, name, province")
-    .ilike("name", decoded)
+    .eq("name", canonicalSlug)
     .limit(1)
     .maybeSingle();
-  return (ilike as { id: string; name: string; province: string | null } | null) ?? null;
+  return (data as { id: string; name: string; province: string | null } | null) ?? null;
 });
+
+/** Resolve the route param to a region, or 404.
+ *
+ *  Non-canonical spellings (/district/pathum%20wan, /district/Pathum-Wan)
+ *  are 308'd to the canonical form by middleware.ts, NOT here. A
+ *  permanentRedirect() thrown from this route cannot produce a real 3xx:
+ *  the page is ISR (revalidate = 604800), so Next has already begun
+ *  streaming the shell by the time the redirect throws and it degrades into
+ *  a client-side redirect inside a 200 — verified locally, the response was
+ *  a 200 with an empty suspended body. Middleware runs before any rendering
+ *  and issues an actual 308, which is what a crawler needs.
+ *
+ *  Still called from generateMetadata() AND the page body, for the reason
+ *  spelled out in condo/[slug]/page.tsx: metadata runs first and fixes the
+ *  response's cache envelope, so a 404 decided only in the body ships too
+ *  late. resolveRegion is cached per request, so the second call is free. */
+async function resolveOrNotFound(rawSlug: string) {
+  const canonical = canonicalDistrictSlug(rawSlug);
+  if (!canonical) notFound();
+  const region = await resolveRegion(canonical);
+  if (!region) notFound();
+  return region;
+}
 
 export async function generateMetadata({
   params,
@@ -103,28 +131,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string; lang: string }>;
 }): Promise<Metadata> {
   const { slug, lang } = await params;
-  const region = await resolveRegion(slug);
-  // Mirrors condo/[slug]/page.tsx's generateMetadata fix — call notFound()
-  // here too, not just in the page body, so the metadata phase doesn't
-  // commit to a normal-looking response for an unknown district.
-  if (!region) notFound();
+  const region = await resolveOrNotFound(slug);
   const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   // generateMetadata's `lang` is still an unvalidated route param here (the
   // page body narrows it via isLang below), so guard before passing it on.
-  const province = provinceDisplayName(
-    region.province ?? "bangkok",
-    isLang(lang) ? lang : "en",
-  );
-  const title = `${display} Condos, ${province} — Yields, Prices & Flood Risk | RealData`;
-  const description =
-    `Every condo in ${display}, ${province}: gross rental ` +
-    `yields ranked against Thai MRR, sale/rent medians, flood risk levels, ` +
-    `and cross-portal price comparison. Independent data — no developer placement.`;
-  // Canonical always points at the lowercase slug regardless of the
-  // incoming param's casing (resolveRegion matches case-insensitively, so
-  // /district/Pattaya and /district/pattaya both render — but only the
-  // lowercase form should be indexed to avoid duplicate-URL content).
-  const canonicalSlug = encodeURIComponent(region.name.toLowerCase());
+  const safeLang = isLang(lang) ? lang : "en";
+  const province = provinceDisplayName(region.province ?? "bangkok", safeLang);
+  const t = getDictionary(safeLang);
+  const title = t.seo.districtTitle(display, province);
+  const description = t.seo.districtDesc(display, province);
+  // region.name IS the canonical slug now (see resolveRegion). Kept as a
+  // named local because it appears in the canonical, the hreflang set, the
+  // OG url and the breadcrumb, and those must not drift apart.
+  const canonicalSlug = region.name;
   return {
     title,
     description,
@@ -150,8 +169,7 @@ export default async function DistrictPage({
   if (!isLang(lang)) notFound();
 
   const supabase = getServerSupabase();
-  const region = await resolveRegion(slug);
-  if (!region) notFound();
+  const region = await resolveOrNotFound(slug);
 
   const [{ data: condoRows }, mortgage] = await Promise.all([
     supabase

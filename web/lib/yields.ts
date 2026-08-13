@@ -1,3 +1,4 @@
+import { districtDisplayName, provinceDisplayName } from "@/lib/cities";
 // Shared, CLIENT-SAFE definitions for the /yields ranking page, its client
 // explorer and the /api/yields route. No supabase / server imports here —
 // the explorer component bundles this file.
@@ -50,5 +51,5 @@ export type YieldRow = {
 export function yieldRegionLabel(r: YieldRow): string {
   const region = Array.isArray(r.regions) ? r.regions[0] : r.regions;
   if (region?.name) return region.name;
-  return (r.province ?? "").replace(/-/g, " ") || "—";
+  return provinceDisplayName(r.province) || "—";
 }

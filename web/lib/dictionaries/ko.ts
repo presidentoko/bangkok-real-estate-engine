@@ -497,6 +497,32 @@ const dict: Dict = {
     ask: "RealData에 물어보기",
     inventory: "전체 보기",
   },
+  // See en.ts's `seo` comment — these exist so /ko stops shipping the
+  // English title/description.
+  seo: {
+    yieldLabel: (v: string) => `수익률 ${v}%`,
+    floodLabel: (n: number) => `침수 위험 L${n}/5`,
+    provinceCondo: (p: string) => `${p} 콘도`,
+    built: (y: number) => `${y}년 준공`,
+    units: (n: number) => `${n}세대`,
+    vsDistrict: (n: number) =>
+      n > 0
+        ? `지역 평균 대비 ${n}% 비쌈`
+        : n < 0
+          ? `지역 평균 대비 ${Math.abs(n)}% 저렴`
+          : "지역 평균 수준",
+    condoTitle: (name: string, region: string, suffix: string) =>
+      `${name}, ${region} — ${suffix} | RealData`,
+    condoDesc: (name: string, region: string, province: string, facts: string) =>
+      `${province} ${region}의 ${name}. ${facts}. 매물, 13개월 시세 추이, ` +
+      `수익률 계산, 침수 위험, 편의시설을 확인하세요.`,
+    districtTitle: (district: string, province: string) =>
+      `${district} 콘도 시세 — 수익률·가격·침수 위험 | RealData`,
+    districtDesc: (district: string, province: string) =>
+      `${province} ${district}의 모든 콘도: 태국 MRR 기준 총 임대수익률 순위, ` +
+      `매매·월세 중간값, 침수 위험 등급, 포털 간 가격 비교. ` +
+      `광고 없는 독립 데이터입니다.`,
+  },
 };
 
 export default dict;

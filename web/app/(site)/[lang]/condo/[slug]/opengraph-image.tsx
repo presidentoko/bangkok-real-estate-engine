@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { provinceDisplayName } from "@/lib/cities";
+import { districtDisplayName, provinceDisplayName } from "@/lib/cities";
 import { getServerSupabase } from "@/lib/supabase";
 
 // Edge runtime is required on Windows: the nodejs runtime hits a @vercel/og
@@ -151,7 +151,9 @@ export default async function OG({
         available_units_count: number | null;
       };
       name = c.name;
-      region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
+      region =
+        districtDisplayName((Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name) ||
+        "Bangkok";
       province = c.province;
       units = c.total_units;
       avail = c.available_units_count;

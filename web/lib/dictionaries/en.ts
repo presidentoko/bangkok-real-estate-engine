@@ -514,6 +514,37 @@ const dict = {
     ask: "Ask RealData",
     inventory: "Browse all",
   },
+  // Titles and meta descriptions. These used to be English string literals
+  // inside each route's generateMetadata(), so /ko and /th shipped English
+  // <title> and <meta description> on every page — measured 2026-08-13, a
+  // /ko condo page shared 447 of its 478 tokens with the English one, which
+  // is what Google was reporting as "Duplicate, Google chose different
+  // canonical" (393) and "Alternate page with proper canonical" (1,219)
+  // across the 25,840 /ko + /th URLs in the sitemap.
+  seo: {
+    yieldLabel: (v: string) => `yield ${v}%`,
+    floodLabel: (n: number) => `flood risk L${n}/5`,
+    provinceCondo: (p: string) => `${p} condo`,
+    built: (y: number) => `built ${y}`,
+    units: (n: number) => `${n} units`,
+    vsDistrict: (n: number) =>
+      n > 0
+        ? `priced ${n}% above district avg`
+        : n < 0
+          ? `priced ${Math.abs(n)}% below district avg`
+          : "at district average",
+    condoTitle: (name: string, region: string, suffix: string) =>
+      `${name}, ${region} — ${suffix} | RealData`,
+    condoDesc: (name: string, region: string, province: string, facts: string) =>
+      `${name} in ${region}, ${province}. ${facts}. See listings, 13-month ` +
+      `price trend, yield calculation, flood risk and amenities.`,
+    districtTitle: (district: string, province: string) =>
+      `${district} Condos, ${province} — Yields, Prices & Flood Risk | RealData`,
+    districtDesc: (district: string, province: string) =>
+      `Every condo in ${district}, ${province}: gross rental yields ranked ` +
+      `against Thai MRR, sale/rent medians, flood risk levels, and ` +
+      `cross-portal price comparison. Independent data — no developer placement.`,
+  },
 };
 
 export default dict;

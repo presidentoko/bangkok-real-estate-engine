@@ -1,3 +1,4 @@
+import { districtDisplayName, provinceDisplayName } from "@/lib/cities";
 // Shared, CLIENT-SAFE definitions for the /compare page, its client explorer
 // and the /api/condos/compare route. No supabase / server imports here — the
 // explorer component bundles this file.
@@ -26,7 +27,7 @@ export type CondoFull = {
 
 export function regionName(r: CondoFull): string {
   const rg = Array.isArray(r.regions) ? r.regions[0] : r.regions;
-  return rg?.name ?? (r.province ?? "—").replace(/-/g, " ");
+  return districtDisplayName(rg?.name) || provinceDisplayName(r.province) || "—";
 }
 
 // JSON-transportable shape returned by /api/condos/compare — Maps aren't

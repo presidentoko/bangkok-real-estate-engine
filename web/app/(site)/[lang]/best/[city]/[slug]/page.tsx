@@ -12,7 +12,7 @@ import {
   type BestCitySlug,
   type BestFilterSlug,
 } from "@/lib/bestSlugs";
-import { canonicalCitySlug, cityProvinceSlugs } from "@/lib/cities";
+import { canonicalCitySlug, cityProvinceSlugs, districtDisplayName, provinceDisplayName } from "@/lib/cities";
 import { fmtTHB } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
@@ -55,7 +55,7 @@ type Row = {
 
 function regionLabel(r: Row): string {
   const region = Array.isArray(r.regions) ? r.regions[0] : r.regions;
-  return region?.name ?? (r.province ?? "").replace(/-/g, " ");
+  return districtDisplayName(region?.name) || provinceDisplayName(r.province);
 }
 
 // Resolve a /best city slug, accepting the legit DB/compact aliases that

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
-import { canonicalCitySlug, CITIES, cityProvinceSlugs, getCity } from "@/lib/cities";
+import { canonicalCitySlug, CITIES, cityProvinceSlugs, districtDisplayName, getCity, provinceDisplayName } from "@/lib/cities";
 import { fmtTHB } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
@@ -40,7 +40,7 @@ type Row = {
 
 function regionLabel(r: Row): string {
   const region = Array.isArray(r.regions) ? r.regions[0] : r.regions;
-  return region?.name ?? (r.province ?? "").replace(/-/g, " ");
+  return districtDisplayName(region?.name) || provinceDisplayName(r.province);
 }
 
 function lm(r: Row): { hospitals_within_1km: number } | null {

@@ -212,6 +212,19 @@ export function canonicalCitySlug(dbProvince: string | null | undefined): string
   return dbProvince;
 }
 
+/** Human-readable label for a raw `regions.name` value.
+ *
+ *  regions.name is now always the lowercase-hyphen slug form ("pathum-wan"),
+ *  because that doubles as the /district/ URL — see
+ *  src/db.canonical_region_name. Anything rendering it to a human needs this;
+ *  district/[slug] already had the transform inline, which is why the condo
+ *  page started showing "vadhana" instead of "Vadhana" once the names were
+ *  normalised. */
+export function districtDisplayName(name: string | null | undefined): string {
+  if (!name) return "";
+  return name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /** Human-readable, localised label for a raw DB `province` value.
  *
  *  Callers used to title-case the raw column inline

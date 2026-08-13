@@ -80,6 +80,38 @@ export async function middleware(req: NextRequest) {
     );
   }
 
+  // /district/<slug> URL normalisation. regions.name is now always the
+  // lowercase-hyphen form (src/db.canonical_region_name), but Google has
+  // ~180 indexed /district/x%20y URLs from when the same district existed in
+  // the DB under two or three spellings — plus any mixed-case variant that
+  // used to resolve via an ilike lookup. Those no longer match a region, so
+  // without this they would all turn into fresh 404s.
+  //
+  // This has to be middleware rather than a permanentRedirect() inside
+  // district/[slug]/page.tsx: that route is ISR (revalidate = 604800), so
+  // Next has already started streaming the shell by the time a redirect
+  // thrown from the page could take effect, and it degrades into a
+  // client-side redirect wrapped in a 200 (verified locally — 200 with an
+  // empty suspended body). Middleware runs before any rendering, so it can
+  // still send a real 308. No extra invocations either: these paths already
+  // flow through here for the i18n check below.
+  const district = pathname.match(/^\/(en|ko|th)\/district\/(.+)$/);
+  if (district) {
+    const [, lang, rawSlug] = district;
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(rawSlug);
+    } catch {
+      decoded = rawSlug; // malformed %-encoding — let the page 404 it
+    }
+    const canonical = decoded.trim().toLowerCase().replace(/[\s_-]+/g, "-");
+    if (canonical && canonical !== rawSlug) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/${lang}/district/${canonical}`;
+      return NextResponse.redirect(url, 308);
+    }
+  }
+
   // UUID → slug redirect used to live here as a live, uncached Supabase
   // fetch on every request to a legacy /condo/{uuid} URL. condo/[slug]/page.tsx
   // already handles the same UUID→slug lookup via permanentRedirect(), and

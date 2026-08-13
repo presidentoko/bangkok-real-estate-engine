@@ -497,6 +497,32 @@ const dict: Dict = {
     ask: "ถาม RealData",
     inventory: "ดูทั้งหมด",
   },
+  // See en.ts's `seo` comment — these exist so /th stops shipping the
+  // English title/description.
+  seo: {
+    yieldLabel: (v: string) => `ผลตอบแทน ${v}%`,
+    floodLabel: (n: number) => `ความเสี่ยงน้ำท่วม L${n}/5`,
+    provinceCondo: (p: string) => `คอนโด${p}`,
+    built: (y: number) => `สร้างปี ${y}`,
+    units: (n: number) => `${n} ยูนิต`,
+    vsDistrict: (n: number) =>
+      n > 0
+        ? `สูงกว่าค่าเฉลี่ยเขต ${n}%`
+        : n < 0
+          ? `ต่ำกว่าค่าเฉลี่ยเขต ${Math.abs(n)}%`
+          : "เท่าค่าเฉลี่ยเขต",
+    condoTitle: (name: string, region: string, suffix: string) =>
+      `${name}, ${region} — ${suffix} | RealData`,
+    condoDesc: (name: string, region: string, province: string, facts: string) =>
+      `${name} ใน ${region}, ${province}. ${facts}. ดูประกาศขาย แนวโน้มราคา ` +
+      `13 เดือน การคำนวณผลตอบแทน ความเสี่ยงน้ำท่วม และสิ่งอำนวยความสะดวก`,
+    districtTitle: (district: string, province: string) =>
+      `คอนโด${district} ${province} — ผลตอบแทน ราคา และความเสี่ยงน้ำท่วม | RealData`,
+    districtDesc: (district: string, province: string) =>
+      `คอนโดทุกแห่งใน ${district}, ${province}: จัดอันดับผลตอบแทนค่าเช่าเทียบ ` +
+      `MRR ไทย ค่ากลางราคาขาย/เช่า ระดับความเสี่ยงน้ำท่วม และเปรียบเทียบราคา ` +
+      `ข้ามพอร์ทัล ข้อมูลอิสระ ไม่มีโฆษณาจากผู้พัฒนา`,
+  },
 };
 
 export default dict;

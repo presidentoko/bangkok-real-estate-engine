@@ -28,7 +28,7 @@ import {
   getCondoYield,
   getCurrentMortgageRate,
 } from "@/lib/queries/yield";
-import { canonicalCitySlug, getCity, provinceDisplayName } from "@/lib/cities";
+import { canonicalCitySlug, districtDisplayName, getCity, provinceDisplayName } from "@/lib/cities";
 import { retireeSuitability } from "@/lib/retiree";
 import { langAlternates } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
@@ -213,37 +213,38 @@ export async function generateMetadata({
   const scoreMeta = one(condoForMeta.value_scores);
   const riskMeta = one(condoForMeta.risk_factors);
   const c = condoForMeta;
-  const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
+  // districtDisplayName: regions.name is the lowercase-hyphen slug form now,
+  // so it needs the same title-casing district/[slug] applies before it can
+  // go in a <title> or an address.
+  const region = districtDisplayName(
+    (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name,
+  ) || "Bangkok";
   const provinceDisplay = provinceDisplayName(c.province ?? "bangkok", lang as "en" | "ko" | "th");
+  // Every string below comes from the per-locale dictionary. Hardcoding them
+  // here is what left /ko and /th with English titles on all ~12.4k condo
+  // pages each (see lib/dictionaries/en.ts's `seo` block).
+  const t = getDictionary(isLang(lang) ? lang : "en");
   const above = scoreMeta?.bubble_index != null ? Math.round(scoreMeta.bubble_index - 100) : null;
-  const aboveTxt =
-    above == null
-      ? null
-      : above > 0
-        ? `priced ${above}% above district avg`
-        : above < 0
-          ? `priced ${Math.abs(above)}% below district avg`
-          : "at district average";
+  const aboveTxt = above == null ? null : t.seo.vsDistrict(above);
   const floodTxt =
     riskMeta?.flood_risk_level != null
-      ? `flood risk L${riskMeta.flood_risk_level}/5`
+      ? t.seo.floodLabel(riskMeta.flood_risk_level)
       : null;
   const yieldTxt =
-    c.gross_yield_pct != null ? `yield ${c.gross_yield_pct.toFixed(2)}%` : null;
-  const titleSuffix = [yieldTxt, floodTxt].filter(Boolean).join(" · ") || `${provinceDisplay} condo`;
-  const title = `${c.name}, ${region} — ${titleSuffix} | RealData`;
-  const desc =
-    `${c.name} in ${region}, ${provinceDisplay}. ` +
-    [
-      c.completion_year ? `built ${c.completion_year}` : null,
-      c.total_units ? `${c.total_units} units` : null,
-      yieldTxt,
-      aboveTxt,
-      floodTxt,
-    ]
-      .filter(Boolean)
-      .join(" · ") +
-    ". See listings, 13-month price trend, yield calculation, flood risk and amenities.";
+    c.gross_yield_pct != null ? t.seo.yieldLabel(c.gross_yield_pct.toFixed(2)) : null;
+  const titleSuffix =
+    [yieldTxt, floodTxt].filter(Boolean).join(" · ") || t.seo.provinceCondo(provinceDisplay);
+  const title = t.seo.condoTitle(c.name, region, titleSuffix);
+  const facts = [
+    c.completion_year ? t.seo.built(c.completion_year) : null,
+    c.total_units ? t.seo.units(c.total_units) : null,
+    yieldTxt,
+    aboveTxt,
+    floodTxt,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const desc = t.seo.condoDesc(c.name, region, provinceDisplay, facts);
   return {
     title,
     description: desc,
@@ -433,7 +434,7 @@ export default async function CondoPage({
   const currency = condoRaw.market_summary_currency || "USD";
   const tCondo = getDictionary(isLang(lang) ? lang : "en").condoPage;
 
-  const region = regions?.name ?? "Bangkok";
+  const region = districtDisplayName(regions?.name) || "Bangkok";
 
   // Retiree suitability — computed from livability + air-quality data the page
   // already holds (no DB column needed). Frames the building for the large
