@@ -71,7 +71,11 @@ def detect_underpriced(
     for i in range(0, len(condo_ids), IN_CHUNK):
         chunk = condo_ids[i:i + IN_CHUNK]
         rows = (
-            supabase.table("v_latest_listings")
+            # Sale-only: an "underpriced" alert is about a purchase, and the
+            # mixed-type v_latest_listings would attach a monthly rent as the
+            # headline price on any condo whose newest listing was a rental
+            # (migration 014).
+            supabase.table("v_latest_sale_listings")
             .select("condo_id, listing_id, price, price_per_sqm")
             .in_("condo_id", chunk)
             .execute().data

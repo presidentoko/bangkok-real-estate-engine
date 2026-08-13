@@ -211,3 +211,27 @@ export function canonicalCitySlug(dbProvince: string | null | undefined): string
   }
   return dbProvince;
 }
+
+/** Human-readable, localised label for a raw DB `province` value.
+ *
+ *  Callers used to title-case the raw column inline
+ *  (`province.replace(/-/g, " ").replace(/\b\w/g, …)`), which only reads well
+ *  for the kebab spellings. The compact spellings this codebase treats as
+ *  canonical render badly that way — "chiangmai" becomes "Chiangmai", not
+ *  "Chiang Mai" — and the normalisation pass in
+ *  scripts/normalize_regions_and_provinces.py collapses every province onto
+ *  exactly those compact forms, so the inline version would have regressed
+ *  five cities at once. Going through CITIES also means the label is
+ *  translated instead of being English on /ko and /th.
+ *
+ *  Provinces with no city page (surat-thani, prachuap-khiri-khan, …) keep the
+ *  old title-cased fallback. */
+export function provinceDisplayName(
+  dbProvince: string | null | undefined,
+  lang: "en" | "ko" | "th" = "en",
+): string {
+  if (!dbProvince) return "";
+  const city = getCity(dbProvince);
+  if (city) return city.name[lang];
+  return dbProvince.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}

@@ -7,6 +7,7 @@
  * etc. land as additionalProperty entries so the verdicts (not just
  * marketing metadata) get quoted.
  */
+import { provinceDisplayName } from "@/lib/cities";
 
 type CondoLite = {
   id: string;
@@ -140,10 +141,11 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
     });
   }
 
-  const addressRegion =
-    !condo.province || condo.province === "bangkok"
-      ? "Bangkok"
-      : condo.province.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  // schema.org addressRegion should carry the real place name, so this goes
+  // through CITIES rather than title-casing the raw column ("chiangmai" would
+  // otherwise be emitted as "Chiangmai"). English regardless of `lang` —
+  // addressRegion is a postal-address field, not display copy.
+  const addressRegion = provinceDisplayName(condo.province ?? "bangkok", "en");
 
   return {
     "@context": "https://schema.org",

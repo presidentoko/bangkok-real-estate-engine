@@ -21,12 +21,107 @@ def get_client() -> Client:
     return create_client(s.supabase_url, s.supabase_service_key)
 
 
+PAGE = 1000
+
+
+def fetch_all(
+    client: Client,
+    table: str,
+    columns: str,
+    *,
+    order_by: str = "id",
+    **filters: Any,
+) -> list[dict[str, Any]]:
+    """Read EVERY row a select() matches, not just the first 1000.
+
+    PostgREST caps every response at `db-max-rows` (1000 on Supabase)
+    regardless of table size and regardless of .limit() — and it does so
+    *silently*, with a 200 and no truncation marker. So a plain
+    `.select(...).execute()` over a table larger than 1000 rows returns a
+    fraction of it and every aggregate computed from it is wrong, with
+    nothing in the logs to say so.
+
+    That is not hypothetical here: compute_bubble_indices() read `condos`
+    and `v_latest_listings` this way, so the district-premium figure — the
+    site's headline differentiator — was computed from 1000 of 15,785 condos
+    and 1000 of 8,896 listings, leaving 92% of condo pages with no
+    bubble_index at all (measured 2026-08-13).
+
+    order_by must be a column with stable ordering (the PK): without an
+    ORDER BY, Postgres makes no guarantee that separate .range() requests
+    see rows in the same order, so pages can silently skip or repeat rows.
+
+    Several modules grew their own private `_fetch_all` before this one
+    existed (analysis/risk.py, analysis/super_value.py, reports/generator.py,
+    scripts/compute_value_scores.py, scripts/prune_price_history.py). They
+    are correct; this is the version new callers should use.
+    """
+    out: list[dict[str, Any]] = []
+    offset = 0
+    while True:
+        q = client.table(table).select(columns)
+        for k, v in filters.items():
+            q = q.eq(k, v)
+        page = q.order(order_by).range(offset, offset + PAGE - 1).execute().data or []
+        out.extend(page)
+        if len(page) < PAGE:
+            break
+        offset += PAGE
+    return out
+
+
+# Spelling variants of one province name collapsed onto the value
+# web/lib/cities.ts's CITY_PROVINCE_ALIASES already resolves to a city page.
+# Applied after _canon() has turned whitespace into hyphens, so "chiang mai"
+# arrives here as "chiang-mai". Deliberately does NOT contain surat-thani ->
+# samui: those are different administrative units that the site merely
+# happens to display together.
+_PROVINCE_ALIASES = {
+    "chiang-mai": "chiangmai",
+    "chiang-rai": "chiangrai",
+    "hua-hin": "huahin",
+    "chon-buri": "chonburi",
+    "ko-samui": "samui",
+    "koh-samui": "samui",
+}
+
+
+def _canon(value: str | None) -> str:
+    """Lowercase; collapse whitespace/underscore/hyphen runs to one hyphen."""
+    import re as _re
+    return _re.sub(r"[\s_-]+", "-", (value or "").strip().lower())
+
+
+def canonical_region_name(name: str | None) -> str:
+    """One spelling per district, decided at write time.
+
+    The portals spell the same district three ways ("Bang Rak", "Bang-rak",
+    "bang-rak"). regions.name is UNIQUE, so each spelling used to create its
+    own row and split that district's condos across parallel rows — which
+    fragmented district pages, the region averages behind bubble_index, and
+    the /district/ URLs in the sitemap (a space variant published as
+    /district/pathum%20wan alongside /district/pathum-wan, both 200, both
+    self-canonical). Repaired in bulk by
+    scripts/normalize_regions_and_provinces.py; normalising here is what
+    stops the next scrape from recreating the split.
+    """
+    return _canon(name)
+
+
+def canonical_province(value: str | None) -> str:
+    """Province equivalent of canonical_region_name (see that docstring)."""
+    base = _canon(value)
+    return _PROVINCE_ALIASES.get(base, base)
+
+
 def upsert_region(
     client: Client,
     name: str,
     name_th: str | None = None,
     province: str = "bangkok",
 ) -> str:
+    name = canonical_region_name(name)
+    province = canonical_province(province)
     payload: dict[str, Any] = {"name": name, "name_th": name_th, "province": province}
     # Drop None values so we don't overwrite existing name_th with NULL on re-upsert.
     payload = {k: v for k, v in payload.items() if v is not None}
@@ -60,7 +155,7 @@ def _resolve_region(condo: dict[str, Any]) -> str | None:
 def upsert_condo(client: Client, condo: dict[str, Any]) -> str:
     """Upsert condo by (source, source_listing_id); returns id."""
     canonical = _resolve_region(condo)
-    province = (condo.get("province") or "bangkok").strip().lower()
+    province = canonical_province(condo.get("province") or "bangkok")
     region_id = upsert_region(client, canonical, province=province) if canonical else None
 
     payload = {
@@ -193,7 +288,7 @@ def upsert_dotproperty_condo(
     the same project is idempotent. sample provides geo + address fallbacks.
     """
     sid = _normalize_project_name(project_name)[:120] or "unknown"
-    province = (sample.get("address_region") or "bangkok").strip().lower()
+    province = canonical_province(sample.get("address_region") or "bangkok")
     canonical = extract_district(sample.get("address_locality")) or (
         sample.get("address_locality") or ""
     ).strip() or None
@@ -276,7 +371,7 @@ def upsert_ddproperty_condo(
     runs (rather than creating a new condo per listing SID).
     """
     sid = _normalize_project_name(project_name)[:120] or "unknown"
-    province = (sample.get("province") or "bangkok").strip().lower()
+    province = canonical_province(sample.get("province") or "bangkok")
     canonical = extract_district(sample.get("region")) or (
         sample.get("region") or ""
     ).strip() or None
@@ -333,7 +428,7 @@ def upsert_fazwaz_condo(
     idempotent. district/province come from FazWaz's parsed address triple.
     """
     sid = _normalize_project_name(project_name)[:120] or "unknown"
-    province = (sample.get("province") or "bangkok").strip().lower()
+    province = canonical_province(sample.get("province") or "bangkok")
     canonical = extract_district(sample.get("district")) or (
         sample.get("district") or ""
     ).strip() or None

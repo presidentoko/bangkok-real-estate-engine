@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { provinceDisplayName } from "@/lib/cities";
 import { getServerSupabase } from "@/lib/supabase";
 
 // Edge runtime is required on Windows: the nodejs runtime hits a @vercel/og
@@ -161,10 +162,7 @@ export default async function OG({
     /* fall back to defaults */
   }
 
-  const provinceDisplay =
-    !province || province === "bangkok"
-      ? "Bangkok"
-      : province.replace(/-/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase());
+  const provinceDisplay = provinceDisplayName(province ?? "bangkok", "en");
 
   const above = bubble != null ? Math.round(bubble - 100) : null;
   const aboveTxt =

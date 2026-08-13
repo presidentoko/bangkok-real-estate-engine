@@ -20,6 +20,7 @@ from loguru import logger
 from supabase import Client
 
 from src.config import get_settings
+from src.db import fetch_all
 
 # Endpoint is env-overridable so a bulk backfill can point at a higher-capacity
 # mirror (e.g. OVERPASS_URL=https://overpass.kumi.systems/api/interpreter) when
@@ -232,13 +233,18 @@ async def compute_livability(supabase: Client) -> int:
     provider = os.environ.get("LIVABILITY_PROVIDER", "overpass").lower()
     use_google = provider == "google" and bool(s.google_places_api_key)
 
-    rows = (
-        supabase.table("condos")
-        .select("id, latitude, longitude")
-        .eq("is_active", True)
-        .not_.is_("latitude", "null")
-        .execute().data
-    )
+    # Paginated: an unpaginated .select() stops at PostgREST's 1000-row cap,
+    # which capped livability scoring at the first 1000 geocoded condos out
+    # of ~12.5k (found in the same 2026-08-13 sweep as bubble_index).
+    # not_.is_("latitude", "null") isn't expressible via fetch_all's eq-only
+    # filters, so the null check stays here as a post-filter.
+    rows = [
+        r
+        for r in fetch_all(
+            supabase, "condos", "id, latitude, longitude", is_active=True
+        )
+        if r.get("latitude") is not None
+    ]
     if not rows:
         logger.info(
             "livability: no condos with lat/lng — extend scraper to capture coords"

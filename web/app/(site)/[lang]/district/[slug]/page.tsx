@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { provinceDisplayName } from "@/lib/cities";
 import { fmtTHB } from "@/lib/fmt";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
@@ -108,8 +109,13 @@ export async function generateMetadata({
   // commit to a normal-looking response for an unknown district.
   if (!region) notFound();
   const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const province = region.province ?? "Bangkok";
-  const title = `${display} Condos, ${province.replace(/\b\w/g, (c) => c.toUpperCase())} — Yields, Prices & Flood Risk | RealData`;
+  // generateMetadata's `lang` is still an unvalidated route param here (the
+  // page body narrows it via isLang below), so guard before passing it on.
+  const province = provinceDisplayName(
+    region.province ?? "bangkok",
+    isLang(lang) ? lang : "en",
+  );
+  const title = `${display} Condos, ${province} — Yields, Prices & Flood Risk | RealData`;
   const description =
     `Every condo in ${display}, ${province}: gross rental ` +
     `yields ranked against Thai MRR, sale/rent medians, flood risk levels, ` +
@@ -190,7 +196,7 @@ export default async function DistrictPage({
     .slice(0, 8);
 
   const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const provinceDisplay = (region.province ?? "Bangkok").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const provinceDisplay = provinceDisplayName(region.province ?? "bangkok", lang);
   // Same lowercase-canonical rule as generateMetadata above — self-referential
   // URLs in structured data should match the canonical, not the raw param.
   const canonicalSlug = encodeURIComponent(region.name.toLowerCase());

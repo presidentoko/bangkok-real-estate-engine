@@ -28,7 +28,7 @@ import {
   getCondoYield,
   getCurrentMortgageRate,
 } from "@/lib/queries/yield";
-import { canonicalCitySlug, getCity } from "@/lib/cities";
+import { canonicalCitySlug, getCity, provinceDisplayName } from "@/lib/cities";
 import { retireeSuitability } from "@/lib/retiree";
 import { langAlternates } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
@@ -214,9 +214,7 @@ export async function generateMetadata({
   const riskMeta = one(condoForMeta.risk_factors);
   const c = condoForMeta;
   const region = (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? "Bangkok";
-  const provinceDisplay = c.province
-    ? c.province.replace(/-/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase())
-    : "Bangkok";
+  const provinceDisplay = provinceDisplayName(c.province ?? "bangkok", lang as "en" | "ko" | "th");
   const above = scoreMeta?.bubble_index != null ? Math.round(scoreMeta.bubble_index - 100) : null;
   const aboveTxt =
     above == null

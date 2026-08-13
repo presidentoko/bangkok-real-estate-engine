@@ -50,3 +50,10 @@ Thumbs.db
 .claude/
 
 .vercel
+
+# Row backups written by scripts/normalize_regions_and_provinces.py --apply.
+# Rollback artifacts, not source — keep them locally, out of git.
+backup_regions_*.json
+
+# Leftovers from the dead pre-2026-07 Vercel account/project.
+.vercel.old-account/
