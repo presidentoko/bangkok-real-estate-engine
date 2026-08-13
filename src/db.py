@@ -570,14 +570,14 @@ def persist_detail(client: Client, condo_id: str, detail: dict[str, Any]) -> Non
     }
     # Drop None to avoid clobbering existing values with NULL.
     payload = {k: v for k, v in payload.items() if v is not None}
-    client.table("condos").update(payload).eq("id", condo_id).execute()
+    client.table("condos").update(payload, returning="minimal").eq("id", condo_id).execute()
 
     # Replace amenities (delete + insert) — small set per building, safe.
     client.table("condo_amenities").delete().eq("condo_id", condo_id).execute()
     amenities = detail.get("amenities") or []
     if amenities:
         client.table("condo_amenities").insert(
-            [{"condo_id": condo_id, "name": a} for a in amenities]
+            [{"condo_id": condo_id, "name": a} for a in amenities], returning="minimal"
         ).execute()
 
     # Same for transit (BTS/MRT mentioned in FAQ).
@@ -586,7 +586,7 @@ def persist_detail(client: Client, condo_id: str, detail: dict[str, Any]) -> Non
     if transit:
         client.table("condo_transit").insert(
             [{"condo_id": condo_id, "line": t["line"], "station": t["station"]}
-             for t in transit]
+             for t in transit], returning="minimal"
         ).execute()
 
 
@@ -654,13 +654,13 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
         market_cols["market_summary_currency"] = summary_currency
         market_cols["market_summary_updated_at"] = datetime.now(timezone.utc).isoformat()
     market_cols = {k: v for k, v in market_cols.items() if v is not None}
-    client.table("condos").update(market_cols).eq("id", condo_id).execute()
+    client.table("condos").update(market_cols, returning="minimal").eq("id", condo_id).execute()
 
     # --- facilities OVERRIDE Tier A amenities (Tier B has richer set)
     if facilities:
         client.table("condo_amenities").delete().eq("condo_id", condo_id).execute()
         client.table("condo_amenities").insert(
-            [{"condo_id": condo_id, "name": f} for f in facilities]
+            [{"condo_id": condo_id, "name": f} for f in facilities], returning="minimal"
         ).execute()
 
     # --- parking facts (replace)
@@ -668,7 +668,7 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
     if parking:
         client.table("condo_parking_facts").insert(
             [{"condo_id": condo_id, "fact_key": p["key"], "fact_value": p.get("value")}
-             for p in parking if p.get("key")]
+             for p in parking if p.get("key")], returning="minimal"
         ).execute()
 
     # --- neighbours (replace)
@@ -679,7 +679,7 @@ def persist_detail_b(client: Client, condo_id: str, detail: dict[str, Any]) -> d
               "neighbour_slug": n["slug"],
               "neighbour_url": n["url"],
               "neighbour_name": n.get("name")}
-             for n in neighbours]
+             for n in neighbours], returning="minimal"
         ).execute()
 
     # --- chart series (append; uniqueness includes captured_at so re-runs
@@ -821,7 +821,7 @@ def append_price_history(client: Client, condo_id: str, listing: dict[str, Any])
         "price": listing["price"],
         "price_per_sqm": pps,
         "delta_pct": delta_pct,
-    }).execute()
+    }, returning="minimal").execute()
 
 
 def recompute_region_averages(client: Client) -> None:
