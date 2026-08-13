@@ -24,6 +24,36 @@ const AI_AGENTS = [
   "Applebot-Extended", // Apple AI training opt-in
 ];
 
+// Agents whose UA matches middleware.ts's BOT_UA_RE without the
+// Googlebot/Bingbot exemption, so /condo/ answers them with a 503 no matter
+// what this file says. Telling them "Allow: /" and then refusing every
+// request is worse than being honest: repeated 503s read as an unstable
+// origin, and a crawler that backs off sitewide because of them costs us the
+// pages we actually want indexed.
+//
+// The trade is deliberate and narrow. Everything with citable analysis —
+// /flood, /yields, /macro, /data, /reality, /blog, /glossary, /guide — stays
+// fully open to these agents. What's closed is the ~12.4k per-building pages
+// x3 locales, which are the least quotable content on the site and the most
+// expensive to serve: only 300 are prebuilt, so every crawl of the long tail
+// is a cold render plus an ISR write (that fan-out is what put the free tier
+// 90% over on ISR writes; see middleware.ts).
+//
+// Applebot is in here for the same mechanical reason, but it is a search
+// crawler rather than an answer engine — if Apple referral traffic ever
+// matters, it belongs in middleware's SEARCH_ENGINE_UA_RE next to
+// Googlebot/Bingbot instead of on this list.
+const CONDO_BLOCKED_AGENTS = new Set([
+  "GPTBot",
+  "OAI-SearchBot",
+  "ClaudeBot",
+  "PerplexityBot",
+  "Applebot",
+  "Applebot-Extended",
+]);
+
+const CONDO_PATHS = ["/en/condo/", "/ko/condo/", "/th/condo/"];
+
 // Heavy, high-volume crawlers with no meaningful SEO/AEO payoff for this
 // site. A wildcard "*" allow rule doesn't block them by itself — each needs
 // its own disallow record. Removed 2026-07 after they contributed to a
@@ -40,7 +70,9 @@ export default function robots(): MetadataRoute.Robots {
       ...AI_AGENTS.map((ua) => ({
         userAgent: ua,
         allow: "/",
-        disallow: ["/admin", "/api"],
+        disallow: CONDO_BLOCKED_AGENTS.has(ua)
+          ? ["/admin", "/api", ...CONDO_PATHS]
+          : ["/admin", "/api"],
       })),
       ...BLOCKED_AGENTS.map((ua) => ({
         userAgent: ua,

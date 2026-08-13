@@ -86,6 +86,15 @@ _PROVINCE_ALIASES = {
 }
 
 
+# Provinces that have a live city page (mirrors CITIES in web/lib/cities.ts).
+# A condo outside this set is not something the site is ready to show, so the
+# scrapers keep it unpublished.
+LAUNCHED_PROVINCES = frozenset({
+    "bangkok", "pattaya", "chonburi", "huahin", "phuket",
+    "chiangmai", "krabi", "samui", "chiangrai",
+})
+
+
 def _canon(value: str | None) -> str:
     """Lowercase; collapse whitespace/underscore/hyphen runs to one hyphen."""
     import re as _re
@@ -172,9 +181,15 @@ def upsert_condo(client: Client, condo: dict[str, Any]) -> str:
         "url": condo.get("url"),
         "last_seen_at": datetime.now(timezone.utc).isoformat(),
     }
-    # New non-bangkok provinces start unpublished so the site doesn't expose
-    # them until we explicitly launch (UPDATE condos SET published=true...).
-    if province != "bangkok":
+    # Keep un-launched provinces out of the site. Note this only ever sets
+    # published=False, and only for provinces with no city page — it never
+    # sets True. The old `province != "bangkok"` version re-applied False on
+    # EVERY re-scrape, so any condo published by hand in Phuket, Chiang Mai
+    # or Pattaya silently reverted the next time the scraper saw it. Leaving
+    # launched provinces untouched here is what makes a publish decision
+    # stick; flipping them on is a deliberate one-off UPDATE, not something
+    # the ingest path should do behind your back.
+    if province not in LAUNCHED_PROVINCES:
         payload["published"] = False
     # Only set property_type when the scraper supplied one — older callers
     # rely on the column default ('condo') and we don't want to clobber it.
@@ -305,8 +320,7 @@ def upsert_dotproperty_condo(
         "longitude": sample.get("longitude"),
         "last_seen_at": datetime.now(timezone.utc).isoformat(),
     }
-    # Non-Bangkok stays unpublished, same convention as hipflat.
-    if province != "bangkok":
+    if province not in LAUNCHED_PROVINCES:  # see upsert_condo
         payload["published"] = False
     payload = {k: v for k, v in payload.items() if v is not None}
     res = (
@@ -396,7 +410,7 @@ def upsert_ddproperty_condo(
         # migration 006_listing_extras.sql. Safe to send even if older
         # DB hasn't been migrated (PostgREST silently drops unknown cols).
         payload["building_ownership"] = sample["ownership"]
-    if province != "bangkok":
+    if province not in LAUNCHED_PROVINCES:  # see upsert_condo
         payload["published"] = False
     payload = {k: v for k, v in payload.items() if v is not None}
     res = (
@@ -454,7 +468,7 @@ def upsert_fazwaz_condo(
         payload["sinking_fund"] = sample["sinking_fund"]
     if sample.get("ownership"):
         payload["building_ownership"] = sample["ownership"]
-    if province != "bangkok":
+    if province not in LAUNCHED_PROVINCES:  # see upsert_condo
         payload["published"] = False
     payload = {k: v for k, v in payload.items() if v is not None}
     res = (
