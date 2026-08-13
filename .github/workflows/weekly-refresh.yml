@@ -211,8 +211,27 @@ jobs:
         # 6 months to 1 row/condo/month, and drops underpriced_alerts older
         # than 90 days. See scripts/prune_price_history.py's docstring for
         # the read-path investigation behind these numbers.
+        #
+        # Runs on the first Saturday of the month, not every Saturday. The
+        # script decides what to delete in Python, so it pulls price_history
+        # (861k rows, 137 B/row = 113 MB) and condo_market_chart (112k rows,
+        # 12 MB) in full on every run — 125 MB of Supabase egress purely to
+        # choose row ids. Weekly that is ~500 MB/month against a 5 GB free
+        # tier, i.e. 10% of the budget spent on a job whose input grows by
+        # ~36k rows/week. Monthly still keeps growth bounded (the thinning
+        # rules are age-based, so a later run deletes everything an earlier
+        # one would have) at a quarter of the traffic.
+        #
+        # The real fix is to filter server-side instead of loading the table
+        # — but this is a deletion path, so that change wants its own careful
+        # pass rather than being bolted onto a cost fix.
         continue-on-error: true
         run: |
+          $isFirstSaturday = [int](Get-Date -UFormat %d) -le 7
+          if (-not $isFirstSaturday) {
+            Write-Output "Not the first Saturday of the month — skipping prune (see step comment)."
+            exit 0
+          }
           cmd /c "python scripts\prune_price_history.py --apply 2>&1" | Tee-Object -FilePath prune.log
           if ($LASTEXITCODE -ne 0) {
             Write-Output "::warning::prune_price_history exited $LASTEXITCODE"
