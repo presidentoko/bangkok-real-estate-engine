@@ -80,6 +80,9 @@ from src.db import get_client  # noqa: E402
 
 PAGE = 1000
 DELETE_CHUNK = 200
+# Rows deleted per RPC call. Small enough that one statement stays well inside
+# PostgREST's timeout, large enough that a big backlog clears in a few calls.
+PRUNE_BATCH = 20000
 
 DEFAULT_RETENTION_MONTHS = 6
 DEFAULT_KEEP_RECENT = 2
@@ -121,6 +124,38 @@ def _chunked_delete(client, table: str, ids: list, *, id_column: str = "id") -> 
     for i in range(0, len(ids), DELETE_CHUNK):
         chunk = ids[i:i + DELETE_CHUNK]
         client.table(table).delete(returning="minimal").in_(id_column, chunk).execute()
+
+
+def _verify_against_python(
+    client, *, table: str, columns: str, sql_fn: str, params: dict, python_fn
+) -> None:
+    """Assert migration 016's SQL picks exactly the same rows as the Python
+    reference below.
+
+    The Python implementations are no longer what runs — the SQL functions
+    are — but they stay as the executable specification of the retention
+    rules, and this compares the two on real data. It costs the full table
+    read the SQL version exists to avoid, so it is opt-in (--verify), meant
+    for after a rule change rather than for the scheduled job.
+
+    Comparing at the default retention proves little while nothing is old
+    enough to prune (on 2026-08-13, zero of 861,148 price_history rows were
+    past the 6-month window), so callers should also verify at a shortened
+    window where both sides have real work to do.
+    """
+    logger.info(f"[verify] loading {table} for the Python reference...")
+    rows = _fetch_all(client, table, columns)
+    expected = len(python_fn(rows))
+    actual = int(client.rpc(sql_fn, {**params, "p_dry_run": True}).execute().data or 0)
+    # The SQL side is batched, so a backlog bigger than one batch legitimately
+    # reports less than the reference. Only an over-delete is a real mismatch.
+    capped = min(expected, params.get("p_batch_size", PRUNE_BATCH))
+    if actual != capped:
+        raise SystemExit(
+            f"[verify] MISMATCH on {table}: python={expected} "
+            f"(capped to {capped}) vs sql={actual}. Refusing to continue."
+        )
+    logger.info(f"[verify] {table}: python and sql agree on {actual} rows")
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -169,26 +204,59 @@ def compute_price_history_deletions(
     return delete_ids
 
 
-def prune_price_history(
-    client, *, keep_recent: int, retention_months: int, dry_run: bool
-) -> int:
-    logger.info("Loading price_history (id, condo_id, listing_type, captured_at)...")
-    rows = _fetch_all(client, "price_history", "id, condo_id, listing_type, captured_at")
-    logger.info(f"  loaded {len(rows)} price_history rows")
+def _rpc_prune(client, fn: str, params: dict, *, dry_run: bool) -> int:
+    """Drive one of migration 016's prune functions until it stops finding rows.
 
-    delete_ids = compute_price_history_deletions(
-        rows, keep_recent=keep_recent, retention_months=retention_months
-    )
+    Each call deletes at most p_batch_size rows and returns how many it took,
+    so no single statement runs long enough to hit PostgREST's timeout — the
+    trap recompute_region_averages() fell into (57014, whole transaction
+    rolled back). A dry run asks once and deletes nothing.
+    """
+    if dry_run:
+        return int(client.rpc(fn, {**params, "p_dry_run": True}).execute().data or 0)
+    total = 0
+    while True:
+        n = int(client.rpc(fn, {**params, "p_dry_run": False}).execute().data or 0)
+        total += n
+        if n == 0:
+            return total
+        logger.info(f"  {fn}: deleted {n} (running total {total})")
+
+
+def prune_price_history(
+    client, *, keep_recent: int, retention_months: int, dry_run: bool, verify: bool
+) -> int:
+    """Delete via SQL. `verify` additionally runs the Python reference logic
+    and asserts the two agree.
+
+    This used to load the whole table (861,148 rows, 137 B/row = 113 MB of
+    egress) purely to choose ids, and at the time of the change it was
+    choosing none of them — no row was yet older than the 6-month window.
+    """
+    params = {
+        "p_keep_recent": keep_recent,
+        "p_retention_months": retention_months,
+        "p_batch_size": PRUNE_BATCH,
+    }
+    if verify:
+        _verify_against_python(
+            client,
+            table="price_history",
+            columns="id, condo_id, listing_type, captured_at",
+            sql_fn="prune_price_history",
+            params=params,
+            python_fn=lambda rows: compute_price_history_deletions(
+                rows, keep_recent=keep_recent, retention_months=retention_months
+            ),
+        )
+
+    n = _rpc_prune(client, "prune_price_history", params, dry_run=dry_run)
+    verb = "would delete" if dry_run else "deleted"
     logger.info(
-        f"price_history: {len(delete_ids)} rows to delete "
+        f"price_history: {verb} {n} rows "
         f"(keep-recent={keep_recent}, monthly-thin-beyond={retention_months}mo)"
     )
-    if dry_run or not delete_ids:
-        return len(delete_ids)
-
-    _chunked_delete(client, "price_history", delete_ids)
-    logger.info(f"  deleted {len(delete_ids)} price_history rows")
-    return len(delete_ids)
+    return n
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -215,22 +283,26 @@ def compute_chart_deletions(rows: list[dict], *, keep_recent: int = DEFAULT_KEEP
     return delete_ids
 
 
-def prune_condo_market_chart(client, *, keep_recent: int, dry_run: bool) -> int:
-    logger.info("Loading condo_market_chart (id, condo_id, captured_at)...")
-    rows = _fetch_all(client, "condo_market_chart", "id, condo_id, captured_at")
-    logger.info(f"  loaded {len(rows)} condo_market_chart rows")
-
-    delete_ids = compute_chart_deletions(rows, keep_recent=keep_recent)
+def prune_condo_market_chart(
+    client, *, keep_recent: int, dry_run: bool, verify: bool
+) -> int:
+    params = {"p_keep_recent": keep_recent, "p_batch_size": PRUNE_BATCH}
+    if verify:
+        _verify_against_python(
+            client,
+            table="condo_market_chart",
+            columns="id, condo_id, captured_at",
+            sql_fn="prune_condo_market_chart",
+            params=params,
+            python_fn=lambda rows: compute_chart_deletions(rows, keep_recent=keep_recent),
+        )
+    n = _rpc_prune(client, "prune_condo_market_chart", params, dry_run=dry_run)
+    verb = "would delete" if dry_run else "deleted"
     logger.info(
-        f"condo_market_chart: {len(delete_ids)} rows to delete "
+        f"condo_market_chart: {verb} {n} rows "
         f"(keeping the most recent {keep_recent} captured_at batches per condo)"
     )
-    if dry_run or not delete_ids:
-        return len(delete_ids)
-
-    _chunked_delete(client, "condo_market_chart", delete_ids)
-    logger.info(f"  deleted {len(delete_ids)} condo_market_chart rows")
-    return len(delete_ids)
+    return n
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -239,33 +311,15 @@ def prune_condo_market_chart(client, *, keep_recent: int, dry_run: bool) -> int:
 
 
 def prune_underpriced_alerts(client, *, max_age_days: int, dry_run: bool) -> int:
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=max_age_days)).isoformat()
-    logger.info(f"Loading underpriced_alerts older than {max_age_days}d (detected_at < {cutoff})...")
-
-    ids: list[str] = []
-    offset = 0
-    while True:
-        chunk = (
-            client.table("underpriced_alerts")
-            .select("id")
-            .lt("detected_at", cutoff)
-            .order("id")
-            .range(offset, offset + PAGE - 1)
-            .execute()
-            .data
-        ) or []
-        ids.extend(r["id"] for r in chunk)
-        if len(chunk) < PAGE:
-            break
-        offset += PAGE
-
-    logger.info(f"underpriced_alerts: {len(ids)} rows to delete (older than {max_age_days}d)")
-    if dry_run or not ids:
-        return len(ids)
-
-    _chunked_delete(client, "underpriced_alerts", ids)
-    logger.info(f"  deleted {len(ids)} underpriced_alerts rows")
-    return len(ids)
+    n = _rpc_prune(
+        client,
+        "prune_underpriced_alerts",
+        {"p_max_age_days": max_age_days, "p_batch_size": PRUNE_BATCH},
+        dry_run=dry_run,
+    )
+    verb = "would delete" if dry_run else "deleted"
+    logger.info(f"underpriced_alerts: {verb} {n} rows (older than {max_age_days}d)")
+    return n
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -283,6 +337,10 @@ def main() -> int:
                      help=f"Always keep this many most-recent snapshots/batches per condo (default {DEFAULT_KEEP_RECENT})")
     ap.add_argument("--alert-max-age-days", type=int, default=DEFAULT_ALERT_MAX_AGE_DAYS,
                      help=f"underpriced_alerts: delete rows older than this (default {DEFAULT_ALERT_MAX_AGE_DAYS})")
+    ap.add_argument("--verify", action="store_true",
+                     help="Cross-check the SQL prune against the Python reference "
+                          "logic. Costs a full table read — use after a rule change, "
+                          "not in the scheduled job.")
     ap.add_argument("--skip-price-history", action="store_true")
     ap.add_argument("--skip-chart", action="store_true")
     ap.add_argument("--skip-alerts", action="store_true")
@@ -299,12 +357,13 @@ def main() -> int:
             keep_recent=args.keep_recent,
             retention_months=args.months,
             dry_run=dry_run,
+            verify=args.verify,
         )
 
     if not args.skip_chart:
         logger.info("\n=== condo_market_chart retention ===")
         total += prune_condo_market_chart(
-            client, keep_recent=args.keep_recent, dry_run=dry_run
+            client, keep_recent=args.keep_recent, dry_run=dry_run, verify=args.verify
         )
 
     if not args.skip_alerts:
