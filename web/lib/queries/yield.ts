@@ -113,6 +113,12 @@ export async function fetchYieldRows(
     .gte("yield_sample_sale", 2)
     .gte("yield_sample_rent", 2)
     .eq("is_active", true)
+    // published gate: this reads the raw `condos` table (not the
+    // condos_published view the detail pages read), so without this an
+    // unpublished building — a province with no city page — ranks in the
+    // top-100 and its row links to a page that renders not-found. 870 such
+    // condos existed when this was caught (2026-08-14).
+    .eq("published", true)
     .order(sortOpt.column, { ascending: sortOpt.asc })
     .limit(100);
 

@@ -105,6 +105,10 @@ def _paged_yields(client, *, province: str | None, min_yield: float, max_yield: 
                 "avg_monthly_rent, foreign_quota_inventory_pct, regions(name)",
             )
             .eq("is_active", True)
+            # published gate — same reason as web/lib/queries/yield.ts:
+            # unpublished condos (provinces with no city page) must not be
+            # featured in a post that links to their not-found pages.
+            .eq("published", True)
             .gte("gross_yield_pct", min_yield)
             .lte("gross_yield_pct", max_yield)
             .gte("avg_sale_price", 500_000)
@@ -166,6 +170,7 @@ def candidate_foreign_quota(client) -> dict | None:
                 "gross_yield_pct, avg_sale_price, regions(name)",
             )
             .eq("is_active", True)
+            .eq("published", True)  # see the yield query above
             .eq("source", "fazwaz")
             .gte("foreign_quota_inventory_pct", 50)
             .gte("total_quota_listings_observed", 5)
