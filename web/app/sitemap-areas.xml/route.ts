@@ -93,14 +93,26 @@ export async function GET(): Promise<Response> {
     }
   }
 
-  // District pages — only regions with ≥3 condos
+  // District pages — only regions with >=3 *linkable* condos.
+  //
+  // The embedded count used to be unfiltered, so this published a
+  // /district/ URL for 54 districts whose every building is unpublished
+  // (Mueang Nonthaburi, Pak Kret, Bang Phli, Hat Yai — provinces with no
+  // city page yet). Those pages still render, with real aggregates, but
+  // they carry noindex (see district/[slug]/page.tsx) because every condo
+  // link on them is unreachable — so submitting them here was asking Google
+  // to crawl a page we then tell it to drop.
   const { data: regionData } = await supabase
     .from("regions")
-    .select("name, condos(id)")
+    .select("name, condos(id, is_active, published)")
     .limit(500);
-  type RegionRow = { name: string; condos: { id: string }[] | null };
+  type RegionRow = {
+    name: string;
+    condos: { id: string; is_active: boolean | null; published: boolean | null }[] | null;
+  };
   for (const r of (regionData ?? []) as RegionRow[]) {
-    if ((r.condos ?? []).length < 3 || !r.name) continue;
+    const linkable = (r.condos ?? []).filter((c) => c.is_active && c.published).length;
+    if (linkable < 3 || !r.name) continue;
     // Lowercase the slug so we only ever publish one canonical casing per
     // district (DB region.name casing is inconsistent — see
     // app/[lang]/district/[slug]/page.tsx's resolveRegion comment). Without

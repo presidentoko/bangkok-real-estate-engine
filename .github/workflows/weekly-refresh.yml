@@ -241,6 +241,26 @@ jobs:
           cmd /c "python scripts\generate_weekly_post.py 2>&1" | Tee-Object -FilePath autoblog.log
           if ($LASTEXITCODE -ne 0) { Write-Output "::warning::generate_weekly_post exited $LASTEXITCODE" }
 
+      - name: Push changed URLs to IndexNow (Bing / Yandex / Naver)
+        # Google retired its sitemap ping endpoint in 2023 and has no
+        # supported push API, so it keeps discovering us on its own
+        # schedule. Every other engine that matters here shares one protocol
+        # that does accept a push, for free, with no account: IndexNow.
+        # Bing answers Copilot; Naver is where this site's Korean readers
+        # search (web/public already carries a Naver verification file).
+        #
+        # Submits only condos whose last_seen_at moved this week AND that
+        # clear the same substance gate the sitemap uses — pushing a URL we
+        # serve with noindex would be a wasted request. Typical run is
+        # ~2,000 URLs across 3 locales, one POST.
+        #
+        # continue-on-error: an IndexNow rejection is worth a warning, never
+        # worth failing a refresh that already wrote the week's data.
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\submit_indexnow.py --submit 2>&1" | Tee-Object -FilePath indexnow.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::submit_indexnow exited $LASTEXITCODE" }
+
       - name: Notify on success
         if: success() && env.TELEGRAM_BOT_TOKEN != ''
         # PowerShell + Invoke-RestMethod, not bash/curl — bash does not
@@ -333,6 +353,7 @@ jobs:
             analysis.log
             prune.log
             autoblog.log
+            indexnow.log
             tier_b_dumps/
           if-no-files-found: ignore
           retention-days: 30

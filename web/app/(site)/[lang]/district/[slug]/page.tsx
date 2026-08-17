@@ -30,6 +30,7 @@ type CondoLite = {
   market_sale_median: number | null;
   market_rent_median: number | null;
   market_summary_currency: string | null;
+  published: boolean | null;
 };
 
 // Prebuild the districts with enough condos to matter (same >=3-condo bar
@@ -121,9 +122,12 @@ const resolveRegion = cache(async (
  *  >=3-condo bar sitemap-areas.xml uses to decide what to publish. */
 const MIN_CONDOS_TO_INDEX = 3;
 
-/** Published+active condo count for a district. cache()'d because
- *  generateMetadata needs it for the robots decision and the body would
- *  otherwise re-derive the same number from its own (wider) query. */
+/** Linkable (published + active) condo count for a district. A district
+ *  whose buildings all have unreachable detail pages has nothing to rank
+ *  with, so it renders but does not ask to be indexed — 54 of the 153
+ *  populated districts are in that state today, all of them in provinces
+ *  with no city page yet. cache()'d because generateMetadata decides
+ *  robots from it before the body runs its own (wider) query. */
 const countPublishedCondos = cache(async (regionId: string): Promise<number> => {
   const supabase = getServerSupabase();
   const { count } = await supabase
@@ -208,16 +212,10 @@ export default async function DistrictPage({
       .select(
         "id, slug, name, province, url, gross_yield_pct, avg_sale_price, " +
         "avg_monthly_rent, market_sale_median, market_rent_median, " +
-        "market_summary_currency"
+        "market_summary_currency, published"
       )
       .eq("region_id", region.id)
       .eq("is_active", true)
-      // Publish gate. This reads the raw `condos` table rather than the
-      // condos_published view (the view predates the yield columns this
-      // page ranks on), so without it the building list linked to condos
-      // in provinces that have no city page — every one of those links
-      // rendered not-found. Same bug class as lib/queries/yield.ts's.
-      .eq("published", true)
       .order("id")
       .range(0, 999),
     getCurrentMortgageRate(),
@@ -225,6 +223,17 @@ export default async function DistrictPage({
 
   const condos = (condoRows ?? []) as unknown as CondoLite[];
   if (condos.length === 0) notFound();
+
+  // Only published buildings have a reachable /condo/ page: the detail
+  // route reads condos_published, so an unpublished slug renders the
+  // not-found boundary. Linking to those was the bug — 870 condos across
+  // 25 provinces with no city page, every link dead (same class as the one
+  // fixed in lib/queries/yield.ts, a2fc90e).
+  //
+  // The aggregates above still use every active building, published or
+  // not: the measurement is real either way, and dropping it would make
+  // Mueang Nonthaburi's median price wrong rather than merely unlinked.
+  const linkable = condos.filter((c) => c.published && c.slug);
 
   // Aggregates
   const yieldsArr = condos
@@ -245,7 +254,7 @@ export default async function DistrictPage({
   );
   const mrr = mortgage?.rate ?? null;
 
-  const topYields = condos
+  const topYields = linkable
     .filter((c) => c.gross_yield_pct != null && c.gross_yield_pct > 3 && c.gross_yield_pct < 25)
     .sort((a, b) => (b.gross_yield_pct ?? 0) - (a.gross_yield_pct ?? 0))
     .slice(0, 8);
@@ -428,10 +437,11 @@ export default async function DistrictPage({
         </section>
       )}
 
+      {linkable.length > 0 && (
       <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-3">
         <h2 className="text-base font-semibold">{d.allCondosTitle(display)}</h2>
         <ul className="grid sm:grid-cols-2 gap-2 text-sm">
-          {condos
+          {linkable
             .slice()
             .sort((a, b) => a.name.localeCompare(b.name))
             .map((c) => (
@@ -451,6 +461,7 @@ export default async function DistrictPage({
             ))}
         </ul>
       </section>
+      )}
 
       <LeadCaptureCTA headline={d.ctaHeadline(display)} />
 
