@@ -30,6 +30,7 @@ import {
 } from "@/lib/queries/yield";
 import { canonicalCitySlug, districtDisplayName, getCity, provinceDisplayName } from "@/lib/cities";
 import { hasIndexableSubstance } from "@/lib/condoIndexability";
+import { getNeighbourSlugIndex } from "@/lib/queries/neighbourIndex";
 import { retireeSuitability } from "@/lib/retiree";
 import { langAlternates } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
@@ -448,38 +449,20 @@ export default async function CondoPage({
   }>;
 
   // Resolve hipflat's nearby-project names against our own catalogue so this
-  // block links inward where it can. hipflat's slugs carry a hash suffix
-  // (`the-estate-at-thapra-qwdtqd`) and never match ours, but the display
-  // name does: 10,994 of 18,879 neighbour rows (58%) match a condos_published
-  // name exactly. One extra keyed lookup per page, on a 7-day ISR route.
-  const neighbourNames = [
-    ...new Set(neighbourRows.map((n) => n.neighbour_name).filter((v): v is string => !!v)),
-  ];
-  const internalBySlug = new Map<string, string>();
-  if (neighbourNames.length > 0) {
-    const { data: knownNeighbours } = await supabase
-      .from("condos_published")
-      .select("name, slug")
-      .in("name", neighbourNames)
-      .not("slug", "is", null);
-    const byName = new Map(
-      ((knownNeighbours ?? []) as Array<{ name: string; slug: string }>).map((r) => [
-        r.name,
-        r.slug,
-      ]),
-    );
-    for (const n of neighbourRows) {
-      const own = n.neighbour_name ? byName.get(n.neighbour_name) : undefined;
+  // block links inward where it can — see lib/queries/neighbourIndex.ts for
+  // why the name, not the slug, is the join key and why the whole index is
+  // resolved once per week instead of once per page.
+  const neighbourIndex = neighbourRows.length > 0 ? await getNeighbourSlugIndex() : {};
+  const neighbours: NeighbourLink[] = neighbourRows.map((n) => {
+    const own = n.neighbour_name ? neighbourIndex[n.neighbour_name] : undefined;
+    return {
+      slug: n.neighbour_slug,
+      name: n.neighbour_name ?? n.neighbour_slug,
       // Never link a building to itself.
-      if (own && own !== slug) internalBySlug.set(n.neighbour_slug, own);
-    }
-  }
-  const neighbours: NeighbourLink[] = neighbourRows.map((n) => ({
-    slug: n.neighbour_slug,
-    name: n.neighbour_name ?? n.neighbour_slug,
-    internalSlug: internalBySlug.get(n.neighbour_slug) ?? null,
-    externalUrl: n.neighbour_url,
-  }));
+      internalSlug: own && own !== slug ? own : null,
+      externalUrl: n.neighbour_url,
+    };
+  });
 
   const yoyRent = condoRaw.market_rent_yoy_pct;
   const yoySale = condoRaw.market_sale_yoy_pct;
