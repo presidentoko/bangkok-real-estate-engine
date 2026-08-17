@@ -1,4 +1,9 @@
 import { LANGS } from "@/lib/i18n";
+import {
+  INDEXABILITY_OR_FILTER,
+  INDEXABILITY_SELECT,
+  hasIndexableSubstance,
+} from "@/lib/condoIndexability";
 import { getServerSupabase } from "@/lib/supabase";
 import {
   SITE_URL,
@@ -36,32 +41,47 @@ export async function GET(request: Request): Promise<Response> {
   // rows 1000-2499. Walk this page's 2,500-row block in ≤1000-row
   // sub-requests instead — the sitemap page boundaries (and therefore URLs)
   // stay unchanged.
-  const rows: Array<{ slug: string; last_seen_at: string | null }> = [];
+  //
+  // The .or() is the substance gate (lib/condoIndexability.ts): only
+  // buildings we can actually say something about get submitted. This used
+  // to be every published condo with a slug — 14,071 buildings, 42,213 URLs
+  // — of which ~9,750 were empty stubs that Google dutifully discovered and
+  // then declined to index, 27,730 of them as of 2026-08-17. Offsets are
+  // applied *after* the filter, so page boundaries shift; that is fine,
+  // sitemap-condos.xml?page=N is not a stable identity anyone links to.
+  type Row = {
+    slug: string;
+    last_seen_at: string | null;
+    active_listings_count: number | null;
+    market_sale_median: number | null;
+    market_rent_median: number | null;
+    gross_yield_pct: number | null;
+    description: string | null;
+    google_review_count: number | null;
+  };
+  const rows: Row[] = [];
   const SUB_PAGE = 1000;
   for (let sub = 0; sub < CONDOS_PER_PAGE; sub += SUB_PAGE) {
     const from = offset + sub;
     const to = offset + Math.min(sub + SUB_PAGE, CONDOS_PER_PAGE) - 1;
-    // latitude is NOT required here — 3,538 published condos have a slug
-    // but no coordinates yet, and excluding them dropped ~10.6K URLs
-    // (×3 langs) from discovery for no SEO reason; the page itself renders
-    // fine without a map pin. Coordinates gate the /inventory map marker,
-    // not indexability.
     const { data } = await supabase
       .from("condos_published")
-      .select("slug, last_seen_at")
+      .select(`slug, last_seen_at, ${INDEXABILITY_SELECT}`)
       .not("slug", "is", null)
+      .or(INDEXABILITY_OR_FILTER)
       .order("id")
       .range(from, to);
-    const chunk = (data ?? []) as Array<{
-      slug: string;
-      last_seen_at: string | null;
-    }>;
+    const chunk = (data ?? []) as unknown as Row[];
     rows.push(...chunk);
     if (chunk.length < to - from + 1) break; // exhausted the table
   }
 
   for (const r of rows) {
     if (UUID_RE.test(r.slug)) continue;
+    // The .or() above is a coarse pre-filter (it can't measure description
+    // length); re-apply the real predicate so the sitemap and the pages'
+    // own robots meta never disagree about what is indexable.
+    if (!hasIndexableSubstance(r)) continue;
     const path = `/condo/${r.slug}`;
     const lastmod = r.last_seen_at ? isoDate(r.last_seen_at) : today;
     for (const lang of LANGS) {

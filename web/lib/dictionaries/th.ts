@@ -372,6 +372,60 @@ const dict: Dict = {
       `วางแผนไปดูสถานที่จริงที่${city}อยู่ใช่ไหม? เทียบเที่ยวบินและโรงแรมในที่เดียว`,
     travelCta: "หาเที่ยวบิน + โรงแรม →",
   },
+  districtPage: {
+    eyebrow: (province: string) => `เขต · ${province}`,
+    intro: (n: number, name: string) =>
+      `คอนโด ${n.toLocaleString()} อาคารใน${name} วัดผลตอบแทน ราคา และความเสี่ยงน้ำท่วม ข้อมูลอิสระ — ไม่มีเงินโปรโมตจากผู้พัฒนา`,
+    statCondos: "คอนโด",
+    statMedianYield: "ผลตอบแทนมัธยฐาน",
+    statMedianSale: "ราคาขายมัธยฐาน",
+    statMedianRent: "ค่าเช่ามัธยฐาน",
+    vsMrr: "เทียบ MRR",
+    perMonth: "/เดือน",
+    topYieldTitle: (name: string) => `คอนโดผลตอบแทนสูงสุดใน${name}`,
+    thCondo: "คอนโด",
+    thYield: "ผลตอบแทน",
+    thSpread: "ส่วนต่าง",
+    thSale: "ราคาขาย",
+    thRent: "ค่าเช่า",
+    allCondosTitle: (name: string) => `คอนโดทั้งหมดใน${name}`,
+    ctaHeadline: (name: string) => `กำลังมองหาคอนโดใน${name}อยู่ใช่ไหม? รับความเห็นจากผู้เชี่ยวชาญ`,
+    source:
+      "ที่มา: การวัดของ RealData จาก hipflat, dotproperty, ddproperty, fazwaz · MRR อ้างอิงธนาคารแห่งประเทศไทย · อัปเดตรายสัปดาห์",
+    faqCount: (name: string) => `RealData ติดตามคอนโดกี่อาคารใน${name}?`,
+    faqCountA: (n: number, name: string, province: string) =>
+      `${n} อาคารในเขต${name} จังหวัด${province} รวบรวมจากประกาศบน hipflat, dotproperty, ddproperty และ fazwaz`,
+    faqYield: (name: string) => `ผลตอบแทนค่าเช่าขั้นต้นมัธยฐานใน${name}เท่าไร?`,
+    faqSpread: (y: string, spread: string, mrr: string) =>
+      `ผลตอบแทนมัธยฐาน ${y}% หมายถึงส่วนต่าง ${spread} จุดเทียบ MRR ปัจจุบันของไทยที่ ${mrr}%`,
+    faqYieldOnly: (y: string) => `ผลตอบแทนมัธยฐานอยู่ที่ ${y}%`,
+    faqNoYield:
+      "อาคารส่วนใหญ่ในเขตนี้ยังมีประกาศขายและเช่าไม่พอที่จะคำนวณผลตอบแทน",
+    faqSale: (name: string) => `ราคาขายมัธยฐานของคอนโดใน${name}เท่าไร?`,
+    faqSaleA: (price: string) =>
+      `ราคาขายมัธยฐานอยู่ที่ ${price} จากประกาศที่ยังใช้งานอยู่บนสี่พอร์ทัลที่เราติดตาม แต่ละหน้าคอนโดแสดงหลักฐานราคาของตัวเอง`,
+    faqRent: (name: string) => `ค่าเช่ารายเดือนมัธยฐานใน${name}เท่าไร?`,
+    faqRentA: (price: string, name: string) =>
+      `ค่าเช่ามัธยฐานอยู่ที่ ${price} ต่อเดือน จากประกาศที่ยังใช้งานอยู่ใน${name}`,
+    faqForeign: (name: string) => `${name}เหมาะกับผู้ซื้อชาวต่างชาติหรือไม่?`,
+    faqForeignA: (name: string) =>
+      `RealData ไม่ให้ความเห็นส่วนตัว แต่แสดงสัญญาณที่มีผลทางกฎหมายแทน นั่นคือสัดส่วนโควตาต่างชาติ (% ของยูนิตขายที่ระบุเป็น Foreign Quota) ใช้รายชื่ออาคารด้านล่างเพื่อหาคอนโดที่มีโควตาต่างชาติเหลือใน${name}`,
+  },
+  districtsIndex: {
+    title: "ราคาคอนโดแยกตามเขตทั่วไทย",
+    lead: "ทุกเขตที่เรามีอาคารมากพอจะรายงานได้ — ราคาขาย ค่าเช่า และผลตอบแทนมัธยฐาน",
+    thDistrict: "เขต",
+    thProvince: "จังหวัด",
+    thCondos: "คอนโด",
+    thYield: "ผลตอบแทนมัธยฐาน",
+    thSale: "ราคาขายมัธยฐาน",
+    thRent: "ค่าเช่ามัธยฐาน",
+    count: (n: number) => `${n} เขต`,
+    empty: "ยังไม่มีเขตที่วัดผลแล้ว",
+    seoTitle: "ราคาคอนโดแยกตามเขตในไทย — ราคาขาย ค่าเช่า ผลตอบแทนมัธยฐาน",
+    seoDesc:
+      "ราคาขายมัธยฐาน ค่าเช่ามัธยฐาน และผลตอบแทนค่าเช่าขั้นต้นมัธยฐานของทุกเขตคอนโดในไทยที่เราติดตาม วัดจากประกาศจริงบนสี่พอร์ทัล",
+  },
   reality: {
     title: "Marketing vs Reality",
     lead: "คอนโดที่อินฟลูเอนเซอร์/โฆษณาช่วยโปรโมต เราวางข้อมูลที่เราวัดเองข้างๆ ข้อความการตลาด ไม่โจมตีตัวบุคคล พูดด้วยตัวเลขเท่านั้น",
@@ -431,6 +485,9 @@ const dict: Dict = {
     ],
   },
   condoPage: {
+    neighboursTitle: "โครงการใกล้เคียง",
+    neighboursInternal: "รายงาน RealData",
+    neighboursExternal: "อาคารที่เรายังไม่ติดตามจะลิงก์ไปที่ hipflat",
     buildingFacts: "ข้อมูลอาคาร",
     floors: "ชั้น",
     totalUnits: "จำนวนยูนิต",

@@ -92,6 +92,11 @@ export const viewport: Viewport = {
   themeColor: "#0a0a0a",
 };
 
+// Set in Vercel (Project -> Settings -> Environment Variables) once the
+// Cloudflare Web Analytics site is created. Read at module scope so the
+// value is inlined at build time like every other NEXT_PUBLIC_ var.
+const CF_BEACON_TOKEN = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
+
 export default async function LangRootLayout({
   params,
   children,
@@ -155,6 +160,26 @@ export default async function LangRootLayout({
             with /AgodaPartnerVerification.html so Agoda passes regardless
             of which check they actually run). */}
         <meta name="agd-partner-manual-verification" />
+        {/* Cloudflare Web Analytics. Until 2026-08-17 this site had no
+            analytics of any kind — not gtag, not Plausible, not Vercel
+            Analytics — so "users aren't coming" could only ever be answered
+            from Search Console impressions, which say what Google showed,
+            never what a visitor did after arriving. CF Web Analytics is the
+            one option that is free with no event cap, needs no cookie
+            banner (no cookies, no fingerprinting), and adds no first-party
+            JS bundle.
+
+            Env-gated on purpose: the token comes from the Cloudflare
+            dashboard (Web Analytics -> Add a site), and until
+            NEXT_PUBLIC_CF_BEACON_TOKEN is set in Vercel this renders
+            nothing at all rather than shipping a broken beacon. */}
+        {CF_BEACON_TOKEN && (
+          <script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: CF_BEACON_TOKEN })}
+          />
+        )}
       </head>
       <body className="bg-zinc-950 text-zinc-100 min-h-screen antialiased flex flex-col">
         <script
@@ -223,6 +248,20 @@ export default async function LangRootLayout({
                     </Link>
                   </li>
                 ))}
+                <li>
+                  {/* The 154 /district/ pages carry the most rankable
+                      content on the site (median sale/rent/yield for a
+                      named area) and had no entry point at all outside
+                      individual condo pages until 2026-08-17. */}
+                  <Link href={`/${lang}/districts`} className="hover:text-zinc-300">
+                    {t.districtsIndex.title}
+                  </Link>
+                </li>
+                <li>
+                  <Link href={`/${lang}/yields`} className="hover:text-zinc-300">
+                    {t.nav.yields}
+                  </Link>
+                </li>
                 <li>
                   <Link href={`/${lang}/stale`} className="hover:text-zinc-300">
                     {t.stale.title}

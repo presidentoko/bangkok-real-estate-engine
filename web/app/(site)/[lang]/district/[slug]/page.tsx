@@ -117,6 +117,24 @@ const resolveRegion = cache(async (
  *  spelled out in condo/[slug]/page.tsx: metadata runs first and fixes the
  *  response's cache envelope, so a 404 decided only in the body ships too
  *  late. resolveRegion is cached per request, so the second call is free. */
+/** Districts below this render, but ask not to be indexed. Matches the
+ *  >=3-condo bar sitemap-areas.xml uses to decide what to publish. */
+const MIN_CONDOS_TO_INDEX = 3;
+
+/** Published+active condo count for a district. cache()'d because
+ *  generateMetadata needs it for the robots decision and the body would
+ *  otherwise re-derive the same number from its own (wider) query. */
+const countPublishedCondos = cache(async (regionId: string): Promise<number> => {
+  const supabase = getServerSupabase();
+  const { count } = await supabase
+    .from("condos")
+    .select("id", { count: "exact", head: true })
+    .eq("region_id", regionId)
+    .eq("is_active", true)
+    .eq("published", true);
+  return count ?? 0;
+});
+
 async function resolveOrNotFound(rawSlug: string) {
   const canonical = canonicalDistrictSlug(rawSlug);
   if (!canonical) notFound();
@@ -144,9 +162,20 @@ export async function generateMetadata({
   // named local because it appears in the canonical, the hreflang set, the
   // OG url and the breadcrumb, and those must not drift apart.
   const canonicalSlug = region.name;
+  // Thin-district gate. sitemap-areas.xml has always required >=3 condos
+  // before publishing a /district/ URL, but on-demand ISR renders any
+  // district that resolves — so a two-building district reached from a
+  // condo page's breadcrumb was still a 200 asking to be indexed, with
+  // nothing on it but two links. Same reasoning as the per-condo gate in
+  // lib/condoIndexability.ts: keep it live, keep it crawlable, stop asking
+  // for a ranking. `follow` so the condo links still pass equity.
+  const publishedCount = await countPublishedCondos(region.id);
   return {
     title,
     description,
+    ...(publishedCount >= MIN_CONDOS_TO_INDEX
+      ? {}
+      : { robots: { index: false, follow: true } }),
     alternates: {
       canonical: `${SEO_SITE_URL}/${lang}/district/${canonicalSlug}`,
       languages: langAlternates(`/district/${canonicalSlug}`),
@@ -170,6 +199,8 @@ export default async function DistrictPage({
 
   const supabase = getServerSupabase();
   const region = await resolveOrNotFound(slug);
+  const t = getDictionary(lang);
+  const d = t.districtPage;
 
   const [{ data: condoRows }, mortgage] = await Promise.all([
     supabase
@@ -181,6 +212,12 @@ export default async function DistrictPage({
       )
       .eq("region_id", region.id)
       .eq("is_active", true)
+      // Publish gate. This reads the raw `condos` table rather than the
+      // condos_published view (the view predates the yield columns this
+      // page ranks on), so without it the building list linked to condos
+      // in provinces that have no city page — every one of those links
+      // rendered not-found. Same bug class as lib/queries/yield.ts's.
+      .eq("published", true)
       .order("id")
       .range(0, 999),
     getCurrentMortgageRate(),
@@ -243,36 +280,30 @@ export default async function DistrictPage({
 
   const spreadLine =
     medianYield != null && mrr != null
-      ? `Median yield ${medianYield.toFixed(2)}% means a ${(medianYield - mrr >= 0 ? "+" : "")}${(medianYield - mrr).toFixed(2)}pp spread versus the current Thai MRR of ${mrr.toFixed(2)}%.`
+      ? d.faqSpread(
+          medianYield.toFixed(2),
+          `${medianYield - mrr >= 0 ? "+" : ""}${(medianYield - mrr).toFixed(2)}`,
+          mrr.toFixed(2),
+        )
       : medianYield != null
-        ? `Median yield is ${medianYield.toFixed(2)}%.`
-        : "Most buildings in this district don't have enough matched sale + rent listings yet to compute a yield.";
+        ? d.faqYieldOnly(medianYield.toFixed(2))
+        : d.faqNoYield;
 
+  // Every string in this block used to be an English literal, on all three
+  // locales. /ko and /th therefore shipped a Korean/Thai <title> over an
+  // entirely English body, which is what Google reports as "Duplicate,
+  // Google chose different canonical than user" (375 URLs on 2026-08-17):
+  // three URLs, one set of words, so it keeps one and drops two.
   const faqJsonLd = buildFaqJsonLd([
-    {
-      q: `How many condo buildings does RealData track in ${display}?`,
-      a: `${condos.length} buildings across the ${display} district of ${provinceDisplay}, drawn from hipflat, dotproperty, ddproperty, and fazwaz listings.`,
-    },
-    {
-      q: `What is the median gross rental yield in ${display}?`,
-      a: spreadLine,
-    },
+    { q: d.faqCount(display), a: d.faqCountA(condos.length, display, provinceDisplay) },
+    { q: d.faqYield(display), a: spreadLine },
     ...(medianSale != null
-      ? [{
-          q: `What is the median sale price for a condo in ${display}?`,
-          a: `Median sale price is ฿${Math.round(medianSale).toLocaleString()} based on active listings across the four portals we track. Each individual condo page shows its own price evidence, including per-portal divergence where it exists.`,
-        }]
+      ? [{ q: d.faqSale(display), a: d.faqSaleA(`฿${Math.round(medianSale).toLocaleString()}`) }]
       : []),
     ...(medianRent != null
-      ? [{
-          q: `What is the median monthly rent in ${display}?`,
-          a: `Median monthly rent is ฿${Math.round(medianRent).toLocaleString()} per month for active listings in ${display}.`,
-        }]
+      ? [{ q: d.faqRent(display), a: d.faqRentA(`฿${Math.round(medianRent).toLocaleString()}`, display) }]
       : []),
-    {
-      q: `Is ${display} a good area for foreign buyers?`,
-      a: `RealData doesn't editorialise — instead, the per-building pages surface the legally-binding signal: foreign-quota inventory share (the % of for-sale units in a building that are flagged Foreign Quota and therefore eligible for non-Thai ownership). Use the building list below to find condos with measured foreign-quota availability in ${display}.`,
-    },
+    { q: d.faqForeign(display), a: d.faqForeignA(display) },
   ]);
 
   return (
@@ -289,29 +320,28 @@ export default async function DistrictPage({
       <Breadcrumbs
         items={[
           { name: "RealData", href: `/${lang}` },
-          { name: "Inventory", href: `/${lang}/inventory` },
+          { name: t.districtsIndex.title, href: `/${lang}/districts` },
           { name: display, href: `/${lang}/district/${canonicalSlug}` },
         ]}
       />
 
       <header className="space-y-2">
         <p className="text-zinc-500 text-xs uppercase tracking-wider">
-          District · {provinceDisplay}
+          {d.eyebrow(provinceDisplay)}
         </p>
         <h1 className="text-3xl sm:text-4xl font-bold capitalize">{display}</h1>
         <p className="text-zinc-400 text-sm max-w-2xl">
-          {condos.length} condos in {display}, measured for yield, price, and
-          flood risk. Independent data — no developer pay-for-placement.
+          {d.intro(condos.length, display)}
         </p>
       </header>
 
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-          <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Condos</div>
+          <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{d.statCondos}</div>
           <div className="text-3xl font-bold tabular-nums">{condos.length}</div>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-          <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Median yield</div>
+          <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{d.statMedianYield}</div>
           <div className="text-3xl font-bold tabular-nums">
             {medianYield != null ? `${medianYield.toFixed(2)}%` : "—"}
           </div>
@@ -322,35 +352,37 @@ export default async function DistrictPage({
               }`}
             >
               {medianYield - mrr >= 0 ? "+" : ""}
-              {(medianYield - mrr).toFixed(2)}pp vs MRR
+              {(medianYield - mrr).toFixed(2)}pp {d.vsMrr}
             </div>
           )}
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-          <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Median sale</div>
+          <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{d.statMedianSale}</div>
           <div className="text-2xl font-bold tabular-nums">{fmtTHB(medianSale)}</div>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-          <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Median rent</div>
+          <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{d.statMedianRent}</div>
           <div className="text-2xl font-bold tabular-nums">
             {fmtTHB(medianRent)}
-            {medianRent != null && <span className="text-sm text-zinc-500 font-normal"> /mo</span>}
+            {medianRent != null && (
+              <span className="text-sm text-zinc-500 font-normal"> {d.perMonth}</span>
+            )}
           </div>
         </div>
       </section>
 
       {topYields.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Top yielding condos in {display}</h2>
+          <h2 className="text-xl font-semibold">{d.topYieldTitle(display)}</h2>
           <div className="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-950">
             <table className="w-full text-sm">
               <thead className="text-xs uppercase tracking-wider text-zinc-500 bg-zinc-900 border-b border-zinc-800">
                 <tr>
-                  <th className="text-left px-4 py-3">Condo</th>
-                  <th className="text-right px-4 py-3">Yield</th>
-                  {mrr != null && <th className="text-right px-4 py-3">Spread</th>}
-                  <th className="text-right px-4 py-3">Sale</th>
-                  <th className="text-right px-4 py-3">Rent</th>
+                  <th className="text-left px-4 py-3">{d.thCondo}</th>
+                  <th className="text-right px-4 py-3">{d.thYield}</th>
+                  {mrr != null && <th className="text-right px-4 py-3">{d.thSpread}</th>}
+                  <th className="text-right px-4 py-3">{d.thSale}</th>
+                  <th className="text-right px-4 py-3">{d.thRent}</th>
                 </tr>
               </thead>
               <tbody>
@@ -397,7 +429,7 @@ export default async function DistrictPage({
       )}
 
       <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-3">
-        <h2 className="text-base font-semibold">All condos in {display}</h2>
+        <h2 className="text-base font-semibold">{d.allCondosTitle(display)}</h2>
         <ul className="grid sm:grid-cols-2 gap-2 text-sm">
           {condos
             .slice()
@@ -420,14 +452,9 @@ export default async function DistrictPage({
         </ul>
       </section>
 
-      <LeadCaptureCTA
-        headline={`Looking to buy in ${display}? Get an expert read.`}
-      />
+      <LeadCaptureCTA headline={d.ctaHeadline(display)} />
 
-      <p className="text-xs text-zinc-500">
-        Source: RealData measurement across hipflat, dotproperty, ddproperty,
-        fazwaz · MRR benchmark from Bank of Thailand · refreshed weekly.
-      </p>
+      <p className="text-xs text-zinc-500">{d.source}</p>
     </main>
   );
 }

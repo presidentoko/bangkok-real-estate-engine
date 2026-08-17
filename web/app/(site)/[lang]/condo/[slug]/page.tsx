@@ -4,7 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import sanitizeHtml from "sanitize-html";
 import { CondoFacilities } from "@/components/CondoFacilities";
-import { CondoNeighbours } from "@/components/CondoNeighbours";
+import { CondoNeighbours, type NeighbourLink } from "@/components/CondoNeighbours";
 import { CondoUnitsTable } from "@/components/CondoUnitsTable";
 import { PriceChart } from "@/components/PriceChart";
 import { ReportCard } from "@/components/ReportCard";
@@ -29,6 +29,7 @@ import {
   getCurrentMortgageRate,
 } from "@/lib/queries/yield";
 import { canonicalCitySlug, districtDisplayName, getCity, provinceDisplayName } from "@/lib/cities";
+import { hasIndexableSubstance } from "@/lib/condoIndexability";
 import { retireeSuitability } from "@/lib/retiree";
 import { langAlternates } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
@@ -209,6 +210,8 @@ export async function generateMetadata({
     total_units: number | null; completion_year: number | null; gross_yield_pct: number | null;
     value_scores: EmbeddedOneOrMany<ValueScore>;
     risk_factors: EmbeddedOneOrMany<Risk>;
+    active_listings_count: number | null; market_rent_median: number | null;
+    description: string | null; google_review_count: number | null;
   };
   const scoreMeta = one(condoForMeta.value_scores);
   const riskMeta = one(condoForMeta.risk_factors);
@@ -245,9 +248,20 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(" · ");
   const desc = t.seo.condoDesc(c.name, region, provinceDisplay, facts);
+  // Index bloat gate. ~9,750 of the 14,071 published buildings have no
+  // listings, no price, no description and no reviews — they render a name
+  // over a grid of empty cards. Google already refuses to index them
+  // ("Discovered/Crawled - currently not indexed": 27,730 URLs on
+  // 2026-08-17, which is that count x3 locales), but refusing *after*
+  // crawling still spends the crawl budget the pages that can rank need,
+  // and a domain that is mostly empty pages is judged as one. `follow` is
+  // kept so the district/developer links on those pages still pass equity.
+  // See lib/condoIndexability.ts.
+  const indexable = hasIndexableSubstance(c);
   return {
     title,
     description: desc,
+    ...(indexable ? {} : { robots: { index: false, follow: true } }),
     alternates: {
       canonical: `${SITE_URL}/${lang}/condo/${slug}`,
       languages: langAlternates(`/condo/${slug}`),
@@ -427,7 +441,45 @@ export default async function CondoPage({
   }>;
   const amenities = (amenitiesRes.data ?? []).map((a) => (a as { name: string }).name);
   const parkingFacts = (parkingRes.data ?? []) as Array<{ fact_key: string; fact_value: string | null }>;
-  const neighbours = (neighboursRes.data ?? []) as Array<{ neighbour_slug: string; neighbour_url: string; neighbour_name: string | null }>;
+  const neighbourRows = (neighboursRes.data ?? []) as Array<{
+    neighbour_slug: string;
+    neighbour_url: string;
+    neighbour_name: string | null;
+  }>;
+
+  // Resolve hipflat's nearby-project names against our own catalogue so this
+  // block links inward where it can. hipflat's slugs carry a hash suffix
+  // (`the-estate-at-thapra-qwdtqd`) and never match ours, but the display
+  // name does: 10,994 of 18,879 neighbour rows (58%) match a condos_published
+  // name exactly. One extra keyed lookup per page, on a 7-day ISR route.
+  const neighbourNames = [
+    ...new Set(neighbourRows.map((n) => n.neighbour_name).filter((v): v is string => !!v)),
+  ];
+  const internalBySlug = new Map<string, string>();
+  if (neighbourNames.length > 0) {
+    const { data: knownNeighbours } = await supabase
+      .from("condos_published")
+      .select("name, slug")
+      .in("name", neighbourNames)
+      .not("slug", "is", null);
+    const byName = new Map(
+      ((knownNeighbours ?? []) as Array<{ name: string; slug: string }>).map((r) => [
+        r.name,
+        r.slug,
+      ]),
+    );
+    for (const n of neighbourRows) {
+      const own = n.neighbour_name ? byName.get(n.neighbour_name) : undefined;
+      // Never link a building to itself.
+      if (own && own !== slug) internalBySlug.set(n.neighbour_slug, own);
+    }
+  }
+  const neighbours: NeighbourLink[] = neighbourRows.map((n) => ({
+    slug: n.neighbour_slug,
+    name: n.neighbour_name ?? n.neighbour_slug,
+    internalSlug: internalBySlug.get(n.neighbour_slug) ?? null,
+    externalUrl: n.neighbour_url,
+  }));
 
   const yoyRent = condoRaw.market_rent_yoy_pct;
   const yoySale = condoRaw.market_sale_yoy_pct;
@@ -1026,7 +1078,15 @@ export default async function CondoPage({
         <CondoFacilities amenities={amenities} parkingFacts={parkingFacts} />
       )}
 
-      {neighbours.length > 0 && <CondoNeighbours neighbours={neighbours} />}
+      {neighbours.length > 0 && (
+        <CondoNeighbours
+          neighbours={neighbours}
+          lang={lang}
+          title={tCondo.neighboursTitle}
+          internalNote={tCondo.neighboursInternal}
+          externalNote={tCondo.neighboursExternal}
+        />
+      )}
 
       <LeadCaptureCTA condoId={condoRaw.id} condoName={condoRaw.name} />
 

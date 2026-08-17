@@ -44,7 +44,45 @@ const ADMIN_PUBLIC_PATHS = new Set(["/admin/login"]);
 // two must always pass through regardless of what's driving this block.
 const BOT_UA_RE =
   /bot|crawl|spider|slurp|facebookexternalhit|ia_archiver|GPTBot|ClaudeBot|PerplexityBot|YandexBot|PetalBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|Amazonbot/i;
-const SEARCH_ENGINE_UA_RE = /Googlebot|GoogleOther|Google-Extended|Bingbot/i;
+
+// Anything here is a search crawler whose index we want to be in, so it
+// passes even though its UA matches BOT_UA_RE above.
+//
+// Widened 2026-08-17. The original four covered Googlebot's main crawl but
+// not the sibling agents Google uses for the things a site owner actually
+// depends on, all of which contain "bot"/"Google" and were therefore being
+// answered with a 503:
+//
+//   Google-InspectionTool  URL Inspection + Rich Results Test. Every "test
+//                          live URL" a human ran against a /condo/ page
+//                          reported a server error that real Googlebot was
+//                          never seeing — a diagnostic that lies.
+//   Googlebot-Image        image indexing (hero photos)
+//   Googlebot-News         news surfaces
+//   Storebot-Google        shopping/product checks
+//   AdsBot-Google          landing-page checks; a 503 here degrades quality
+//                          scores even with no ads running
+//   Google-Safety          abuse review — a site that 503s it looks evasive
+//   BingPreview            Bing snapshot fetcher, sibling of Bingbot
+//   Yeti / Daum            Naver and Kakao. This site is written by and
+//                          partly for Korean readers; Naver is where that
+//                          audience searches, and neither crawler was on
+//                          the list.
+//   DuckDuckBot            small but free to admit.
+const SEARCH_ENGINE_UA_RE =
+  /Googlebot|GoogleOther|Google-Extended|Google-InspectionTool|Storebot-Google|AdsBot-Google|Google-Safety|Bingbot|BingPreview|Yeti|Daum|DuckDuckBot/i;
+
+// Link-preview fetchers. These are not crawlers: each one fetches exactly
+// the URL a human just pasted into a chat or a post, once, to render the
+// card. Blocking them cost nothing on the hosting budget and quietly broke
+// every share of a /condo/ link — the message renders as a bare URL with no
+// title, no image, no numbers, which is the difference between a link
+// someone clicks and one they scroll past. For a site with ~15 search
+// impressions a day, shared links are not a rounding error.
+//
+// KakaoTalk and LINE are in here for the same reason Yeti is above.
+const SOCIAL_PREVIEW_UA_RE =
+  /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|WhatsApp|kakaotalk|Line\/|Pinterest|redditbot|Mastodon|Iframely|Embedly/i;
 
 function pickLang(req: NextRequest): Lang {
   // 1. Cookie wins (explicit user choice)
@@ -68,7 +106,8 @@ export async function middleware(req: NextRequest) {
   if (
     pathname.includes("/condo/") &&
     BOT_UA_RE.test(ua) &&
-    !SEARCH_ENGINE_UA_RE.test(ua)
+    !SEARCH_ENGINE_UA_RE.test(ua) &&
+    !SOCIAL_PREVIEW_UA_RE.test(ua)
   ) {
     return new NextResponse(
       "Crawling of this section is limited to search engines to protect a " +

@@ -372,6 +372,60 @@ const dict: Dict = {
       `${city} 답사 여행을 계획 중이신가요? 항공권과 호텔을 한 번에 비교하세요.`,
     travelCta: "항공권 + 호텔 찾기 →",
   },
+  districtPage: {
+    eyebrow: (province: string) => `구역 · ${province}`,
+    intro: (n: number, name: string) =>
+      `${name}의 콘도 ${n.toLocaleString()}채를 수익률·가격·침수 위험 기준으로 측정했습니다. 독립 데이터 — 시행사 광고비 없음.`,
+    statCondos: "콘도",
+    statMedianYield: "중위 수익률",
+    statMedianSale: "중위 매매가",
+    statMedianRent: "중위 월세",
+    vsMrr: "MRR 대비",
+    perMonth: "/월",
+    topYieldTitle: (name: string) => `${name} 수익률 상위 콘도`,
+    thCondo: "콘도",
+    thYield: "수익률",
+    thSpread: "스프레드",
+    thSale: "매매가",
+    thRent: "월세",
+    allCondosTitle: (name: string) => `${name} 전체 콘도`,
+    ctaHeadline: (name: string) => `${name}에서 매수를 고려 중이신가요? 전문가 의견을 받아보세요.`,
+    source:
+      "출처: hipflat · dotproperty · ddproperty · fazwaz 실측 · MRR 기준금리는 태국 중앙은행 · 주 1회 갱신.",
+    faqCount: (name: string) => `RealData는 ${name}에서 콘도 몇 채를 추적하나요?`,
+    faqCountA: (n: number, name: string, province: string) =>
+      `${province} ${name} 구역의 ${n}채이며, hipflat · dotproperty · ddproperty · fazwaz 매물에서 수집했습니다.`,
+    faqYield: (name: string) => `${name}의 중위 총 임대수익률은 얼마인가요?`,
+    faqSpread: (y: string, spread: string, mrr: string) =>
+      `중위 수익률 ${y}%는 현재 태국 MRR ${mrr}% 대비 ${spread}%p 스프레드입니다.`,
+    faqYieldOnly: (y: string) => `중위 수익률은 ${y}%입니다.`,
+    faqNoYield:
+      "이 구역의 대부분 빌딩은 아직 매매·임대 매물이 함께 잡히지 않아 수익률을 계산할 수 없습니다.",
+    faqSale: (name: string) => `${name} 콘도의 중위 매매가는 얼마인가요?`,
+    faqSaleA: (price: string) =>
+      `추적 중인 4개 포털의 활성 매물 기준 중위 매매가는 ${price}입니다. 각 콘도 페이지에서 포털별 가격 차이를 포함한 근거를 확인할 수 있습니다.`,
+    faqRent: (name: string) => `${name}의 중위 월세는 얼마인가요?`,
+    faqRentA: (price: string, name: string) =>
+      `${name}의 활성 임대 매물 기준 중위 월세는 월 ${price}입니다.`,
+    faqForeign: (name: string) => `${name}은 외국인 매수자에게 좋은 지역인가요?`,
+    faqForeignA: (name: string) =>
+      `RealData는 주관적 평가를 하지 않습니다. 대신 각 빌딩 페이지에서 법적으로 구속력 있는 지표인 외국인 쿼터 재고 비율(매물 중 Foreign Quota로 표시되어 외국인 소유가 가능한 비율)을 보여줍니다. 아래 빌딩 목록에서 ${name}의 외국인 쿼터 잔여 물량을 확인하세요.`,
+  },
+  districtsIndex: {
+    title: "태국 콘도 구역별 시세",
+    lead: "측정 가능한 빌딩이 충분한 모든 구역의 중위 매매가·중위 월세·중위 총수익률을 한 표에 모았습니다.",
+    thDistrict: "구역",
+    thProvince: "주/도",
+    thCondos: "콘도",
+    thYield: "중위 수익률",
+    thSale: "중위 매매가",
+    thRent: "중위 월세",
+    count: (n: number) => `${n}개 구역`,
+    empty: "아직 측정된 구역이 없습니다.",
+    seoTitle: "태국 구역별 콘도 시세 — 중위 매매가·월세·수익률",
+    seoDesc:
+      "추적 중인 태국 콘도 구역 전체의 중위 매매가, 중위 월세, 중위 총 임대수익률. 4개 포털 실매물에서 측정했습니다.",
+  },
   reality: {
     title: "Marketing vs Reality",
     lead: "영향력자 / 광고가 미는 콘도들. 마케팅 주장 옆에 우리 데이터를 붙여서 보여줍니다. 인플루언서 이름을 공격하지 않고, 측정값으로만 이야기합니다.",
@@ -431,6 +485,9 @@ const dict: Dict = {
     ],
   },
   condoPage: {
+    neighboursTitle: "주변 단지",
+    neighboursInternal: "RealData 리포트",
+    neighboursExternal: "아직 추적하지 않는 빌딩은 hipflat 외부 링크로 연결됩니다.",
     buildingFacts: "빌딩 정보",
     floors: "층수",
     totalUnits: "총 unit",

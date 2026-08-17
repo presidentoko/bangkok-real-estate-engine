@@ -1,3 +1,4 @@
+import { INDEXABILITY_OR_FILTER } from "@/lib/condoIndexability";
 import { getServerSupabase } from "@/lib/supabase";
 import { SITE_URL, sitemapIndexDoc, xmlResponse, isoDate } from "@/lib/sitemap-helpers";
 
@@ -6,33 +7,27 @@ export const maxDuration = 15;
 
 const CONDOS_PER_PAGE = 2500;
 
-// TEMPORARY (added 2026-07-17, self-expires 2026-08-04 alongside the other
-// egress mitigations in web/middleware.ts). Googlebot was just let back
-// through the condo bot-block (see middleware.ts SEARCH_ENGINE_UA_RE), but a
-// full crawl of the ~111k-page condo backlog before the Supabase free-tier
-// egress budget resets could tip the project into another lockout. Bound
-// discovery to the first 2 pages (~5k condos x 3 langs = ~15k URLs) instead
-// of the full sitemap so Google can resume indexing without re-crawling
-// everything at once; the rest reappears automatically once this expires.
-const SITEMAP_THROTTLE_UNTIL = "Tue, 04 Aug 2026 00:00:00 GMT";
-const THROTTLED_MAX_PAGES = 2;
-
 export async function GET(): Promise<Response> {
   const lastmod = isoDate(new Date());
 
-  // Count live condos to avoid listing empty pages in the index. No
-  // latitude filter — matches sitemap-condos.xml/route.ts (coordinates gate
-  // the map marker, not indexability; see comment there).
+  // Count the condos that pass the substance gate, not every published row,
+  // so the index doesn't advertise pages sitemap-condos.xml now filters
+  // away. Same .or() the page route uses — see lib/condoIndexability.ts for
+  // why the gate exists at all.
+  //
+  // (The SITEMAP_THROTTLE_UNTIL cap that used to sit here expired
+  // 2026-08-04 and was removed 2026-08-17. It was doing the right thing for
+  // the wrong reason: what needed bounding was never the *number* of condo
+  // URLs, it was the number of empty ones. When it lapsed, GSC's "not
+  // indexed" count went 21,080 -> 39,555 in a day.)
   const supabase = getServerSupabase();
   const { count } = await supabase
     .from("condos_published")
     .select("id", { count: "exact", head: true })
-    .not("slug", "is", null);
+    .not("slug", "is", null)
+    .or(INDEXABILITY_OR_FILTER);
 
-  let totalPages = Math.ceil((count ?? 0) / CONDOS_PER_PAGE);
-  if (Date.now() < Date.parse(SITEMAP_THROTTLE_UNTIL)) {
-    totalPages = Math.min(totalPages, THROTTLED_MAX_PAGES);
-  }
+  const totalPages = Math.ceil((count ?? 0) / CONDOS_PER_PAGE);
   const condoSitemaps = Array.from({ length: totalPages }, (_, p) => ({
     loc: `${SITE_URL}/sitemap-condos.xml?page=${p}`,
     lastmod,

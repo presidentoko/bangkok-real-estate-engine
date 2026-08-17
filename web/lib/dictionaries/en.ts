@@ -389,6 +389,60 @@ const dict = {
       `Planning a viewing trip to ${city}? Compare flights and hotels in one search.`,
     travelCta: "Find flights + hotels →",
   },
+  districtPage: {
+    eyebrow: (province: string) => `District · ${province}`,
+    intro: (n: number, name: string) =>
+      `${n.toLocaleString()} condos in ${name}, measured for yield, price and flood risk. Independent data — no developer pay-for-placement.`,
+    statCondos: "Condos",
+    statMedianYield: "Median yield",
+    statMedianSale: "Median sale",
+    statMedianRent: "Median rent",
+    vsMrr: "vs MRR",
+    perMonth: "/mo",
+    topYieldTitle: (name: string) => `Top yielding condos in ${name}`,
+    thCondo: "Condo",
+    thYield: "Yield",
+    thSpread: "Spread",
+    thSale: "Sale",
+    thRent: "Rent",
+    allCondosTitle: (name: string) => `All condos in ${name}`,
+    ctaHeadline: (name: string) => `Looking to buy in ${name}? Get an expert read.`,
+    source:
+      "Source: RealData measurement across hipflat, dotproperty, ddproperty, fazwaz · MRR benchmark from Bank of Thailand · refreshed weekly.",
+    faqCount: (name: string) => `How many condo buildings does RealData track in ${name}?`,
+    faqCountA: (n: number, name: string, province: string) =>
+      `${n} buildings across the ${name} district of ${province}, drawn from hipflat, dotproperty, ddproperty and fazwaz listings.`,
+    faqYield: (name: string) => `What is the median gross rental yield in ${name}?`,
+    faqSpread: (y: string, spread: string, mrr: string) =>
+      `Median yield ${y}% means a ${spread}pp spread versus the current Thai MRR of ${mrr}%.`,
+    faqYieldOnly: (y: string) => `Median yield is ${y}%.`,
+    faqNoYield:
+      "Most buildings in this district do not have enough matched sale + rent listings yet to compute a yield.",
+    faqSale: (name: string) => `What is the median sale price for a condo in ${name}?`,
+    faqSaleA: (price: string) =>
+      `Median sale price is ${price} based on active listings across the four portals we track. Each condo page shows its own price evidence, including per-portal divergence where it exists.`,
+    faqRent: (name: string) => `What is the median monthly rent in ${name}?`,
+    faqRentA: (price: string, name: string) =>
+      `Median monthly rent is ${price} per month for active listings in ${name}.`,
+    faqForeign: (name: string) => `Is ${name} a good area for foreign buyers?`,
+    faqForeignA: (name: string) =>
+      `RealData does not editorialise — the per-building pages surface the legally-binding signal instead: foreign-quota inventory share (the % of for-sale units flagged Foreign Quota and therefore eligible for non-Thai ownership). Use the building list to find condos with measured foreign-quota availability in ${name}.`,
+  },
+  districtsIndex: {
+    title: "Thailand condo districts",
+    lead: "Every district we track enough measured buildings in to report on — median sale price, median rent and median gross yield, side by side.",
+    thDistrict: "District",
+    thProvince: "Province",
+    thCondos: "Condos",
+    thYield: "Median yield",
+    thSale: "Median sale",
+    thRent: "Median rent",
+    count: (n: number) => `${n} districts`,
+    empty: "No districts measured yet.",
+    seoTitle: "Condo prices by district in Thailand — median sale, rent and yield",
+    seoDesc:
+      "Median sale price, median rent and median gross rental yield for every Thai condo district we track, measured from live listings across four portals.",
+  },
   reality: {
     title: "Marketing vs Reality",
     lead: "Influencer / advertiser-promoted condos. We place our measured data next to their marketing claims. We don't attack the influencer — only the numbers.",
@@ -448,6 +502,9 @@ const dict = {
     ],
   },
   condoPage: {
+    neighboursTitle: "Projects nearby",
+    neighboursInternal: "RealData report",
+    neighboursExternal: "Buildings we don’t track yet link out to hipflat.",
     buildingFacts: "Building facts",
     floors: "Floors",
     totalUnits: "Total units",

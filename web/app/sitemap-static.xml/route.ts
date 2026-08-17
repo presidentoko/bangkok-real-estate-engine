@@ -15,6 +15,7 @@ export const maxDuration = 30;
 const STATIC_PATHS = [
   { path: "", changefreq: "hourly", priority: 1.0 },
   { path: "/inventory", changefreq: "hourly", priority: 0.8 },
+  { path: "/districts", changefreq: "weekly", priority: 0.9 },
   { path: "/flood", changefreq: "weekly", priority: 0.9 },
   { path: "/reality", changefreq: "daily", priority: 0.7 },
   { path: "/blog", changefreq: "weekly", priority: 0.7 },
