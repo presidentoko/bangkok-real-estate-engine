@@ -245,9 +245,17 @@ export const fetchCondoProvinces = unstable_cache(
 //     fetch those few full cards. Tiny, and avoids PostgREST embedded-filter
 //     gymnastics.
 
+// No `id` here on purpose. It was a 36-char UUID per row and, at ~15k rows,
+// roughly 430KB of a payload that the log below shows sitting at 1.96MB
+// against Next's hard 2MB unstable_cache ceiling — publishing Greater
+// Bangkok (519 buildings, 2026-08-18) is what took it from 1.89 to 1.96.
+// Crossing it does not error; caching just silently stops, and every home
+// page render re-runs the whole condos_published scan. The id was only ever
+// used as a React key and as an href fallback for rows with no slug, and
+// those rows cannot be linked usefully anyway (/condo/<uuid> is a 308 to the
+// slug URL), so they are skipped instead.
 export type CondoMapPoint = {
-  id: string;
-  slug: string | null;
+  slug: string;
   name: string;
   latitude: number | null;
   longitude: number | null;
@@ -261,12 +269,11 @@ async function _fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
   while (true) {
     const { data, error } = await supabase
       .from("condos_published")
-      .select("id, slug, name, latitude, longitude, regions(name)")
+      .select("slug, name, latitude, longitude, regions(name)")
       .order("id")
       .range(offset, offset + PAGE - 1);
     if (error) throw new Error(`map points fetch failed: ${error.message}`);
     const rows = (data ?? []) as Array<{
-      id: string;
       slug: string | null;
       name: string;
       latitude: number | null;
@@ -274,10 +281,10 @@ async function _fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
       regions: { name: string } | { name: string }[] | null;
     }>;
     for (const r of rows) {
+      if (!r.slug) continue; // unlinkable — see CondoMapPoint's note
       const reg = Array.isArray(r.regions) ? r.regions[0] : r.regions;
       out.push({
-        id: r.id,
-        slug: r.slug ?? null,
+        slug: r.slug,
         name: r.name,
         latitude: r.latitude,
         longitude: r.longitude,
@@ -300,10 +307,9 @@ async function _fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
 // condos_published scan. Columnar encoding drops the per-row key overhead
 // the same way it did for the city inventory feed.
 type CompactMapPoints = {
-  v: 1;
+  v: 2;
   count: number;
-  id: string[];
-  slug: (string | null)[];
+  slug: string[];
   name: string[];
   lat: (number | null)[];
   lng: (number | null)[];
@@ -313,9 +319,8 @@ type CompactMapPoints = {
 function encodeMapPoints(rows: CondoMapPoint[]): CompactMapPoints {
   const n = rows.length;
   const c: CompactMapPoints = {
-    v: 1,
+    v: 2,
     count: n,
-    id: new Array(n),
     slug: new Array(n),
     name: new Array(n),
     lat: new Array(n),
@@ -324,7 +329,6 @@ function encodeMapPoints(rows: CondoMapPoint[]): CompactMapPoints {
   };
   for (let i = 0; i < n; i++) {
     const r = rows[i];
-    c.id[i] = r.id;
     c.slug[i] = r.slug;
     c.name[i] = r.name;
     c.lat[i] = r.latitude;
@@ -338,7 +342,6 @@ function decodeMapPoints(c: CompactMapPoints): CondoMapPoint[] {
   const out: CondoMapPoint[] = new Array(c.count);
   for (let i = 0; i < c.count; i++) {
     out[i] = {
-      id: c.id[i],
       slug: c.slug[i],
       name: c.name[i],
       latitude: c.lat[i],
@@ -351,13 +354,13 @@ function decodeMapPoints(c: CompactMapPoints): CondoMapPoint[] {
 
 async function _fetchCondoMapPointsCompact(): Promise<CompactMapPoints> {
   const compact = encodeMapPoints(await _fetchCondoMapPoints());
-  warnIfNearCacheCeiling("condos:map-points-compact", compact);
+  warnIfNearCacheCeiling("condos:map-points-compact-v2", compact);
   return compact;
 }
 
 const fetchCondoMapPointsCompactCached = unstable_cache(
   _fetchCondoMapPointsCompact,
-  ["condos:map-points-compact"],
+  ["condos:map-points-compact-v2"],
   { revalidate: 86400, tags: ["condos"] }
 );
 

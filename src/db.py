@@ -92,6 +92,27 @@ _PROVINCE_ALIASES = {
 LAUNCHED_PROVINCES = frozenset({
     "bangkok", "pattaya", "chonburi", "huahin", "phuket",
     "chiangmai", "krabi", "samui", "chiangrai",
+    # Greater Bangkok, added 2026-08-18. These three have no /city/ page of
+    # their own and getCity() returns null for them — every consumer already
+    # degrades gracefully (provinceDisplayName falls back to the title-cased
+    # slug, the condo page's city breadcrumb and retiree-lens block are both
+    # conditioned on getCity() being non-null). What they do have is 519
+    # active buildings, 215 of which clear the substance gate in
+    # web/lib/condoIndexability.ts, spread over 14 districts with >=3
+    # buildings each: Mueang Nonthaburi (125), Mueang Samut Prakan (102),
+    # Pak Kret (66), Bang Phli (48), Khlong Luang (48), Lam Luk Ka,
+    # Bang Sao Thong, Thanyaburi, Bang Bua Thong, Bang Kruai, Bang Yai,
+    # Phra Pradaeng, Bang Bo, Mueang Pathum Thani.
+    #
+    # Those are the district names people actually search in the Bangkok
+    # metro, and every one of them was rendering a page whose condo links
+    # all 404'd. Publishing them is what makes those 14 district pages
+    # indexable instead of noindexed-with-no-links.
+    #
+    # Existing rows were flipped with scripts/publish_province.py --apply;
+    # this entry is what stops the next weekly refresh from reverting it
+    # (the failure mode 3b1eca0 fixed for Phuket/Chiang Mai/Pattaya).
+    "nonthaburi", "samut-prakan", "pathum-thani",
 })
 
 

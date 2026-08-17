@@ -75,7 +75,11 @@ export default async function Home({
     if (c.region) counts.set(c.region, (counts.get(c.region) ?? 0) + 1);
     if (c.latitude != null && c.longitude != null) {
       points.push({
-        id: c.id,
+        // CondoMapPoint no longer carries the UUID (see its definition —
+        // it was 430KB of a payload 4% from Next's cache ceiling). The slug
+        // is unique and is what the marker links to anyway, so it serves as
+        // both the React key and the href.
+        id: c.slug,
         slug: c.slug,
         name: c.name,
         lat: c.latitude,
