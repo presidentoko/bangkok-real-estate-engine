@@ -104,10 +104,18 @@ def has_substance(row: dict) -> bool:
     return False
 
 
+# Cloudflare sits in front of the site and 403s urllib's default
+# "Python-urllib/3.x" UA — which made the key-file preflight below fail with
+# a confusing "not live" message while curl fetched the same file fine.
+# Identify honestly instead of pretending to be a browser.
+VERIFY_UA = "RealDataIndexNow/1.0 (+https://passionaryestate.com)"
+
+
 def verify_key_file() -> bool:
     """The key file has to be live before a submission is worth making."""
     try:
-        with urllib.request.urlopen(KEY_LOCATION, timeout=15) as r:
+        req = urllib.request.Request(KEY_LOCATION, headers={"User-Agent": VERIFY_UA})
+        with urllib.request.urlopen(req, timeout=15) as r:
             body = r.read().decode("utf-8", "replace").strip()
     except urllib.error.HTTPError as e:
         print(f"[indexnow] key file {KEY_LOCATION} -> HTTP {e.code}")
@@ -170,7 +178,10 @@ def post_batch(urls: list[str]) -> bool:
     req = urllib.request.Request(
         ENDPOINT,
         data=payload,
-        headers={"Content-Type": "application/json; charset=utf-8"},
+        headers={
+            "Content-Type": "application/json; charset=utf-8",
+            "User-Agent": VERIFY_UA,
+        },
         method="POST",
     )
     try:
