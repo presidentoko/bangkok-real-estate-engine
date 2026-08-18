@@ -20,6 +20,20 @@ on:
   # per-listing write fix (returning="minimal", commit c9f0374) is still in
   # place, so per-run egress should be lower than before the pause too.
   schedule:
+    # Sat 19:17 UTC = Sun 02:17 ICT, and the job runs ~5h, so the window it
+    # owns on the self-hosted runner is Sun 02:17-07:30 local.
+    #
+    # Two Windows Scheduled Tasks for other sites on the same laptop used to
+    # fire inside that window and were moved out of it on 2026-08-18 (they
+    # are machine state, not repo state, so this is the only record):
+    #
+    #   DeployClinicDentalMasterDB   daily 05:00 -> 09:00 ICT
+    #   DeployHairData               daily 06:00 -> 10:00 ICT
+    #
+    # Deliberately NOT moved: BkkRealEstateDiscovery. Its trigger looks like
+    # a 01:00 daily one at a glance, but the calendar trigger is
+    # ScheduleByMonth/DaysOfMonth/1 -- it runs 12 hours on the 1st of each
+    # month, so it only lands in this window when the 1st is a weekend day.
     - cron: "17 19 * * 6"
   workflow_dispatch:
     inputs:
@@ -84,6 +98,37 @@ jobs:
       # weekly success in the last 10 runs). Caps below sum to ~450min,
       # leaving a margin for setup + the scoring tail within the 540min
       # ceiling, well above the ~425min historical baseline noted below.
+
+      - name: Machine state (before)
+        # Evidence, not a guess. Three of this job's steps hit their time
+        # caps on 2026-08-15 (DotProperty 150min, DDProperty 60min, FazWaz
+        # quota 45min) and the working theory was RAM contention on the
+        # self-hosted runner -- which is the user's own 16GB laptop, shared
+        # with several always-on scraper loops for other sites. Nobody has
+        # ever measured it at the moment it matters, so every mitigation so
+        # far has been guesswork.
+        #
+        # This runs at 02:17 ICT Sunday, writes free memory and the top 12
+        # process groups, and repeats at the end. Two numbers a week, and
+        # after a few Sundays we can say whether headroom actually
+        # correlates with the sweeps finishing.
+        continue-on-error: true
+        env:
+          Phase: before
+        run: |
+          $os = Get-CimInstance Win32_OperatingSystem
+          $free = [math]::Round($os.FreePhysicalMemory/1MB,2)
+          $total = [math]::Round($os.TotalVisibleMemorySize/1MB,2)
+          $top = Get-Process | Group-Object ProcessName | ForEach-Object {
+            [PSCustomObject]@{
+              Name = $_.Name
+              N    = $_.Count
+              MB   = [math]::Round((($_.Group | Measure-Object WorkingSet64 -Sum).Sum)/1MB,0)
+            }
+          } | Sort-Object MB -Descending | Select-Object -First 12
+          Add-Content -Path machine.log -Value "== $Phase  $(Get-Date -Format o)"
+          Add-Content -Path machine.log -Value "free ${free} GB / ${total} GB"
+          Add-Content -Path machine.log -Value ($top | Format-Table -AutoSize | Out-String)
 
       - name: Ingest BOT macro indicators
         continue-on-error: true
@@ -264,6 +309,29 @@ jobs:
           cmd /c "python scripts\generate_weekly_post.py 2>&1" | Tee-Object -FilePath autoblog.log
           if ($LASTEXITCODE -ne 0) { Write-Output "::warning::generate_weekly_post exited $LASTEXITCODE" }
 
+      - name: Machine state (after)
+        # Pair for the "before" reading at the top. `always()` so a failed
+        # step above still leaves the measurement behind -- a failure run is
+        # exactly the one worth looking at.
+        if: always()
+        continue-on-error: true
+        env:
+          Phase: after
+        run: |
+          $os = Get-CimInstance Win32_OperatingSystem
+          $free = [math]::Round($os.FreePhysicalMemory/1MB,2)
+          $total = [math]::Round($os.TotalVisibleMemorySize/1MB,2)
+          $top = Get-Process | Group-Object ProcessName | ForEach-Object {
+            [PSCustomObject]@{
+              Name = $_.Name
+              N    = $_.Count
+              MB   = [math]::Round((($_.Group | Measure-Object WorkingSet64 -Sum).Sum)/1MB,0)
+            }
+          } | Sort-Object MB -Descending | Select-Object -First 12
+          Add-Content -Path machine.log -Value "== $Phase  $(Get-Date -Format o)"
+          Add-Content -Path machine.log -Value "free ${free} GB / ${total} GB"
+          Add-Content -Path machine.log -Value ($top | Format-Table -AutoSize | Out-String)
+
       - name: Push changed URLs to IndexNow (Bing / Yandex / Naver)
         # Google retired its sitemap ping endpoint in 2023 and has no
         # supported push API, so it keeps discovering us on its own
@@ -383,6 +451,7 @@ jobs:
             prune.log
             autoblog.log
             indexnow.log
+            machine.log
             tier_b_dumps/
           if-no-files-found: ignore
           retention-days: 30
