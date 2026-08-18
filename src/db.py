@@ -24,6 +24,67 @@ def get_client() -> Client:
 PAGE = 1000
 
 
+# Substrings that mark a Supabase failure as transient — the request was fine,
+# the server was busy. Retrying is correct; failing the run is not.
+#
+# 57014 is Postgres's statement_timeout. Supabase's free tier sets it low
+# enough that a read which takes 0.24s against a warm database can blow past
+# it when the database is cold or busy — which is exactly what happened on
+# 2026-08-15: snapshot_prices.py died on one such read after the scrape
+# steps had already been hammering the same database for 3.5 hours, and the
+# weekly refresh lost everything downstream of it (yields, bubble_index, the
+# analysis pipeline, the prune, the auto-blog) for two consecutive weeks.
+#
+# ConnectionTerminated / Server disconnected show up in the ingest logs for
+# the same reason: HTTP/2 streams being recycled mid-run.
+_TRANSIENT_MARKERS = (
+    "57014",                     # canceling statement due to statement timeout
+    "statement timeout",
+    "ConnectionTerminated",
+    "Server disconnected",
+    "RemoteProtocolError",
+    "ConnectError",
+    "ReadTimeout",
+    "502",
+    "503",
+    "504",
+)
+
+
+def is_transient(exc: BaseException) -> bool:
+    text = f"{type(exc).__name__}: {exc}"
+    return any(m in text for m in _TRANSIENT_MARKERS)
+
+
+def with_retry(
+    fn: "Any",
+    *,
+    attempts: int = 4,
+    base_delay: float = 3.0,
+    label: str = "query",
+) -> "Any":
+    """Run a Supabase call, retrying transient server-side failures.
+
+    Backs off 3s, 6s, 12s. A non-transient error (bad column, constraint
+    violation) is re-raised immediately — those do not get better by waiting,
+    and burning three retries on them just hides the real message.
+    """
+    import time as _time
+
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except Exception as exc:  # noqa: BLE001 - re-raised below unless transient
+            if attempt == attempts or not is_transient(exc):
+                raise
+            delay = base_delay * (2 ** (attempt - 1))
+            logger.warning(
+                f"{label}: transient failure ({str(exc)[:90]}) — "
+                f"retry {attempt}/{attempts - 1} in {delay:.0f}s"
+            )
+            _time.sleep(delay)
+
+
 def fetch_all(
     client: Client,
     table: str,

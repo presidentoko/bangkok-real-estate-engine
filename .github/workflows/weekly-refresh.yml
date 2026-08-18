@@ -177,11 +177,34 @@ jobs:
           }
 
       - name: Snapshot prices + compute yields
+        # continue-on-error, and the two scripts no longer gate each other.
+        #
+        # This step used to `exit $LASTEXITCODE` after each script, with no
+        # continue-on-error — so on 2026-08-15 one transient Postgres
+        # statement timeout (57014) inside snapshot_prices.py ended the job
+        # outright and every remaining step was skipped: compute_yields,
+        # the data-quality pass, bubble_index, the whole analysis pipeline
+        # (risk / super_value / underpriced alerts / reports), the prune,
+        # and the auto-blog. Two weeks in a row. The site was serving
+        # scores computed on 2026-08-08 data while the ingest half of the
+        # same workflow reported success.
+        #
+        # None of those downstream steps read price_history, so none of
+        # them had any reason to be skipped. snapshot_prices.py now retries
+        # transient failures (src/db.with_retry); this is the second line
+        # of defence for when it exhausts them.
+        continue-on-error: true
         run: |
           cmd /c "python scripts\snapshot_prices.py 2>&1" | Tee-Object -FilePath snapshot.log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::snapshot_prices exited $LASTEXITCODE"
+            Add-Content -Path snapshot.log -Value "CI_STEP_FAILED::snapshot"
+          }
           cmd /c "python scripts\compute_yields.py 2>&1" | Tee-Object -FilePath yields.log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::compute_yields exited $LASTEXITCODE"
+            Add-Content -Path yields.log -Value "CI_STEP_FAILED::yields"
+          }
 
       - name: Data quality cleanup + fuzzy rematch
         # Catches new yield outliers from this scrape + tries Levenshtein
@@ -290,6 +313,12 @@ jobs:
           $dp  = Get-StepStatus "ingest_dotproperty.log" "dp"
           $dd  = Get-StepStatus "ingest_ddproperty.log" "dd"
           $fq  = Get-StepStatus "ingest_foreign_quota.log" "fq"
+          # Scoring half of the pipeline. Left out of this summary until
+          # 2026-08-18, which is why two consecutive weeks of it not
+          # running at all still sent an "OK" to Telegram.
+          $snap = Get-StepStatus "snapshot.log" "snap"
+          $yld  = Get-StepStatus "yields.log" "yield"
+          $idx  = Get-StepStatus "indexnow.log" "indexnow"
 
           $fazwaz = ""
           Get-ChildItem -Path . -Filter "ingest_fazwaz_*.log" -ErrorAction SilentlyContinue | ForEach-Object {
@@ -304,7 +333,7 @@ jobs:
           $alerts = (Select-String -Path "analysis.log" -Pattern 'underpriced: \d+ new alerts' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
           $super = (Select-String -Path "analysis.log" -Pattern 'super_value: \d+ condos' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
 
-          $msg = "OK RealData weekly refresh`nIngest: $bot $dp $dd $fq$fazwaz`nTier B $okN $failN; $upserted; $alerts; $super"
+          $msg = "OK RealData weekly refresh`nIngest: $bot $dp $dd $fq$fazwaz`nScore: $snap $yld $idx`nTier B $okN $failN; $upserted; $alerts; $super"
 
           $uri = "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage"
           try {

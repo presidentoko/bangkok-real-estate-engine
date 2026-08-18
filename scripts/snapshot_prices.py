@@ -22,7 +22,7 @@ sys.path.insert(0, ROOT)
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 from loguru import logger
-from src.db import get_client
+from src.db import get_client, with_retry
 
 
 def main() -> None:
@@ -50,15 +50,19 @@ def main() -> None:
     rows = []
     offset = 0
     while True:
-        chunk = (
-            client.table("listings")
-            .select("condo_id, listing_type, price, price_per_sqm, currency")
-            .eq("is_active", True)
-            .not_.is_("price", "null")
-            .order("id")
-            .range(offset, offset + 999)
-            .execute()
-            .data
+        off = offset
+        chunk = with_retry(
+            lambda: (
+                client.table("listings")
+                .select("condo_id, listing_type, price, price_per_sqm, currency")
+                .eq("is_active", True)
+                .not_.is_("price", "null")
+                .order("id")
+                .range(off, off + 999)
+                .execute()
+                .data
+            ),
+            label=f"listings[{off}]",
         ) or []
         rows.extend(chunk)
         if len(chunk) < 1000:
@@ -89,27 +93,34 @@ def main() -> None:
     # regardless of .limit(), so we must paginate rather than rely on a big
     # .limit() to grab "recent enough" rows.
     logger.info("Loading last price snapshots...")
-    latest = (
-        client.table("price_history")
-        .select("captured_at")
-        .order("captured_at", desc=True)
-        .limit(1)
-        .execute()
-        .data
+    latest = with_retry(
+        lambda: (
+            client.table("price_history")
+            .select("captured_at")
+            .order("captured_at", desc=True)
+            .limit(1)
+            .execute()
+            .data
+        ),
+        label="price_history.max(captured_at)",
     )
     prev_rows: list = []
     if latest:
         last_captured_at = latest[0]["captured_at"]
         offset = 0
         while True:
-            chunk = (
-                client.table("price_history")
-                .select("condo_id, listing_type, price")
-                .eq("captured_at", last_captured_at)
-                .order("id")
-                .range(offset, offset + 999)
-                .execute()
-                .data
+            off = offset
+            chunk = with_retry(
+                lambda: (
+                    client.table("price_history")
+                    .select("condo_id, listing_type, price")
+                    .eq("captured_at", last_captured_at)
+                    .order("id")
+                    .range(off, off + 999)
+                    .execute()
+                    .data
+                ),
+                label=f"price_history[{off}]",
             ) or []
             prev_rows.extend(chunk)
             if len(chunk) < 1000:
