@@ -103,18 +103,55 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const ua = req.headers.get("user-agent") ?? "";
+  // Search-crawler throttle on /condo/, on a deadline. SELF-EXPIRING —
+  // delete this block and CRAWL_THROTTLE_UNTIL once it lapses.
+  //
+  // The 2026-08-13 -> 09-13 cycle was at 9.79GB of a 10GB Fast Origin
+  // Transfer cap on day 7 of 24, burning 1.4GB/day. Hobby does not bill the
+  // overage, it pauses the project — that is how the previous account died
+  // in July, mid-outage. Cutting the repeat cost (condo revalidate 7d -> 30d
+  // in a4eccc0) does nothing about the *first* fetch of each of ~46,000
+  // on-demand-ISR condo URLs, which is what a crawl of the whole catalogue
+  // is, and no amount of caching helps a URL nobody has requested yet.
+  //
+  // Middleware runs ahead of the cache, so a 503 from here costs one edge
+  // invocation and zero origin bytes. That is the only lever that moves the
+  // number today.
+  //
+  // What stays open, deliberately:
+  //   - every hub (/district, /districts, /near, /best, /city, /yields,
+  //     /inventory, blog) — ~1,200 URLs, cheap, and where the ranking value
+  //     actually is
+  //   - Google-InspectionTool and Google-Safety (see SEARCH_ENGINE_UA_RE's
+  //     note: a diagnostic that lies, and looking evasive to abuse review,
+  //     are both worse than the bytes)
+  //   - every link-preview fetcher
+  //
+  // The cost is real and should not be pretended away: a 503 sustained past
+  // a couple of days makes Google start dropping the URLs, and 4,486 of
+  // these condos are ones we just finished making indexable. Lift it as soon
+  // as the cycle's numbers allow — the alternative is the whole site,
+  // including the hubs, going dark for the rest of the cycle.
+  const CRAWL_THROTTLE_UNTIL = Date.parse("2026-09-13T00:00:00Z");
+  const throttleCrawlers =
+    Date.now() < CRAWL_THROTTLE_UNTIL &&
+    !/Google-InspectionTool|Google-Safety/i.test(ua);
+
   if (
     pathname.includes("/condo/") &&
     BOT_UA_RE.test(ua) &&
-    !SEARCH_ENGINE_UA_RE.test(ua) &&
+    (throttleCrawlers || !SEARCH_ENGINE_UA_RE.test(ua)) &&
     !SOCIAL_PREVIEW_UA_RE.test(ua)
   ) {
     return new NextResponse(
-      "Crawling of this section is limited to search engines to protect a " +
-        "free-tier hosting budget. Please retry later or contact the site owner.",
+      "Crawling of this section is rate-limited to stay inside a free-tier " +
+        "hosting budget. The section index pages are open. Please retry later.",
       {
         status: 503,
-        headers: { "Retry-After": "86400", "Cache-Control": "no-store" },
+        // 6h rather than 24h: this is a budget ceiling, not an outage, and a
+        // shorter Retry-After keeps the crawler coming back often enough to
+        // notice the moment the throttle lapses.
+        headers: { "Retry-After": "21600", "Cache-Control": "no-store" },
       }
     );
   }
