@@ -288,9 +288,15 @@ export async function generateMetadata({
       description: desc,
       url: `${SITE_URL}/${lang}/condo/${slug}`,
       type: "article",
+      // The per-condo opengraph-image route is gone — it was a second
+      // ~46,000-URL ISR surface, one edge ImageResponse (a Supabase read
+      // plus a 1200x630 PNG render) per entry, for a card almost none of
+      // these pages will ever have shared. Point at the [lang]-level image
+      // the way blog/weekly does; leaving this pointing at the deleted
+      // route would publish a 404 as og:image on every condo page.
       images: [
         {
-          url: `/${lang}/condo/${slug}/opengraph-image`,
+          url: `${SITE_URL}/${lang}/opengraph-image`,
           width: 1200,
           height: 630,
           alt: `${c.name} — RealData Bangkok condo report`,
