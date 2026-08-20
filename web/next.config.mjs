@@ -24,12 +24,12 @@ const nextConfig = {
       {
         source: "/sitemap-condos.xml",
         has: [{ type: "query", key: "page", value: "(?<page>\\d+)" }],
-        destination: "/sitemap-condos/:page",
+        destination: "/sitemap-condos/:page.xml",
         permanent: true,
       },
       {
         source: "/sitemap-condos.xml",
-        destination: "/sitemap-condos/0",
+        destination: "/sitemap-condos/0.xml",
         permanent: true,
       },
     ];

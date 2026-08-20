@@ -31,8 +31,14 @@ export const maxDuration = 60;
 
 // Prebuild the pages that exist today; dynamicParams covers the next one the
 // catalogue grows into before a deploy catches up.
+//
+// The ".xml" is load-bearing, not decoration. middleware.ts's matcher ends
+// in `.*` + a dot-exclusion, so any path containing a dot never invokes the
+// middleware at all — and a path without one does. The first version of this
+// route used /sitemap-condos/0, which the i18n redirect promptly 307'd to
+// /en/sitemap-condos/0 and broke the sitemap. parseInt("0.xml", 10) is 0.
 export function generateStaticParams() {
-  return [{ page: "0" }, { page: "1" }, { page: "2" }];
+  return [{ page: "0.xml" }, { page: "1.xml" }, { page: "2.xml" }];
 }
 
 // 2,500 condos × 3 langs = 7,500 entries ≈ ~5MB per page
