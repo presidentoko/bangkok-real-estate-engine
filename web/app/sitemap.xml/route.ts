@@ -29,7 +29,7 @@ export async function GET(): Promise<Response> {
 
   const totalPages = Math.ceil((count ?? 0) / CONDOS_PER_PAGE);
   const condoSitemaps = Array.from({ length: totalPages }, (_, p) => ({
-    loc: `${SITE_URL}/sitemap-condos.xml?page=${p}`,
+    loc: `${SITE_URL}/sitemap-condos/${p}`,
     lastmod,
   }));
 

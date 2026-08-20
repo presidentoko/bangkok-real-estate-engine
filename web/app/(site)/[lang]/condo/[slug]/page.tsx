@@ -50,7 +50,23 @@ import { CompareButton } from "@/components/CompareButton";
 // writes, 650% over). The underlying data only changes via weekly-refresh
 // (Sundays) + a light Wednesday catch-pass, so daily regeneration was pure
 // waste. 7 days matches the real data cadence and cuts regenerations ~7x.
-export const revalidate = 604800;
+// 30 days, not 7.
+//
+// This route's URL space is the whole catalogue — 15,485 published condos x
+// 3 locales, of which generateStaticParams prebuilds 900. Everything else is
+// on-demand ISR, so each crawled URL becomes a cache entry that rewrites
+// itself every time `revalidate` expires. At 7 days that is four rewrites a
+// month per entry before a single deploy is counted, and each rewrite bills
+// an ISR write plus ~18KB of origin transfer. 2026-08-20 reading: 549K ISR
+// writes against a 200K allowance, and 9.79GB of a 10GB Fast Origin Transfer
+// cap — 549K x 18KB is 9.9GB, which is the same number twice.
+//
+// Freshness does not come from this constant any more. The weekly refresh
+// calls scripts/revalidate_changed.py, which POSTs the condos whose prices
+// actually moved to /api/revalidate. A building nobody re-scraped has
+// nothing new to show, and ~9,750 of them are noindex stubs that will never
+// have anything new to show.
+export const revalidate = 2592000;
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

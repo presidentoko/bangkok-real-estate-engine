@@ -354,6 +354,27 @@ jobs:
           Add-Content -Path machine.log -Value "free ${free} GB / ${total} GB"
           Add-Content -Path machine.log -Value ($top | Format-Table -AutoSize | Out-String)
 
+      - name: Revalidate changed condo pages
+        # condo/[slug] carries revalidate = 30d now, not 7d. That constant
+        # applied to ~46,000 URLs (15,485 published condos x 3 locales), so
+        # every entry Google had crawled rewrote itself weekly whether or
+        # not the building had changed — 549K ISR writes against a 200K
+        # allowance and 9.79GB of a 10GB Fast Origin Transfer cap, read on
+        # 2026-08-20. This step supplies the freshness instead: ~750 condos
+        # a week, ~2,250 paths, POSTed to /api/revalidate.
+        #
+        # Runs after compute_yields so the numbers it rebuilds are this
+        # week's, and before IndexNow so the crawlers it pings find them.
+        continue-on-error: true
+        env:
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+        run: |
+          cmd /c "python scripts\revalidate_changed.py --submit 2>&1" | Tee-Object -FilePath revalidate.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::revalidate_changed exited $LASTEXITCODE"
+            Add-Content -Path revalidate.log -Value "CI_STEP_FAILED::revalidate"
+          }
+
       - name: Push changed URLs to IndexNow (Bing / Yandex / Naver)
         # Google retired its sitemap ping endpoint in 2023 and has no
         # supported push API, so it keeps discovering us on its own
@@ -410,6 +431,7 @@ jobs:
           $yld  = Get-StepStatus "yields.log" "yield"
           $idx  = Get-StepStatus "indexnow.log" "indexnow"
           $slg  = Get-StepStatus "slugs.log" "slugs"
+          $rvl  = Get-StepStatus "revalidate.log" "revalidate"
 
           $fazwaz = ""
           Get-ChildItem -Path . -Filter "ingest_fazwaz_*.log" -ErrorAction SilentlyContinue | ForEach-Object {
@@ -424,7 +446,7 @@ jobs:
           $alerts = (Select-String -Path "analysis.log" -Pattern 'underpriced: \d+ new alerts' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
           $super = (Select-String -Path "analysis.log" -Pattern 'super_value: \d+ condos' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
 
-          $msg = "OK RealData weekly refresh`nIngest: $bot $dp $dd $fq$fazwaz`nScore: $snap $yld $slg $idx`nTier B $okN $failN; $upserted; $alerts; $super"
+          $msg = "OK RealData weekly refresh`nIngest: $bot $dp $dd $fq$fazwaz`nScore: $snap $yld $slg $rvl $idx`nTier B $okN $failN; $upserted; $alerts; $super"
 
           $uri = "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage"
           try {
@@ -474,6 +496,7 @@ jobs:
             analysis.log
             prune.log
             autoblog.log
+            revalidate.log
             indexnow.log
             machine.log
             tier_b_dumps/

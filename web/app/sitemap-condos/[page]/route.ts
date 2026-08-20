@@ -14,19 +14,37 @@ import {
   isoDate,
 } from "@/lib/sitemap-helpers";
 
-// No `revalidate` export here — this route reads `url.searchParams` below,
-// which makes it dynamic regardless, so a revalidate export would be dead
-// code. Actual caching comes from the `s-maxage=86400` the xmlResponse()
-// helper sets directly.
+// The page number is a path segment, not `?page=`, and that is the whole
+// point of this route existing.
+//
+// Reading url.searchParams made the old /sitemap-condos.xml?page=N handler
+// dynamic, and Next strips a dynamic route handler's Cache-Control down to a
+// bare `public` — the s-maxage=86400 that xmlResponse() sets never reached
+// the CDN. Measured 2026-08-20: every single fetch answered
+// `x-vercel-cache: MISS` in 5.65s, running ten paginated Supabase reads and
+// pushing ~120KB (5.1MB uncompressed) from the origin, on a project sitting
+// at 9.79GB of a 10GB Fast Origin Transfer cap. As a static segment it is
+// ISR-cached like sitemap-areas.xml, which answers HIT.
+export const revalidate = 86400;
+export const dynamicParams = true;
 export const maxDuration = 60;
+
+// Prebuild the pages that exist today; dynamicParams covers the next one the
+// catalogue grows into before a deploy catches up.
+export function generateStaticParams() {
+  return [{ page: "0" }, { page: "1" }, { page: "2" }];
+}
 
 // 2,500 condos × 3 langs = 7,500 entries ≈ ~5MB per page
 const CONDOS_PER_PAGE = 2500;
 
-export async function GET(request: Request): Promise<Response> {
-  const url = new URL(request.url);
-  const parsedPage = parseInt(url.searchParams.get("page") ?? "0", 10);
-  // A malformed ?page= (e.g. "abc") parses to NaN, which survived
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ page: string }> },
+): Promise<Response> {
+  const { page: rawPage } = await params;
+  const parsedPage = parseInt(rawPage, 10);
+  // A malformed page segment (e.g. "abc") parses to NaN, which survived
   // Math.max(0, NaN) === NaN and produced a NaN .range() -> a swallowed
   // PostgREST error -> an empty-but-200 urlset instead of a clear failure.
   const page = Math.max(0, Number.isFinite(parsedPage) ? parsedPage : 0);
