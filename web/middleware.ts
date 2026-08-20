@@ -42,8 +42,18 @@ const ADMIN_PUBLIC_PATHS = new Set(["/admin/login"]);
 // - currently not indexed" count climbing to 21,505 pages while they were
 // included. Ranking on Google is the whole point of this site, so those
 // two must always pass through regardless of what's driving this block.
+//
+// Yeti and Daum are listed explicitly because neither UA string contains
+// "bot", "crawl" or "spider" — Naver sends `Yeti/1.1`, Daum sends `Daum/4.1`
+// — so neither has ever matched this regex, and the block below has never
+// applied to them. Adding them to SEARCH_ENGINE_UA_RE on 2026-08-17 was
+// therefore a no-op: they were being let through by the test above it, not
+// by the exemption. Found 2026-08-20 by probing the deployed site with each
+// crawler's real UA rather than trusting the exemption list to mean what it
+// said. They stay exempt once CRAWL_THROTTLE_UNTIL lapses, via
+// SEARCH_ENGINE_UA_RE — this only makes the throttle reach them.
 const BOT_UA_RE =
-  /bot|crawl|spider|slurp|facebookexternalhit|ia_archiver|GPTBot|ClaudeBot|PerplexityBot|YandexBot|PetalBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|Amazonbot/i;
+  /bot|crawl|spider|slurp|facebookexternalhit|ia_archiver|GPTBot|ClaudeBot|PerplexityBot|YandexBot|PetalBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|Amazonbot|Yeti\/|Daum(oa)?\//i;
 
 // Anything here is a search crawler whose index we want to be in, so it
 // passes even though its UA matches BOT_UA_RE above.
