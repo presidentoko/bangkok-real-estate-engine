@@ -72,11 +72,14 @@ export async function GET() {
     name: string;
     first_seen_at: string | null;
     regions: { name: string } | { name: string }[] | null;
-  }>).map((b) => {
+  }>)
+    .filter((b) => b.slug)
+    .map((b) => {
     const region = (Array.isArray(b.regions) ? b.regions[0] : b.regions)?.name ?? "Thailand";
     return {
       title: `New: ${b.name} (${region})`,
-      link: `${SITE_URL}/en/condo/${b.slug ?? b.id}`,
+      // Never `?? b.id`: /condo/<uuid> only meta-refreshes to the slug URL.
+      link: `${SITE_URL}/en/condo/${b.slug}`,
       desc: `${b.name} in ${region} — RealData independent report card.`,
       date: b.first_seen_at ?? new Date().toISOString(),
       guid: `condo-${b.id}`,

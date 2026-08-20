@@ -60,11 +60,11 @@ export default async function YieldsPage({
     "@type": "ItemList",
     name: "Top rental-yield condos in Thailand",
     description: "Condos ranked by gross rental yield, with MRR mortgage spread context.",
-    itemListElement: rows.slice(0, 25).map((r, i) => ({
+    itemListElement: rows.filter((r) => r.slug).slice(0, 25).map((r, i) => ({
       "@type": "ListItem",
       position: i + 1,
       name: r.name,
-      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug ?? r.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug}`,
       additionalProperty: [
         { "@type": "PropertyValue", name: "Gross yield (%)", value: r.gross_yield_pct },
         ...(mrr != null

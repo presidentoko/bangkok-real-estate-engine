@@ -100,13 +100,13 @@ export function CondoSearch({ lang }: { lang: string }) {
           {!loading && results.length === 0 && (
             <div className="px-3 py-2 text-zinc-500 text-xs">No matches</div>
           )}
-          {results.map((r) => {
+          {results.filter((r) => r.slug).map((r) => {
             const region =
               (Array.isArray(r.regions) ? r.regions[0] : r.regions)?.name ?? "";
             return (
               <Link
                 key={r.id}
-                href={`/${lang}/condo/${r.slug ?? r.id}`}
+                href={`/${lang}/condo/${r.slug}`}
                 onClick={() => setOpen(false)}
                 className="block px-3 py-2 hover:bg-zinc-900 transition border-b border-zinc-900/60 last:border-b-0"
               >

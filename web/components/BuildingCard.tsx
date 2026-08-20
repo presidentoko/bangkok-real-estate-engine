@@ -88,6 +88,16 @@ export function BuildingCard({
   // should pass true.
   priority?: boolean;
 }) {
+  // A building with no slug has no canonical page yet — the ingest path
+  // leaves condos.slug null and scripts/backfill_condo_slug.py fills it on
+  // the weekly refresh. Linking it by id "works" (the route resolves the
+  // uuid) but only as a meta-refresh hop to the slug URL, because an ISR
+  // page cannot emit a real 308. Google files those under "Page with
+  // redirect" — 4,136 of them by 2026-08-17, on a site with ~4,500 pages
+  // worth indexing. Skipping the card for at most one refresh cycle is the
+  // cheaper trade.
+  if (!condo.slug) return null;
+
   const above = condo.bubble_index != null ? Math.round(condo.bubble_index - 100) : null;
   const compact = size === "sm";
   const isRentalOnly = condo.property_type !== "condo";
@@ -97,7 +107,7 @@ export function BuildingCard({
 
   return (
     <Link
-      href={`${hrefPrefix}${condo.slug ?? condo.id}`}
+      href={`${hrefPrefix}${condo.slug}`}
       className="group relative block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-zinc-600 transition"
     >
       <div className={`relative ${compact ? "aspect-[5/3]" : "aspect-[5/3]"} bg-zinc-950 overflow-hidden`}>

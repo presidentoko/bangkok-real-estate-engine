@@ -104,12 +104,16 @@ export function CompareExplorer({ lang }: { lang: string }) {
               <th className="text-left px-4 py-3 w-32 sm:w-40">Metric</th>
               {condos.map((c) => (
                 <th key={c.id} className="text-left px-4 py-3">
-                  <Link
-                    href={`/${lang}/condo/${c.slug ?? c.id}`}
-                    className="text-zinc-100 hover:underline"
-                  >
-                    {c.name}
-                  </Link>
+                  {c.slug ? (
+                    <Link
+                      href={`/${lang}/condo/${c.slug}`}
+                      className="text-zinc-100 hover:underline"
+                    >
+                      {c.name}
+                    </Link>
+                  ) : (
+                    <span className="text-zinc-100">{c.name}</span>
+                  )}
                 </th>
               ))}
             </tr>

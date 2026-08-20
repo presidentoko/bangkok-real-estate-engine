@@ -151,7 +151,7 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
     "@context": "https://schema.org",
     "@type": "ApartmentComplex",
     name: condo.name,
-    url: `${siteUrl}/${lang}/condo/${condo.slug ?? condo.id}`,
+    url: `${siteUrl}/${lang}/condo/${condo.slug}`,
     ...(condo.hero_image_url ? { image: condo.hero_image_url } : {}),
     address: {
       "@type": "PostalAddress",

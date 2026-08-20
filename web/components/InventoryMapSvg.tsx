@@ -226,7 +226,7 @@ export function InventoryMapSvg({
         </g>
         {dots.map((d) => (
           // Every published condo has a /condo/[slug] page, so always link the dot.
-          <Link key={d.id} href={`${condoLinkPrefix}${d.slug ?? d.id}`}>
+          <Link key={d.id} href={`${condoLinkPrefix}${d.slug}`}>
             <circle
               cx={d.x}
               cy={d.y}

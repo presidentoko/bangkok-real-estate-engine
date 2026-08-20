@@ -221,6 +221,28 @@ jobs:
             Add-Content -Path stale.log -Value "CI_STEP_FAILED::stale"
           }
 
+      - name: Backfill condo slugs
+        # The ingest path (src/db.upsert_condo and its three portal-specific
+        # siblings) never writes condos.slug, so every building discovered
+        # since the last run is born slugless. Nothing linked those by slug,
+        # so every listing page fell back to /condo/<uuid> — which resolves,
+        # but only as a meta-refresh hop to the slug URL, because an ISR page
+        # cannot emit a real 308. Google filed 4,136 of them under "Page with
+        # redirect" by 2026-08-17 (up from 1,927 twelve days earlier) and
+        # 102 buildings with real data had no indexable URL at all.
+        #
+        # Idempotent: the script only touches rows where slug IS NULL, and
+        # resolves collisions against the existing set before writing. Runs
+        # after every ingest step so the sitemap and the IndexNow push below
+        # both see this week's new buildings.
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\backfill_condo_slug.py 2>&1" | Tee-Object -FilePath slugs.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::backfill_condo_slug exited $LASTEXITCODE"
+            Add-Content -Path slugs.log -Value "CI_STEP_FAILED::slugs"
+          }
+
       - name: Snapshot prices + compute yields
         # continue-on-error, and the two scripts no longer gate each other.
         #
@@ -387,6 +409,7 @@ jobs:
           $snap = Get-StepStatus "snapshot.log" "snap"
           $yld  = Get-StepStatus "yields.log" "yield"
           $idx  = Get-StepStatus "indexnow.log" "indexnow"
+          $slg  = Get-StepStatus "slugs.log" "slugs"
 
           $fazwaz = ""
           Get-ChildItem -Path . -Filter "ingest_fazwaz_*.log" -ErrorAction SilentlyContinue | ForEach-Object {
@@ -401,7 +424,7 @@ jobs:
           $alerts = (Select-String -Path "analysis.log" -Pattern 'underpriced: \d+ new alerts' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
           $super = (Select-String -Path "analysis.log" -Pattern 'super_value: \d+ condos' -ErrorAction SilentlyContinue | Select-Object -Last 1).Matches.Value
 
-          $msg = "OK RealData weekly refresh`nIngest: $bot $dp $dd $fq$fazwaz`nScore: $snap $yld $idx`nTier B $okN $failN; $upserted; $alerts; $super"
+          $msg = "OK RealData weekly refresh`nIngest: $bot $dp $dd $fq$fazwaz`nScore: $snap $yld $slg $idx`nTier B $okN $failN; $upserted; $alerts; $super"
 
           $uri = "https://api.telegram.org/bot$($env:TELEGRAM_BOT_TOKEN)/sendMessage"
           try {
@@ -442,6 +465,7 @@ jobs:
             ingest_foreign_quota.log
             tier_b.log
             stale.log
+            slugs.log
             snapshot.log
             yields.log
             cleanup.log

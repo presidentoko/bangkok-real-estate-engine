@@ -182,7 +182,7 @@ export function YieldsExplorer({
                   className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3"
                 >
                   <Link
-                    href={`/${lang}/condo/${r.slug ?? r.id}`}
+                    href={`/${lang}/condo/${r.slug}`}
                     className="block space-y-2"
                   >
                     <div className="flex items-baseline gap-2">
@@ -249,7 +249,7 @@ export function YieldsExplorer({
                     <td className="px-4 py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                     <td className="px-4 py-3">
                       <Link
-                        href={`/${lang}/condo/${r.slug ?? r.id}`}
+                        href={`/${lang}/condo/${r.slug}`}
                         className="text-zinc-100 hover:underline font-medium"
                       >
                         {r.name}

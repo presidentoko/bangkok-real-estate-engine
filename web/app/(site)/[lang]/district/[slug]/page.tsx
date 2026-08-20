@@ -402,7 +402,7 @@ export default async function DistrictPage({
                     <tr key={c.id} className="border-t border-zinc-800/50 hover:bg-zinc-900/50">
                       <td className="px-4 py-3">
                         <Link
-                          href={`/${lang}/condo/${c.slug ?? c.id}`}
+                          href={`/${lang}/condo/${c.slug}`}
                           className="text-zinc-100 hover:underline font-medium"
                         >
                           {c.name}
@@ -447,7 +447,7 @@ export default async function DistrictPage({
             .map((c) => (
               <li key={c.id}>
                 <Link
-                  href={`/${lang}/condo/${c.slug ?? c.id}`}
+                  href={`/${lang}/condo/${c.slug}`}
                   className="text-zinc-300 hover:text-emerald-400 hover:underline"
                 >
                   {c.name}

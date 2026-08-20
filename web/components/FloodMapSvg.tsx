@@ -209,7 +209,7 @@ export function FloodMapSvg({
             />
           );
           return d.url ? (
-            <Link key={d.id} href={`${condoLinkPrefix}${d.slug ?? d.id}`}>
+            <Link key={d.id} href={`${condoLinkPrefix}${d.slug}`}>
               {circle}
             </Link>
           ) : (

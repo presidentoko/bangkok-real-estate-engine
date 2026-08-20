@@ -326,10 +326,10 @@ export default async function CityPage({
     "@type": "ItemList",
     name: `Condo buildings in ${city.name.en}`,
     numberOfItems: total,
-    itemListElement: condos.slice(0, 50).map((c, i) => ({
+    itemListElement: condos.filter((c) => c.slug).slice(0, 50).map((c, i) => ({
       "@type": "ListItem",
       position: i + 1,
-      url: `${SEO_SITE_URL}/${lang}/condo/${c.slug ?? c.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${c.slug}`,
       name: c.name,
     })),
   };

@@ -50,6 +50,11 @@ type CityStat = {
 
 type TopCondo = {
   id: string;
+  /** Null only if the slug backfill has not caught up with a brand-new row.
+   *  Never build a /condo/ href from `id`: that URL exists but only as a
+   *  meta-refresh hop to the slug URL, which Google files under "Page with
+   *  redirect" and which cost this site 4,136 wasted crawls by 2026-08-17. */
+  slug: string | null;
   name: string;
   region: string | null;
   province: string;
@@ -183,7 +188,7 @@ export default async function DataShowcase({
   //    same project doesn't take 5 of the 10 slots.
   const { data: expensiveData } = await supabase
     .from("condos_published")
-    .select("id, name, regions(name), province, market_sale_per_sqm, market_sale_median")
+    .select("id, slug, name, regions(name), province, market_sale_per_sqm, market_sale_median")
     .not("market_sale_per_sqm", "is", null)
     .gt("market_sale_per_sqm", 0)
     .order("market_sale_per_sqm", { ascending: false })
@@ -191,6 +196,7 @@ export default async function DataShowcase({
   const seenName = new Set<string>();
   const topExpensive: TopCondo[] = ((expensiveData ?? []) as unknown as Array<{
     id: string;
+    slug: string | null;
     name: string;
     regions: { name: string } | { name: string }[] | null;
     province: string;
@@ -199,12 +205,14 @@ export default async function DataShowcase({
   }>)
     .map((c) => ({
       id: c.id,
+      slug: c.slug,
       name: c.name,
       region: (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? null,
       province: c.province,
       metric: c.market_sale_per_sqm,
     }))
     .filter((c) => {
+      if (!c.slug) return false;
       const key = c.name.trim().toLowerCase();
       if (seenName.has(key)) return false;
       seenName.add(key);
@@ -224,11 +232,12 @@ export default async function DataShowcase({
   if (svIds.length) {
     const { data: svCondos } = await supabase
       .from("condos_published")
-      .select("id, name, regions(name), province")
+      .select("id, slug, name, regions(name), province")
       .in("id", svIds);
     const map = new Map(
       ((svCondos ?? []) as unknown as Array<{
         id: string;
+        slug: string | null;
         name: string;
         regions: { name: string } | { name: string }[] | null;
         province: string;
@@ -240,6 +249,7 @@ export default async function DataShowcase({
         if (!c) return null;
         return {
           id: c.id,
+          slug: c.slug,
           name: c.name,
           region: (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name ?? null,
           province: c.province,
@@ -247,7 +257,7 @@ export default async function DataShowcase({
           isSuperValue: true,
         } as TopCondo;
       })
-      .filter((x): x is TopCondo => x !== null);
+      .filter((x): x is TopCondo => x !== null && x.slug !== null);
   }
 
   const provLabel = (slug: string) => {
@@ -441,7 +451,7 @@ export default async function DataShowcase({
             {topExpensive.map((c, i) => (
               <li key={c.id}>
                 <Link
-                  href={`/${lang}/condo/${c.id}`}
+                  href={`/${lang}/condo/${c.slug}`}
                   className="flex items-center gap-3 px-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-600 transition"
                 >
                   <span className="text-zinc-500 text-xs tabular-nums w-5">{i + 1}</span>
@@ -479,7 +489,7 @@ export default async function DataShowcase({
             {topSuperValue.map((c, i) => (
               <li key={c.id}>
                 <Link
-                  href={`/${lang}/condo/${c.id}`}
+                  href={`/${lang}/condo/${c.slug}`}
                   className="flex items-center gap-3 px-4 py-2.5 bg-zinc-900 border border-emerald-800/40 rounded-lg hover:border-emerald-600/60 transition"
                 >
                   <span className="text-zinc-500 text-xs tabular-nums w-5">{i + 1}</span>

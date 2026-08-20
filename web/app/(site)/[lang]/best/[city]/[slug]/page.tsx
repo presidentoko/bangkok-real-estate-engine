@@ -69,6 +69,11 @@ function resolveBestCity(slug: string): { slug: BestCitySlug; display: string } 
   return BEST_CITIES.find((c) => canonicalCitySlug(c.slug) === canonical) ?? null;
 }
 
+/** Below this many matching buildings a slice is a doorway page, not a
+ *  ranking. 15 of the 63 city x filter combinations are under it today,
+ *  all in Krabi, Chiang Rai and Koh Samui. */
+const MIN_ROWS_TO_INDEX = 5;
+
 export async function generateMetadata({
   params,
 }: {
@@ -90,8 +95,16 @@ export async function generateMetadata({
   const description = filterObj.descChunk(cityObj.display);
 
   // Cheap count-only version of the page's main query — decides whether this
-  // slice is a soft-404 (zero matches) so we can noindex it instead of
-  // letting crawlers waste budget on an empty result page.
+  // slice has enough buildings to be worth indexing.
+  //
+  // The bar used to be "not zero", which was too low. Krabi and Chiang Rai
+  // return 1-3 matches for every one of the seven filters, so all seven
+  // pages listed the same two or three buildings under seven different
+  // titles — 42 near-identical URLs, the textbook doorway-page shape.
+  // Google crawled them and declined to index a single one (GSC "Crawled -
+  // currently not indexed", 2026-08-20 export). MIN_ROWS_TO_INDEX is the
+  // same idea as MIN_CONDOS_TO_INDEX on /district and hasIndexableSubstance
+  // on /condo: render it for anyone who asks, don't ask Google to file it.
   const supabase = getServerSupabase();
   const provinces = cityProvinceSlugs(canonicalCitySlug(city));
   let countQuery = supabase
@@ -113,7 +126,9 @@ export async function generateMetadata({
   return {
     title,
     description,
-    ...(count === 0 ? { robots: { index: false, follow: true } } : {}),
+    ...((count ?? 0) < MIN_ROWS_TO_INDEX
+      ? { robots: { index: false, follow: true } }
+      : {}),
     alternates: {
       // Use the resolved slug so alias URLs (e.g. "chonburi") canonicalize
       // to the kebab-case slug the site links to everywhere.
@@ -182,7 +197,14 @@ export default async function BestSlicePage({
       .limit(5),
   ]);
 
-  const rows = (rowsData ?? []) as unknown as Row[];
+  // Slugless rows are dropped, never linked by id. `/condo/<uuid>` does
+  // resolve, but only as a meta-refresh hop to the slug URL (ISR can't
+  // emit a real 308), which Google files under "Page with redirect" —
+  // 4,136 of them by 2026-08-17, all crawl budget spent on nothing. The
+  // ingest path leaves condos.slug null; scripts/backfill_condo_slug.py
+  // fills it on the weekly refresh, so a brand-new building is invisible
+  // here for at most one cycle instead of minting a redirect URL.
+  const rows = ((rowsData ?? []) as unknown as Row[]).filter((r) => r.slug);
   type RetireeRow = { id: string; slug: string | null; name: string; retiree_score: number; regions: { name: string } | { name: string }[] | null };
   const retireeRows = (retireeData ?? []) as unknown as RetireeRow[];
   const mrr = mortgage?.rate ?? null;
@@ -213,7 +235,7 @@ export default async function BestSlicePage({
       "@type": "ListItem",
       position: i + 1,
       name: r.name,
-      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug ?? r.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug}`,
       additionalProperty: [
         { "@type": "PropertyValue", name: "Gross yield (%)", value: r.gross_yield_pct ?? 0 },
         ...(mrr != null && r.gross_yield_pct != null
@@ -354,7 +376,7 @@ export default async function BestSlicePage({
                     <td className="px-4 py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                     <td className="px-4 py-3">
                       <Link
-                        href={`/${lang}/condo/${r.slug ?? r.id}`}
+                        href={`/${lang}/condo/${r.slug}`}
                         className="text-zinc-100 hover:underline font-medium"
                       >
                         {r.name}
@@ -399,7 +421,7 @@ export default async function BestSlicePage({
               const spread = mrr != null ? y - mrr : null;
               return (
                 <li key={r.id} className="p-3">
-                  <Link href={`/${lang}/condo/${r.slug ?? r.id}`} className="block space-y-2">
+                  <Link href={`/${lang}/condo/${r.slug}`} className="block space-y-2">
                     <div className="flex items-baseline gap-2">
                       <span className="text-zinc-600 tabular-nums text-xs w-6 shrink-0">
                         {i + 1}
@@ -508,7 +530,7 @@ export default async function BestSlicePage({
               return (
                 <Link
                   key={r.id}
-                  href={`/${lang}/condo/${r.slug ?? r.id}`}
+                  href={`/${lang}/condo/${r.slug}`}
                   className={`flex items-center gap-3 px-4 py-3 hover:bg-zinc-900/50 transition ${i > 0 ? "border-t border-zinc-800/50" : ""}`}
                 >
                   <span className="text-zinc-600 tabular-nums text-xs w-5 shrink-0">{i + 1}</span>

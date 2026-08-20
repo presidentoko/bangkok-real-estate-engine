@@ -304,7 +304,7 @@ export function formatContext(ctx: RetrievalContext): string {
       c.avg_monthly_rent != null ? `rent=฿${Math.round(c.avg_monthly_rent).toLocaleString()}/mo` : "",
       c.flood_risk_level != null ? `flood=L${c.flood_risk_level}` : "",
       c.completion_year != null ? `built=${c.completion_year}` : "",
-      `url=/condo/${c.slug ?? c.id}`,
+      `url=/condo/${c.slug}`,
     ].filter(Boolean);
     return parts.join(" ");
   };

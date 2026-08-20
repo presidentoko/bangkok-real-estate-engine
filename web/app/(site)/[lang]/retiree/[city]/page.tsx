@@ -120,7 +120,14 @@ export default async function RetireeCityPage({
 
   if (error) console.error("[retiree/city] Supabase error:", error);
 
-  const rows = (data ?? []) as unknown as Row[];
+  // Slugless rows are dropped, never linked by id. `/condo/<uuid>` does
+  // resolve, but only as a meta-refresh hop to the slug URL (ISR can't
+  // emit a real 308), which Google files under "Page with redirect" —
+  // 4,136 of them by 2026-08-17, all crawl budget spent on nothing. The
+  // ingest path leaves condos.slug null; scripts/backfill_condo_slug.py
+  // fills it on the weekly refresh, so a brand-new building is invisible
+  // here for at most one cycle instead of minting a redirect URL.
+  const rows = ((data ?? []) as unknown as Row[]).filter((r) => r.slug);
 
   // Fewer than 3 condos = not enough content to index.
   if (rows.length < 3) notFound();
@@ -153,7 +160,7 @@ export default async function RetireeCityPage({
       "@type": "ListItem",
       position: i + 1,
       name: r.name,
-      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug ?? r.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug}`,
       additionalProperty: [
         { "@type": "PropertyValue", name: "Retiree Score", value: r.retiree_score ?? 0 },
         ...(r.foreign_quota_inventory_pct != null
@@ -220,7 +227,7 @@ export default async function RetireeCityPage({
                 <td className="px-4 py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                 <td className="px-4 py-3">
                   <Link
-                    href={`/${lang}/condo/${r.slug ?? r.id}`}
+                    href={`/${lang}/condo/${r.slug}`}
                     className="text-zinc-100 hover:underline font-medium"
                   >
                     {r.name}
@@ -252,7 +259,7 @@ export default async function RetireeCityPage({
         <ul className="sm:hidden divide-y divide-zinc-800/70">
           {rows.map((r, i) => (
             <li key={r.id} className="p-3">
-              <Link href={`/${lang}/condo/${r.slug ?? r.id}`} className="block space-y-2">
+              <Link href={`/${lang}/condo/${r.slug}`} className="block space-y-2">
                 <div className="flex items-baseline gap-2">
                   <span className="text-zinc-600 tabular-nums text-xs w-6 shrink-0">{i + 1}</span>
                   <span className="text-zinc-100 font-medium leading-snug">{r.name}</span>

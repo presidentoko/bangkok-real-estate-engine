@@ -111,7 +111,7 @@ export function CityMapSvg({
             />
           );
           return d.url ? (
-            <Link key={d.id} href={`${condoLinkPrefix}${d.slug ?? d.id}`}>
+            <Link key={d.id} href={`${condoLinkPrefix}${d.slug}`}>
               {circle}
             </Link>
           ) : (

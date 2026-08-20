@@ -60,7 +60,14 @@ export default async function StalePage({
     median_listing_dom_days: number | null;
     max_listing_dom_days: number | null;
   };
-  const rows = (data ?? []) as unknown as Row[];
+  // Slugless rows are dropped, never linked by id. `/condo/<uuid>` does
+  // resolve, but only as a meta-refresh hop to the slug URL (ISR can't
+  // emit a real 308), which Google files under "Page with redirect" —
+  // 4,136 of them by 2026-08-17, all crawl budget spent on nothing. The
+  // ingest path leaves condos.slug null; scripts/backfill_condo_slug.py
+  // fills it on the weekly refresh, so a brand-new building is invisible
+  // here for at most one cycle instead of minting a redirect URL.
+  const rows = ((data ?? []) as unknown as Row[]).filter((r) => r.slug);
 
   const provLabel = (slug: string) => {
     // DB `province` values aren't always the compact UI slug PROVINCE_LABELS
@@ -115,7 +122,7 @@ export default async function StalePage({
                     <td className="py-3 text-zinc-500 tabular-nums">{i + 1}</td>
                     <td className="py-3">
                       <Link
-                        href={`/${lang}/condo/${r.slug ?? r.id}`}
+                        href={`/${lang}/condo/${r.slug}`}
                         className="text-zinc-100 hover:text-blue-300 transition"
                       >
                         {r.name}
@@ -150,7 +157,7 @@ export default async function StalePage({
                 "text-zinc-300";
               return (
                 <li key={r.id} className="py-3">
-                  <Link href={`/${lang}/condo/${r.slug ?? r.id}`} className="block space-y-1">
+                  <Link href={`/${lang}/condo/${r.slug}`} className="block space-y-1">
                     <div className="flex items-baseline gap-2">
                       <span className="text-zinc-600 tabular-nums text-xs w-6 shrink-0">{i + 1}</span>
                       <span className="text-zinc-100 font-medium leading-snug">{r.name}</span>

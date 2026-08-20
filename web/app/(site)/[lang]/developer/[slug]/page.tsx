@@ -115,7 +115,14 @@ export default async function DeveloperPage({
     .eq("developer_slug", slug)
     .order("avg_sale_price", { ascending: false, nullsFirst: false });
 
-  const rows = (data ?? []) as unknown as Row[];
+  // Slugless rows are dropped, never linked by id. `/condo/<uuid>` does
+  // resolve, but only as a meta-refresh hop to the slug URL (ISR can't
+  // emit a real 308), which Google files under "Page with redirect" —
+  // 4,136 of them by 2026-08-17, all crawl budget spent on nothing. The
+  // ingest path leaves condos.slug null; scripts/backfill_condo_slug.py
+  // fills it on the weekly refresh, so a brand-new building is invisible
+  // here for at most one cycle instead of minting a redirect URL.
+  const rows = ((data ?? []) as unknown as Row[]).filter((r) => r.slug);
   if (rows.length === 0) notFound();
 
   // Developer meta (from first row — same across all rows for this slug).
@@ -149,7 +156,7 @@ export default async function DeveloperPage({
       "@type": "ListItem",
       position: i + 1,
       name: r.name,
-      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug ?? r.id}`,
+      url: `${SEO_SITE_URL}/${lang}/condo/${r.slug}`,
     })),
   };
 
@@ -221,7 +228,7 @@ export default async function DeveloperPage({
               <tr key={r.id} className="border-t border-zinc-800/50 hover:bg-zinc-900/50">
                 <td className="px-4 py-3">
                   <Link
-                    href={`/${lang}/condo/${r.slug ?? r.id}`}
+                    href={`/${lang}/condo/${r.slug}`}
                     className="text-zinc-100 hover:underline font-medium"
                   >
                     {r.name}
@@ -265,7 +272,7 @@ export default async function DeveloperPage({
         <ul className="sm:hidden divide-y divide-zinc-800/70">
           {rows.map((r) => (
             <li key={r.id} className="p-3">
-              <Link href={`/${lang}/condo/${r.slug ?? r.id}`} className="block space-y-1">
+              <Link href={`/${lang}/condo/${r.slug}`} className="block space-y-1">
                 <div className="text-zinc-100 font-medium leading-snug">{r.name}</div>
                 <div className="flex gap-3 text-xs text-zinc-500 tabular-nums">
                   {r.completion_year && <span>{r.completion_year}</span>}
