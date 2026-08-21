@@ -148,6 +148,7 @@ export default async function BestSlicePage({
   const { city, slug, lang } = await params;
   if (!isLang(lang)) notFound();
   const dict = getDictionary(lang);
+  const tBest = dict.bestFaq;
   const t = dict.bestTable;
   const cityObj = resolveBestCity(city);
   const filterObj = getBestFilter(slug);
@@ -257,37 +258,34 @@ export default async function BestSlicePage({
 
   const mrrLine =
     mrr != null && medianYield != null
-      ? `Median yield in this slice is ${medianYield.toFixed(2)}%, a ${(medianYield - mrr >= 0 ? "+" : "")}${(medianYield - mrr).toFixed(2)}pp spread against the current Thai MRR of ${mrr.toFixed(2)}%.`
-      : "Spread is shown wherever the current Bank of Thailand MRR is available.";
+      ? tBest.yieldA(
+          medianYield.toFixed(2),
+          `${medianYield - mrr >= 0 ? "+" : ""}${(medianYield - mrr).toFixed(2)}`,
+          mrr.toFixed(2)
+        )
+      : tBest.yieldANoMrr;
 
   const faqItems = [
     {
-      q: `How many ${titleChunk} does RealData currently measure?`,
-      a:
-        rows.length === 0
-          ? `Right now zero — either the filter is tight or our coverage in this slice is thin. The /yields page shows the full Thailand ranking.`
-          : `${rows.length} buildings match the filter, drawn from active sale and rent listings across hipflat, dotproperty, ddproperty, and fazwaz.`,
+      q: tBest.countQ(titleChunk),
+      a: rows.length === 0 ? tBest.countAZero : tBest.countA(String(rows.length)),
     },
-    {
-      q: `What is the median gross rental yield among these condos?`,
-      a: mrrLine,
-    },
+    { q: tBest.yieldQ, a: mrrLine },
     ...(medianSale != null
-      ? [{
-          q: `What is the median sale price in this slice?`,
-          a: `Median sale price is ฿${Math.round(medianSale).toLocaleString()}. Median monthly rent is ${medianRent != null ? "฿" + Math.round(medianRent).toLocaleString() : "—"}. Both figures come from active listings on the four portals we track.`,
-        }]
+      ? [
+          {
+            q: tBest.priceQ,
+            a: tBest.priceA(
+              `฿${Math.round(medianSale).toLocaleString()}`,
+              medianRent != null
+                ? `฿${Math.round(medianRent).toLocaleString()}`
+                : "—"
+            ),
+          },
+        ]
       : []),
-    {
-      q: `Why are some popular ${cityObj.display} condos missing?`,
-      a:
-        `A building has to clear two bars to enter this ranking: (1) at least 2 active sale and 2 active rent listings on the same building, so the yield is not a fluke; (2) avg sale price ≥ ฿500,000 and yield ≤ 25%, which filters obvious price-parse outliers. Coverage widens with every weekly ingest cycle.`,
-    },
-    {
-      q: `How do I shortlist one of these?`,
-      a:
-        `Each building name links to its full RealData report — yield, foreign-quota inventory, flood risk, days-on-market, cost-of-ownership panel. The bottom of this page has a free expert-opinion request that goes to one vetted independent broker who knows ${cityObj.display}.`,
-    },
+    { q: tBest.missingQ(cityObj.display), a: tBest.missingA },
+    { q: tBest.shortlistQ, a: tBest.shortlistA(cityObj.display) },
   ];
   const faqJsonLd = buildFaqJsonLd(faqItems);
 

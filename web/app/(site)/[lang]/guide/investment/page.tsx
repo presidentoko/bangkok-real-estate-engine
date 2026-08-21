@@ -14,11 +14,6 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const revalidate = 86400;
 
-const FAQ: FaqItem[] = [
-  { q: "What rental yield can you get on a Bangkok condo?", a: "Gross rental yields in Bangkok typically range from 4% to 7%, varying by area and building age. Older buildings and outer areas tend to show higher gross yields; prime central buildings trade at lower yields but stronger capital appreciation." },
-  { q: "Which Bangkok areas have the highest condo yields?", a: "Yields shift with the market; the live table on this page ranks Bangkok areas by current median gross yield from active listings, refreshed weekly." },
-  { q: "Is now a good time to buy a Bangkok condo?", a: "Use the Bubble Index to see whether a specific building is priced above or below its district, and check the BOT MRR for financing costs. RealData surfaces both so the decision rests on data, not sentiment." },
-];
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -51,7 +46,7 @@ export default async function InvestmentPage({ params }: { params: Promise<{ lan
   );
   return (
     <main className="max-w-4xl mx-auto p-6">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(FAQ)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(t.pageFaq.guideInvest)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbs) }} />
       <Breadcrumbs items={crumbs} />
       <h1 className="text-3xl font-bold mb-2 mt-2">{t.guide.investment.title}</h1>
@@ -88,7 +83,7 @@ export default async function InvestmentPage({ params }: { params: Promise<{ lan
         <p>Bangkok condo returns split into two levers: <Link className="text-blue-400" href={`/${lang}/glossary/gross-yield`}>gross rental yield</Link> and capital appreciation. The table above ranks areas by current yield; pair it with each building’s <Link className="text-blue-400" href={`/${lang}/glossary/bubble-index`}>Bubble Index</Link> to avoid overpaying. Foreign buyers should first read <Link className="text-blue-400" href={`/${lang}/guide/foreign-ownership`}>can foreigners buy a condo?</Link>.</p>
       </article>
 
-      <FaqSection items={FAQ} heading={t.home.faqTitle} className="mt-10" />
+      <FaqSection items={t.pageFaq.guideInvest} heading={t.home.faqTitle} className="mt-10" />
     </main>
   );
 }

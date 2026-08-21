@@ -34,7 +34,7 @@ import { canonicalCitySlug, districtDisplayName, getCity, provinceDisplayName } 
 import { hasIndexableSubstance } from "@/lib/condoIndexability";
 import { getNeighbourSlugIndex } from "@/lib/queries/neighbourIndex";
 import { retireeSuitability } from "@/lib/retiree";
-import { langAlternates } from "@/lib/seo";
+import { langAlternates, ogFor } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd, buildCondoJsonLd, buildCondoSpeakableJsonLd } from "@/lib/seo/condoJsonLd";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
@@ -285,17 +285,22 @@ export async function generateMetadata({
       canonical: `${SITE_URL}/${lang}/condo/${slug}`,
       languages: langAlternates(`/condo/${slug}`),
     },
-    openGraph: {
+    // ogFor() rather than a bare object: declaring openGraph here replaces
+    // the layout's wholesale (Next shallow-merges metadata), which silently
+    // dropped og:site_name, og:locale and og:locale:alternate from every
+    // condo page.
+    //
+    // The per-condo opengraph-image route is gone — it was a second
+    // ~46,000-URL ISR surface, one edge ImageResponse (a Supabase read plus
+    // a 1200x630 PNG render) per entry, for a card almost none of these
+    // pages will ever have shared. Point at the [lang]-level image the way
+    // blog/weekly does; leaving this pointing at the deleted route would
+    // publish a 404 as og:image on every condo page.
+    openGraph: ogFor(lang, {
       title,
       description: desc,
       url: `${SITE_URL}/${lang}/condo/${slug}`,
       type: "article",
-      // The per-condo opengraph-image route is gone — it was a second
-      // ~46,000-URL ISR surface, one edge ImageResponse (a Supabase read
-      // plus a 1200x630 PNG render) per entry, for a card almost none of
-      // these pages will ever have shared. Point at the [lang]-level image
-      // the way blog/weekly does; leaving this pointing at the deleted
-      // route would publish a 404 as og:image on every condo page.
       images: [
         {
           url: `${SITE_URL}/${lang}/opengraph-image`,
@@ -304,7 +309,7 @@ export async function generateMetadata({
           alt: `${c.name} — RealData Bangkok condo report`,
         },
       ],
-    },
+    }),
   };
 }
 

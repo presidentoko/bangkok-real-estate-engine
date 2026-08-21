@@ -13,13 +13,6 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const revalidate = 86400;
 
-const FAQ: FaqItem[] = [
-  { q: "Can foreigners buy a condo in Thailand?", a: "Yes. Foreigners can own a condominium unit freehold in their own name, provided the building has not exceeded its 49% foreign-ownership quota and the purchase funds are remitted into Thailand from abroad in foreign currency." },
-  { q: "What is the 49% foreign quota?", a: "Under the Condominium Act B.E. 2522, foreigners may collectively own up to 49% of the total saleable floor area of any condominium. The remaining 51% must be held by Thai nationals or Thai-majority entities." },
-  { q: "Can a foreigner own land or a house in Thailand?", a: "Generally no. Foreigners cannot own land outright. Houses and villas are typically secured via a registered leasehold (up to 30 years) or, less commonly, through a Thai company structure — which carries legal risk and should be reviewed by a lawyer." },
-  { q: "What taxes and fees apply when buying a condo?", a: "At transfer expect a 2% transfer fee on the appraised value, plus either 3.3% specific business tax (if the seller sells within 5 years) or 0.5% stamp duty, and a withholding tax. Who pays what is negotiable between buyer and seller." },
-  { q: "How do I transfer the money correctly?", a: "Funds must enter Thailand in foreign currency and be converted to baht by the receiving Thai bank, which issues a Foreign Exchange Transaction (FET) certificate. The Land Department requires this proof to register foreign freehold ownership." },
-];
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -50,7 +43,7 @@ export default async function ForeignOwnershipPage({ params }: { params: Promise
   );
   return (
     <main className="max-w-3xl mx-auto p-6 prose-invert">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(FAQ)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(t.pageFaq.guideForeign)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbs) }} />
       <Breadcrumbs items={crumbs} />
       <h1 className="text-3xl font-bold mb-2 mt-2">{t.guide.foreign.title}</h1>
@@ -90,7 +83,7 @@ export default async function ForeignOwnershipPage({ params }: { params: Promise
         </section>
       </article>
 
-      <FaqSection items={FAQ} heading={t.home.faqTitle} className="mt-10" />
+      <FaqSection items={t.pageFaq.guideForeign} heading={t.home.faqTitle} className="mt-10" />
 
       <section className="mt-8 border-t border-zinc-800 pt-4 text-sm">
         <p className="text-zinc-500">This guide is general information, not legal advice. Next: <Link className="text-blue-400" href={`/${lang}/guide/investment`}>the Bangkok condo investment guide</Link> with live yield data.</p>

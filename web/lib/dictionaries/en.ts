@@ -559,6 +559,61 @@ const dict = {
     macroTitle: "Thailand mortgage + macro rates",
   },
 
+  // /best/{city}/{slug} FAQ — ~180 URLs x 3 locales. Was English
+  // literals in the page; the answers interpolate live medians so the
+  // visible copy is unique per slice, which only helps if it is also in
+  // the reader's language.
+  bestFaq: {
+    countAZero: "Right now zero — either the filter is tight or our coverage in this slice is thin. The /yields page shows the full Thailand ranking.",
+    yieldQ: "What is the median gross rental yield among these condos?",
+    yieldANoMrr: "Spread is shown wherever the current Bank of Thailand MRR is available.",
+    priceQ: "What is the median sale price in this slice?",
+    missingA: "A building has to clear two bars to enter this ranking: (1) at least 2 active sale and 2 active rent listings on the same building, so the yield is not a fluke; (2) avg sale price ≥ ฿500,000 and yield ≤ 25%, which filters obvious price-parse outliers. Coverage widens with every weekly ingest cycle.",
+    shortlistQ: "How do I shortlist one of these?",
+    countQ: (chunk: string) => `How many ${chunk} does RealData currently measure?`,
+    countA: (n: string) => `${n} buildings match the filter, drawn from active sale and rent listings across hipflat, dotproperty, ddproperty, and fazwaz.`,
+    yieldA: (pct: string, spread: string, mrr: string) =>
+      `Median yield in this slice is ${pct}%, a ${spread}pp spread against the current Thai MRR of ${mrr}%.`,
+    priceA: (sale: string, rent: string) => `Median sale price is ${sale}. Median monthly rent is ${rent}. Both figures come from active listings on the four portals we track.`,
+    missingQ: (city: string) => `Why are some popular ${city} condos missing?`,
+    shortlistA: (city: string) => `Each building name links to its full RealData report — yield, foreign-quota inventory, flood risk, days-on-market, cost-of-ownership panel. The bottom of this page has a free expert-opinion request that goes to one vetted independent broker who knows ${city}.`,
+  },
+
+  // FAQ bodies for /yields, /macro and the two guides. They were English
+  // literals in the pages and became visible on 2026-08-21, so /ko and
+  // /th were serving a localized shell over English prose.
+  //
+  // yields[1] and macro[0] end mid-sentence on purpose: the page appends
+  // a live MRR clause to each.
+  pageFaq: {
+    yields: [
+      { q: "How is gross rental yield calculated?", a: "Gross yield = (12 × median monthly rent ÷ median sale price) × 100%, computed per condo building. Only buildings with at least 2 sale and 2 rent listings are included. Listings priced in USD on hipflat are converted to THB before aggregation, and any yield above 25% is dropped as a likely price-parse error." },
+      { q: "What is the 'Spread vs MRR' column?", a: "Spread = gross yield minus the current Bank of Thailand Minimum Retail Rate (MRR). A positive spread means the rental income alone covers more than the mortgage interest a Thai bank would charge that day. " },
+      { q: "Why does my favourite condo not show up here?", a: "Two reasons. (1) The building doesn't have enough matched sale + rent listings yet — we need at least 2 of each on the same building. (2) The yield landed above 25% or the sale price below ฿500,000, which we filter as a likely outlier. Coverage will widen as we accumulate more weekly snapshots." },
+      { q: "Is the yield net of CAM fees and tax?", a: "No — this is a pre-tax, pre-vacancy gross figure. Net yield in Thailand is typically 1.5–3 percentage points lower after CAM (common area fees), sinking fund top-ups, the 15% withholding on rent for foreign owners, vacancy, and management commission. Each individual condo report shows a Cost of Ownership panel that estimates the net step-down." },
+      { q: "How current are these numbers?", a: "Listings are refreshed daily for Bangkok and weekly across the full Thailand sweep. Yields are recomputed after each ingest cycle, and the BOT MRR benchmark refreshes daily where the source publishes daily." },
+    ],
+    macro: [
+      { q: "What is Thailand's MRR and why does it matter for condo buyers?", a: "MRR (Minimum Retail Rate) is the reference rate Thai banks attach mortgage products to — e.g. \"MRR-1.5% for the first three years, MRR floating after.\" It is the single most important rate for a Thai home buyer because every floating-rate mortgage moves with it. " },
+      { q: "What is the difference between Policy Rate, MRR, MLR, and MOR?", a: "Policy Rate is the BOT's overnight repurchase rate and sets the floor for everything else. MLR (Minimum Lending Rate) is for prime corporate and high-quality retail borrowers and sits below MRR. MRR (Minimum Retail Rate) is the standard reference for retail mortgages. MOR (Minimum Overdraft Rate) governs overdraft facilities and is less relevant for property but tracks broader lending conditions." },
+      { q: "How often does RealData refresh these macro numbers?", a: "Daily, where the Bank of Thailand publishes daily — Policy Rate, MRR, MLR, MOR, BIBOR. The household-loan stock series is quarterly. Each card on this page shows its own latest period." },
+      { q: "Where does this data come from?", a: "Bank of Thailand BTWS_STAT (series FM_RT_001_S2 for the interest-rate panel and EC_MB_039 for the household-loan series). Free to use under the BOT's standard data conditions; we link the source for every quoted number." },
+      { q: "How do I use MRR to judge whether a condo yield is attractive?", a: "Compute spread = condo's gross rental yield − MRR. Positive spread means the rental income alone covers more than the mortgage interest a Thai bank would charge that day on a fully-leveraged purchase. We compute this spread for every condo with enough data on the /yields ranking and on each individual condo report." },
+    ],
+    guideInvest: [
+      { q: "What rental yield can you get on a Bangkok condo?", a: "Gross rental yields in Bangkok typically range from 4% to 7%, varying by area and building age. Older buildings and outer areas tend to show higher gross yields; prime central buildings trade at lower yields but stronger capital appreciation." },
+      { q: "Which Bangkok areas have the highest condo yields?", a: "Yields shift with the market; the live table on this page ranks Bangkok areas by current median gross yield from active listings, refreshed weekly." },
+      { q: "Is now a good time to buy a Bangkok condo?", a: "Use the Bubble Index to see whether a specific building is priced above or below its district, and check the BOT MRR for financing costs. RealData surfaces both so the decision rests on data, not sentiment." },
+    ],
+    guideForeign: [
+      { q: "Can foreigners buy a condo in Thailand?", a: "Yes. Foreigners can own a condominium unit freehold in their own name, provided the building has not exceeded its 49% foreign-ownership quota and the purchase funds are remitted into Thailand from abroad in foreign currency." },
+      { q: "What is the 49% foreign quota?", a: "Under the Condominium Act B.E. 2522, foreigners may collectively own up to 49% of the total saleable floor area of any condominium. The remaining 51% must be held by Thai nationals or Thai-majority entities." },
+      { q: "Can a foreigner own land or a house in Thailand?", a: "Generally no. Foreigners cannot own land outright. Houses and villas are typically secured via a registered leasehold (up to 30 years) or, less commonly, through a Thai company structure — which carries legal risk and should be reviewed by a lawyer." },
+      { q: "What taxes and fees apply when buying a condo?", a: "At transfer expect a 2% transfer fee on the appraised value, plus either 3.3% specific business tax (if the seller sells within 5 years) or 0.5% stamp duty, and a withholding tax. Who pays what is negotiable between buyer and seller." },
+      { q: "How do I transfer the money correctly?", a: "Funds must enter Thailand in foreign currency and be converted to baht by the receiving Thai bank, which issues a Foreign Exchange Transaction (FET) certificate. The Land Department requires this proof to register foreign freehold ownership." },
+    ],
+  },
+
   condoPage: {
     nearbyTitle: "Nearby & metrics",
     shareTitle: "Found this useful? Share the report",
