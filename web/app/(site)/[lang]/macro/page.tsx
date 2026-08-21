@@ -159,7 +159,7 @@ export default async function MacroPage({
         dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
       />
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold">Thailand mortgage + macro rates</h1>
+        <h1 className="text-3xl font-bold">{t.tools.macroTitle}</h1>
         <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
           Source: Bank of Thailand BTWS_STAT (FM_RT_001_S2). Updated weekly.
           {latestPeriod && (

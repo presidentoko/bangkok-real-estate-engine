@@ -527,6 +527,21 @@ const dict: Dict = {
     headlineCondo: (name: string) => `${name}, 검토 중이신가요? 전문가 의견을 받아보세요.`,
   },
 
+  // /compare, /ask, /saved and /macro never called getDictionary, so they
+  // rendered English H1s and lead paragraphs on all three locales.
+  tools: {
+    compareTitle: "콘도 비교",
+    compareLeadA: "방콕 콘도를 최대 3개까지 나란히 비교합니다. 콘도 페이지에서 ",
+    compareCta: "“비교하기”",
+    compareLeadB: " 를 누르거나, URL에 id를 직접 넣으세요 ",
+    compareFootnote: "★ 는 각 항목에서 가장 유리한 값을 표시합니다. 수익률과 스프레드는 세전·공실 반영 전 기준입니다. 외국인 쿼터 비율은 FazWaz에 현재 등록된 매물 중 Foreign Quota로 표시된 비율이며, 이미 소진된 쿼터는 보이지 않습니다 — 분양 사무실에 확인하세요.",
+    askTitle: "RealData에게 물어보기",
+    askLead: "저희가 직접 측정한 데이터에 근거한 부동산 리서치입니다 — hipflat, dotproperty, ddproperty, fazwaz에서 추적하는 모든 콘도와 태국 중앙은행 거시 지표(MRR, MLR, 기준금리)를 함께 봅니다. 마케팅 문구나 인플루언서 주장 없이, 측정된 숫자만 답합니다.",
+    savedTitle: "저장한 콘도",
+    savedLead: "브라우저에만 저장됩니다. 브라우저 데이터를 지우면 목록도 사라집니다.",
+    macroTitle: "태국 주택담보대출 · 거시 금리",
+  },
+
   condoPage: {
     nearbyTitle: "주변 정보와 지표",
     shareTitle: "도움이 됐나요? 리포트를 공유해 주세요",

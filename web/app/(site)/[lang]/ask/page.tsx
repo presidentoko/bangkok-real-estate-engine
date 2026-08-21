@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { AskChat } from "@/components/AskChat";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 
@@ -37,16 +38,14 @@ export default async function AskPage({
 }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
+  const t = getDictionary(lang).tools;
 
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-6">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold">Ask RealData</h1>
+        <h1 className="text-3xl font-bold">{t.askTitle}</h1>
         <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
-          Property research grounded in our measured data — 8,000+ condos,
-          90,000+ listings across hipflat, dotproperty, ddproperty, fazwaz,
-          plus Bank of Thailand macro indicators (MRR, MLR, policy rate).
-          No marketing fluff, no influencer claims — just numbers we track.
+          {t.askLead}
         </p>
       </header>
 

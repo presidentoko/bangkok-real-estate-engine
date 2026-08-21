@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CompareExplorer } from "@/components/CompareExplorer";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 
@@ -44,15 +45,16 @@ export default async function ComparePage({
 }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
+  const t = getDictionary(lang).tools;
 
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-6">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold">Compare condos</h1>
+        <h1 className="text-3xl font-bold">{t.compareTitle}</h1>
         <p className="text-zinc-400 text-sm max-w-2xl">
-          Head-to-head comparison of up to 3 Bangkok condos. Add condos by
-          clicking <strong className="text-zinc-300">&quot;Compare with…&quot;</strong> on any
-          condo page, or paste ids into the URL as{" "}
+          {t.compareLeadA}
+          <strong className="text-zinc-300">{t.compareCta}</strong>
+          {t.compareLeadB}
           <code className="text-zinc-300">?a=ID&amp;b=ID&amp;c=ID</code>.
         </p>
       </header>
@@ -60,10 +62,7 @@ export default async function ComparePage({
       <CompareExplorer lang={lang} />
 
       <p className="text-xs text-zinc-500 leading-relaxed">
-        ★ highlights the best value in each row. Yield + spread are pre-tax,
-        pre-vacancy. Foreign quota share = % of currently-listed units tagged
-        Foreign Quota on FazWaz; sold-quota status is not visible — confirm at
-        the sales office.
+        {t.compareFootnote}
       </p>
     </main>
   );

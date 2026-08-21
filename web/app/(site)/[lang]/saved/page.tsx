@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { SavedContent } from "./SavedContent";
@@ -27,14 +28,14 @@ export default async function SavedPage({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
+  const t = getDictionary(isLang(lang) ? lang : "en").tools;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <header>
-        <h1 className="text-2xl font-bold">Saved condos</h1>
+        <h1 className="text-2xl font-bold">{t.savedTitle}</h1>
         <p className="text-zinc-400 text-sm mt-1">
-          Stored locally in your browser. Clearing browser data will remove this
-          list.
+          {t.savedLead}
         </p>
       </header>
       <SavedContent lang={isLang(lang) ? lang : "en"} />

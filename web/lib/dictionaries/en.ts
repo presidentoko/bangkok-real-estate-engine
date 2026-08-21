@@ -544,6 +544,21 @@ const dict = {
     headlineCondo: (name: string) => `Considering ${name}? Get an expert opinion.`,
   },
 
+  // /compare, /ask, /saved and /macro never called getDictionary, so they
+  // rendered English H1s and lead paragraphs on all three locales.
+  tools: {
+    compareTitle: "Compare condos",
+    compareLeadA: "Head-to-head comparison of up to 3 Bangkok condos. Add condos by clicking ",
+    compareCta: "“Compare with…”",
+    compareLeadB: " on any condo page, or paste ids into the URL as ",
+    compareFootnote: "★ highlights the best value in each row. Yield + spread are pre-tax, pre-vacancy. Foreign quota share = % of currently-listed units tagged Foreign Quota on FazWaz; sold-quota status is not visible — confirm at the sales office.",
+    askTitle: "Ask RealData",
+    askLead: "Property research grounded in our measured data — every condo we track across hipflat, dotproperty, ddproperty and fazwaz, plus Bank of Thailand macro indicators (MRR, MLR, policy rate). No marketing fluff, no influencer claims — just numbers we measure.",
+    savedTitle: "Saved condos",
+    savedLead: "Stored locally in your browser. Clearing browser data will remove this list.",
+    macroTitle: "Thailand mortgage + macro rates",
+  },
+
   condoPage: {
     nearbyTitle: "Nearby & metrics",
     shareTitle: "Found this useful? Share the report",
