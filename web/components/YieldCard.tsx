@@ -4,7 +4,6 @@ import type { CondoYield, MortgageRate } from "@/lib/queries/yield";
 type Props = {
   yieldData: CondoYield | null;
   mortgageRate: MortgageRate | null;
-  currency?: string;
 };
 
 /**

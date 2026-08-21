@@ -47,6 +47,17 @@ export function CitySwitcher({ lang }: { lang: Lang }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
 
+  // ESC closes — outside-click was the only dismissal, which keyboard users
+  // don't have (same reason MobileMenu grew one).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   // Close on route change.
   useEffect(() => {
     setOpen(false);
@@ -76,16 +87,22 @@ export function CitySwitcher({ lang }: { lang: Lang }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 text-xs font-medium px-1.5 py-0.5 rounded hover:bg-zinc-900 transition"
-        aria-haspopup="menu"
+        // px-1.5 py-0.5 left a ~60x18 hit area, under the 44x44 minimum tap
+        // target (WCAG 2.5.5); min-w/min-h + centered flex is how MobileMenu
+        // fixed the same thing without growing the label.
+        className="min-w-11 min-h-11 flex items-center justify-center gap-1 text-zinc-400 hover:text-zinc-200 text-xs font-medium px-1.5 rounded hover:bg-zinc-900 transition"
         aria-expanded={open}
       >
         <span>{current.name[lang]}</span>
         <span className={`text-[9px] transition ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
       {open && (
-        <div
-          role="menu"
+        // role="navigation", not "menu": this is a plain link list with no
+        // arrow-key roving-tabindex behavior, so the menu/menuitem ARIA pair
+        // promised screen readers something the component never implemented
+        // (same call as MobileMenu's sheet).
+        <nav
+          aria-label="Switch city"
           className="absolute top-full left-0 mt-1 min-w-[150px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-xl shadow-black/40 overflow-hidden z-50"
         >
           {cities.map((c) => (
@@ -97,12 +114,11 @@ export function CitySwitcher({ lang }: { lang: Lang }) {
                   ? "text-blue-300 font-semibold"
                   : "text-zinc-300"
               }`}
-              role="menuitem"
             >
               {c.name[lang]}
             </Link>
           ))}
-        </div>
+        </nav>
       )}
     </div>
   );

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
+import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
@@ -237,7 +239,7 @@ export default async function ChiangMaiBestValue({
     },
   };
 
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: "What is a good condo price in Chiang Mai for digital nomads?",
       a: "Based on RealData's analysis, Chiang Mai condo prices range from under 1M THB in outer districts (San Sai, Hang Dong) to 3–5M THB in premium Nimmanhaemin. Bubble Index below 90 means you get more sqm per baht than comparable buildings in the same sub-area — these represent the best value relative to the local market.",
@@ -250,7 +252,8 @@ export default async function ChiangMaiBestValue({
       q: "What is the Bubble Index for Nimmanhaemin condos in Chiang Mai?",
       a: "Nimman (Nimmanhaemin) is Chiang Mai's most sought-after sub-area for digital nomads and tourists, pushing Bubble Indexes above 100 for most buildings there. RealData's analysis identifies buildings below the Nimman sub-area median — typically slightly off the main Nimman Road corridor or in the adjacent Maya Mall area — as the best value within this popular zone.",
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -347,6 +350,12 @@ export default async function ChiangMaiBestValue({
             → All 58 Chiang Mai condos
           </Link>
         </section>
+
+        <FaqSection
+          items={faqItems}
+          heading={getDictionary(lang).home.faqTitle}
+          className="mt-10"
+        />
       </article>
     </main>
   );

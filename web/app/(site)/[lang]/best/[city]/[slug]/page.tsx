@@ -19,6 +19,7 @@ import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
+import FaqSection from "@/components/FaqSection";
 import { getServerSupabase } from "@/lib/supabase";
 
 // Was 86400 — every (city, filter) combo is prebuilt at build time (see
@@ -151,7 +152,8 @@ export default async function BestSlicePage({
 }) {
   const { city, slug, lang } = await params;
   if (!isLang(lang)) notFound();
-  const t = getDictionary(lang).bestTable;
+  const dict = getDictionary(lang);
+  const t = dict.bestTable;
   const cityObj = resolveBestCity(city);
   const filterObj = getBestFilter(slug);
   if (!cityObj || !filterObj) notFound();
@@ -263,7 +265,7 @@ export default async function BestSlicePage({
       ? `Median yield in this slice is ${medianYield.toFixed(2)}%, a ${(medianYield - mrr >= 0 ? "+" : "")}${(medianYield - mrr).toFixed(2)}pp spread against the current Thai MRR of ${mrr.toFixed(2)}%.`
       : "Spread is shown wherever the current Bank of Thailand MRR is available.";
 
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: `How many ${titleChunk} does RealData currently measure?`,
       a:
@@ -291,7 +293,8 @@ export default async function BestSlicePage({
       a:
         `Each building name links to its full RealData report — yield, foreign-quota inventory, flood risk, days-on-market, cost-of-ownership panel. The bottom of this page has a free expert-opinion request that goes to one vetted independent broker who knows ${cityObj.display}.`,
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   // Sibling slugs in same city + same slug across all cities — internal
   // link surface for crawl depth. We deliberately keep it dense.
@@ -549,6 +552,8 @@ export default async function BestSlicePage({
           </Link>
         </section>
       )}
+
+      <FaqSection items={faqItems} heading={dict.home.faqTitle} />
 
       <LeadCaptureCTA
         headline={`See one you like in ${cityObj.display}? Get an expert read.`}

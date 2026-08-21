@@ -27,6 +27,7 @@ export function SaveButton({ id, name }: Props) {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={saved}
       title={saved ? `Remove ${name} from saved` : `Save ${name}`}
       aria-label={saved ? "Remove from saved" : "Save condo"}
       className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl font-semibold text-sm transition border ${

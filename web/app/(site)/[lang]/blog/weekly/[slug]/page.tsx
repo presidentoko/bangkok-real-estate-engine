@@ -5,7 +5,6 @@ import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
-import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getWeeklyPost, listWeeklyPosts, type WeeklyPost } from "@/lib/weeklyPost";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { renderMarkdownLink } from "@/lib/markdownLinkSafety";
@@ -78,18 +77,13 @@ export default async function WeeklyPostPage({
     mainEntityOfPage: `${SEO_SITE_URL}/${lang}/blog/weekly/${slug}`,
   };
   const breadcrumbsJsonLd = blogBreadcrumbs(lang, `weekly/${slug}`, post.title);
-  // Synthesise a short FAQ from the lead + first section so AI Overviews
-  // have something quotable even if the generator didn't produce one.
-  const faqJsonLd = buildFaqJsonLd([
-    {
-      q: `What is "${post.title}" about?`,
-      a: post.description,
-    },
-    ...(post.sections.slice(0, 2).map((s) => ({
-      q: s.heading,
-      a: stripMarkdown(s.body).slice(0, 500),
-    })) ?? []),
-  ]);
+  // FAQPage schema deliberately removed (2026-08-21). It used to synthesise
+  // Q&A from the post's own section headings + a 500-char truncation of each
+  // section body. Those "questions" are statement headings, not questions, and
+  // the "answers" were a mid-sentence copy of body text rendered a few hundred
+  // pixels further down the same page — so making it visible (which Google
+  // requires for FAQPage) would have duplicated the article back to the reader.
+  // The Article + BreadcrumbList schemas below still carry this page.
 
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-8">
@@ -101,11 +95,6 @@ export default async function WeeklyPostPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbsJsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(faqJsonLd) }}
-      />
-
       <header className="space-y-3">
         <p className="text-zinc-500 text-xs uppercase tracking-wider">
           RealData weekly · {post.published_at}
@@ -218,14 +207,6 @@ function InlineMd({ text }: { text: string }) {
     .replace(/`([^`]+)`/g, '<code class="text-emerald-300">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong class="text-zinc-50">$1</strong>');
   return <span dangerouslySetInnerHTML={{ __html: html }} />;
-}
-
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/[*`_]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
 export type _Touch = WeeklyPost; // keeps the import warning-free under noUnusedLocals

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
+import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
@@ -240,6 +242,23 @@ export default async function PhuketBubbleWatch({
     },
   };
 
+  // Rendered visibly by <FaqSection> below — Google requires FAQPage Q&A to
+  // exist on the page, so this array feeds both the schema and the markup.
+  const faqItems = [
+    {
+      q: "What is the Phuket condo Bubble Index?",
+      a: "RealData's Bubble Index measures each condo building's median sale price per sqm relative to its sub-area (tambon) median. 100 = at market. 200 = priced double the local average. In Phuket, buildings catering to foreign vacation-rental buyers — particularly in Patong, Kata, and Kamala — often score 150–350, reflecting the beach-proximity premium.",
+    },
+    {
+      q: "Who buys overpriced condos in Phuket?",
+      a: "Phuket's premium condo market is driven by Russian buyers (particularly post-2022), Chinese investors, Western retirees seeking vacation homes, and Bangkok investors targeting vacation-rental income. Marketing materials emphasize 'guaranteed yield' and 'beachfront premium' without publishing specific numbers — this analysis supplies those numbers.",
+    },
+    {
+      q: "How do you measure if a Phuket condo is overpriced?",
+      a: "RealData crawls all hipflat.co.th listings for each Phuket condo building, computes the median price per square meter, then divides by the sub-area (tambon) median. Buildings with fewer than 5 sampled properties per sub-area are excluded. Sale prices are preferred; rent data is used as fallback when no sale listings exist.",
+    },
+  ];
+
   return (
     <main className="max-w-3xl mx-auto p-6">
       <script
@@ -254,22 +273,7 @@ export default async function PhuketBubbleWatch({
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(buildFaqJsonLd([
-            {
-              q: "What is the Phuket condo Bubble Index?",
-              a: "RealData's Bubble Index measures each condo building's median sale price per sqm relative to its sub-area (tambon) median. 100 = at market. 200 = priced double the local average. In Phuket, buildings catering to foreign vacation-rental buyers — particularly in Patong, Kata, and Kamala — often score 150–350, reflecting the beach-proximity premium.",
-            },
-            {
-              q: "Who buys overpriced condos in Phuket?",
-              a: "Phuket's premium condo market is driven by Russian buyers (particularly post-2022), Chinese investors, Western retirees seeking vacation homes, and Bangkok investors targeting vacation-rental income. Marketing materials emphasize 'guaranteed yield' and 'beachfront premium' without publishing specific numbers — this analysis supplies those numbers.",
-            },
-            {
-              q: "How do you measure if a Phuket condo is overpriced?",
-              a: "RealData crawls all hipflat.co.th listings for each Phuket condo building, computes the median price per square meter, then divides by the sub-area (tambon) median. Buildings with fewer than 5 sampled properties per sub-area are excluded. Sale prices are preferred; rent data is used as fallback when no sale listings exist.",
-            },
-          ])),
-        }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(faqItems)) }}
       />
 
       <article>
@@ -360,6 +364,12 @@ export default async function PhuketBubbleWatch({
             → All 63 Phuket condos
           </Link>
         </section>
+
+        <FaqSection
+          items={faqItems}
+          heading={getDictionary(lang).home.faqTitle}
+          className="mt-10"
+        />
       </article>
     </main>
   );

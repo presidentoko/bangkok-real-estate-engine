@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { condoCrawlThrottled } from "@/lib/crawlThrottle";
+
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
 
@@ -43,16 +45,48 @@ const AI_AGENTS = [
 // crawler rather than an answer engine — if Apple referral traffic ever
 // matters, it belongs in middleware's SEARCH_ENGINE_UA_RE next to
 // Googlebot/Bingbot instead of on this list.
-const CONDO_BLOCKED_AGENTS = new Set([
-  "GPTBot",
+//
+// This list is now tied to the throttle deadline rather than permanent:
+// middleware's ANSWER_ENGINE_UA_RE lets exactly this set through on exactly
+// the same date, both reading CRAWL_THROTTLE_UNTIL, so the advertised block
+// and the enforced one cannot drift apart. Being cited by these is the point
+// of the site; the block was only ever about origin bytes.
+const CONDO_BLOCKED_WHILE_THROTTLED = [
   "OAI-SearchBot",
   "ClaudeBot",
   "PerplexityBot",
   "Applebot",
   "Applebot-Extended",
-]);
+];
+
+// Blocked from /condo/ permanently. GPTBot is a training crawler with no
+// citation surface — OpenAI's reader-facing fetches come from OAI-SearchBot
+// and ChatGPT-User — so ~46,000 cold renders buys nothing measurable.
+const CONDO_BLOCKED_ALWAYS = ["GPTBot"];
 
 const CONDO_PATHS = ["/en/condo/", "/ko/condo/", "/th/condo/"];
+
+// Ad-serving fetchers. These need their own records for two separate
+// reasons:
+//
+//   AdsBot-Google (and -Mobile) ignore the wildcard "*" record by design —
+//   Google documents this — so the allow above does not reach them and only
+//   an explicit record does. They fetch a landing page to score it; a block
+//   or a 503 reads as "page unavailable".
+//
+//   Mediapartners-Google is what fetches a page to decide which ads to show
+//   on it. Block it and the slots either stay blank or fill with untargeted
+//   inventory, which is the difference between an RPM worth having and one
+//   that isn't.
+//
+// Neither is a catalogue crawler, so /condo/ stays open to both even while
+// CONDO_BLOCKED_AGENTS applies to the answer engines; see the matching
+// AD_FETCHER_UA_RE exemption in middleware.ts.
+const AD_AGENTS = [
+  "Mediapartners-Google",
+  "AdsBot-Google",
+  "AdsBot-Google-Mobile",
+];
 
 // Heavy, high-volume crawlers with no meaningful SEO/AEO payoff for this
 // site. A wildcard "*" allow rule doesn't block them by itself — each needs
@@ -63,16 +97,33 @@ const BLOCKED_AGENTS = [
   "CCBot",      // Common Crawl — diffuse benefit, very heavy
 ];
 
+// The /condo/ block lapses on a date, so this file cannot be baked once at
+// build time — it would keep advertising a block that middleware has already
+// stopped enforcing. A day is close enough: the deadline is a budget cycle,
+// not a deploy.
+export const revalidate = 86400;
+
 export default function robots(): MetadataRoute.Robots {
+  const condoBlocked = new Set(
+    condoCrawlThrottled()
+      ? [...CONDO_BLOCKED_ALWAYS, ...CONDO_BLOCKED_WHILE_THROTTLED]
+      : CONDO_BLOCKED_ALWAYS
+  );
+
   return {
     rules: [
       { userAgent: "*", allow: "/", disallow: ["/admin", "/api"] },
       ...AI_AGENTS.map((ua) => ({
         userAgent: ua,
         allow: "/",
-        disallow: CONDO_BLOCKED_AGENTS.has(ua)
+        disallow: condoBlocked.has(ua)
           ? ["/admin", "/api", ...CONDO_PATHS]
           : ["/admin", "/api"],
+      })),
+      ...AD_AGENTS.map((ua) => ({
+        userAgent: ua,
+        allow: "/",
+        disallow: ["/admin", "/api"],
       })),
       ...BLOCKED_AGENTS.map((ua) => ({
         userAgent: ua,

@@ -23,7 +23,7 @@ const dict = {
   },
   footer: {
     about:
-      "Powered by data, not influencers. We measure every Thai condo we can find across 4 portals — no paid placement, no developer money.",
+      "Powered by data, not influencers. We measure every Thai condo we can find across 4 portals — no developer money, and nobody can pay to move a number.",
     sectionsTitle: "Sections",
     sourcesTitle: "Data sources",
     sources: [
@@ -32,7 +32,7 @@ const dict = {
       "Flood: BMA + JICA + 2011 great flood records",
       "Infrastructure & transit: OpenStreetMap (Overpass)",
     ],
-    copyright: "Independent measurement · no developer ads · referral funded",
+    copyright: "Independent measurement · nobody can buy a ranking",
     saved: "Saved",
     underpricedAlerts: "Underpriced alerts",
     rssFeed: "RSS feed",
@@ -137,8 +137,8 @@ const dict = {
         a: "Thai law caps foreign ownership at 49% of a building's floor area. The remaining 'foreign quota' varies per project. We surface each FazWaz building's measured foreign-quota inventory share — the % of for-sale units still flagged Foreign Quota — so you can see at a glance whether a building is foreign-buyable.",
       },
       {
-        q: "Do you broker listings or run ads?",
-        a: "We display no advertising and accept no payment from developers. When a reader requests an expert opinion via the contact form, we route the lead to one vetted independent broker who knows the sub-market; the broker pays us a flat referral if a deal closes. The reader pays nothing extra. That's the only revenue path.",
+        q: "How does RealData make money?",
+        a: "Two ways, and neither one can touch a measurement. We carry standard display advertising, served by an ad network that has no access to our data and no say in what it says — the same wall a newspaper keeps between its ad pages and its newsroom. And when a reader asks for an expert opinion via the contact form, we route the lead to one vetted independent broker who knows the sub-market; the broker pays us a flat referral if a deal closes, and the reader pays nothing extra. What we never take is developer money: no paid placement, no sponsored rankings, no building buying its way up a list.",
       },
       {
         q: "How often is the data refreshed?",
@@ -275,7 +275,7 @@ const dict = {
       },
       {
         title: "What we don't do",
-        body: "No referral fees, no influencer placement, no sponsored data. The Marketing-vs-Reality slot is the only paid surface and it never softens the data column.",
+        body: "No developer money, no influencer placement, no sponsored data, no building buying its way up a ranking. Display advertising is served by a third-party network that never sees the measurements, and the Marketing-vs-Reality slot is labelled paid promotion that never softens the data column.",
       },
     ],
     contactsHeader: "Contact for interviews / data licensing",
@@ -294,7 +294,7 @@ const dict = {
     lead: "How RealData measures every Thai condo. Sources, formulas, refresh cadence, and what we deliberately don't do.",
     sectionMission: {
       title: "What we do",
-      body: "We measure 1,700+ condos across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi continuously. Every building gets a Bubble Index, livability score, and (in Bangkok) a flood-risk level — independent of the listing source's marketing copy. No referral fees, no ad placements, no influencer deals.",
+      body: "We measure 1,700+ condos across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi continuously. Every building gets a Bubble Index, livability score, and (in Bangkok) a flood-risk level — independent of the listing source's marketing copy. No developer money, no paid placement, no influencer deals.",
     },
     sectionSources: {
       title: "Where the numbers come from",
@@ -318,8 +318,8 @@ const dict = {
       title: "What we deliberately don't do",
       items: [
         "We don't broker listings. Listing clicks go to the original hipflat page.",
-        "We don't take referral fees from agents or developers.",
-        "We don't run banner ads. Marketing-vs-Reality slots are paid promotion — clearly labeled.",
+        "We don't take developer money, and no agent can pay to change a number.",
+        "We don't let advertising touch the data. Display ads are served by a third-party network that never sees our measurements; Marketing-vs-Reality slots are paid promotion, clearly labeled.",
         "We don't accept influencer placement or 'sponsored content' that shapes our data.",
         "We don't publish bubble_index values above 10× district median — those are data-quality issues, not real prices.",
       ],

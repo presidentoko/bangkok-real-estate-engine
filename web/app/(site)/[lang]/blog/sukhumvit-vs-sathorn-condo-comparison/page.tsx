@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
+import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
@@ -194,7 +196,7 @@ export default async function CorridorComparison({
     description: META[lang].desc,
   };
 
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: "Is Sukhumvit or Sathorn better for condo investment in Bangkok?",
       a: "The two corridors serve different investment profiles. Sukhumvit (Asok, Phrom Phong, Thonglor) has the highest rental demand from expats and tourists but also the highest entry prices. Sathorn offers slightly lower median prices with professional long-term tenant demand from the nearby financial district. Silom (Bang Rak) sits between both in price and tenant mix.",
@@ -207,7 +209,8 @@ export default async function CorridorComparison({
       q: "Which Bangkok central district has the lowest flood risk for condos?",
       a: "Sathorn and Silom (Bang Rak) rank at BMA flood Level 1 — no significant historical flooding. Sukhumvit corridor averages Level 2, with isolated pockets at Level 3 in lower Sukhumvit sois during extreme events. All three corridors are considerably safer than outer Bangkok districts like Don Mueang (Level 4–5).",
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -235,6 +238,12 @@ export default async function CorridorComparison({
             <LinkShareButtons url={POST_URL} title={META[lang].ogTitle} />
           </div>
         </header>
+
+        <FaqSection
+          items={faqItems}
+          heading={getDictionary(lang).home.faqTitle}
+          className="mt-10"
+        />
       </article>
     </main>
   );

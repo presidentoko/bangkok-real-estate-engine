@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getQueue, clearQueue } from "@/lib/compare-queue";
 
 export function CompareTray() {
   const [queue, setQueue] = useState<string[]>([]);
+  const trayRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const params = useParams();
   const lang = (params?.lang as string) ?? "en";
@@ -16,6 +17,20 @@ export function CompareTray() {
     window.addEventListener("realdata-compare-change", update);
     return () => window.removeEventListener("realdata-compare-change", update);
   }, []);
+
+  // The bar is fixed, so it floats over whatever happens to be at the bottom
+  // of the document — on desktop that was the last ~50px of the footer.
+  // Reserve an equal strip of scroll space while the tray is mounted (the
+  // page shell can't do it: it doesn't know the queue exists).
+  useEffect(() => {
+    const el = trayRef.current;
+    if (!el) return;
+    const prev = document.body.style.paddingBottom;
+    document.body.style.paddingBottom = `${el.offsetHeight}px`;
+    return () => {
+      document.body.style.paddingBottom = prev;
+    };
+  }, [queue.length]);
 
   if (queue.length === 0) return null;
 
@@ -28,7 +43,10 @@ export function CompareTray() {
   };
 
   return (
-    <div className="fixed bottom-14 sm:bottom-0 inset-x-0 z-50 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur px-4 py-3 flex items-center justify-between gap-3 sm:px-6">
+    <div
+      ref={trayRef}
+      className="fixed bottom-14 sm:bottom-0 inset-x-0 z-50 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur px-4 py-3 flex items-center justify-between gap-3 sm:px-6"
+    >
       <div className="text-sm text-zinc-300">
         <span className="font-semibold text-white">{queue.length}</span>
         {" / 3 condos selected for comparison"}

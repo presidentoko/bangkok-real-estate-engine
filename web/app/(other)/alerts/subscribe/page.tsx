@@ -1,6 +1,10 @@
+import Link from "next/link";
 import { SubscribeForm } from "@/components/SubscribeForm";
+import { getOtherLang } from "@/components/OtherShell";
 
-export default function SubscribePage() {
+export default async function SubscribePage() {
+  const lang = await getOtherLang();
+
   return (
     <main className="max-w-xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-2">Get the Alerts</h1>
@@ -46,6 +50,21 @@ export default function SubscribePage() {
       </ol>
 
       <SubscribeForm />
+
+      <p className="mt-8 text-sm text-zinc-500">
+        Not ready yet?{" "}
+        <Link href="/alerts" className="text-blue-400 hover:underline">
+          See the alerts we already found
+        </Link>{" "}
+        or{" "}
+        <Link
+          href={`/${lang}/inventory`}
+          className="text-blue-400 hover:underline"
+        >
+          browse every condo we track
+        </Link>
+        .
+      </p>
     </main>
   );
 }

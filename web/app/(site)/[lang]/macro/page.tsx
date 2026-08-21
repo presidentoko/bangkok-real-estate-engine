@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
+import FaqSection from "@/components/FaqSection";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
@@ -56,6 +57,7 @@ export default async function MacroPage({
 }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
+  const t = getDictionary(lang);
 
   const supabase = getServerSupabase();
 
@@ -122,7 +124,7 @@ export default async function MacroPage({
     ? `As of ${latestMrrMin.period.slice(0, 7)}, MRR-min stood at ${latestMrrMin.value.toFixed(2)}%.`
     : "";
 
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: "What is Thailand's MRR and why does it matter for condo buyers?",
       a: `MRR (Minimum Retail Rate) is the reference rate Thai banks attach mortgage products to — e.g. "MRR-1.5% for the first three years, MRR floating after." It is the single most important rate for a Thai home buyer because every floating-rate mortgage moves with it. ${mrrLine} The Bank of Thailand publishes it daily on the BTWS_STAT portal.`,
@@ -143,7 +145,8 @@ export default async function MacroPage({
       q: "How do I use MRR to judge whether a condo yield is attractive?",
       a: "Compute spread = condo's gross rental yield - MRR. Positive spread means the rental income alone covers more than the mortgage interest a Thai bank would charge that day on a fully-leveraged purchase. We compute this spread for every condo with enough data on the /yields ranking and on each individual condo report.",
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-8">
@@ -255,6 +258,8 @@ export default async function MacroPage({
           and every individual condo report.
         </p>
       </section>
+
+      <FaqSection items={faqItems} heading={t.home.faqTitle} />
     </main>
   );
 }

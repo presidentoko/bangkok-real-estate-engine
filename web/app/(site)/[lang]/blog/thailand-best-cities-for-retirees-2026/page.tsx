@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
+import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
@@ -556,6 +558,12 @@ export default async function ThailandRetireeGuide({
             {t.ctaLink}
           </Link>
         </section>
+
+        <FaqSection
+          items={FAQS}
+          heading={getDictionary(lang).home.faqTitle}
+          className="mt-10"
+        />
       </article>
     </main>
   );

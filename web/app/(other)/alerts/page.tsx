@@ -1,8 +1,7 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { getServerSupabase } from "@/lib/supabase";
-import { DEFAULT_LANG } from "@/lib/i18n";
-
-export const revalidate = 21600;
+import { getOtherLang } from "@/components/OtherShell";
 
 type Row = {
   id: string;
@@ -17,6 +16,26 @@ type Row = {
   region_avg_pps: number | null;
   detected_at: string;
 };
+
+// This page used to be ISR (`revalidate = 21600`). Resolving the locale from
+// the `lang` cookie makes it dynamic, so the 6h window moved onto the query
+// itself — one Supabase read per 6h, not one per request. The error is
+// thrown rather than returned so a failed read never gets cached for the
+// next six hours.
+const fetchRecentAlerts = unstable_cache(
+  async (): Promise<Row[]> => {
+    const supabase = getServerSupabase();
+    const { data, error } = await supabase
+      .from("v_recent_alerts")
+      .select("*")
+      .order("detected_at", { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return (data as Row[]) ?? [];
+  },
+  ["alerts:recent"],
+  { revalidate: 21600, tags: ["alerts"] },
+);
 
 function formatTHB(n: number | null | undefined): string {
   if (n == null) return "—";
@@ -34,14 +53,18 @@ function formatRelative(iso: string): string {
 }
 
 export default async function AlertsPage() {
-  const supabase = getServerSupabase();
-  const { data, error } = await supabase
-    .from("v_recent_alerts")
-    .select("*")
-    .order("detected_at", { ascending: false })
-    .limit(50);
+  const lang = await getOtherLang();
 
-  const rows: Row[] = data ?? [];
+  let rows: Row[] = [];
+  let failed = false;
+  try {
+    rows = await fetchRecentAlerts();
+  } catch (err) {
+    // Supabase error strings carry table, column and RLS policy details —
+    // they go to the Vercel logs, never to the page.
+    console.error("[alerts] v_recent_alerts query failed", err);
+    failed = true;
+  }
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -61,13 +84,49 @@ export default async function AlertsPage() {
         </p>
       </header>
 
-      {error && (
-        <div className="text-red-400 text-sm mb-4">DB error: {error.message}</div>
-      )}
-
-      {rows.length === 0 ? (
-        <div className="text-zinc-500 text-sm">
-          No active alerts. Run the pipeline to refresh.
+      {failed ? (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-10 text-center text-zinc-400">
+          <p className="text-2xl mb-2">📡</p>
+          <p className="mb-1">The alert feed is temporarily unavailable.</p>
+          <p className="text-sm text-zinc-500">
+            Nothing is wrong on your side — the list will be back shortly.
+          </p>
+          <Link
+            href={`/${lang}/inventory`}
+            className="mt-4 inline-block text-sm text-blue-400 hover:underline"
+          >
+            Browse the full inventory →
+          </Link>
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-10 text-center text-zinc-400">
+          <p className="text-2xl mb-2">🔍</p>
+          <p className="mb-1">No listing is ≥20% under its district average.</p>
+          <p className="text-sm text-zinc-500">
+            Nothing has cleared that bar in the last 14 days — these are rare
+            by design. Subscribe and the next one reaches you the hour it
+            appears.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm">
+            <Link
+              href="/alerts/subscribe"
+              className="px-4 py-2 rounded-full bg-pink-500 text-white font-semibold hover:bg-pink-400 transition"
+            >
+              Get alerts on Telegram
+            </Link>
+            <Link
+              href={`/${lang}/yields`}
+              className="px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-zinc-100 transition"
+            >
+              Highest-yield condos
+            </Link>
+            <Link
+              href={`/${lang}/inventory`}
+              className="px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-zinc-100 transition"
+            >
+              Full inventory
+            </Link>
+          </div>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -82,7 +141,7 @@ export default async function AlertsPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <Link
-                        href={`/${DEFAULT_LANG}/condo/${r.slug ?? r.condo_id}`}
+                        href={`/${lang}/condo/${r.slug ?? r.condo_id}`}
                         className="font-semibold text-zinc-100 hover:underline truncate"
                       >
                         {r.name}

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
+import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
@@ -271,7 +273,7 @@ export default async function FloodRiskyPost({
     );
   });
 
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: "Which Bangkok areas have the worst flood risk for condo buyers?",
       a: "The Bangkok Metropolitan Administration (BMA) flood map designates Level 4–5 (highest risk) in northern and eastern districts including Don Mueang, Bang Khen, Lat Phrao, Min Buri, and Nong Chok. During heavy monsoon seasons these areas experience 30–80cm of standing water. Active condo listings exist in all these zones, often without flood disclosure.",
@@ -284,7 +286,8 @@ export default async function FloodRiskyPost({
       q: "Are condos in Bangkok flood zones cheaper?",
       a: "Not significantly. RealData analysis shows flood Level 4–5 condos often list near market price, as flood risk is rarely disclosed in listings. Buyers focused on central-Bangkok alternatives can filter for Level 1–2 areas first, then compare prices within those safer zones.",
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -368,6 +371,12 @@ export default async function FloodRiskyPost({
           </ul>
           <p className="text-xs text-zinc-500">{t.methodFooter}</p>
         </section>
+
+        <FaqSection
+          items={faqItems}
+          heading={getDictionary(lang).home.faqTitle}
+          className="mt-10"
+        />
       </article>
     </main>
   );

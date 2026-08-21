@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
+import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
@@ -96,7 +98,7 @@ export default async function ForeignBuyerGuide({
     about: { "@type": "Thing", name: "Bangkok real estate market" },
   };
 
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: "Can foreigners legally own condos in Bangkok?",
       a: "Yes. Under the Thai Condominium Act, foreigners may purchase condo units in freehold title (chanote) as long as foreign ownership in the building does not exceed 49% of total units. The buyer's funds must be transferred from abroad in foreign currency and converted to Thai baht (documented via a Foreign Exchange Transaction Form). Land ownership requires different legal structures.",
@@ -109,7 +111,8 @@ export default async function ForeignBuyerGuide({
       q: "What taxes do foreigners pay when buying a Bangkok condo resale?",
       a: "Buying a Bangkok condo resale involves: Transfer fee (2% of appraised value); Specific Business Tax at 3.3% if seller held under 5 years; Stamp Duty at 0.5% if SBT exempt; and seller's Withholding Tax (1–3%). Buyers should budget approximately 3–4% of purchase price in total transaction costs.",
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -137,6 +140,12 @@ export default async function ForeignBuyerGuide({
             <LinkShareButtons url={POST_URL} title={META[lang].ogTitle} />
           </div>
         </header>
+
+        <FaqSection
+          items={faqItems}
+          heading={getDictionary(lang).home.faqTitle}
+          className="mt-10"
+        />
       </article>
     </main>
   );

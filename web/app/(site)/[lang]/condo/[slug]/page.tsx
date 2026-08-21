@@ -21,6 +21,7 @@ import { RetireeSuitabilityCard } from "@/components/RetireeSuitabilityCard";
 import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
 import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { isLang } from "@/lib/i18n";
 import { computePortalStats, type Listing as PortalListing } from "@/lib/queries/portals";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
@@ -826,6 +827,7 @@ export default async function CondoPage({
           <img
             src={condoRaw.hero_image_url}
             alt={condoRaw.name}
+            fetchPriority="high"
             width={960}
             height={540}
             className="w-full aspect-[16/9] object-cover rounded-2xl border border-zinc-800"
@@ -1153,27 +1155,10 @@ export default async function CondoPage({
         </ul>
       </section>
 
-      {faqItems.length > 0 && (
-        <section>
-          <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">
-            Frequently asked questions
-          </h2>
-          <div className="space-y-3">
-            {faqItems.map((f, i) => (
-              <details
-                key={i}
-                className="group bg-zinc-900 border border-zinc-800 rounded-xl p-4 [&_summary]:cursor-pointer"
-              >
-                <summary className="font-semibold list-none flex items-baseline justify-between gap-3">
-                  <span>{f.q}</span>
-                  <span className="text-zinc-500 group-open:rotate-180 transition shrink-0">▾</span>
-                </summary>
-                <p className="text-zinc-400 text-sm mt-3 leading-relaxed">{f.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-      )}
+      <FaqSection
+        items={faqItems}
+        heading={getDictionary(isLang(lang) ? lang : "en").home.faqTitle}
+      />
 
       {condoRaw.url && (
         <div className="text-xs text-zinc-500">

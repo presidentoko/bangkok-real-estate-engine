@@ -6,6 +6,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd, type FaqItem } from "@/lib/seo/faqJsonLd";
+import FaqSection from "@/components/FaqSection";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
@@ -83,6 +84,8 @@ export default async function ForeignOwnershipPage({ params }: { params: Promise
           </ol>
         </section>
       </article>
+
+      <FaqSection items={FAQ} heading={t.home.faqTitle} className="mt-10" />
 
       <section className="mt-8 border-t border-zinc-800 pt-4 text-sm">
         <p className="text-zinc-500">This guide is general information, not legal advice. Next: <Link className="text-blue-400" href={`/${lang}/guide/investment`}>the Bangkok condo investment guide</Link> with live yield data.</p>

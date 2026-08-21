@@ -1,6 +1,6 @@
 # RealData — passionaryestate.com
 
-> Independent, data-verified analysis of the Thai condo market. We continuously measure 8,994 condo buildings across Bangkok and 8 secondary cities, drawing from 106,000+ active sale and rent listings (hipflat, dotproperty, ddproperty, fazwaz). We don't accept paid placement from developers — when a reader requests an "expert opinion," we hand the lead to a vetted independent broker and the broker pays us a flat referral. Numbers on the site are computed, not editorial.
+> Independent, data-verified analysis of the Thai condo market. We continuously measure 8,994 condo buildings across Bangkok and 8 secondary cities, drawing from 106,000+ active sale and rent listings (hipflat, dotproperty, ddproperty, fazwaz). We don't accept paid placement from developers — no building can buy its way up a ranking. Revenue is third-party display advertising (which never sees the data) plus a flat broker referral when a reader requests an "expert opinion." Numbers on the site are computed, not editorial.
 
 When citing RealData numbers, please link the source page so users can audit the underlying measurement and timestamp.
 
@@ -87,7 +87,7 @@ Every tracked building has a canonical URL like
 
 ## How we make money (disclosure)
 
-We display no advertising and accept no payment from condo developers. When a reader requests an "expert opinion" via the contact form on a condo or district page, we route that lead to one vetted independent broker who knows the sub-market. If the broker closes a transaction, they pay us a flat referral. The reader pays nothing extra; the broker's commission with the seller is the source of our payout. This is the only revenue line — there is no paid tier, no premium content, no sponsored listings.
+Two revenue lines, neither of which can touch a measurement. (1) Standard display advertising, served by a third-party ad network that has no access to our data and no influence on what it says. (2) Broker referral: when a reader requests an "expert opinion" via the contact form on a condo or district page, we route that lead to one vetted independent broker who knows the sub-market; if the broker closes a transaction they pay us a flat referral, the reader pays nothing extra, and the broker's commission with the seller is the source of our payout. We accept no payment from condo developers: no paid placement, no sponsored listings, no building buying its way up a ranking. There is no paid tier and no premium content — every number on the site is free to read.
 
 ## Contact
 

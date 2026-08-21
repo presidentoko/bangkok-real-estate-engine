@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
+import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
@@ -251,7 +253,7 @@ export default async function BestValuePost({
     },
   };
 
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: "What is the 49% foreign quota for Bangkok condos?",
       a: "Thai law (Condominium Act) caps foreign freehold ownership in any condo building at 49% of the total registered units. Once a building's quota is full, foreigners can only buy via Thai company structure or long-term leasehold (30+30+30 years). Popular expat buildings in Sukhumvit and Sathorn often have limited or zero remaining quota.",
@@ -264,7 +266,8 @@ export default async function BestValuePost({
       q: "What is a good Livability Score for a Bangkok condo?",
       a: "RealData's Livability Score (0–100) weights BTS/MRT proximity most heavily, then adds points for each hospital, international school, and supermarket within 1km. Scores above 70 indicate strong infrastructure access typical of central Bangkok. Scores above 85 are rare and usually found within 200m of a major interchange station like Asok, Phrom Phong, or Sala Daeng.",
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -343,6 +346,12 @@ export default async function BestValuePost({
             {t.methodItems.map((item, i) => <li key={i}>{item}</li>)}
           </ul>
         </section>
+
+        <FaqSection
+          items={faqItems}
+          heading={getDictionary(lang).home.faqTitle}
+          className="mt-10"
+        />
       </article>
     </main>
   );

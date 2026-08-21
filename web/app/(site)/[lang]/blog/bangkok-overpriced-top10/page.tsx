@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
+import { getDictionary } from "@/lib/getDictionary";
+import FaqSection from "@/components/FaqSection";
 import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
@@ -224,7 +226,7 @@ export default async function OverpricedTop10({
     },
   };
 
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: "What is the Bangkok condo Bubble Index?",
       a: "The Bangkok condo Bubble Index divides each building's median sale price per sqm by the median for all buildings in the same district (khet). 100 = at district average. 200 = priced double the district average. RealData measures 1,003 Bangkok condo buildings to compute this score weekly.",
@@ -237,7 +239,8 @@ export default async function OverpricedTop10({
       q: "Does a high Bubble Index mean a Bangkok condo is a bad investment?",
       a: "Not necessarily. A high Bubble Index (above 200) means the building is priced significantly above comparable condos in the same district. Luxury brand, location quality, or superior amenities may justify a real premium. The Bubble Index is a starting point for due diligence — it shows you the number so you can decide if the premium is justified.",
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -316,6 +319,12 @@ export default async function OverpricedTop10({
           </ul>
           <p className="text-xs text-zinc-500">{t.methodFooter}</p>
         </section>
+
+        <FaqSection
+          items={faqItems}
+          heading={getDictionary(lang).home.faqTitle}
+          className="mt-10"
+        />
       </article>
     </main>
   );

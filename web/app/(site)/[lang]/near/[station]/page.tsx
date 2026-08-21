@@ -11,6 +11,7 @@ import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { getViableStations, getStationData } from "@/lib/queries/stations";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import FaqSection from "@/components/FaqSection";
 
 // Was 86400 — station/condo data only changes on the weekly refresh, and
 // getStationData's own cache is now 604800 too (bumped together 2026-07-25;
@@ -135,17 +136,12 @@ export default async function StationPage({
         ))}
       </div>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold mb-3">{t.near.faqTitle}</h2>
-        <dl className="space-y-3">
-          {faq.map((f) => (
-            <div key={f.q} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-              <dt className="font-semibold text-zinc-200">{f.q}</dt>
-              <dd className="text-zinc-400 text-sm mt-1">{f.a}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <FaqSection
+        items={faq}
+        heading={t.near.faqTitle}
+        className="mt-10"
+        headingClassName="text-xl font-semibold mb-3"
+      />
 
       <section className="mt-8 text-sm">
         <div className="text-zinc-300 font-semibold mb-1">{t.near.relatedHubs}</div>

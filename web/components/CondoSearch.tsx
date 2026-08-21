@@ -71,6 +71,11 @@ export function CondoSearch({ lang }: { lang: string }) {
 
   const placeholder = PLACEHOLDER[lang] ?? PLACEHOLDER.en;
 
+  // The list drops slug-less rows (they have no canonical page yet), but the
+  // empty state used to key off the unfiltered results — a page of nothing
+  // but slug-less rows opened a completely blank dropdown.
+  const matches = results.filter((r) => r.slug);
+
   return (
     <div ref={ref} className="relative w-full sm:w-56">
       <input
@@ -94,13 +99,13 @@ export function CondoSearch({ lang }: { lang: string }) {
 
       {open && q.trim().length >= 2 && (
         <div className="absolute top-full left-0 right-0 mt-1 max-h-80 overflow-y-auto bg-zinc-950 border border-zinc-800 rounded-lg shadow-xl shadow-black/40 z-50">
-          {loading && results.length === 0 && (
+          {loading && matches.length === 0 && (
             <div className="px-3 py-2 text-zinc-500 text-xs">…</div>
           )}
-          {!loading && results.length === 0 && (
+          {!loading && matches.length === 0 && (
             <div className="px-3 py-2 text-zinc-500 text-xs">No matches</div>
           )}
-          {results.filter((r) => r.slug).map((r) => {
+          {matches.map((r) => {
             const region =
               (Array.isArray(r.regions) ? r.regions[0] : r.regions)?.name ?? "";
             return (

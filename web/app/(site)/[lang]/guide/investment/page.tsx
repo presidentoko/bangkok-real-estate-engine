@@ -6,6 +6,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd, type FaqItem } from "@/lib/seo/faqJsonLd";
+import FaqSection from "@/components/FaqSection";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { getYieldByArea } from "@/lib/queries/areas";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
@@ -80,6 +81,8 @@ export default async function InvestmentPage({ params }: { params: Promise<{ lan
       <article className="space-y-4 text-zinc-300 leading-relaxed">
         <p>Bangkok condo returns split into two levers: <Link className="text-blue-400" href={`/${lang}/glossary/gross-yield`}>gross rental yield</Link> and capital appreciation. The table above ranks areas by current yield; pair it with each building’s <Link className="text-blue-400" href={`/${lang}/glossary/bubble-index`}>Bubble Index</Link> to avoid overpaying. Foreign buyers should first read <Link className="text-blue-400" href={`/${lang}/guide/foreign-ownership`}>can foreigners buy a condo?</Link>.</p>
       </article>
+
+      <FaqSection items={FAQ} heading={t.home.faqTitle} className="mt-10" />
     </main>
   );
 }

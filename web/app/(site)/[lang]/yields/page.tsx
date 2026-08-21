@@ -6,6 +6,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { fetchYieldRows, getCurrentMortgageRate } from "@/lib/queries/yield";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
+import FaqSection from "@/components/FaqSection";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
@@ -46,6 +47,7 @@ export default async function YieldsPage({
 }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
+  const t = getDictionary(lang);
 
   const supabase = getServerSupabase();
   const [rows, mortgage] = await Promise.all([
@@ -80,7 +82,7 @@ export default async function YieldsPage({
     mrr != null
       ? `As of the latest BOT update, MRR is ${mrr.toFixed(2)}%. A yield of 6% therefore implies a +${(6 - mrr).toFixed(2)}pp spread.`
       : "Spread is shown wherever the current Bank of Thailand MRR is available.";
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     {
       q: "How is gross rental yield calculated?",
       a: "Gross yield = (12 × median monthly rent ÷ median sale price) × 100%, computed per condo building. Only buildings with at least 2 sale and 2 rent listings are included. Listings priced in USD on hipflat are converted to THB before aggregation, and any yield above 25% is dropped as a likely price-parse error.",
@@ -101,7 +103,8 @@ export default async function YieldsPage({
       q: "How current are these numbers?",
       a: "Listings are refreshed daily for Bangkok and weekly across the full Thailand sweep. Yields are recomputed after each ingest cycle, and the BOT MRR benchmark refreshes daily where the source publishes daily.",
     },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-6">
@@ -144,6 +147,8 @@ export default async function YieldsPage({
           today.
         </p>
       </section>
+
+      <FaqSection items={faqItems} heading={t.home.faqTitle} />
 
       <LeadCaptureCTA
         headline="Pick one of these and want a deeper read?"

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fmtMoney } from "@/lib/fmt";
 import type { CondoSummary, PropertyType } from "@/lib/queries/condos";
 
 // Plain <img> on purpose — hipcdn already serves 400x330 thumbnails, so the
@@ -191,9 +192,9 @@ export function BuildingCard({
             <div className="flex flex-col items-end">
               <div className="text-[10px] uppercase tracking-wider text-zinc-500">Rent · median</div>
               <div className="text-sm text-zinc-300 tabular-nums">
-                {condo.market_rent_median
-                  ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_rent_median).toLocaleString("en-US")}/mo`
-                  : "—"}
+                {condo.market_rent_median == null
+                  ? "—"
+                  : `${fmtMoney(condo.market_rent_median, condo.market_summary_currency)}/mo`}
               </div>
             </div>
           </>
@@ -217,13 +218,17 @@ export function BuildingCard({
             </div>
             <div className="flex flex-col items-end">
               <div className="text-[10px] uppercase tracking-wider text-zinc-500">
-                {condo.market_sale_median ? "Sale" : condo.market_rent_median ? "Rent" : "—"}
+                {condo.market_sale_median != null
+                  ? "Sale"
+                  : condo.market_rent_median != null
+                    ? "Rent"
+                    : "—"}
               </div>
               <div className="text-sm text-zinc-300 tabular-nums">
-                {condo.market_sale_median
-                  ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_sale_median).toLocaleString("en-US")}`
-                  : condo.market_rent_median
-                    ? `${condo.market_summary_currency ?? "USD"} ${Math.round(condo.market_rent_median).toLocaleString("en-US")}/mo`
+                {condo.market_sale_median != null
+                  ? fmtMoney(condo.market_sale_median, condo.market_summary_currency)
+                  : condo.market_rent_median != null
+                    ? `${fmtMoney(condo.market_rent_median, condo.market_summary_currency)}/mo`
                     : "—"}
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyAdminSession } from "./lib/adminSession";
+import { condoCrawlThrottled } from "./lib/crawlThrottle";
 import { DEFAULT_LANG, LANGS, type Lang } from "./lib/i18n";
 
 // Paths the middleware should NOT touch with the i18n redirect. /admin and
@@ -80,7 +81,33 @@ const BOT_UA_RE =
 //                          the list.
 //   DuckDuckBot            small but free to admit.
 const SEARCH_ENGINE_UA_RE =
-  /Googlebot|GoogleOther|Google-Extended|Google-InspectionTool|Storebot-Google|AdsBot-Google|Google-Safety|Bingbot|BingPreview|Yeti|Daum|DuckDuckBot/i;
+  /Googlebot|GoogleOther|Google-Extended|Google-InspectionTool|Storebot-Google|AdsBot-Google|Mediapartners-Google|Google-Safety|Bingbot|BingPreview|Yeti|Daum|DuckDuckBot/i;
+
+// Answer engines that cite their sources. Blocked from /condo/ only while
+// the budget throttle runs; the moment it lapses they pass, because being
+// quoted by them is the point of this site and the block was never about
+// anything but Fast Origin Transfer bytes.
+//
+// GPTBot is deliberately NOT here. It is OpenAI's training crawler and has
+// no citation surface — the reader-facing fetches come from OAI-SearchBot
+// and ChatGPT-User, both of which are. Paying ~46,000 cold renders to feed
+// a training corpus buys nothing measurable.
+//
+// app/robots.ts advertises exactly this set on exactly the same deadline,
+// off the shared CRAWL_THROTTLE_UNTIL. Change one, change both.
+const ANSWER_ENGINE_UA_RE =
+  /OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|Applebot/i;
+
+// Ad-serving fetchers, exempt from the throttle below as well as from the
+// block. These are not crawlers walking the catalogue: each one fetches a
+// single URL a human or an ad request already named, and AdSense treats a
+// 503 as "page unavailable" — which means no ad fills on that page and, if
+// it persists, a policy review against the account. Mediapartners-Google
+// contains no "bot"/"crawl"/"spider" so BOT_UA_RE never matched it anyway;
+// it is listed so a future widening of that regex cannot silently break ad
+// serving. AdsBot-Google DOES match, and was being 503'd on every /condo/
+// URL until 2026-08-21.
+const AD_FETCHER_UA_RE = /Mediapartners-Google|AdsBot-Google/i;
 
 // Link-preview fetchers. These are not crawlers: each one fetches exactly
 // the URL a human just pasted into a chat or a post, once, to render the
@@ -135,6 +162,9 @@ export async function middleware(req: NextRequest) {
   //   - Google-InspectionTool and Google-Safety (see SEARCH_ENGINE_UA_RE's
   //     note: a diagnostic that lies, and looking evasive to abuse review,
   //     are both worse than the bytes)
+  //   - AdsBot-Google and Mediapartners-Google (see AD_FETCHER_UA_RE: these
+  //     fetch one already-named URL, not the catalogue, and a 503 to them
+  //     costs ad fills and eventually a policy review)
   //   - every link-preview fetcher
   //
   // The cost is real and should not be pretended away: a 503 sustained past
@@ -142,15 +172,16 @@ export async function middleware(req: NextRequest) {
   // these condos are ones we just finished making indexable. Lift it as soon
   // as the cycle's numbers allow — the alternative is the whole site,
   // including the hubs, going dark for the rest of the cycle.
-  const CRAWL_THROTTLE_UNTIL = Date.parse("2026-09-13T00:00:00Z");
   const throttleCrawlers =
-    Date.now() < CRAWL_THROTTLE_UNTIL &&
-    !/Google-InspectionTool|Google-Safety/i.test(ua);
+    condoCrawlThrottled() &&
+    !/Google-InspectionTool|Google-Safety/i.test(ua) &&
+    !AD_FETCHER_UA_RE.test(ua);
 
   if (
     pathname.includes("/condo/") &&
     BOT_UA_RE.test(ua) &&
-    (throttleCrawlers || !SEARCH_ENGINE_UA_RE.test(ua)) &&
+    (throttleCrawlers ||
+      !(SEARCH_ENGINE_UA_RE.test(ua) || ANSWER_ENGINE_UA_RE.test(ua))) &&
     !SOCIAL_PREVIEW_UA_RE.test(ua)
   ) {
     return new NextResponse(

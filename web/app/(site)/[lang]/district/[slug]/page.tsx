@@ -9,6 +9,7 @@ import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import FaqSection from "@/components/FaqSection";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
@@ -303,7 +304,7 @@ export default async function DistrictPage({
   // entirely English body, which is what Google reports as "Duplicate,
   // Google chose different canonical than user" (375 URLs on 2026-08-17):
   // three URLs, one set of words, so it keeps one and drops two.
-  const faqJsonLd = buildFaqJsonLd([
+  const faqItems = [
     { q: d.faqCount(display), a: d.faqCountA(condos.length, display, provinceDisplay) },
     { q: d.faqYield(display), a: spreadLine },
     ...(medianSale != null
@@ -313,7 +314,8 @@ export default async function DistrictPage({
       ? [{ q: d.faqRent(display), a: d.faqRentA(`฿${Math.round(medianRent).toLocaleString()}`, display) }]
       : []),
     { q: d.faqForeign(display), a: d.faqForeignA(display) },
-  ]);
+  ];
+  const faqJsonLd = buildFaqJsonLd(faqItems);
 
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-8">
@@ -462,6 +464,8 @@ export default async function DistrictPage({
         </ul>
       </section>
       )}
+
+      <FaqSection items={faqItems} heading={t.home.faqTitle} />
 
       <LeadCaptureCTA headline={d.ctaHeadline(display)} />
 

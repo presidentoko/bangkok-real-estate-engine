@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuildingCard } from "@/components/BuildingCard";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
+import FaqSection from "@/components/FaqSection";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import {
   InventoryMapSvg,
@@ -358,24 +359,8 @@ export default async function Home({
       </section>
 
       {/* FAQ */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">
-          {t.home.faqTitle}
-        </h2>
-        <div className="space-y-3">
-          {t.home.faq.map((f, i) => (
-            <details
-              key={i}
-              className="group bg-zinc-900 border border-zinc-800 rounded-xl p-4 [&_summary]:cursor-pointer"
-            >
-              <summary className="font-semibold list-none flex items-baseline justify-between gap-3">
-                <span>{f.q}</span>
-                <span className="text-zinc-500 group-open:rotate-180 transition shrink-0">▾</span>
-              </summary>
-              <p className="text-zinc-400 text-sm mt-3 leading-relaxed">{f.a}</p>
-            </details>
-          ))}
-        </div>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+        <FaqSection items={t.home.faq} heading={t.home.faqTitle} />
 
         <script
           type="application/ld+json"
@@ -392,7 +377,7 @@ export default async function Home({
             }),
           }}
         />
-      </section>
+      </div>
     </div>
   );
 }

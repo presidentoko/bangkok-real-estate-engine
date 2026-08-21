@@ -140,6 +140,8 @@ export default async function AboutPage({
           <img
             src="/founder.jpg"
             alt="Shin Yunmin — Founder"
+            width={128}
+            height={128}
             className="w-32 h-32 rounded-full object-cover border border-zinc-800 shrink-0"
             loading="lazy"
           />

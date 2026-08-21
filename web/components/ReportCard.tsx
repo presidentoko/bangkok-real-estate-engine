@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { fmtTHBCompact } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import {
   GRADE_BG,
@@ -23,13 +24,6 @@ type Props = {
   latest: LatestListing | null;
   lang?: string;
 };
-
-function formatTHB(n: number | null | undefined): string {
-  if (n == null) return "—";
-  if (n >= 1_000_000) return `฿${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `฿${(n / 1_000).toFixed(0)}K`;
-  return `฿${n.toFixed(0)}`;
-}
 
 function GradeTile({
   label,
@@ -151,7 +145,7 @@ export function ReportCard({ condo, score, liv, risk, latest, lang }: Props) {
                   {t.latestListing}
                 </div>
                 <div className="font-bold mt-0.5">
-                  {formatTHB(latest?.price)}
+                  {fmtTHBCompact(latest?.price)}
                   {latest?.area_sqm ? (
                     <span className="text-zinc-400 font-normal text-sm">
                       {" "}
