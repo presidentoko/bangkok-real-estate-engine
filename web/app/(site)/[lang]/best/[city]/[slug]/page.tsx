@@ -550,7 +550,7 @@ export default async function BestSlicePage({
 
       <FaqSection items={faqItems} heading={dict.home.faqTitle} />
 
-      <LeadCaptureCTA
+      <LeadCaptureCTA lang={lang}
         headline={`See one you like in ${cityObj.display}? Get an expert read.`}
       />
 

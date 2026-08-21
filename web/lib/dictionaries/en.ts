@@ -506,7 +506,62 @@ const dict = {
       },
     ],
   },
+  // The site's primary conversion unit. Every label here was an
+  // English literal inside components/LeadCaptureCTA.tsx until
+  // 2026-08-21, so a Korean reader was being asked to "Request
+  // consultation" on a page whose every other word was Korean.
+  leadCta: {
+    budgetLabels: ["Under ฿3M", "฿3–5M", "฿5–10M", "฿10–20M", "฿20M+"],
+    timelineLabels: ["Within 1 month", "1–3 months", "3–6 months", "6–12 months", "Just browsing"],
+    purposeLabels: ["Own / live in", "Rent out / yield", "Flip / capital gain", "Not sure yet"],
+    doneTitle: "Got it — we’ll be in touch.",
+    doneBodyA: "A vetted broker will reach out within 24 hours with a tailored shortlist and an honest read on",
+    doneBodyMarket: "the market",
+    doneBodyEnd: ". No spam.",
+    headlineGeneric: "Want a human read on the Bangkok condo market?",
+    sub: "We pair you with a vetted broker who knows the building, the sub-market, and the foreign-quota status. We don’t take commissions from developers; the broker pays us a flat referral.",
+    openBtn: "Get expert opinion →",
+    emailLabel: "Email",
+    emailPh: "you@example.com",
+    budgetLabel: "Budget",
+    optional: "— optional",
+    timelineLabel: "Timeline",
+    purposeLabel: "Purpose",
+    addMore: "+ Add name / phone / message",
+    nameLabel: "Name",
+    phoneLabel: "Phone / LINE",
+    messageLabel: "Anything specific?",
+    optionalPh: "Optional",
+    sending: "Sending…",
+    submit: "Request consultation",
+    followUp: "Broker follows up via email within 24 hours.",
+    consentA: "We share your contact with one vetted broker. No spam, no email list resale. Broker pays our referral if a deal closes — you pay nothing extra. See our ",
+    consentLink: "privacy policy",
+    consentB: " for what we store and how to have it deleted.",
+    errEmail: "Please enter a valid email.",
+    errSubmit: "Submission failed",
+    errNetwork: "Network error",
+    headlineCondo: (name: string) => `Considering ${name}? Get an expert opinion.`,
+  },
+
   condoPage: {
+    nearbyTitle: "Nearby & metrics",
+    shareTitle: "Found this useful? Share the report",
+    sourceLabel: "Source:",
+    affiliateCta: "Find a hotel near this building →",
+    nearStation: (station: string) => `Condos near ${station} station`,
+    retireeCity: (city: string) => `More retiree-friendly condos in ${city}`,
+    affiliateFraming: (name: string, region: string) =>
+      `Planning to inspect ${name} in person? Book a hotel + flight in one search — ${region} stays are usually cheaper than the condo's own short-let pricing.`,
+    glossaryLinks: {
+      bubbleIndex: "What is the Bubble Index?",
+      grossYield: "What is gross yield?",
+      resaleLiquidity: "What is the Resale Liquidity Score?",
+      retireeSuitability: "Is it good for retirees?",
+      floodRisk: "How we score flood risk",
+      groundStability: "Is the ground sinking?",
+      developerRecord: "What is a developer track record?",
+    },
     neighboursTitle: "Projects nearby",
     neighboursInternal: "RealData report",
     neighboursExternal: "Buildings we don’t track yet link out to hipflat.",
@@ -583,6 +638,167 @@ const dict = {
   // is what Google was reporting as "Duplicate, Google chose different
   // canonical" (393) and "Alternate page with proper canonical" (1,219)
   // across the 25,840 /ko + /th URLs in the sitemap.
+  // Per-condo FAQ. These were English string literals inside
+  // condo/[slug]/page.tsx until 2026-08-21, which meant a /ko or /th condo
+  // page had a localized <title> and <meta> over a body whose only real
+  // prose was English — the exact shape that produced 375 "Duplicate, Google
+  // chose different canonical" URLs on district pages (see
+  // district/[slug]/page.tsx:47-51). ~9,000 ko/th condo URLs were exposed to
+  // it, and the FAQ became visible on 2026-08-21, so it is now the bulk of
+  // what a crawler reads on the page.
+  //
+  // Numbers arrive pre-formatted as strings so every locale prints the same
+  // digits, units and sign.
+  condoFaq: {
+    yieldQ: (name: string) => `What is the gross rental yield at ${name}?`,
+    yieldA: (name: string, pct: string, spread: string) =>
+      `Gross rental yield at ${name} is ${pct}%, computed as (12 × median ` +
+      `monthly rent) ÷ median sale price across our active listings.${spread}` +
+      ` This is a pre-tax, pre-vacancy figure — net yield is typically 1.5–3pp lower.`,
+    yieldSpread: (mrr: string, signed: string) =>
+      ` Versus the current Thai MRR of ${mrr}%, that is a ${signed}pp spread.`,
+
+    bubbleQ: (name: string, region: string) =>
+      `Is ${name} overpriced compared to the rest of ${region}?`,
+    bubbleVerdict: {
+      suspect: "bubble suspect",
+      underpriced: "underpriced",
+      atMarket: "at-market",
+    },
+    bubbleA: (
+      name: string,
+      idx: string,
+      absPct: string,
+      dir: string,
+      region: string,
+      verdict: string
+    ) =>
+      `${name} has a RealData Bubble Index of ${idx} — that is ${absPct}% ` +
+      `${dir} the median price-per-sqm of the ${region} district, which we ` +
+      `classify as ${verdict}.`,
+    above: "above",
+    below: "below",
+
+    quotaQ: (name: string) => `Can foreigners buy a unit at ${name}?`,
+    quotaA: (name: string, pct: string) =>
+      `Across the for-sale inventory we currently observe at ${name}, ${pct}% ` +
+      `of the units are flagged "Foreign Quota" — meaning legally eligible for ` +
+      `a non-Thai buyer. A higher share = more foreign-eligible inventory still ` +
+      `available. Thai law caps foreign ownership at 49% of a building's total ` +
+      `floor area, so foreign-quota units sell out faster than Thai-quota units ` +
+      `in popular buildings.`,
+
+    floodQ: (name: string) => `What is the monsoon flood risk at ${name}?`,
+    floodLabel: {
+      l5: "severe",
+      l4: "waist-deep recurring",
+      l3: "neighborhood-level common",
+      l2: "occasional puddling",
+      l1: "very low",
+      l0: "none observed",
+    },
+    floodA: (name: string, level: string, label: string) =>
+      `${name} sits in a district with a RealData Flood Risk Level of ` +
+      `${level}/5 — ${label}. Risk is district-level, drawn from Bangkok ` +
+      `Metropolitan Administration Drainage Department records, JICA reports, ` +
+      `and the 2011 great-flood inundation map. Individual buildings may still ` +
+      `flood ground-level parking even in lower-risk districts.`,
+
+    aqiQ: (name: string) => `How is the air quality at ${name}?`,
+    aqiVerdict: {
+      unhealthy: "Unhealthy (PM2.5 elevated)",
+      sensitive: "Unhealthy for sensitive groups",
+      moderate: "Moderate",
+      good: "Good",
+    },
+    aqiA: (name: string, val: string, verdict: string) =>
+      `Latest WAQI air quality reading near ${name} is ${val} — ${verdict}. ` +
+      `This is the index value from the closest World Air Quality Index ` +
+      `station; PM2.5 levels in Bangkok swing seasonally and can spike during ` +
+      `burn season (Feb–April).`,
+
+    liqQ: (name: string) => `Is ${name} easy to resell?`,
+    liqVerdict: {
+      high: "highly liquid — units here tend to find buyers quickly",
+      good: "liquid — resale demand is healthy",
+      moderate: "moderate — expect a normal marketing period",
+      slow: "slow — your exit could take a while",
+      illiquid: "illiquid — resale may be difficult",
+    },
+    liqAbsorb: (pct: string) =>
+      ` ${pct}% of the for-sale supply we tracked here cleared the market.`,
+    liqSold: (days: string) => ` Listings that sold did so in about ${days} days.`,
+    liqA: (name: string, score: string, verdict: string, extra: string) =>
+      `${name} has a RealData Resale Liquidity Score of ${score}/100 — ` +
+      `${verdict}.${extra} We compute this by tracking every listing from the ` +
+      `day it appears to the day it leaves the market, so it reflects how much ` +
+      `supply actually clears and how fast — not just the asking price. It is ` +
+      `an availability signal, not a guarantee of sale price.`,
+
+    subQ: (name: string) => `Is the ground sinking at ${name}?`,
+    subLabel: {
+      l5: "severe (coastal subsidence plus sea-level rise)",
+      l4: "high (eastern soft-clay belt, documented sinking)",
+      l3: "moderate (transitional zone or historical hotspot)",
+      l2: "low (largely stabilised)",
+      l1: "very low (consolidated inner core, effectively flat today)",
+    },
+    subA: (name: string, level: string, label: string) =>
+      `${name} sits in a district with a RealData Ground Stability ` +
+      `(land-subsidence) level of ${level}/5 — ${label}. Bangkok rests on soft ` +
+      `marine clay and sank as fast as ~120mm/year in the 1980s from ` +
+      `groundwater over-extraction; regulation has since cut inner-city rates ` +
+      `to near zero, but the eastern belt and coastal south keep sinking. This ` +
+      `is a district-level estimate from published InSAR and ` +
+      `groundwater-monitoring studies, and it compounds the same areas' ` +
+      `monsoon-flood risk over a 10–20 year horizon — not a per-building survey.`,
+
+    retQ: (name: string) => `Is ${name} a good place to retire?`,
+    retVerdict: {
+      excellent: "an excellent fit",
+      good: "a good fit",
+      fair: "a fair fit",
+      less: "less suited",
+    },
+    retHosp: (n: number) =>
+      ` There ${n === 1 ? "is" : "are"} ${n} hospital/clinic${n === 1 ? "" : "s"} within 1km`,
+    retAqi: (val: string) => `, and the latest air quality reads ${val} AQI`,
+    retA: (name: string, score: string, verdict: string, extra: string) =>
+      `${name} scores ${score}/100 on RealData's Retiree Suitability Score — ` +
+      `${verdict} for a retirement-visa buyer.${extra}. The score weights ` +
+      `nearby healthcare and clean air most heavily, then car-free transit ` +
+      `access and daily errands — the priorities that matter to retirees rather ` +
+      `than young investors.`,
+
+    devQ: (name: string) => `Who is the developer of ${name}?`,
+    devTier: {
+      established: " — an established developer.",
+      experienced: " — an experienced developer.",
+      smaller: " — a smaller portfolio.",
+      neww: " — a new or single-project developer.",
+    },
+    devScale: (projects: number, unitsClause: string, tier: string) =>
+      ` On FazWaz they list ${projects} project${projects === 1 ? "" : "s"}` +
+      `${unitsClause}${tier}`,
+    devUnits: (units: string) => ` totalling ${units} units`,
+    devA: (name: string, developer: string, scale: string) =>
+      `${name} was developed by ${developer}.${scale} Portfolio scale is an ` +
+      `experience proxy — a longer delivery record reduces completion risk on ` +
+      `off-plan units, though it does not guarantee build quality on any single ` +
+      `project.`,
+
+    methodQ: "How does RealData verify the numbers on this page?",
+    methodA:
+      `Every figure is computed from live listing data we re-crawl across ` +
+      `hipflat, dotproperty, ddproperty, and fazwaz (daily for Bangkok, weekly ` +
+      `for the full Thailand sweep). District medians come from the same ` +
+      `dataset, the mortgage benchmark is Bank of Thailand BTWS_STAT, and ` +
+      `flood / livability layers are pinned to government and OpenStreetMap ` +
+      `sources. We accept no payment from developers and no building can buy ` +
+      `its way up a ranking — advertising on this page is sold by a ` +
+      `third-party network that never sees the data.`,
+  },
+
   seo: {
     yieldLabel: (v: string) => `yield ${v}%`,
     floodLabel: (n: number) => `flood risk L${n}/5`,

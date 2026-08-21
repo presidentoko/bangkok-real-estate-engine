@@ -153,7 +153,7 @@ export default async function YieldsPage({
 
       <FaqSection items={faqItems} heading={t.home.faqTitle} />
 
-      <LeadCaptureCTA
+      <LeadCaptureCTA lang={lang}
         headline="Pick one of these and want a deeper read?"
       />
     </main>

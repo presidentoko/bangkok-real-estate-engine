@@ -489,7 +489,62 @@ const dict: Dict = {
       },
     ],
   },
+  // The site's primary conversion unit. Every label here was an
+  // English literal inside components/LeadCaptureCTA.tsx until
+  // 2026-08-21, so a Korean reader was being asked to "Request
+  // consultation" on a page whose every other word was Korean.
+  leadCta: {
+    budgetLabels: ["฿300만 미만", "฿300–500만", "฿500–1,000만", "฿1,000–2,000만", "฿2,000만+"],
+    timelineLabels: ["1개월 이내", "1–3개월", "3–6개월", "6–12개월", "그냥 둘러보는 중"],
+    purposeLabels: ["실거주", "임대 / 수익", "단기 시세차익", "아직 미정"],
+    doneTitle: "접수됐습니다 — 곇 연락드릴게요.",
+    doneBodyA: "검증된 브로커가 24시간 이내에 맞춤 추천 목록과 솔직한 의견을 드립니다 — 대상:",
+    doneBodyMarket: "시장 전반",
+    doneBodyEnd: ". 스팸은 없습니다.",
+    headlineGeneric: "방콕 콘도 시장, 사람의 판단이 필요하세요?",
+    sub: "해당 빌딩과 그 서브마켓, 외국인 쿼터 현황을 아는 검증된 브로커를 연결해 드립니다. 저희는 시행사로부터 수수료를 받지 않으며, 거래가 성사되면 브로커가 고정 리퍼럴을 지급합니다.",
+    openBtn: "전문가 의견 받기 →",
+    emailLabel: "이메일",
+    emailPh: "you@example.com",
+    budgetLabel: "예산",
+    optional: "— 선택",
+    timelineLabel: "시기",
+    purposeLabel: "목적",
+    addMore: "+ 이름 / 연락처 / 메시지 추가",
+    nameLabel: "이름",
+    phoneLabel: "전화 / LINE",
+    messageLabel: "특별히 궁금한 점이 있나요?",
+    optionalPh: "선택 입력",
+    sending: "보내는 중…",
+    submit: "상담 요청하기",
+    followUp: "브로커가 24시간 이내 이메일로 연락드립니다.",
+    consentA: "연락처는 검증된 브로커 1인에게만 전달됩니다. 스팸 없고, 명단을 팔지 않습니다. 거래가 성사되면 브로커가 리퍼럴을 지급하며, 이용자가 추가로 부담하는 비용은 없습니다. 저장 항목과 삭제 방법은 ",
+    consentLink: "개인정보처리방침",
+    consentB: "을 보세요.",
+    errEmail: "올바른 이메일을 입력해 주세요.",
+    errSubmit: "전송에 실패했습니다",
+    errNetwork: "네트워크 오류",
+    headlineCondo: (name: string) => `${name}, 검토 중이신가요? 전문가 의견을 받아보세요.`,
+  },
+
   condoPage: {
+    nearbyTitle: "주변 정보와 지표",
+    shareTitle: "도움이 됐나요? 리포트를 공유해 주세요",
+    sourceLabel: "출처:",
+    affiliateCta: "이 건물 근처 호텔 찾기 →",
+    nearStation: (station: string) => `${station}역 인근 콘도`,
+    retireeCity: (city: string) => `${city}의 은퇴자 친화 콘도 더보기`,
+    affiliateFraming: (name: string, region: string) =>
+      `${name}을 직접 보러 가실 계획이신가요? 호텔과 항공권을 한 번에 검색하세요 — ${region} 숙박은 보통 해당 콘도의 단기 임대 가격보다 쌀니다.`,
+    glossaryLinks: {
+      bubbleIndex: "버블 지수란?",
+      grossYield: "총 임대수익률이란?",
+      resaleLiquidity: "재매각 유동성 점수란?",
+      retireeSuitability: "은퇴자에게 좋은가요?",
+      floodRisk: "침수 위험을 어떻게 매기는가",
+      groundStability: "지반이 가라앉고 있나요?",
+      developerRecord: "시행사 트랙레코드란?",
+    },
     neighboursTitle: "주변 단지",
     neighboursInternal: "RealData 리포트",
     neighboursExternal: "아직 추적하지 않는 빌딩은 hipflat 외부 링크로 연결됩니다.",
@@ -561,6 +616,151 @@ const dict: Dict = {
   },
   // See en.ts's `seo` comment — these exist so /ko stops shipping the
   // English title/description.
+  // 빌딩별 FAQ. 2026-08-21까지 condo/[slug]/page.tsx 안에 영어 문자열로
+  // 박혀 있었고, 그래서 /ko·/th 콘도 페이지는 제목·메타만 현지어이고 본문
+  // 산문은 전부 영어였다 — district 페이지에서 "Duplicate, Google chose
+  // different canonical" 375건을 만든 바로 그 형태(district/[slug]/page.tsx:47-51).
+  // ko/th 콘도 URL 약 9,000개가 노출돼 있었고, 2026-08-21부터 이 FAQ가 화면에
+  // 렌더링되므로 이제 크롤러가 읽는 본문의 대부분을 차지한다.
+  //
+  // 숫자는 문자열로 미리 포맷해서 넘어온다 — 모든 로케일이 같은 자릿수·단위·부호를 찍도록.
+  condoFaq: {
+    yieldQ: (name: string) => `${name}의 총 임대수익률은 얼마인가요?`,
+    yieldA: (name: string, pct: string, spread: string) =>
+      `${name}의 총 임대수익률은 ${pct}%입니다. 활성 매물 기준 (월세 중간값 × 12) ÷ ` +
+      `매매가 중간값으로 계산했습니다.${spread}` +
+      ` 세전·공실 반영 전 수치이며, 실질 수익률은 보통 1.5~3%p 낮습니다.`,
+    yieldSpread: (mrr: string, signed: string) =>
+      ` 현재 태국 MRR ${mrr}% 대비 ${signed}%p 스프레드입니다.`,
+
+    bubbleQ: (name: string, region: string) =>
+      `${name}은 ${region}의 다른 콘도에 비해 비싼가요?`,
+    bubbleVerdict: {
+      suspect: "거품 의심",
+      underpriced: "저평가",
+      atMarket: "시세 수준",
+    },
+    bubbleA: (
+      name: string,
+      idx: string,
+      absPct: string,
+      dir: string,
+      region: string,
+      verdict: string
+    ) =>
+      `${name}의 RealData 버블 지수는 ${idx}입니다 — ${region} 구의 ㎡당 가격 ` +
+      `중간값보다 ${absPct}% ${dir} 수준이며, 저희는 이를 ${verdict}으로 분류합니다.`,
+    above: "높은",
+    below: "낮은",
+
+    quotaQ: (name: string) => `외국인이 ${name}의 유닛을 살 수 있나요?`,
+    quotaA: (name: string, pct: string) =>
+      `현재 확인되는 ${name}의 매도 물량 중 ${pct}%가 "외국인 쿼터(Foreign Quota)"로 ` +
+      `표시돼 있습니다 — 즉 태국인이 아닌 매수자도 법적으로 취득 가능한 물량입니다. ` +
+      `비율이 높을수록 외국인이 살 수 있는 물량이 많이 남아 있다는 뜻입니다. ` +
+      `태국 법은 건물 전체 전용면적의 49%까지만 외국인 소유를 허용하므로, ` +
+      `인기 빌딩에서는 외국인 쿼터 물량이 태국인 쿼터보다 빨리 소진됩니다.`,
+
+    floodQ: (name: string) => `${name}의 우기 침수 위험은 어느 정도인가요?`,
+    floodLabel: {
+      l5: "심각",
+      l4: "허리 높이 침수 반복",
+      l3: "동네 단위 침수 흔함",
+      l2: "간헐적 물고임",
+      l1: "매우 낮음",
+      l0: "관측된 침수 없음",
+    },
+    floodA: (name: string, level: string, label: string) =>
+      `${name}이 속한 구의 RealData 침수 위험 등급은 ${level}/5 — ${label}입니다. ` +
+      `등급은 구(khet) 단위이며 방콕시 배수국 기록, JICA 보고서, 2011년 대홍수 ` +
+      `침수 지도를 근거로 산출했습니다. 위험 등급이 낮은 구에서도 개별 건물의 ` +
+      `지상 주차장이 침수되는 경우는 있습니다.`,
+
+    aqiQ: (name: string) => `${name}의 공기질은 어떤가요?`,
+    aqiVerdict: {
+      unhealthy: "나쁨 (PM2.5 상승)",
+      sensitive: "민감군 주의",
+      moderate: "보통",
+      good: "좋음",
+    },
+    aqiA: (name: string, val: string, verdict: string) =>
+      `${name} 인근의 최신 WAQI 공기질 지수는 ${val} — ${verdict}입니다. ` +
+      `가장 가까운 World Air Quality Index 관측소 값이며, 방콕의 PM2.5는 계절을 타고 ` +
+      `소각철(2~4월)에 급등할 수 있습니다.`,
+
+    liqQ: (name: string) => `${name}은 되팔기 쉬운가요?`,
+    liqVerdict: {
+      high: "유동성 매우 높음 — 매수자를 빠르게 찾는 편입니다",
+      good: "유동성 양호 — 재매각 수요가 건전합니다",
+      moderate: "보통 — 통상적인 매도 기간을 예상하세요",
+      slow: "느림 — 매도까지 시간이 걸릴 수 있습니다",
+      illiquid: "유동성 낮음 — 재매각이 어려울 수 있습니다",
+    },
+    liqAbsorb: (pct: string) =>
+      ` 저희가 추적한 이곳의 매도 물량 중 ${pct}%가 시장에서 소화됐습니다.`,
+    liqSold: (days: string) => ` 실제로 팔린 매물은 약 ${days}일이 걸렸습니다.`,
+    liqA: (name: string, score: string, verdict: string, extra: string) =>
+      `${name}의 RealData 재매각 유동성 점수는 ${score}/100 — ${verdict}.${extra} ` +
+      `모든 매물을 등록된 날부터 시장에서 사라진 날까지 추적해 산출하므로, ` +
+      `호가가 아니라 실제로 얼마나 그리고 얼마나 빨리 소화되는지를 반영합니다. ` +
+      `매도 가능성 신호이지 매도가를 보장하는 값은 아닙니다.`,
+
+    subQ: (name: string) => `${name} 지반이 가라앉고 있나요?`,
+    subLabel: {
+      l5: "심각 (해안 지반침하 + 해수면 상승)",
+      l4: "높음 (동부 연약 점토대, 침하 기록됨)",
+      l3: "보통 (전이 지대 또는 과거 침하 지역)",
+      l2: "낮음 (대체로 안정화)",
+      l1: "매우 낮음 (다져진 도심 코어, 현재는 사실상 평탄)",
+    },
+    subA: (name: string, level: string, label: string) =>
+      `${name}이 속한 구의 RealData 지반 안정성(지반침하) 등급은 ${level}/5 — ` +
+      `${label}입니다. 방콕은 연약한 해성 점토 위에 있고 1980년대에는 지하수 ` +
+      `과다 취수로 연 120mm까지 가라앉았습니다. 이후 규제로 도심 침하율은 거의 0에 ` +
+      `가까워졌지만 동부 벨트와 남부 해안은 계속 가라앉고 있습니다. 공개된 InSAR ` +
+      `및 지하수 관측 연구에 기반한 구 단위 추정치이며, 10~20년 시계에서 같은 지역의 ` +
+      `우기 침수 위험을 가중시킵니다. 건물별 실측이 아닙니다.`,
+
+    retQ: (name: string) => `${name}은 은퇴 거주지로 적합한가요?`,
+    retVerdict: {
+      excellent: "매우 적합",
+      good: "적합",
+      fair: "무난",
+      less: "덜 적합",
+    },
+    retHosp: (n: number) => ` 반경 1km 내 병원·의원이 ${n}곳 있고`,
+    retAqi: (val: string) => `, 최신 공기질은 ${val} AQI입니다`,
+    retA: (name: string, score: string, verdict: string, extra: string) =>
+      `${name}은 RealData 은퇴 적합도 점수 ${score}/100 — 은퇴 비자 매수자에게 ` +
+      `${verdict}합니다.${extra}. 이 점수는 인근 의료와 깨끗한 공기에 가장 큰 ` +
+      `가중치를 두고, 그다음으로 차 없이 이동 가능한 대중교통과 생활 편의를 봅니다 — ` +
+      `젊은 투자자가 아니라 은퇴자에게 중요한 우선순위입니다.`,
+
+    devQ: (name: string) => `${name}의 시행사는 어디인가요?`,
+    devTier: {
+      established: " — 규모 있는 시행사입니다.",
+      experienced: " — 경험 있는 시행사입니다.",
+      smaller: " — 포트폴리오가 작은 편입니다.",
+      neww: " — 신생 또는 단일 프로젝트 시행사입니다.",
+    },
+    devScale: (projects: number, unitsClause: string, tier: string) =>
+      ` FazWaz 기준 ${projects}개 프로젝트를 등록했고${unitsClause}${tier}`,
+    devUnits: (units: string) => `, 총 ${units}세대 규모이며`,
+    devA: (name: string, developer: string, scale: string) =>
+      `${name}의 시행사는 ${developer}입니다.${scale} 포트폴리오 규모는 경험의 ` +
+      `대리 지표입니다 — 준공 이력이 길수록 선분양 물건의 미완공 위험이 줄지만, ` +
+      `개별 프로젝트의 시공 품질을 보장하지는 않습니다.`,
+
+    methodQ: "RealData는 이 페이지의 숫자를 어떻게 검증하나요?",
+    methodA:
+      `모든 수치는 hipflat, dotproperty, ddproperty, fazwaz를 재크롤링해 얻은 실시간 ` +
+      `매물 데이터로 계산합니다(방콕은 매일, 태국 전역 스윕은 매주). 구 중간값도 같은 ` +
+      `데이터셋에서 나오고, 금리 기준은 태국 중앙은행 BTWS_STAT이며, 침수·생활편의 ` +
+      `레이어는 정부 자료와 OpenStreetMap에 고정돼 있습니다. 저희는 시행사 돈을 받지 ` +
+      `않고 어떤 빌딩도 돈으로 순위를 올릴 수 없습니다 — 이 페이지의 광고는 데이터를 ` +
+      `볼 수 없는 외부 네트워크가 판매·송출합니다.`,
+  },
+
   seo: {
     yieldLabel: (v: string) => `수익률 ${v}%`,
     floodLabel: (n: number) => `침수 위험 L${n}/5`,

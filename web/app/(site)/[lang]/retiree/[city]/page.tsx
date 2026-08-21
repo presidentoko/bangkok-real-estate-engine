@@ -292,7 +292,7 @@ export default async function RetireeCityPage({
       </section>
 
       {/* Internal links to other cities */}
-      <LeadCaptureCTA
+      <LeadCaptureCTA lang={lang}
         headline="Planning a retirement move to Thailand? Get a personalised shortlist."
       />
 

@@ -490,8 +490,12 @@ export default async function CondoPage({
 
   const yoyRent = condoRaw.market_rent_yoy_pct;
   const yoySale = condoRaw.market_sale_yoy_pct;
-  const currency = condoRaw.market_summary_currency || "USD";
-  const tCondo = getDictionary(isLang(lang) ? lang : "en").condoPage;
+  // Every price in this database is baht; a null currency column used to
+  // render a THB figure as "USD 5,200,000", a ~35x overstatement.
+  const currency = condoRaw.market_summary_currency || "THB";
+  const tAll = getDictionary(isLang(lang) ? lang : "en");
+  const tCondo = tAll.condoPage;
+  const tFaq = tAll.condoFaq;
 
   const region = districtDisplayName(regions?.name) || "Bangkok";
 
@@ -603,180 +607,151 @@ export default async function CondoPage({
   if (yieldVal != null) {
     const spreadLine =
       mrr != null
-        ? ` Versus the current Thai MRR of ${mrr.toFixed(2)}%, that is a ${yieldVal - mrr >= 0 ? "+" : ""}${(yieldVal - mrr).toFixed(2)}pp spread.`
+        ? tFaq.yieldSpread(
+            mrr.toFixed(2),
+            `${yieldVal - mrr >= 0 ? "+" : ""}${(yieldVal - mrr).toFixed(2)}`
+          )
         : "";
     faqItems.push({
-      q: `What is the gross rental yield at ${condoRaw.name}?`,
-      a:
-        `Gross rental yield at ${condoRaw.name} is ${yieldVal.toFixed(2)}%, computed as ` +
-        `(12 × median monthly rent) ÷ median sale price across our active listings.` +
-        spreadLine +
-        " This is a pre-tax, pre-vacancy figure — net yield is typically 1.5–3pp lower.",
+      q: tFaq.yieldQ(condoRaw.name),
+      a: tFaq.yieldA(condoRaw.name, yieldVal.toFixed(2), spreadLine),
     });
   }
   if (bubbleVal != null) {
     const dist = Math.round(bubbleVal - 100);
     const verdict =
       bubbleVal >= 130
-        ? "bubble suspect"
+        ? tFaq.bubbleVerdict.suspect
         : bubbleVal < 80
-          ? "underpriced"
-          : "at-market";
+          ? tFaq.bubbleVerdict.underpriced
+          : tFaq.bubbleVerdict.atMarket;
     faqItems.push({
-      q: `Is ${condoRaw.name} overpriced compared to the rest of ${region}?`,
-      a:
-        `${condoRaw.name} has a RealData Bubble Index of ${bubbleVal.toFixed(0)} — that is ` +
-        `${Math.abs(dist)}% ${dist >= 0 ? "above" : "below"} the median price-per-sqm of the ${region} district, ` +
-        `which we classify as ${verdict}.`,
+      q: tFaq.bubbleQ(condoRaw.name, region),
+      a: tFaq.bubbleA(
+        condoRaw.name,
+        bubbleVal.toFixed(0),
+        String(Math.abs(dist)),
+        dist >= 0 ? tFaq.above : tFaq.below,
+        region,
+        verdict
+      ),
     });
   }
   if (quotaVal != null) {
     faqItems.push({
-      q: `Can foreigners buy a unit at ${condoRaw.name}?`,
-      a:
-        `Across the for-sale inventory we currently observe at ${condoRaw.name}, ` +
-        `${quotaVal.toFixed(0)}% of the units are flagged "Foreign Quota" — meaning legally eligible for a non-Thai buyer. ` +
-        `A higher share = more foreign-eligible inventory still available. Thai law caps foreign ownership at 49% of a building's total floor area, ` +
-        `so foreign-quota units sell out faster than Thai-quota units in popular buildings.`,
+      q: tFaq.quotaQ(condoRaw.name),
+      a: tFaq.quotaA(condoRaw.name, quotaVal.toFixed(0)),
     });
   }
   if (floodVal != null) {
     const floodLabel =
       floodVal >= 5
-        ? "severe"
+        ? tFaq.floodLabel.l5
         : floodVal >= 4
-          ? "waist-deep recurring"
+          ? tFaq.floodLabel.l4
           : floodVal >= 3
-            ? "neighborhood-level common"
+            ? tFaq.floodLabel.l3
             : floodVal >= 2
-              ? "occasional puddling"
+              ? tFaq.floodLabel.l2
               : floodVal >= 1
-                ? "very low"
-                : "none observed";
+                ? tFaq.floodLabel.l1
+                : tFaq.floodLabel.l0;
     faqItems.push({
-      q: `What is the monsoon flood risk at ${condoRaw.name}?`,
-      a:
-        `${condoRaw.name} sits in a district with a RealData Flood Risk Level of ${floodVal}/5 — ${floodLabel}. ` +
-        `Risk is district-level, drawn from Bangkok Metropolitan Administration Drainage Department records, JICA reports, ` +
-        `and the 2011 great-flood inundation map. Individual buildings may still flood ground-level parking even in lower-risk districts.`,
+      q: tFaq.floodQ(condoRaw.name),
+      a: tFaq.floodA(condoRaw.name, String(floodVal), floodLabel),
     });
   }
   if (aqiVal != null) {
     const aqiVerdict =
       aqiVal >= 150
-        ? "Unhealthy (PM2.5 elevated)"
+        ? tFaq.aqiVerdict.unhealthy
         : aqiVal >= 100
-          ? "Unhealthy for sensitive groups"
+          ? tFaq.aqiVerdict.sensitive
           : aqiVal >= 50
-            ? "Moderate"
-            : "Good";
+            ? tFaq.aqiVerdict.moderate
+            : tFaq.aqiVerdict.good;
     faqItems.push({
-      q: `How is the air quality at ${condoRaw.name}?`,
-      a:
-        `Latest WAQI air quality reading near ${condoRaw.name} is ${aqiVal} — ${aqiVerdict}. ` +
-        `This is the index value from the closest World Air Quality Index station; PM2.5 levels in Bangkok swing seasonally and can spike during burn season (Feb–April).`,
+      q: tFaq.aqiQ(condoRaw.name),
+      a: tFaq.aqiA(condoRaw.name, String(aqiVal), aqiVerdict),
     });
   }
   if (liqScore != null) {
     const liqVerdict =
       liqScore >= 75
-        ? "highly liquid — units here tend to find buyers quickly"
+        ? tFaq.liqVerdict.high
         : liqScore >= 55
-          ? "liquid — resale demand is healthy"
+          ? tFaq.liqVerdict.good
           : liqScore >= 35
-            ? "moderate — expect a normal marketing period"
+            ? tFaq.liqVerdict.moderate
             : liqScore >= 20
-              ? "slow — your exit could take a while"
-              : "illiquid — resale may be difficult";
-    const absorbLine =
-      liqAbsorb != null
-        ? ` ${liqAbsorb.toFixed(0)}% of the for-sale supply we tracked here cleared the market.`
-        : "";
-    const soldLine =
-      liqSold != null ? ` Listings that sold did so in about ${liqSold} days.` : "";
+              ? tFaq.liqVerdict.slow
+              : tFaq.liqVerdict.illiquid;
+    const extra =
+      (liqAbsorb != null ? tFaq.liqAbsorb(liqAbsorb.toFixed(0)) : "") +
+      (liqSold != null ? tFaq.liqSold(String(liqSold)) : "");
     faqItems.push({
-      q: `Is ${condoRaw.name} easy to resell?`,
-      a:
-        `${condoRaw.name} has a RealData Resale Liquidity Score of ${liqScore.toFixed(0)}/100 — ${liqVerdict}.` +
-        absorbLine +
-        soldLine +
-        " We compute this by tracking every listing from the day it appears to the day it leaves the market, so it reflects how much supply actually clears and how fast — not just the asking price. It is an availability signal, not a guarantee of sale price.",
+      q: tFaq.liqQ(condoRaw.name),
+      a: tFaq.liqA(condoRaw.name, liqScore.toFixed(0), liqVerdict, extra),
     });
   }
   if (subsidenceVal != null) {
     const subLabel =
       subsidenceVal >= 5
-        ? "severe (coastal subsidence plus sea-level rise)"
+        ? tFaq.subLabel.l5
         : subsidenceVal >= 4
-          ? "high (eastern soft-clay belt, documented sinking)"
+          ? tFaq.subLabel.l4
           : subsidenceVal >= 3
-            ? "moderate (transitional zone or historical hotspot)"
+            ? tFaq.subLabel.l3
             : subsidenceVal >= 2
-              ? "low (largely stabilised)"
-              : "very low (consolidated inner core, effectively flat today)";
+              ? tFaq.subLabel.l2
+              : tFaq.subLabel.l1;
     faqItems.push({
-      q: `Is the ground sinking at ${condoRaw.name}?`,
-      a:
-        `${condoRaw.name} sits in a district with a RealData Ground Stability (land-subsidence) level of ${subsidenceVal}/5 — ${subLabel}. ` +
-        `Bangkok rests on soft marine clay and sank as fast as ~120mm/year in the 1980s from groundwater over-extraction; regulation has since cut inner-city rates to near zero, but the eastern belt and coastal south keep sinking. ` +
-        `This is a district-level estimate from published InSAR and groundwater-monitoring studies, and it compounds the same areas' monsoon-flood risk over a 10–20 year horizon — not a per-building survey.`,
+      q: tFaq.subQ(condoRaw.name),
+      a: tFaq.subA(condoRaw.name, String(subsidenceVal), subLabel),
     });
   }
   if (retiree) {
     const retVerdict =
       retiree.grade === "excellent"
-        ? "an excellent fit"
+        ? tFaq.retVerdict.excellent
         : retiree.grade === "good"
-          ? "a good fit"
+          ? tFaq.retVerdict.good
           : retiree.grade === "fair"
-            ? "a fair fit"
-            : "less suited";
+            ? tFaq.retVerdict.fair
+            : tFaq.retVerdict.less;
     const hosp = livData?.hospitals_within_1km;
-    const hospLine =
-      hosp != null
-        ? ` There ${hosp === 1 ? "is" : "are"} ${hosp} hospital/clinic${hosp === 1 ? "" : "s"} within 1km`
-        : "";
-    const aqiLine = aqiVal != null ? `, and the latest air quality reads ${aqiVal} AQI` : "";
+    const extra =
+      (hosp != null ? tFaq.retHosp(hosp) : "") +
+      (aqiVal != null ? tFaq.retAqi(String(aqiVal)) : "");
     faqItems.push({
-      q: `Is ${condoRaw.name} a good place to retire?`,
-      a:
-        `${condoRaw.name} scores ${retiree.score.toFixed(0)}/100 on RealData's Retiree Suitability Score — ${retVerdict} for a retirement-visa buyer.` +
-        hospLine +
-        aqiLine +
-        ". The score weights nearby healthcare and clean air most heavily, then car-free transit access and daily errands — the priorities that matter to retirees rather than young investors.",
+      q: tFaq.retQ(condoRaw.name),
+      a: tFaq.retA(condoRaw.name, retiree.score.toFixed(0), retVerdict, extra),
     });
   }
   if (condoRaw.developer) {
     const pc = condoRaw.developer_project_count;
     const scaleLine =
       pc != null
-        ? ` On FazWaz they list ${pc} project${pc === 1 ? "" : "s"}` +
-          (condoRaw.developer_unit_count != null
-            ? ` totalling ${condoRaw.developer_unit_count.toLocaleString()} units`
-            : "") +
-          (pc >= 20
-            ? " — an established developer."
-            : pc >= 5
-              ? " — an experienced developer."
-              : pc >= 2
-                ? " — a smaller portfolio."
-                : " — a new or single-project developer.")
+        ? tFaq.devScale(
+            pc,
+            condoRaw.developer_unit_count != null
+              ? tFaq.devUnits(condoRaw.developer_unit_count.toLocaleString())
+              : "",
+            pc >= 20
+              ? tFaq.devTier.established
+              : pc >= 5
+                ? tFaq.devTier.experienced
+                : pc >= 2
+                  ? tFaq.devTier.smaller
+                  : tFaq.devTier.neww
+          )
         : "";
     faqItems.push({
-      q: `Who is the developer of ${condoRaw.name}?`,
-      a:
-        `${condoRaw.name} was developed by ${condoRaw.developer}.` +
-        scaleLine +
-        " Portfolio scale is an experience proxy — a longer delivery record reduces completion risk on off-plan units, though it does not guarantee build quality on any single project.",
+      q: tFaq.devQ(condoRaw.name),
+      a: tFaq.devA(condoRaw.name, condoRaw.developer, scaleLine),
     });
   }
-  faqItems.push({
-    q: `How does RealData verify the numbers on this page?`,
-    a:
-      `Every figure is computed from live listing data we re-crawl across hipflat, dotproperty, ddproperty, and fazwaz (daily for Bangkok, weekly for the full Thailand sweep). ` +
-      `District medians come from the same dataset, the mortgage benchmark is Bank of Thailand BTWS_STAT, and flood / livability layers are pinned to government and OpenStreetMap sources. ` +
-      `We accept no payment from developers — the only revenue path is a flat referral if a reader hires a vetted broker through us.`,
-  });
+  faqItems.push({ q: tFaq.methodQ, a: tFaq.methodA });
   const faqJsonLd = buildFaqJsonLd(faqItems);
 
   const condoCitySlug = canonicalCitySlug(condoRaw.province);
@@ -853,7 +828,7 @@ export default async function CondoPage({
           `!open` state) so it doesn't compete with the report card above the
           fold. A second instance stays at the bottom for readers who scroll
           the full report before deciding. */}
-      <LeadCaptureCTA condoId={condoRaw.id} condoName={condoRaw.name} />
+      <LeadCaptureCTA lang={lang} condoId={condoRaw.id} condoName={condoRaw.name} />
 
       {/* Building facts */}
       <section data-speakable="building-facts" className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
@@ -1103,18 +1078,18 @@ export default async function CondoPage({
         />
       )}
 
-      <LeadCaptureCTA condoId={condoRaw.id} condoName={condoRaw.name} />
+      <LeadCaptureCTA lang={lang} condoId={condoRaw.id} condoName={condoRaw.name} />
 
       <TravelAffiliateCard
         surface={`condo-${condoRaw.id.slice(0, 8)}`}
         destination={region}
-        framing={`Planning to inspect ${condoRaw.name} in person? Book a hotel + flight in one search — ${region} stays are usually cheaper than the condo's own short-let pricing.`}
-        ctaText="Find a hotel near this building →"
+        framing={tCondo.affiliateFraming(condoRaw.name, region)}
+        ctaText={tCondo.affiliateCta}
       />
 
       {/* Bottom share — visible after reading the full report */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
-        <div className="text-sm font-semibold text-zinc-300">Found this useful? Share the report</div>
+        <div className="text-sm font-semibold text-zinc-300">{tCondo.shareTitle}</div>
         <LinkShareButtons
           url={`${SITE_URL}/${lang}/condo/${condoSlug}`}
           title={`${condoRaw.name} (${region}) — RealData report`}
@@ -1122,7 +1097,7 @@ export default async function CondoPage({
       </div>
 
       <section className="text-sm">
-        <div className="text-zinc-300 font-semibold mb-1">Nearby &amp; metrics</div>
+        <div className="text-zinc-300 font-semibold mb-1">{tCondo.nearbyTitle}</div>
         <ul className="text-blue-400 space-y-1">
           {regions?.name && (
             <li>
@@ -1139,7 +1114,7 @@ export default async function CondoPage({
             </li>
           )}
           {stationLinkOk && stationName && (
-            <li><Link href={`/${lang}/near/${stationSpokeSlug}`}>Condos near {stationName} station</Link></li>
+            <li><Link href={`/${lang}/near/${stationSpokeSlug}`}>{tCondo.nearStation(stationName)}</Link></li>
           )}
           {(() => {
             const citySlug = condoRaw.province != null ? canonicalCitySlug(condoRaw.province) : null;
@@ -1148,29 +1123,29 @@ export default async function CondoPage({
             return (
               <li>
                 <Link href={`/${lang}/retiree/${citySlug}`}>
-                  More retiree-friendly condos in {cityObj.name.en}
+                  {tCondo.retireeCity(cityObj.name.en)}
                 </Link>
               </li>
             );
           })()}
-          <li><Link href={`/${lang}/glossary/bubble-index`}>What is the Bubble Index?</Link></li>
-          <li><Link href={`/${lang}/glossary/gross-yield`}>What is gross yield?</Link></li>
-          <li><Link href={`/${lang}/glossary/resale-liquidity`}>What is the Resale Liquidity Score?</Link></li>
-          <li><Link href={`/${lang}/glossary/retiree-suitability`}>Is it good for retirees?</Link></li>
-          <li><Link href={`/${lang}/glossary/flood-risk-level`}>How we score flood risk</Link></li>
-          <li><Link href={`/${lang}/glossary/ground-stability`}>Is the ground sinking?</Link></li>
-          <li><Link href={`/${lang}/glossary/developer-track-record`}>What is a developer track record?</Link></li>
+          <li><Link href={`/${lang}/glossary/bubble-index`}>{tCondo.glossaryLinks.bubbleIndex}</Link></li>
+          <li><Link href={`/${lang}/glossary/gross-yield`}>{tCondo.glossaryLinks.grossYield}</Link></li>
+          <li><Link href={`/${lang}/glossary/resale-liquidity`}>{tCondo.glossaryLinks.resaleLiquidity}</Link></li>
+          <li><Link href={`/${lang}/glossary/retiree-suitability`}>{tCondo.glossaryLinks.retireeSuitability}</Link></li>
+          <li><Link href={`/${lang}/glossary/flood-risk-level`}>{tCondo.glossaryLinks.floodRisk}</Link></li>
+          <li><Link href={`/${lang}/glossary/ground-stability`}>{tCondo.glossaryLinks.groundStability}</Link></li>
+          <li><Link href={`/${lang}/glossary/developer-track-record`}>{tCondo.glossaryLinks.developerRecord}</Link></li>
         </ul>
       </section>
 
       <FaqSection
         items={faqItems}
-        heading={getDictionary(isLang(lang) ? lang : "en").home.faqTitle}
+        heading={tAll.home.faqTitle}
       />
 
       {condoRaw.url && (
         <div className="text-xs text-zinc-500">
-          Source:{" "}
+          {tCondo.sourceLabel}{" "}
           <a
             href={condoRaw.url}
             target="_blank"

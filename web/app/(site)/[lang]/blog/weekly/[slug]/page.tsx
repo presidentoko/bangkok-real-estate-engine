@@ -155,7 +155,7 @@ export default async function WeeklyPostPage({
         </section>
       ))}
 
-      <LeadCaptureCTA
+      <LeadCaptureCTA lang={lang}
         headline="Want a vetted broker's take on any building in this post?"
       />
 

@@ -465,7 +465,7 @@ export default async function DistrictPage({
 
       <FaqSection items={faqItems} heading={t.home.faqTitle} />
 
-      <LeadCaptureCTA headline={d.ctaHeadline(display)} />
+      <LeadCaptureCTA lang={lang} headline={d.ctaHeadline(display)} />
 
       <p className="text-xs text-zinc-500">{d.source}</p>
     </main>

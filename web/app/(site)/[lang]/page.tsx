@@ -207,7 +207,7 @@ export default async function Home({
       {/* Lead capture — the home page had no conversion path at all before
           this; every other page type (condo, city, district) has one. */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <LeadCaptureCTA />
+        <LeadCaptureCTA lang={lang} />
       </section>
 
       {/* Bubble TOP */}

@@ -523,7 +523,7 @@ export default async function CityPage({
 
       {/* Concierge CTA */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <LeadCaptureCTA
+        <LeadCaptureCTA lang={lang}
           headline={t.conciergeHeadline(city.name[lang as Lang])}
         />
       </section>
