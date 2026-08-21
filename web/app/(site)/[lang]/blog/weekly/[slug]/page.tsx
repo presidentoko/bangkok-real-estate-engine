@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang } from "@/lib/i18n";
-import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { blogBreadcrumbs, langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { getWeeklyPost, listWeeklyPosts, type WeeklyPost } from "@/lib/weeklyPost";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { renderMarkdownLink } from "@/lib/markdownLinkSafety";

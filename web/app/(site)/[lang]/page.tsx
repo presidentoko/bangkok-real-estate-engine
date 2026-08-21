@@ -19,7 +19,7 @@ import {
   fetchSiteStats,
   type CondoSummary,
 } from "@/lib/queries/condos";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 
 // Stale while revalidate; data only changes when scrapers run (weekly).
 export const revalidate = 86400;

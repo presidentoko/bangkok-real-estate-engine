@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RealityCard } from "@/components/RealityCard";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 86400;

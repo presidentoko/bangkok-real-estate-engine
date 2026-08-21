@@ -217,3 +217,40 @@ export const getStationData = unstable_cache(
   // together 2026-07-25.
   { revalidate: 604800 },
 );
+
+/** Which network(s) each viable station sits on, keyed by the same slug
+ *  getViableStations() returns. `livability_metrics` only exposes a nearest
+ *  BTS column and a nearest MRT column — there is no line field — so this is
+ *  as granular as the data gets, and it is enough to group the /near index
+ *  into Skytrain / Metro / interchange sections instead of one flat list.
+ *
+ *  Deliberately a separate export rather than a field on ViableStation:
+ *  that payload is cached under "viable-stations-v1" and read on every condo
+ *  page render, and widening it would force a cache-key bump (and a full
+ *  re-walk) for a field only the index page needs. fetchAllLivability is
+ *  itself cached, so this adds no extra Supabase reads. */
+export const getStationNetworks = unstable_cache(
+  async (): Promise<Record<string, { bts: boolean; mrt: boolean }>> => {
+    const rows = await fetchAllLivability();
+    const out: Record<string, { bts: boolean; mrt: boolean }> = {};
+    for (const r of rows) {
+      const pairs: Array<["bts" | "mrt", string | null, number | null]> = [
+        ["bts", r.nearest_bts_station, r.nearest_bts_distance_m],
+        ["mrt", r.nearest_mrt_station, r.nearest_mrt_distance_m],
+      ];
+      for (const [net, name, dist] of pairs) {
+        // Same radius gate as indexStations() — a station 3 km away is not
+        // "near" anything and must not colour the grouping.
+        if (!name || dist == null || dist > RADIUS_M) continue;
+        const slug = stationSlug(name);
+        if (!slug) continue;
+        const entry = out[slug] ?? { bts: false, mrt: false };
+        entry[net] = true;
+        out[slug] = entry;
+      }
+    }
+    return out;
+  },
+  ["station-networks-v1"],
+  { revalidate: 604800 },
+);

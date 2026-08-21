@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { AskChat } from "@/components/AskChat";
 import { isLang } from "@/lib/i18n";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 
 // Static shell — the chat itself is a client component hitting /api/ask.
 export const revalidate = 86400;

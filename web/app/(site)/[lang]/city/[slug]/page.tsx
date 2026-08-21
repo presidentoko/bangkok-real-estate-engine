@@ -12,7 +12,7 @@ import { CITIES, cityProvinceSlugs, getCity, type City, type CitySlug } from "@/
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
 import { type CondoSummary, type PropertyType } from "@/lib/queries/condos";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";

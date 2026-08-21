@@ -5,7 +5,7 @@ import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
 import { getDictionary } from "@/lib/getDictionary";
 import FaqSection from "@/components/FaqSection";
-import { blogBreadcrumbs, langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { blogBreadcrumbs, langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 

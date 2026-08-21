@@ -16,7 +16,7 @@ import {
   fetchCondoProvinces,
   fetchCondoSummariesCompactByCity,
 } from "@/lib/queries/condos";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 
 // Static shell — no searchParams read here. Reading searchParams server-side
 // silently opts the whole route out of ISR (every request becomes a live

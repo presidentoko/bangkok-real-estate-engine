@@ -17,7 +17,7 @@ import { fmtTHB } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import FaqSection from "@/components/FaqSection";
 import { getServerSupabase } from "@/lib/supabase";

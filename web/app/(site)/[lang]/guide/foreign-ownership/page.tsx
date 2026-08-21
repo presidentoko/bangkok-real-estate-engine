@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd, type FaqItem } from "@/lib/seo/faqJsonLd";
 import FaqSection from "@/components/FaqSection";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 export const revalidate = 86400;

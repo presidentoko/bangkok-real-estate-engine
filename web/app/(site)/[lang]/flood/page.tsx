@@ -7,7 +7,7 @@ import { FloodMapSvg, type FloodPoint } from "@/components/FloodMapSvg";
 import { FloodStats } from "@/components/FloodStats";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";

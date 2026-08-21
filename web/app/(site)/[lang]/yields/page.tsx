@@ -8,7 +8,7 @@ import { isLang } from "@/lib/i18n";
 import { fetchYieldRows, getCurrentMortgageRate } from "@/lib/queries/yield";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import FaqSection from "@/components/FaqSection";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
