@@ -19,6 +19,8 @@ const dict: Dict = {
     askAi: "AI에게 묻기",
     saved: "저장됨",
     yields: "수익률",
+    macro: "금리",
+    compare: "비교",
   },
   footer: {
     about:
@@ -39,6 +41,9 @@ const dict: Dict = {
     guideForeignOwnership: "외국인 소유",
     guideInvestment: "투자 가이드",
     guideGlossary: "용어집",
+    legalTitle: "약관·정책",
+    privacy: "개인정보처리방침",
+    terms: "이용약관",
   },
   home: {
     heroPretitle: "독립 측정 · 4개 포털 · 9개 도시",
@@ -262,7 +267,7 @@ const dict: Dict = {
       },
     ],
     contactsHeader: "인터뷰 / 데이터 라이선스 문의",
-    contactsBody: "이메일 umma@xx.gg 또는 contact 폼. 영업일 2일 내 답변.",
+    contactsBody: "텔레그램 @Bkkbudong_bot 또는 contact 폼. 영업일 2일 내 답변.",
     statsHeader: "Headline 숫자 (라이브)",
     factsheet: [
       { k: "추적 빌딩", v: "1,800+" },
@@ -471,7 +476,7 @@ const dict: Dict = {
       success: "감사합니다 — 영업일 기준 2일 내 답변드리겠습니다.",
       errorGeneric: "전송 실패. 이메일로 보내주세요.",
       fallbackPrefix: "또는 이메일",
-      fallbackEmail: "umma@xx.gg",
+      fallbackHandle: "@Bkkbudong_bot",
     },
     useCases: [
       {

@@ -11,6 +11,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BackToTop } from "@/components/BackToTop";
 import { CompareTray } from "@/components/CompareTray";
 import { SavedNavLink } from "@/components/SavedNavLink";
+import { ADSENSE_CLIENT, adsEnabled } from "@/lib/ads";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
@@ -120,6 +121,21 @@ export default async function LangRootLayout({
         name: t.brand.name,
         url: SITE_URL,
         description: t.footer.about,
+        // The OG card doubles as the logo: it is the only 1200x630 brand
+        // image the site owns, and an Organization with no logo is the most
+        // common reason a knowledge panel never forms.
+        logo: {
+          "@type": "ImageObject",
+          url: `${SITE_URL}/${lang}/opengraph-image`,
+          width: 1200,
+          height: 630,
+        },
+        contactPoint: {
+          "@type": "ContactPoint",
+          contactType: "customer support",
+          url: `${SITE_URL}/${lang}/contact`,
+          availableLanguage: ["en", "ko", "th"],
+        },
       },
       {
         "@type": "WebSite",
@@ -128,19 +144,39 @@ export default async function LangRootLayout({
         url: `${SITE_URL}/${lang}`,
         inLanguage: lang,
         publisher: { "@id": `${SITE_URL}/#org` },
+        // Sitelinks-searchbox eligibility. /inventory reads ?q= as of
+        // 2026-08-21 (components/InventoryGrid.tsx) — without that this
+        // would point Google at a page that ignores the term.
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE_URL}/${lang}/inventory?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
     ],
   };
 
+  // /yields and /ask were footer-only and mobile-only respectively, which put
+  // the site's highest-value ranking page and its longest-session feature out
+  // of reach of a desktop reader on any interior page.
+  //
+  // `wide` marks the ones that only appear once there is room for them; the
+  // mobile menu below carries the full list regardless, so nothing becomes
+  // unreachable at any width.
   const NAV = [
-    { href: `/${lang}/flood`, label: t.nav.flood },
-    { href: `/${lang}/inventory`, label: t.nav.inventory },
-    { href: `/${lang}/reality`, label: t.nav.reality },
-    { href: `/${lang}/data`, label: t.nav.data },
-    { href: `/${lang}/blog`, label: t.nav.blog },
-    { href: `/${lang}/retiree`, label: t.nav.retiree },
-    { href: `/${lang}/about`, label: t.nav.about },
-    { href: `/${lang}/contact`, label: t.nav.contact },
+    { href: `/${lang}/yields`, label: t.nav.yields, wide: false },
+    { href: `/${lang}/inventory`, label: t.nav.inventory, wide: false },
+    { href: `/${lang}/flood`, label: t.nav.flood, wide: false },
+    { href: `/${lang}/ask`, label: t.nav.askAi, wide: false },
+    { href: `/${lang}/data`, label: t.nav.data, wide: true },
+    { href: `/${lang}/reality`, label: t.nav.reality, wide: true },
+    { href: `/${lang}/blog`, label: t.nav.blog, wide: true },
+    { href: `/${lang}/retiree`, label: t.nav.retiree, wide: true },
+    { href: `/${lang}/about`, label: t.nav.about, wide: true },
+    { href: `/${lang}/contact`, label: t.nav.contact, wide: true },
   ];
 
   const MOBILE_NAV = [
@@ -160,6 +196,32 @@ export default async function LangRootLayout({
             with /AgodaPartnerVerification.html so Agoda passes regardless
             of which check they actually run). */}
         <meta name="agd-partner-manual-verification" />
+        {/* AdSense. Env-gated the same way the beacon above is: until
+            NEXT_PUBLIC_ADSENSE_CLIENT is set this emits nothing, and every
+            <AdSlot> renders nothing to match (lib/ads.ts).
+
+            The meta tag is what AdSense reads to verify site ownership
+            during review, so it has to be present before the loader does
+            anything useful. `async` rather than `defer`: the loader wants to
+            start its own fetch early, and the slots reserve their height in
+            CSS regardless, so it cannot shift layout while it works.
+
+            Deliberately NOT here: auto-ads. Anchor and vignette formats
+            position themselves at the viewport edges, where this site
+            already spends ~166px of a mobile screen on the sticky header,
+            MobileBottomNav (z-40) and CompareTray (z-50). Those are the
+            features that keep a session alive; an ad cannot have that space.
+            Slots are placed by hand instead — see lib/ads.ts. */}
+        {adsEnabled() && (
+          <>
+            <meta name="google-adsense-account" content={ADSENSE_CLIENT} />
+            <script
+              async
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+              crossOrigin="anonymous"
+            />
+          </>
+        )}
         {/* Cloudflare Web Analytics. Until 2026-08-17 this site had no
             analytics of any kind — not gtag, not Plausible, not Vercel
             Analytics — so "users aren't coming" could only ever be answered
@@ -211,7 +273,9 @@ export default async function LangRootLayout({
                   <Link
                     key={n.href}
                     href={n.href}
-                    className="px-2 py-1 rounded text-zinc-300 hover:text-white hover:bg-zinc-800 transition"
+                    className={`px-2 py-1 rounded text-zinc-300 hover:text-white hover:bg-zinc-800 transition${
+                      n.wide ? " hidden xl:inline-block" : ""
+                    }`}
                   >
                     {n.label}
                   </Link>
@@ -277,6 +341,21 @@ export default async function LangRootLayout({
                     {t.footer.underpricedAlerts}
                   </Link>
                 </li>
+                {/* /macro had no inbound link anywhere in the app — it was
+                    reachable only from the sitemap, which meant Google could
+                    index a page no reader could navigate to. /compare was in
+                    the same position: its only entry point was the compare
+                    tray, which does not render until a queue already exists. */}
+                <li>
+                  <Link href={`/${lang}/macro`} className="hover:text-zinc-300">
+                    {t.nav.macro}
+                  </Link>
+                </li>
+                <li>
+                  <Link href={`/${lang}/compare`} className="hover:text-zinc-300">
+                    {t.nav.compare}
+                  </Link>
+                </li>
                 <li>
                   <Link href="/rss.xml" className="hover:text-zinc-300">
                     {t.footer.rssFeed}
@@ -299,8 +378,29 @@ export default async function LangRootLayout({
               </ul>
             </div>
           </div>
-          <div className="border-t border-zinc-900 px-4 sm:px-6 py-4 pb-20 sm:pb-4 text-center text-xs text-zinc-600">
-            © {new Date().getFullYear()} RealData · {t.footer.copyright}
+          {/* Policy links live in the bottom bar rather than a footer column
+              because that is where a reader — and an ad-network reviewer —
+              looks for them. text-zinc-400 rather than the zinc-600 used for
+              the copyright line: zinc-600 on zinc-950 measures ~2.4:1, which
+              fails AA, and these are the two links on the site that must
+              never be hard to find. */}
+          <div className="border-t border-zinc-900 px-4 sm:px-6 py-4 pb-20 sm:pb-4 text-xs text-zinc-600">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-2">
+              <Link href={`/${lang}/privacy`} className="text-zinc-400 hover:text-zinc-200">
+                {t.footer.privacy}
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link href={`/${lang}/terms`} className="text-zinc-400 hover:text-zinc-200">
+                {t.footer.terms}
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link href={`/${lang}/contact`} className="text-zinc-400 hover:text-zinc-200">
+                {t.nav.contact}
+              </Link>
+            </div>
+            <div className="text-center">
+              © {new Date().getFullYear()} RealData · {t.footer.copyright}
+            </div>
           </div>
         </footer>
       </body>

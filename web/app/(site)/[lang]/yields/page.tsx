@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { AdSlot } from "@/components/AdSlot";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { YieldsExplorer } from "@/components/YieldsExplorer";
 import { getDictionary } from "@/lib/getDictionary";
@@ -147,6 +148,8 @@ export default async function YieldsPage({
           today.
         </p>
       </section>
+
+      <AdSlot name="hubBelow" />
 
       <FaqSection items={faqItems} heading={t.home.faqTitle} />
 

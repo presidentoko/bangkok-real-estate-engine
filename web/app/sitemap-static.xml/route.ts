@@ -32,6 +32,8 @@ const STATIC_PATHS = [
   { path: "/guide/foreign-ownership", changefreq: "monthly", priority: 0.7 },
   { path: "/guide/investment", changefreq: "weekly", priority: 0.8 },
   { path: "/retiree", changefreq: "weekly", priority: 0.8 },
+  { path: "/privacy", changefreq: "yearly", priority: 0.3 },
+  { path: "/terms", changefreq: "yearly", priority: 0.3 },
   // Named static blog posts
   { path: "/blog/bangkok-overpriced-top10", changefreq: "weekly", priority: 0.6 },
   { path: "/blog/bangkok-foreigner-best-value", changefreq: "weekly", priority: 0.6 },

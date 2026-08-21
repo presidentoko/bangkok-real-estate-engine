@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import sanitizeHtml from "sanitize-html";
+import { AdSlot } from "@/components/AdSlot";
 import { CondoFacilities } from "@/components/CondoFacilities";
 import { CondoNeighbours, type NeighbourLink } from "@/components/CondoNeighbours";
 import { CondoUnitsTable } from "@/components/CondoUnitsTable";
@@ -902,6 +903,11 @@ export default async function CondoPage({
         )}
       </section>
 
+      {/* First ad on the page, and deliberately this far down: the report
+          card and building facts above are the LCP element and the reason
+          anyone landed here. */}
+      <AdSlot name="condoMid" />
+
       <DeveloperCard
         name={condoRaw.developer}
         slug={condoRaw.developer_slug}
@@ -1076,6 +1082,8 @@ export default async function CondoPage({
       />
 
       <MultiPortalCard stats={portalStats} />
+
+      <AdSlot name="condoLower" />
 
       {chart.length > 0 && <PriceChart points={chart} />}
 

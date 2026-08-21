@@ -8,6 +8,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { getCurrentMortgageRate } from "@/lib/queries/yield";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
+import { AdSlot } from "@/components/AdSlot";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import FaqSection from "@/components/FaqSection";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
@@ -464,6 +465,8 @@ export default async function DistrictPage({
         </ul>
       </section>
       )}
+
+      <AdSlot name="hubBelow" />
 
       <FaqSection items={faqItems} heading={t.home.faqTitle} />
 

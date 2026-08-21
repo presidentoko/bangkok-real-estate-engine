@@ -20,6 +20,8 @@ const dict = {
     askAi: "Ask AI",
     saved: "Saved",
     yields: "Yields",
+    macro: "Macro rates",
+    compare: "Compare",
   },
   footer: {
     about:
@@ -40,6 +42,9 @@ const dict = {
     guideForeignOwnership: "Foreign ownership",
     guideInvestment: "Investment guide",
     guideGlossary: "Glossary",
+    legalTitle: "Legal",
+    privacy: "Privacy",
+    terms: "Terms",
   },
   home: {
     heroPretitle: "Independent measurement · 4 portals · 9 cities",
@@ -279,7 +284,7 @@ const dict = {
       },
     ],
     contactsHeader: "Contact for interviews / data licensing",
-    contactsBody: "Email umma@xx.gg or use the contact form. We respond within 2 business days.",
+    contactsBody: "Message @Bkkbudong_bot on Telegram or use the contact form. We respond within 2 business days.",
     statsHeader: "Headline numbers (live)",
     factsheet: [
       { k: "Buildings tracked", v: "1,800+" },
@@ -486,9 +491,9 @@ const dict = {
       submit: "Send",
       submitting: "Sending…",
       success: "Thanks — we'll reply within 2 business days.",
-      errorGeneric: "Something went wrong. Try email instead.",
-      fallbackPrefix: "or email us at",
-      fallbackEmail: "umma@xx.gg",
+      errorGeneric: "Something went wrong. Message us on Telegram instead.",
+      fallbackPrefix: "or message us on Telegram at",
+      fallbackHandle: "@Bkkbudong_bot",
     },
     useCases: [
       {

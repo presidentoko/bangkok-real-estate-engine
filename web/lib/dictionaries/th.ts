@@ -19,6 +19,8 @@ const dict: Dict = {
     askAi: "ถาม AI",
     saved: "บันทึกไว้",
     yields: "ผลตอบแทน",
+    macro: "อัตราดอกเบี้ย",
+    compare: "เปรียบเทียบ",
   },
   footer: {
     about:
@@ -39,6 +41,9 @@ const dict: Dict = {
     guideForeignOwnership: "การเป็นเจ้าของของชาวต่างชาติ",
     guideInvestment: "คู่มือการลงทุน",
     guideGlossary: "อภิธานศัพท์",
+    legalTitle: "ข้อกำหนด",
+    privacy: "ความเป็นส่วนตัว",
+    terms: "ข้อกำหนดการใช้งาน",
   },
   home: {
     heroPretitle: "ข้อมูลอิสระ · 4 พอร์ทัล · 9 เมือง",
@@ -262,7 +267,7 @@ const dict: Dict = {
       },
     ],
     contactsHeader: "ติดต่อสำหรับสัมภาษณ์ / ใบอนุญาตข้อมูล",
-    contactsBody: "อีเมล umma@xx.gg หรือใช้แบบฟอร์มติดต่อ ตอบกลับภายใน 2 วันทำการ",
+    contactsBody: "ทักหาเราที่ Telegram @Bkkbudong_bot หรือใช้แบบฟอร์มติดต่อ ตอบกลับภายใน 2 วันทำการ",
     statsHeader: "ตัวเลขสำคัญ (ไลฟ์)",
     factsheet: [
       { k: "อาคารที่ติดตาม", v: "1,800+" },
@@ -471,7 +476,7 @@ const dict: Dict = {
       success: "ขอบคุณ — เราจะตอบกลับภายใน 2 วันทำการ",
       errorGeneric: "เกิดข้อผิดพลาด ลองส่งทางอีเมลแทน",
       fallbackPrefix: "หรือส่งอีเมลที่",
-      fallbackEmail: "umma@xx.gg",
+      fallbackHandle: "@Bkkbudong_bot",
     },
     useCases: [
       {

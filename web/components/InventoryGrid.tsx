@@ -71,6 +71,17 @@ export function InventoryGrid({
   availableTypes: PropertyType[];
 }) {
   const [q, setQ] = useState("");
+  // Seed the search box from ?q= so an /inventory?q=... URL actually
+  // searches. It is also what makes the WebSite SearchAction in
+  // (site)/[lang]/layout.tsx an honest claim rather than a target Google
+  // would follow to an unfiltered list. Read once on mount via
+  // window.location rather than useSearchParams(), for the reason the
+  // CitySwitcher comment in that layout records: a bare useSearchParams()
+  // here would drag every page under the layout out of static rendering.
+  useEffect(() => {
+    const seed = new URLSearchParams(window.location.search).get("q");
+    if (seed) setQ(seed);
+  }, []);
   const [district, setDistrict] = useState<string>("");
   const [sort, setSort] = useState<SortKey>("default");
   const [photoOnly, setPhotoOnly] = useState(false);
