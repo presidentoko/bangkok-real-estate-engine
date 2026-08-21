@@ -61,14 +61,7 @@ export async function generateMetadata({
       canonical: `${SITE_URL}/${useLang}/blog/${SLUG}`,
       languages: langAlternates(`/blog/${SLUG}`),
     },
-    openGraph: {
-      title: m.ogTitle,
-      description: m.ogDesc,
-      url: `${SITE_URL}/${useLang}/blog/${SLUG}`,
-      type: "article",
-      publishedTime: PUBLISHED,
-      locale: useLang,
-    },
+    openGraph: ogFor(useLang, { title: m.ogTitle, description: m.ogDesc, url: `${SITE_URL}/${useLang}/blog/${SLUG}`, type: "article", publishedTime: PUBLISHED }),
   };
 }
 
@@ -293,44 +286,89 @@ export default async function ChiangMaiBestValue({
         </div>
 
         {rows.length === 0 ? (
-          <div className="mt-8 p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 text-sm">
-            {t.emptyState}
+          <div className="mt-8 p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-sm space-y-3">
+            <p className="text-zinc-400">{t.emptyState}</p>
+            {/* Was a bare "no data yet" box. A reader who landed here from
+                search now has somewhere to go instead of bouncing. */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <Link
+                href={`/${lang}/city/chiangmai`}
+                className="text-blue-400 hover:text-blue-300"
+              >
+                &rarr; All Chiang Mai condos
+              </Link>
+              <Link
+                href={`/${lang}/districts`}
+                className="text-blue-400 hover:text-blue-300"
+              >
+                &rarr; Median price by district
+              </Link>
+            </div>
           </div>
         ) : (
-          <table className="w-full mt-8 text-sm border-collapse">
-            <thead className="text-zinc-400 text-[11px] uppercase tracking-wider border-b border-zinc-800">
-              <tr>
-                <th className="text-left py-2 font-semibold">{t.tableHead.rank}</th>
-                <th className="text-left py-2 font-semibold">{t.tableHead.condo}</th>
-                <th className="text-left py-2 font-semibold">{t.tableHead.district}</th>
-                <th className="text-right py-2 font-semibold">{t.tableHead.bubble}</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Desktop table / mobile cards. The 4-column table alone forced
+                the whole article to scroll sideways on a 360px phone; same
+                pattern as app/[lang]/stale/page.tsx. */}
+            <table className="hidden sm:table w-full mt-8 text-sm border-collapse">
+              <thead className="text-zinc-400 text-[11px] uppercase tracking-wider border-b border-zinc-800">
+                <tr>
+                  <th className="text-left py-2 font-semibold">{t.tableHead.rank}</th>
+                  <th className="text-left py-2 font-semibold">{t.tableHead.condo}</th>
+                  <th className="text-left py-2 font-semibold">{t.tableHead.district}</th>
+                  <th className="text-right py-2 font-semibold">{t.tableHead.bubble}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => {
+                  const below = Math.round(100 - r.bubble_index);
+                  return (
+                    <tr key={r.condo_id} className="border-b border-zinc-900">
+                      <td className="py-3 text-zinc-500 tabular-nums">{i + 1}</td>
+                      <td className="py-3">
+                        <Link
+                          href={`/${lang}/condo/${r.condo_id}`}
+                          className="text-zinc-100 hover:text-blue-300 transition"
+                        >
+                          {r.name}
+                        </Link>
+                      </td>
+                      <td className="py-3 text-zinc-400 text-xs">{r.region}</td>
+                      <td className="py-3 text-right">
+                        <span className="font-bold tabular-nums text-emerald-400">
+                          −{below}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <ul className="sm:hidden mt-8 divide-y divide-zinc-900 border-t border-zinc-900">
               {rows.map((r, i) => {
                 const below = Math.round(100 - r.bubble_index);
                 return (
-                  <tr key={r.condo_id} className="border-b border-zinc-900">
-                    <td className="py-3 text-zinc-500 tabular-nums">{i + 1}</td>
-                    <td className="py-3">
-                      <Link
-                        href={`/${lang}/condo/${r.condo_id}`}
-                        className="text-zinc-100 hover:text-blue-300 transition"
-                      >
-                        {r.name}
-                      </Link>
-                    </td>
-                    <td className="py-3 text-zinc-400 text-xs">{r.region}</td>
-                    <td className="py-3 text-right">
-                      <span className="font-bold tabular-nums text-emerald-400">
-                        −{below}%
-                      </span>
-                    </td>
-                  </tr>
+                  <li key={r.condo_id} className="py-3">
+                    <Link href={`/${lang}/condo/${r.condo_id}`} className="block space-y-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-zinc-600 tabular-nums text-xs w-6 shrink-0">
+                          {i + 1}
+                        </span>
+                        <span className="text-zinc-100 font-medium leading-snug">{r.name}</span>
+                      </div>
+                      <div className="pl-8 flex flex-wrap items-baseline gap-x-3 text-xs">
+                        <span className="text-zinc-500">{r.region}</span>
+                        <span className="font-bold tabular-nums text-emerald-400">
+                          {t.tableHead.bubble} −{below}%
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
                 );
               })}
-            </tbody>
-          </table>
+            </ul>
+          </>
         )}
 
         <section className="mt-10 pt-6 border-t border-zinc-900">

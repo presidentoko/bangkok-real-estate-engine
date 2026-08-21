@@ -9,6 +9,7 @@ import { buildFaqJsonLd, type FaqItem } from "@/lib/seo/faqJsonLd";
 import FaqSection from "@/components/FaqSection";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const revalidate = 86400;
 
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       canonical: `${SEO_SITE_URL}/${lang}/guide/foreign-ownership`,
       languages: langAlternates(`/guide/foreign-ownership`),
     },
-    openGraph: { title: t.guide.foreign.title, description: t.guide.foreign.lead, url: `${SEO_SITE_URL}/${lang}/guide/foreign-ownership`, type: "article" },
+    openGraph: ogFor(lang, { title: t.guide.foreign.title, description: t.guide.foreign.lead, url: `${SEO_SITE_URL}/${lang}/guide/foreign-ownership`, type: "article" }),
   };
 }
 
@@ -39,16 +40,20 @@ export default async function ForeignOwnershipPage({ params }: { params: Promise
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
-  const breadcrumbs = buildBreadcrumbsJsonLd([
-    { name: "RealData", url: `${SEO_SITE_URL}/${lang}` },
-    { name: t.guide.breadcrumb, url: `${SEO_SITE_URL}/${lang}/guide/investment` },
-    { name: t.guide.foreign.title, url: `${SEO_SITE_URL}/${lang}/guide/foreign-ownership` },
-  ]);
+  const crumbs = [
+    { name: "RealData", href: `/${lang}` },
+    { name: t.guide.breadcrumb, href: `/${lang}/guide/investment` },
+    { name: t.guide.foreign.title, href: `/${lang}/guide/foreign-ownership` },
+  ];
+  const breadcrumbs = buildBreadcrumbsJsonLd(
+    crumbs.map((c) => ({ name: c.name, url: `${SEO_SITE_URL}${c.href}` }))
+  );
   return (
     <main className="max-w-3xl mx-auto p-6 prose-invert">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(FAQ)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbs) }} />
-      <h1 className="text-3xl font-bold mb-2">{t.guide.foreign.title}</h1>
+      <Breadcrumbs items={crumbs} />
+      <h1 className="text-3xl font-bold mb-2 mt-2">{t.guide.foreign.title}</h1>
       <p className="text-zinc-400 mb-6">{t.guide.foreign.lead}</p>
 
       <article className="space-y-6 text-zinc-300 leading-relaxed">

@@ -13,6 +13,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
 import { type CondoSummary, type PropertyType } from "@/lib/queries/condos";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
@@ -244,13 +245,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${useLang}/city/${slug}`,
       languages: langAlternates(`/city/${slug}`),
     },
-    openGraph: {
-      title: `${name} — Independent condo data report`,
-      description: tagline,
-      url: `${SEO_SITE_URL}/${useLang}/city/${slug}`,
-      type: "website",
-      locale: useLang,
-    },
+    openGraph: ogFor(useLang, { title: `${name} — Independent condo data report`, description: tagline, url: `${SEO_SITE_URL}/${useLang}/city/${slug}` }),
   };
 }
 
@@ -365,12 +360,14 @@ export default async function CityPage({
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(236,72,153,0.12),transparent_60%)]" />
         </div>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-          <Link
-            href={`/${lang}`}
-            className="text-zinc-500 hover:text-zinc-300 text-sm inline-block mb-3"
-          >
-            ← RealData
-          </Link>
+          <div className="mb-3">
+            <Breadcrumbs
+              items={[
+                { name: "RealData", href: `/${lang}` },
+                { name: cityName, href: `/${lang}/city/${slug}` },
+              ]}
+            />
+          </div>
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.05]">
             <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-cyan-200 bg-clip-text text-transparent">
               {cityName}

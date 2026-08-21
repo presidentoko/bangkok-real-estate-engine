@@ -60,7 +60,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/near/${station}`,
       languages: langAlternates(`/near/${station}`),
     },
-    openGraph: { title, description: desc, url: `${SEO_SITE_URL}/${lang}/near/${station}`, type: "article" },
+    openGraph: ogFor(lang, { title, description: desc, url: `${SEO_SITE_URL}/${lang}/near/${station}`, type: "article" }),
   };
 }
 

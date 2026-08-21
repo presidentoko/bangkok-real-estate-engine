@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContactForm } from "@/components/ContactForm";
+import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -15,19 +14,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Contact — RealData" };
+  const t = getDictionary(lang).contact;
+  const title = `${t.title} — RealData`;
+  const description = t.lead;
   return {
-    title: "Contact & Concierge — RealData Bangkok",
-    description:
-      "Property concierge for foreign buyers in Thailand. Get a personalised shortlist, price guidance, and viewing support — or reach our team for advertising and data partnerships.",
+    title,
+    description,
     alternates: {
-      canonical: `/${lang}/contact`,
-      languages: {
-        en: `${SITE_URL}/en/contact`,
-        ko: `${SITE_URL}/ko/contact`,
-        th: `${SITE_URL}/th/contact`,
-        "x-default": `${SITE_URL}/en/contact`,
-      },
+      canonical: `${SEO_SITE_URL}/${lang}/contact`,
+      languages: langAlternates("/contact"),
     },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/contact` }),
   };
 }
 

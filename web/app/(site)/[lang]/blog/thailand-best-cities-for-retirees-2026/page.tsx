@@ -59,14 +59,7 @@ export async function generateMetadata({
       canonical: `${SITE_URL}/${useLang}/blog/${SLUG}`,
       languages: langAlternates(`/blog/${SLUG}`),
     },
-    openGraph: {
-      title: m.ogTitle,
-      description: m.ogDesc,
-      url: `${SITE_URL}/${useLang}/blog/${SLUG}`,
-      type: "article",
-      publishedTime: PUBLISHED,
-      locale: useLang,
-    },
+    openGraph: ogFor(useLang, { title: m.ogTitle, description: m.ogDesc, url: `${SITE_URL}/${useLang}/blog/${SLUG}`, type: "article", publishedTime: PUBLISHED }),
   };
 }
 

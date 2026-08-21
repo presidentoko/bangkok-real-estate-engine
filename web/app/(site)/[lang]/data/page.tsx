@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { canonicalCitySlug, CITIES, cityProvinceSlugs } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
-import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
+import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
+import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
+import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
 export const revalidate = 86400;
@@ -17,13 +19,15 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Data — RealData" };
   const t = getDictionary(lang).dataShowcase;
+  const title = `${t.title} — RealData`;
   return {
-    title: `${t.title} — RealData`,
+    title,
     description: t.lead,
     alternates: {
       canonical: `${SEO_SITE_URL}/${lang}/data`,
       languages: langAlternates("/data"),
     },
+    openGraph: ogFor(lang, { title, description: t.lead, url: `${SEO_SITE_URL}/${lang}/data` }),
   };
 }
 
@@ -270,6 +274,94 @@ export default async function DataShowcase({
     return `$${Math.round(n).toLocaleString()}`;
   };
 
+  // This page is the site's data showcase and a top-nav item at sitemap
+  // priority 0.8, but shipped with no structured data at all — /about and
+  // /macro both publish a Dataset, which is what an answer engine looks for
+  // when the question is quantitative. Numbers below are the same counts the
+  // page renders, so the markup can never drift from the visible figures.
+  const datasetJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "RealData Thailand Condo Coverage & Bubble Index Distribution",
+    description:
+      `Coverage snapshot of the RealData Thailand condo crawl: ${(buildingsTotal.count ?? 0).toLocaleString()} buildings, ` +
+      `${(listingsTotal.count ?? 0).toLocaleString()} active listings, ` +
+      `${(chartPointsTotal.count ?? 0).toLocaleString()} price-chart data points across ` +
+      `${(regionsTotal.count ?? 0).toLocaleString()} districts in ${PROVINCES.length} Thai markets. ` +
+      "Includes per-city median sale price and median Bubble Index, plus the full Bubble Index distribution.",
+    url: `${SEO_SITE_URL}/${lang}/data`,
+    creator: { "@id": `${SEO_SITE_URL}/#org` },
+    publisher: { "@id": `${SEO_SITE_URL}/#org` },
+    isAccessibleForFree: true,
+    inLanguage: lang,
+    keywords: [
+      "Thailand condo dataset",
+      "Bangkok condo prices",
+      "Bubble Index distribution",
+      "condo market coverage",
+      "median price per city Thailand",
+    ],
+    spatialCoverage: {
+      "@type": "Place",
+      name: "Thailand",
+      geo: {
+        "@type": "GeoShape",
+        box: "5.61 97.34 20.46 105.64",
+      },
+    },
+    temporalCoverage: "2026-04/..",
+    variableMeasured: [
+      {
+        "@type": "PropertyValue",
+        name: "Buildings tracked",
+        value: buildingsTotal.count ?? 0,
+        description: "Condo buildings published from the hipflat crawl",
+      },
+      {
+        "@type": "PropertyValue",
+        name: "Active listings",
+        value: listingsTotal.count ?? 0,
+        description: "Currently-active sale and rent listings across all tracked portals",
+      },
+      {
+        "@type": "PropertyValue",
+        name: "Price chart data points",
+        value: chartPointsTotal.count ?? 0,
+        description: "Monthly market price observations per building",
+      },
+      {
+        "@type": "PropertyValue",
+        name: "Districts covered",
+        value: regionsTotal.count ?? 0,
+        description: "Named sub-districts with their own median sale, rent and yield",
+      },
+      ...cityStats.flatMap((c) => [
+        {
+          "@type": "PropertyValue",
+          name: `${c.name} median sale price (USD)`,
+          value: c.medianSale,
+          description: `Median per-project sale price across ${c.buildings.toLocaleString()} ${c.name} buildings`,
+        },
+        {
+          "@type": "PropertyValue",
+          name: `${c.name} median Bubble Index`,
+          value: c.medianBubble != null ? Math.round(c.medianBubble) : null,
+          description: `Median of price-per-sqm vs district median × 100 over ${c.scored.toLocaleString()} scored ${c.name} buildings`,
+        },
+      ]),
+    ],
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "text/html",
+      contentUrl: `${SEO_SITE_URL}/${lang}/inventory`,
+    },
+  };
+
+  const breadcrumbsJsonLd = buildBreadcrumbsJsonLd([
+    { name: "RealData", url: `${SEO_SITE_URL}/${lang}` },
+    { name: t.title, url: `${SEO_SITE_URL}/${lang}/data` },
+  ]);
+
   // SVG histogram dims
   const VIEW_W = 720;
   const VIEW_H = 220;
@@ -284,6 +376,15 @@ export default async function DataShowcase({
 
   return (
     <main className="max-w-5xl mx-auto p-6 sm:p-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdString(datasetJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbsJsonLd) }}
+      />
+
       {/* Hero */}
       <header className="mb-10">
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight">{t.title}</h1>

@@ -7,6 +7,7 @@ import { fmtTHB } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
+import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 
@@ -148,12 +149,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/districts`,
       languages: langAlternates("/districts"),
     },
-    openGraph: {
-      title: t.seoTitle,
-      description: t.seoDesc,
-      url: `${SEO_SITE_URL}/${lang}/districts`,
-      type: "website",
-    },
+    openGraph: ogFor(lang, { title: t.seoTitle, description: t.seoDesc, url: `${SEO_SITE_URL}/${lang}/districts` }),
   };
 }
 
@@ -183,11 +179,21 @@ export default async function DistrictsIndexPage({
     })),
   };
 
+  // Mirrors the visible <Breadcrumbs> below — the two must not disagree.
+  const breadcrumbsJsonLd = buildBreadcrumbsJsonLd([
+    { name: "RealData", url: `${SEO_SITE_URL}/${lang}` },
+    { name: d.title, url: `${SEO_SITE_URL}/${lang}/districts` },
+  ]);
+
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbsJsonLd) }}
       />
 
       <Breadcrumbs

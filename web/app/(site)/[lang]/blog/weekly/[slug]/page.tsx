@@ -35,13 +35,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/blog/weekly/${slug}`,
       languages: langAlternates(`/blog/weekly/${slug}`),
     },
-    openGraph: {
-      title: post.title,
-      description: post.description,
-      url: `${SEO_SITE_URL}/${lang}/blog/weekly/${slug}`,
-      type: "article",
-      publishedTime: post.published_at,
-    },
+    openGraph: ogFor(lang, { title: post.title, description: post.description, url: `${SEO_SITE_URL}/${lang}/blog/weekly/${slug}`, type: "article", publishedTime: post.published_at }),
   };
 }
 

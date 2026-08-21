@@ -26,7 +26,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/ask`,
       languages: langAlternates("/ask"),
     },
-    openGraph: { title, description, url: `${SEO_SITE_URL}/${lang}/ask`, type: "website" },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/ask` }),
   };
 }
 

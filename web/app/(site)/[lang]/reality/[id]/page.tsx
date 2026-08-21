@@ -49,12 +49,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/reality/${id}`,
       languages: langAlternates(`/reality/${id}`),
     },
-    openGraph: {
-      title,
-      description,
-      url: `${SEO_SITE_URL}/${lang}/reality/${id}`,
-      type: "article",
-    },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/reality/${id}`, type: "article" }),
   };
 }
 

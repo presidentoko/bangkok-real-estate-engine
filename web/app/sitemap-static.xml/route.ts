@@ -1,4 +1,5 @@
 import { LANGS } from "@/lib/i18n";
+import { getServerSupabase } from "@/lib/supabase";
 import { listWeeklyPosts } from "@/lib/weeklyPost";
 import { allTermSlugs } from "@/lib/glossary";
 import {
@@ -45,6 +46,13 @@ const STATIC_PATHS = [
   { path: "/blog/thailand-best-cities-for-retirees-2026", changefreq: "monthly", priority: 0.8 },
 ];
 
+// /alerts lives outside the [lang] tree (see (other)/layout.tsx) — one URL,
+// no locale variants, so these entries must never carry hreflang alternates.
+const UNLOCALIZED_PATHS = [
+  { path: "/alerts", changefreq: "weekly", priority: 0.5 },
+  { path: "/alerts/subscribe", changefreq: "yearly", priority: 0.3 },
+];
+
 export async function GET(): Promise<Response> {
   const today = isoDate(new Date());
   const entries: string[] = [];
@@ -64,6 +72,17 @@ export async function GET(): Promise<Response> {
     }
   }
 
+  for (const sp of UNLOCALIZED_PATHS) {
+    entries.push(
+      urlEntry({
+        loc: `${SITE_URL}${sp.path}`,
+        lastmod: today,
+        changefreq: sp.changefreq,
+        priority: sp.priority,
+      })
+    );
+  }
+
   // Auto-generated weekly posts (file system read — no DB)
   const weeklyPosts = await listWeeklyPosts().catch(() => []);
   for (const post of weeklyPosts) {
@@ -76,6 +95,35 @@ export async function GET(): Promise<Response> {
           lastmod,
           changefreq: "monthly",
           priority: 0.6,
+          path,
+        })
+      );
+    }
+  }
+
+  // /reality/{id} promotion pages: fully indexable (unique title,
+  // description, canonical, hreflang, no noindex) but in no sitemap until
+  // now. Same source + cap the index page reads, so the sitemap can never
+  // list an id the index does not link to.
+  const supabase = getServerSupabase();
+  const { data: promos } = await supabase
+    .from("v_promoted_condos")
+    .select("promotion_id, added_at")
+    .order("added_at", { ascending: false })
+    .limit(100);
+  for (const promo of (promos ?? []) as Array<{
+    promotion_id: string;
+    added_at: string | null;
+  }>) {
+    const path = `/reality/${promo.promotion_id}`;
+    const lastmod = promo.added_at ? isoDate(promo.added_at) : today;
+    for (const lang of LANGS) {
+      entries.push(
+        urlEntry({
+          loc: `${SITE_URL}/${lang}${path}`,
+          lastmod,
+          changefreq: "monthly",
+          priority: 0.5,
           path,
         })
       );

@@ -236,11 +236,22 @@ export function RealityCard({
 
   return (
     <div className="space-y-4">
+      {/* The card used to be a hard `width: 600` so ShareButton's toPng
+          export was a deterministic size — which meant this, the primary
+          content of /reality/[id], scrolled sideways inside the wrapper on
+          any phone narrower than 600px. It is now fluid up to 600px, and the
+          fixed export size is applied by ShareButton to the live node for the
+          duration of the capture only (see captureWidth there). The
+          overflow-x-auto wrapper stays: it contains the momentarily-pinned
+          card during that capture instead of letting it push the page.
+          Padding stays fixed at p-6 rather than shrinking on small screens:
+          the capture pins the width but not the padding, so a responsive
+          padding would make the same card export differently from a phone
+          than from a desktop. At 600px wide that leaves plenty of room. */}
       <div className="overflow-x-auto -mx-2 px-2">
         <div
           ref={cardRef}
-          className="mx-auto bg-zinc-950 p-6 rounded-3xl border border-zinc-800"
-          style={{ width: 600, minHeight: 750 }}
+          className="mx-auto w-full max-w-[600px] bg-zinc-950 p-6 rounded-3xl border border-zinc-800"
         >
           <div className="flex items-start justify-between mb-4">
             <div>
@@ -337,6 +348,8 @@ export function RealityCard({
       <ShareButton
         targetRef={cardRef}
         filename={`${condo.name.replace(/\s+/g, "-").toLowerCase()}-reality.png`}
+        captureWidth={600}
+        captureMinHeight={750}
       />
     </div>
   );

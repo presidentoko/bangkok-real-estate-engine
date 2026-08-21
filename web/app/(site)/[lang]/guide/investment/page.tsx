@@ -10,6 +10,7 @@ import FaqSection from "@/components/FaqSection";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { getYieldByArea } from "@/lib/queries/areas";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const revalidate = 86400;
 
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       canonical: `${SEO_SITE_URL}/${lang}/guide/investment`,
       languages: langAlternates(`/guide/investment`),
     },
-    openGraph: { title: t.guide.investment.title, description: t.guide.investment.lead, url: `${SEO_SITE_URL}/${lang}/guide/investment`, type: "article" },
+    openGraph: ogFor(lang, { title: t.guide.investment.title, description: t.guide.investment.lead, url: `${SEO_SITE_URL}/${lang}/guide/investment`, type: "article" }),
   };
 }
 
@@ -39,16 +40,21 @@ export default async function InvestmentPage({ params }: { params: Promise<{ lan
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
   const areas = await getYieldByArea();
-  const breadcrumbs = buildBreadcrumbsJsonLd([
-    { name: "RealData", url: `${SEO_SITE_URL}/${lang}` },
-    { name: t.guide.breadcrumb, url: `${SEO_SITE_URL}/${lang}/guide/investment` },
-    { name: t.guide.investment.title, url: `${SEO_SITE_URL}/${lang}/guide/investment` },
-  ]);
+  // Two nodes, not three: the old middle "Guides" crumb pointed at this very
+  // URL, so the trail claimed the page was its own parent.
+  const crumbs = [
+    { name: "RealData", href: `/${lang}` },
+    { name: t.guide.investment.title, href: `/${lang}/guide/investment` },
+  ];
+  const breadcrumbs = buildBreadcrumbsJsonLd(
+    crumbs.map((c) => ({ name: c.name, url: `${SEO_SITE_URL}${c.href}` }))
+  );
   return (
     <main className="max-w-4xl mx-auto p-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(buildFaqJsonLd(FAQ)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbs) }} />
-      <h1 className="text-3xl font-bold mb-2">{t.guide.investment.title}</h1>
+      <Breadcrumbs items={crumbs} />
+      <h1 className="text-3xl font-bold mb-2 mt-2">{t.guide.investment.title}</h1>
       <p className="text-zinc-400 mb-6">{t.guide.investment.lead}</p>
 
       <section className="mb-8">

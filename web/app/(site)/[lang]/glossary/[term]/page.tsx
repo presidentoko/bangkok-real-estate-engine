@@ -9,6 +9,7 @@ import { buildDefinedTermJsonLd } from "@/lib/seo/definedTermJsonLd";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { GLOSSARY, getTerm } from "@/lib/glossary";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const revalidate = 86400;
 
@@ -60,7 +61,13 @@ export default async function GlossaryTermPage({ params }: { params: Promise<{ l
     <main className="max-w-2xl mx-auto p-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbs) }} />
-      <Link href={`/${lang}/glossary`} className="text-xs text-blue-400">← {t.glossary.backToIndex}</Link>
+      <Breadcrumbs
+        items={[
+          { name: "RealData", href: `/${lang}` },
+          { name: t.glossary.breadcrumb, href: `/${lang}/glossary` },
+          { name: g.term, href: `/${lang}/glossary/${g.slug}` },
+        ]}
+      />
       <h1 className="text-3xl font-bold mt-2 mb-3">{g.term}</h1>
       <p className="text-lg text-zinc-200 leading-relaxed">{g.definition}</p>
       <section className="mt-6">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { InventoryExplorer, type CityChip } from "@/components/InventoryExplorer";
 import { canonicalCitySlug, CITIES, getCity } from "@/lib/cities";
@@ -68,12 +69,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/inventory`,
       languages: langAlternates("/inventory"),
     },
-    openGraph: {
-      title,
-      description,
-      url: `${SEO_SITE_URL}/${lang}/inventory`,
-      type: "website",
-    },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/inventory` }),
   };
 }
 
@@ -146,6 +142,28 @@ export default async function InventoryPage({
           availableTypes,
         }}
       />
+
+      {/* Hub links. /inventory is one of the few pages that still ranks, so
+          it is the crawl entry point for the three index pages — /districts,
+          /developer and /near — whose detail pages are otherwise reachable
+          only from condo pages (503'd for most crawlers until 2026-09-13,
+          and mostly noindex). Deliberately quiet: a text row under the
+          explorer, not a promoted module. */}
+      <nav
+        aria-label="More ways to browse"
+        className="text-xs text-zinc-500 flex flex-wrap gap-x-4 gap-y-2 border-t border-zinc-900 pt-4"
+      >
+        <span className="text-zinc-600">More ways to browse:</span>
+        <Link href={`/${lang}/districts`} className="hover:text-zinc-300 hover:underline">
+          By district
+        </Link>
+        <Link href={`/${lang}/developer`} className="hover:text-zinc-300 hover:underline">
+          By developer
+        </Link>
+        <Link href={`/${lang}/near`} className="hover:text-zinc-300 hover:underline">
+          By BTS/MRT station
+        </Link>
+      </nav>
     </main>
   );
 }

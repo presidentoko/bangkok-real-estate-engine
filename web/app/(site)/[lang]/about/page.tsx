@@ -4,6 +4,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const revalidate = 86400;
 
@@ -28,12 +29,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/about`,
       languages: langAlternates("/about"),
     },
-    openGraph: {
-      title,
-      description,
-      url: `${SEO_SITE_URL}/${lang}/about`,
-      type: "website",
-    },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/about` }),
   };
 }
 
@@ -126,6 +122,13 @@ export default async function AboutPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdString(datasetJsonLd) }}
+      />
+
+      <Breadcrumbs
+        items={[
+          { name: "RealData", href: `/${lang}` },
+          { name: t.title, href: `/${lang}/about` },
+        ]}
       />
 
       <header className="mb-10">

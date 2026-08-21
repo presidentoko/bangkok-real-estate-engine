@@ -7,6 +7,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
+import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 
@@ -91,7 +92,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/developer/${slug}`,
       languages: langAlternates(`/developer/${slug}`),
     },
-    openGraph: { title, description, url: `${SEO_SITE_URL}/${lang}/developer/${slug}`, type: "website" },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/developer/${slug}` }),
   };
 }
 
@@ -160,11 +161,22 @@ export default async function DeveloperPage({
     })),
   };
 
+  // Mirrors the visible <Breadcrumbs> below — the two must not disagree.
+  const breadcrumbsJsonLd = buildBreadcrumbsJsonLd([
+    { name: "RealData", url: `${SEO_SITE_URL}/${lang}` },
+    { name: "Inventory", url: `${SEO_SITE_URL}/${lang}/inventory` },
+    { name: devName, url: `${SEO_SITE_URL}/${lang}/developer/${slug}` },
+  ]);
+
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdString(itemListJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbsJsonLd) }}
       />
 
       <Breadcrumbs

@@ -136,12 +136,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/best/${cityObj.slug}/${slug}`,
       languages: langAlternates(`/best/${cityObj.slug}/${slug}`),
     },
-    openGraph: {
-      title,
-      description,
-      url: `${SEO_SITE_URL}/${lang}/best/${cityObj.slug}/${slug}`,
-      type: "website",
-    },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/best/${cityObj.slug}/${slug}` }),
   };
 }
 

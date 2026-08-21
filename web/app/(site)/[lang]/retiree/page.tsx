@@ -26,12 +26,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/retiree`,
       languages: langAlternates("/retiree"),
     },
-    openGraph: {
-      title,
-      description,
-      url: `${SEO_SITE_URL}/${lang}/retiree`,
-      type: "website",
-    },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/retiree` }),
   };
 }
 
@@ -246,20 +241,36 @@ export default async function RetireeLanding({
           <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">
             {lang === "ko" ? "준비 중 — 데이터 매일 밤 업데이트" : lang === "th" ? "เร็วๆ นี้ — อัปเดตทุกคืน" : "Coming soon — data updating nightly"}
           </h2>
+          {/* These used to be inert grey pills: a reader who scrolled to the
+              city they cared about was told "coming soon" and had nowhere to
+              go. The retiree score is missing, but the city hub (prices,
+              yields, condo list) already exists for every one of them, so
+              each pill is now a link there. */}
           <div className="flex flex-wrap gap-2">
             {comingSoon.map((c) => {
               const cityObj = CITIES.find((x) => x.slug === c.slug);
               if (!cityObj) return null;
               return (
-                <div
+                <Link
                   key={c.slug}
-                  className="bg-zinc-900 border border-zinc-800 rounded-full px-4 py-2 text-sm text-zinc-500"
+                  href={`/${lang}/city/${c.slug}`}
+                  className="bg-zinc-900 border border-zinc-800 rounded-full px-4 py-2 text-sm text-zinc-400 hover:text-zinc-100 hover:border-zinc-700 transition"
                 >
-                  {cityObj.name.en}
-                </div>
+                  {cityObj.name.en} &rarr;
+                </Link>
               );
             })}
           </div>
+          <p className="text-xs text-zinc-500">
+            No retiree score for these yet — but we already publish condo
+            prices, gross yields and flood risk for each.{" "}
+            <Link
+              href={`/${lang}/inventory`}
+              className="text-blue-400 hover:underline"
+            >
+              Browse all condos &rarr;
+            </Link>
+          </p>
         </section>
       )}
 

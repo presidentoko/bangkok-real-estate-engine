@@ -27,6 +27,10 @@ export async function generateMetadata({
       "flood risk, transit distance, foreign quota, multi-portal price. " +
       "Independent measurement.",
     alternates: {
+      // Query-free on purpose: ?a/?b/?c is an unbounded permutation space,
+      // and this canonical is the only thing folding all of it back onto one
+      // indexable URL. CompareExplorer reads the params client-side, so the
+      // feature is unaffected.
       canonical: `${SEO_SITE_URL}/${lang}/compare`,
       languages: langAlternates("/compare"),
     },

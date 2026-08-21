@@ -192,6 +192,17 @@ export default async function LangRootLayout({
             on first card paint. */}
         <link rel="preconnect" href="https://img.hipcdn.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://img.hipcdn.com" />
+        {/* llms.txt is discoverable only by convention — nothing in
+            robots.txt or any sitemap can point at it, since Next's
+            MetadataRoute.Robots emits no free-form lines and a sitemap
+            carries HTML pages. This is the one place a fetcher that already
+            has the HTML can find it without guessing. */}
+        <link
+          rel="alternate"
+          type="text/plain"
+          href={`${SITE_URL}/llms.txt`}
+          title="llms.txt"
+        />
         {/* Agoda Partner Hub site verification — meta-tag method (redundant
             with /AgodaPartnerVerification.html so Agoda passes regardless
             of which check they actually run). */}

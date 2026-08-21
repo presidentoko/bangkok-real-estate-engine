@@ -186,12 +186,7 @@ export async function generateMetadata({
       canonical: `${SEO_SITE_URL}/${lang}/district/${canonicalSlug}`,
       languages: langAlternates(`/district/${canonicalSlug}`),
     },
-    openGraph: {
-      title,
-      description,
-      url: `${SEO_SITE_URL}/${lang}/district/${canonicalSlug}`,
-      type: "website",
-    },
+    openGraph: ogFor(lang, { title, description, url: `${SEO_SITE_URL}/${lang}/district/${canonicalSlug}` }),
   };
 }
 
