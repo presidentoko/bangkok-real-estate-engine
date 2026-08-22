@@ -1,0 +1,62 @@
+{
+  "slug": "foreign-quota-2026-08-23",
+  "title": "Five Bangkok Condos With 100% Foreign Quota Still Available",
+  "description": "This week's foreign-quota scan finds five Bangkok buildings where every observed listing remains eligible for foreign ownership — a rare clean-sweep signal.",
+  "published_at": "2026-08-23",
+  "topic": "foreign-quota",
+  "lead": "Foreign buyers are legally capped at 49% of any Thai condo building — which makes fully available foreign-quota inventory a hard constraint, not a preference. This week's scan across 8,994 buildings flagged five Bangkok projects where all 30 observed foreign-quota listings remain unsold. That breadth of choice is unusual and warrants attention before the pipeline tightens.",
+  "sections": [
+    {
+      "heading": "What 100% Foreign-Quota Availability Actually Means",
+      "body": "Each of the five buildings — [Cybiq Ratchada 32](/condo/06dbf0c5-3be1-4538-b39c-016ea74fb7c6), [Lumpini Park On 19](/condo/081860bf-a619-4061-a757-2e424f938123), [Reach Sukhumvit 107](/condo/159bba24-9035-4ece-8996-f15ab4677755), [SHUSH Ratchathewi](/condo/26c68400-687d-45bb-96c8-878005bfebb9), and [Life Ratchada - Rama 9](/condo/2e029fdd-d16f-4518-9321-cdd8db0c4aad) — recorded 30 foreign-quota listings available out of 30 observed, giving a foreign-quota inventory rate of 100% across the board.\n\nA 100% reading is a double-edged signal. It means maximum legal headroom for a foreign buyer right now, but it also means zero absorption pressure so far. Buyers should treat it as opportunity with an open question about demand velocity, not a reason to rush."
+    },
+    {
+      "heading": "Geographic Spread Across Five Districts",
+      "body": "The five projects span Chatuchak, Suan Luang, Bang Na, Ratchathewi, and Din Daeng — no single corridor dominates. That dispersion suggests the available inventory is not concentrated in one oversupplied micro-market but reflects a broader mid-cycle pause in foreign-buyer activity across Bangkok.\n\nYield and price data are not yet available in our feed for these buildings. Before acting on quota availability alone, cross-check transaction comps and rental demand in each sub-district independently."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "Cybiq Ratchada 32 — foreign quota available",
+      "value": "30 of 30 listings (100%)",
+      "condo_id": "06dbf0c5-3be1-4538-b39c-016ea74fb7c6",
+      "metric": "foreign_quota_listings_available",
+      "expected": 30
+    },
+    {
+      "label": "Lumpini Park On 19 — foreign quota available",
+      "value": "30 of 30 listings (100%)",
+      "condo_id": "081860bf-a619-4061-a757-2e424f938123",
+      "metric": "foreign_quota_listings_available",
+      "expected": 30
+    },
+    {
+      "label": "Reach Sukhumvit 107 — foreign quota available",
+      "value": "30 of 30 listings (100%)",
+      "condo_id": "159bba24-9035-4ece-8996-f15ab4677755",
+      "metric": "foreign_quota_listings_available",
+      "expected": 30
+    },
+    {
+      "label": "SHUSH Ratchathewi — foreign quota available",
+      "value": "30 of 30 listings (100%)",
+      "condo_id": "26c68400-687d-45bb-96c8-878005bfebb9",
+      "metric": "foreign_quota_listings_available",
+      "expected": 30
+    },
+    {
+      "label": "Life Ratchada - Rama 9 — foreign quota available",
+      "value": "30 of 30 listings (100%)",
+      "condo_id": "2e029fdd-d16f-4518-9321-cdd8db0c4aad",
+      "metric": "foreign_quota_listings_available",
+      "expected": 30
+    },
+    {
+      "label": "Life Ratchada - Rama 9 — foreign quota inventory rate",
+      "value": "100%",
+      "condo_id": "2e029fdd-d16f-4518-9321-cdd8db0c4aad",
+      "metric": "foreign_quota_inventory_pct",
+      "expected": 100
+    }
+  ]
+}
