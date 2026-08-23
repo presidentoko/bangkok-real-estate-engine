@@ -33,6 +33,20 @@ export type WeeklySection = {
   body: string;
 };
 
+/** The translatable surface of a post. English lives on the post itself
+ *  (it is what the verifier checked); ko/th live under `i18n`, written by
+ *  scripts/localize_weekly_post.py, which also audits that a translation
+ *  introduces no number the English does not contain. Bullets carry only
+ *  label/value here — condo_id/slug/metric/expected stay on the English
+ *  bullet at the same index. */
+export type WeeklyLocalized = {
+  title: string;
+  description: string;
+  lead: string;
+  sections: WeeklySection[];
+  fact_bullets?: Array<Pick<WeeklyFactBullet, "label" | "value">>;
+};
+
 export type WeeklyPost = {
   slug: string;
   title: string;
@@ -45,7 +59,29 @@ export type WeeklyPost = {
   fact_bullets: WeeklyFactBullet[];
   /** Optional categorical tag — e.g. "yield-movers", "macro-shift". */
   topic?: string | null;
+  /** Korean / Thai bodies. Absent on posts that predate localisation or
+   *  whose translation failed the number audit — those render English. */
+  i18n?: Partial<Record<"ko" | "th", WeeklyLocalized>>;
 };
+
+/** The post as it should read in `lang`: translated fields when present,
+ *  English otherwise, with the English bullets' link/metric metadata kept. */
+export function localizeWeeklyPost(post: WeeklyPost, lang: string): WeeklyPost {
+  const loc = lang === "ko" || lang === "th" ? post.i18n?.[lang] : undefined;
+  if (!loc) return post;
+  const bullets =
+    loc.fact_bullets && loc.fact_bullets.length === post.fact_bullets.length
+      ? post.fact_bullets.map((b, i) => ({ ...b, ...loc.fact_bullets![i] }))
+      : post.fact_bullets;
+  return {
+    ...post,
+    title: loc.title,
+    description: loc.description,
+    lead: loc.lead,
+    sections: loc.sections.length === post.sections.length ? loc.sections : post.sections,
+    fact_bullets: bullets,
+  };
+}
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "weekly");
 

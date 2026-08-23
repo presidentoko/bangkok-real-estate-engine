@@ -5,7 +5,13 @@ import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang } from "@/lib/i18n";
 import { blogBreadcrumbs, langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
-import { getWeeklyPost, listWeeklyPosts, type WeeklyPost } from "@/lib/weeklyPost";
+import { getDictionary } from "@/lib/getDictionary";
+import {
+  getWeeklyPost,
+  listWeeklyPosts,
+  localizeWeeklyPost,
+  type WeeklyPost,
+} from "@/lib/weeklyPost";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { renderMarkdownLink } from "@/lib/markdownLinkSafety";
 
@@ -24,10 +30,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string; lang: string }>;
 }): Promise<Metadata> {
   const { slug, lang } = await params;
-  const post = await getWeeklyPost(slug);
-  if (!post || !isLang(lang)) {
+  const raw = await getWeeklyPost(slug);
+  if (!raw || !isLang(lang)) {
     return { title: "Weekly post — RealData" };
   }
+  const post = localizeWeeklyPost(raw, lang);
   return {
     title: `${post.title} — RealData`,
     description: post.description,
@@ -46,8 +53,10 @@ export default async function WeeklyPostPage({
 }) {
   const { slug, lang } = await params;
   if (!isLang(lang)) notFound();
-  const post = await getWeeklyPost(slug);
-  if (!post) notFound();
+  const raw = await getWeeklyPost(slug);
+  if (!raw) notFound();
+  const post = localizeWeeklyPost(raw, lang);
+  const t = getDictionary(lang).weeklyPost;
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -91,7 +100,7 @@ export default async function WeeklyPostPage({
       />
       <header className="space-y-3">
         <p className="text-zinc-500 text-xs uppercase tracking-wider">
-          RealData weekly · {post.published_at}
+          {t.eyebrow} · {post.published_at}
           {post.topic && (
             <span className="text-zinc-600"> · {post.topic}</span>
           )}
@@ -100,7 +109,7 @@ export default async function WeeklyPostPage({
           {post.title}
         </h1>
         <p className="text-zinc-300 text-base leading-relaxed">
-          <InlineMd text={post.lead} />
+          <InlineMd text={post.lead} lang={lang} />
         </p>
         <div className="max-w-xs pt-1">
           <LinkShareButtons
@@ -113,7 +122,7 @@ export default async function WeeklyPostPage({
       {post.fact_bullets.length > 0 && (
         <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-2">
           <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">
-            This week&apos;s numbers
+            {t.numbersTitle}
           </h2>
           <ul className="space-y-1.5 text-sm">
             {post.fact_bullets.map((b, i) => (
@@ -149,18 +158,16 @@ export default async function WeeklyPostPage({
             .split(/\n\n+/)
             .map((p, j) => (
               <p key={j} className="text-zinc-300 leading-relaxed">
-                <InlineMd text={p} />
+                <InlineMd text={p} lang={lang} />
               </p>
             ))}
         </section>
       ))}
 
-      <LeadCaptureCTA lang={lang}
-        headline="Want a vetted broker's take on any building in this post?"
-      />
+      <LeadCaptureCTA lang={lang} headline={t.ctaHeadline} />
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
-        <div className="text-sm font-semibold text-zinc-300">Found this useful? Share the post</div>
+        <div className="text-sm font-semibold text-zinc-300">{t.shareTitle}</div>
         <LinkShareButtons
           url={`${SEO_SITE_URL}/${lang}/blog/weekly/${slug}`}
           title={`${post.title} — RealData`}
@@ -169,11 +176,7 @@ export default async function WeeklyPostPage({
 
       <section className="border-t border-zinc-800 pt-6 text-xs text-zinc-500">
         <p>
-          This post is part of RealData&apos;s auto-generated weekly series,
-          drawn from our live measurement of every Thai condo we can find
-          across hipflat, dotproperty, ddproperty, and fazwaz. Every number
-          cited above was re-verified against the live database immediately
-          before publish. See more at{" "}
+          {t.footerNote}{" "}
           <Link href={`/${lang}/blog`} className="text-emerald-400 hover:underline">
             /blog
           </Link>
@@ -189,14 +192,20 @@ export default async function WeeklyPostPage({
  * lists — those are handled by the splitter on \n\n above. We escape
  * untrusted text first so a generator typo can't inject HTML.
  */
-function InlineMd({ text }: { text: string }) {
+function InlineMd({ text, lang }: { text: string; lang: string }) {
   const escaped = text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   const html = escaped
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text, url) =>
-      renderMarkdownLink(text, url, "text-emerald-400 hover:underline"),
+      // The generator writes locale-less /condo/<slug>; without the prefix
+      // every click went through middleware's locale redirect first.
+      renderMarkdownLink(
+        text,
+        url.startsWith("/condo/") ? `/${lang}${url}` : url,
+        "text-emerald-400 hover:underline",
+      ),
     )
     .replace(/`([^`]+)`/g, '<code class="text-emerald-300">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong class="text-zinc-50">$1</strong>');

@@ -556,6 +556,18 @@ def main() -> int:
         logger.info("[weekly] dry-run OK. Post payload:\n{}", json.dumps(post, ensure_ascii=False, indent=2)[:2000])
         return 0
 
+    # ko/th bodies + /condo/<slug> links, before the write so the single
+    # commit below carries them. A translation that fails its number audit
+    # (or a missing key) leaves i18n absent and the post publishes in
+    # English — never blocks the post.
+    try:
+        from scripts.localize_weekly_post import localize  # noqa: E402
+        post, problems = localize(post)
+        for pr in problems:
+            logger.warning("[weekly] localize: {}", pr)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("[weekly] localize skipped: {}", e)
+
     fp = write_post(post)
     logger.info("[weekly] wrote {}", fp)
 
@@ -574,8 +586,9 @@ def main() -> int:
     site = os.environ.get("NEXT_PUBLIC_SITE_URL", "https://passionaryestate.com")
     url = f"{site}/en/blog/weekly/{post['slug']}"
     n_bullets = len(post.get("fact_bullets", []))
+    langs = "en" + ("".join("/" + l for l in sorted((post.get("i18n") or {}).keys())))
     msg_lines = [
-        f"✅ Weekly post published",
+        f"✅ Weekly post published ({langs})",
         f"{post['title']}",
         f"Topic: {topic} · {n_bullets} verified facts",
         url,

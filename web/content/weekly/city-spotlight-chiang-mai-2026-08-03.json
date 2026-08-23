@@ -8,11 +8,11 @@
   "sections": [
     {
       "heading": "The High-Yield Pair: Entry Price vs. Return",
-      "body": "[SR Complex](/condo/8402798c-1729-46cc-83a0-c757d206ab7f) leads at 14.2% gross yield on an average sale price of ฿1,267,180 and ฿15,000/month rent — the cheapest route to the top of this week's table. [The Private Condo](/condo/2a89868f-ee32-4a6a-bf25-96e454693e53) in San Sai is nearly identical: 14.01% yield, ฿1,208,413 average price, ฿14,106/month rent. The difference between the two is noise; execution risk — vacancy rate, lease terms, management quality — will determine which outperforms.\n\nBoth buildings are priced well below [The Spring Loft](/condo/63a6e160-6ff5-49a8-b742-7201f83209c9), which commands ฿3,097,000 average sale price but still delivers 10.53% gross yield on ฿27,185/month rent. That is a larger absolute rent, not a larger return — important if capital allocation rather than cash quantum is the objective."
+      "body": "[SR Complex](/condo/sr-complex-chiang-mai) leads at 14.2% gross yield on an average sale price of ฿1,267,180 and ฿15,000/month rent — the cheapest route to the top of this week's table. [The Private Condo](/condo/the-private-condo-chiang-mai) in San Sai is nearly identical: 14.01% yield, ฿1,208,413 average price, ฿14,106/month rent. The difference between the two is noise; execution risk — vacancy rate, lease terms, management quality — will determine which outperforms.\n\nBoth buildings are priced well below [The Spring Loft](/condo/the-spring-loft-chiang-mai), which commands ฿3,097,000 average sale price but still delivers 10.53% gross yield on ฿27,185/month rent. That is a larger absolute rent, not a larger return — important if capital allocation rather than cash quantum is the objective."
     },
     {
       "heading": "Spread to MRR and What It Implies",
-      "body": "At 7.1% MRR, the spread on SR Complex is +7.1 pp and on The Private Condo is +6.9 pp. [The Green City Condo](/condo/dd86d00c-2632-4292-ac23-939f84d6b948) at 8.81% and [SR Land Condominium](/condo/b956a205-6c11-4e2a-b739-733d6d256e03) at 7.98% still clear the benchmark, but the buffer shrinks fast once you model a single vacant month per year.\n\nChiang Mai's rental market is driven by a mix of digital nomads, university students, and retirees — demand that is real but seasonal. Buyers chasing the 14% headline should confirm whether the rent figures in our dataset reflect year-round occupancy or peak-season listings before committing capital."
+      "body": "At 7.1% MRR, the spread on SR Complex is +7.1 pp and on The Private Condo is +6.9 pp. [The Green City Condo](/condo/the-green-city-condo-chiang-mai) at 8.81% and [SR Land Condominium](/condo/sr-land-condominium-chiang-mai) at 7.98% still clear the benchmark, but the buffer shrinks fast once you model a single vacant month per year.\n\nChiang Mai's rental market is driven by a mix of digital nomads, university students, and retirees — demand that is real but seasonal. Buyers chasing the 14% headline should confirm whether the rent figures in our dataset reflect year-round occupancy or peak-season listings before committing capital."
     }
   ],
   "fact_bullets": [
@@ -21,42 +21,132 @@
       "value": "14.2%",
       "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
       "metric": "gross_yield_pct",
-      "expected": 14.2
+      "expected": 14.2,
+      "slug": "sr-complex-chiang-mai"
     },
     {
       "label": "SR Complex — avg sale price",
       "value": "฿1,267,180",
       "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
       "metric": "avg_sale_price",
-      "expected": 1267180
+      "expected": 1267180,
+      "slug": "sr-complex-chiang-mai"
     },
     {
       "label": "The Private Condo — gross yield",
       "value": "14.01%",
       "condo_id": "2a89868f-ee32-4a6a-bf25-96e454693e53",
       "metric": "gross_yield_pct",
-      "expected": 14.01
+      "expected": 14.01,
+      "slug": "the-private-condo-chiang-mai"
     },
     {
       "label": "The Spring Loft — avg monthly rent",
       "value": "฿27,185",
       "condo_id": "63a6e160-6ff5-49a8-b742-7201f83209c9",
       "metric": "avg_monthly_rent",
-      "expected": 27185
+      "expected": 27185,
+      "slug": "the-spring-loft-chiang-mai"
     },
     {
       "label": "SR Complex — spread to MRR",
       "value": "+7.1 pp",
       "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
       "metric": "spread_pp",
-      "expected": 7.1
+      "expected": 7.1,
+      "slug": "sr-complex-chiang-mai"
     },
     {
       "label": "SR Land Condominium — gross yield",
       "value": "7.98%",
       "condo_id": "b956a205-6c11-4e2a-b739-733d6d256e03",
       "metric": "gross_yield_pct",
-      "expected": 7.98
+      "expected": 7.98,
+      "slug": "sr-land-condominium-chiang-mai"
     }
-  ]
+  ],
+  "i18n": {
+    "ko": {
+      "title": "치앙마이, 임대수익률 14.2%로 전국 1위",
+      "description": "치앙마이 콘도 5개 단지를 7.1% MRR 기준과 비교 — 두 건물이 ฿1.3M 미만 진입가격으로 두 자릿수 총수익률 달성.",
+      "lead": "치앙마이가 이번 주 RealData 전국 임대수익률 순위에서 선두를 달리고 있습니다. Mueang 및 San Sai 지역의 두 건물은 ฿1.3M 미만의 평균 매매가 기준으로 14%를 상회하는 총수익률을 기록하고 있으며, 이는 현재 태국 중앙은행 MRR 7.1%와 비교해 7%포인트 이상의 스프레드에 해당합니다. 이 격차는 공실률과 관리 비용을 감안하더라도 충분히 의미 있는 수준입니다.",
+      "sections": [
+        {
+          "heading": "고수익률 2개 단지: 진입가격 대비 수익률",
+          "body": "[SR Complex](/condo/sr-complex-chiang-mai)가 평균 매매가 ฿1,267,180, 월 임대료 ฿15,000 기준 총수익률 14.2%로 선두를 차지하며, 이번 주 순위표에서 가장 저렴한 진입 경로를 제공합니다. San Sai 지역의 [The Private Condo](/condo/the-private-condo-chiang-mai)는 수익률 14.01%, 평균 매매가 ฿1,208,413, 월 임대료 ฿14,106으로 거의 동일한 수준입니다. 두 단지의 수치 차이는 미미하며, 실질적인 성과를 결정하는 것은 공실률, 임대 조건, 관리 품질 등 실행 리스크입니다.\n\n두 건물 모두 [The Spring Loft](/condo/the-spring-loft-chiang-mai)보다 훨씬 낮은 가격대에 위치합니다. The Spring Loft는 평균 매매가 ฿3,097,000임에도 월 임대료 ฿27,185 기준 총수익률 10.53%를 달성하고 있습니다. 이는 더 높은 절대적 임대 수입이지 더 높은 수익률이 아니므로, 현금 규모보다 자본 배분 효율성을 중시하는 투자자라면 이 점을 유의해야 합니다."
+        },
+        {
+          "heading": "MRR 대비 스프레드와 시사점",
+          "body": "MRR 7.1% 기준으로 SR Complex의 스프레드는 +7.1 pp, The Private Condo는 +6.9 pp입니다. [The Green City Condo](/condo/the-green-city-condo-chiang-mai)의 8.81%와 [SR Land Condominium](/condo/sr-land-condominium-chiang-mai)의 7.98%도 벤치마크를 상회하지만, 연간 한 달의 공실만 발생해도 버퍼는 빠르게 줄어듭니다.\n\n치앙마이의 임대 시장은 디지털 노마드, 대학생, 은퇴자가 혼재하는 수요로 구성되어 있으며, 실수요는 있으나 계절성이 존재합니다. 14% 수익률에 끌려 투자를 검토하는 매수자라면, 당사 데이터셋의 임대료 수치가 연중 상시 입주 기준인지 성수기 매물 기준인지를 자본 집행 전에 반드시 확인해야 합니다."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "SR Complex — 총수익률",
+          "value": "14.2%"
+        },
+        {
+          "label": "SR Complex — 평균 매매가",
+          "value": "฿1,267,180"
+        },
+        {
+          "label": "The Private Condo — 총수익률",
+          "value": "14.01%"
+        },
+        {
+          "label": "The Spring Loft — 평균 월 임대료",
+          "value": "฿27,185"
+        },
+        {
+          "label": "SR Complex — MRR 대비 스프레드",
+          "value": "+7.1 pp"
+        },
+        {
+          "label": "SR Land Condominium — 총수익률",
+          "value": "7.98%"
+        }
+      ]
+    },
+    "th": {
+      "title": "เชียงใหม่ครองอันดับ 1 ผลตอบแทนสูงสุดที่ 14.2%",
+      "description": "วิเคราะห์คอนโดเชียงใหม่ 5 แห่งเทียบกับ MRR 7.1% — สองอาคารทำผลตอบแทนรวมสองหลักในราคาเริ่มต้นต่ำกว่า ฿1.3M",
+      "lead": "เชียงใหม่ครองอันดับสูงสุดในการจัดอันดับผลตอบแทนระดับประเทศของ RealData ประจำสัปดาห์นี้ สองอาคารในอำเภอเมืองและสันสายบันทึกผลตอบแทนรวมเกิน 14% บนราคาขายเฉลี่ยต่ำกว่า ฿1.3M ซึ่งห่างจาก MRR ปัจจุบันของธนาคารแห่งประเทศไทยที่ 7.1% มากกว่า 7 จุดร้อยละ ส่วนต่างดังกล่าวมีนัยสำคัญแม้หักผลกระทบจากอัตราห้องว่างและต้นทุนการบริหารจัดการแล้ว",
+      "sections": [
+        {
+          "heading": "คู่ผลตอบแทนสูง: ราคาเริ่มต้นเทียบกับผลตอบแทน",
+          "body": "[SR Complex](/condo/sr-complex-chiang-mai) นำโด่งด้วยผลตอบแทนรวม 14.2% บนราคาขายเฉลี่ย ฿1,267,180 และค่าเช่า ฿15,000 ต่อเดือน ถือเป็นเส้นทางเข้าสู่อันดับสูงสุดของตารางสัปดาห์นี้ที่ใช้ทุนน้อยที่สุด [The Private Condo](/condo/the-private-condo-chiang-mai) ในสันสายให้ผลลัพธ์ใกล้เคียงกันมาก ได้แก่ ผลตอบแทน 14.01% ราคาขายเฉลี่ย ฿1,208,413 และค่าเช่า ฿14,106 ต่อเดือน ความแตกต่างของตัวเลขทั้งสองแทบไม่มีนัยสำคัญ สิ่งที่จะกำหนดว่าอาคารใดให้ผลตอบแทนดีกว่ากันคือความเสี่ยงเชิงปฏิบัติ ได้แก่ อัตราห้องว่าง เงื่อนไขสัญญาเช่า และคุณภาพการบริหารจัดการ\n\nทั้งสองอาคารมีราคาต่ำกว่า [The Spring Loft](/condo/the-spring-loft-chiang-mai) อย่างมาก โดย The Spring Loft มีราคาขายเฉลี่ย ฿3,097,000 แต่ยังคงให้ผลตอบแทนรวม 10.53% บนค่าเช่า ฿27,185 ต่อเดือน ตัวเลขนี้สะท้อนรายได้ค่าเช่าสัมบูรณ์ที่สูงกว่า ไม่ใช่ผลตอบแทนที่สูงกว่า ซึ่งเป็นประเด็นสำคัญสำหรับนักลงทุนที่ให้ความสำคัญกับประสิทธิภาพการจัดสรรทุนมากกว่าปริมาณกระแสเงินสด"
+        },
+        {
+          "heading": "ส่วนต่างเทียบ MRR และนัยที่ตามมา",
+          "body": "ที่ MRR 7.1% ส่วนต่างของ SR Complex อยู่ที่ +7.1 pp และของ The Private Condo อยู่ที่ +6.9 pp [The Green City Condo](/condo/the-green-city-condo-chiang-mai) ที่ 8.81% และ [SR Land Condominium](/condo/sr-land-condominium-chiang-mai) ที่ 7.98% ยังคงสูงกว่าเกณฑ์อ้างอิง แต่ส่วนเผื่อจะลดลงอย่างรวดเร็วเมื่อจำลองสถานการณ์ห้องว่างเพียงหนึ่งเดือนต่อปี\n\nตลาดเช่าของเชียงใหม่ขับเคลื่อนด้วยกลุ่มผู้เช่าที่หลากหลาย ทั้งนักทำงานระยะไกล นักศึกษา และผู้เกษียณอายุ ซึ่งเป็นอุปสงค์ที่มีอยู่จริงแต่มีความเป็นฤดูกาล ผู้ซื้อที่สนใจผลตอบแทน 14% ควรตรวจสอบให้ชัดเจนก่อนตัดสินใจลงทุนว่าตัวเลขค่าเช่าในชุดข้อมูลของเราสะท้อนอัตราการเข้าพักตลอดทั้งปีหรือเป็นเพียงรายการประกาศในช่วงฤดูท่องเที่ยว"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "SR Complex — ผลตอบแทนรวม",
+          "value": "14.2%"
+        },
+        {
+          "label": "SR Complex — ราคาขายเฉลี่ย",
+          "value": "฿1,267,180"
+        },
+        {
+          "label": "The Private Condo — ผลตอบแทนรวม",
+          "value": "14.01%"
+        },
+        {
+          "label": "The Spring Loft — ค่าเช่าเฉลี่ยต่อเดือน",
+          "value": "฿27,185"
+        },
+        {
+          "label": "SR Complex — ส่วนต่างเทียบ MRR",
+          "value": "+7.1 pp"
+        },
+        {
+          "label": "SR Land Condominium — ผลตอบแทนรวม",
+          "value": "7.98%"
+        }
+      ]
+    }
+  }
 }

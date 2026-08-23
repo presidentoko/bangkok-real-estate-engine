@@ -187,6 +187,14 @@ const dict: Dict = {
     levelUnknown: "데이터 없음",
     geoLocatedSuffix: "geo-located",
   },
+  weeklyPost: {
+    eyebrow: "RealData 주간 리포트",
+    numbersTitle: "이번 주 숫자",
+    ctaHeadline: "이 글에 나온 건물, 검증된 중개인의 의견이 필요하신가요?",
+    shareTitle: "도움이 되셨나요? 공유해 주세요",
+    footerNote:
+      "이 글은 RealData가 hipflat, dotproperty, ddproperty, fazwaz에서 수집 가능한 모든 태국 콘도를 실시간 측정해 자동 생성하는 주간 시리즈입니다. 위의 모든 숫자는 게시 직전에 실시간 데이터베이스와 다시 대조했습니다. 더 보기:",
+  },
   blogIndex: {
     title: "RealData Blog",
     lead: "방콕 콘도 1,000+ 채를 끊임없이 측정합니다. 모든 글은 우리 자체 측정 데이터로 검증 가능합니다 — 추측 아님, 데이터.",

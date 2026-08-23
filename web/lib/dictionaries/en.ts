@@ -204,6 +204,14 @@ const dict = {
     levelUnknown: "no data",
     geoLocatedSuffix: "geo-located",
   },
+  weeklyPost: {
+    eyebrow: "RealData weekly",
+    numbersTitle: "This week's numbers",
+    ctaHeadline: "Want a vetted broker's take on any building in this post?",
+    shareTitle: "Found this useful? Share the post",
+    footerNote:
+      "This post is part of RealData's auto-generated weekly series, drawn from our live measurement of every Thai condo we can find across hipflat, dotproperty, ddproperty, and fazwaz. Every number cited above was re-verified against the live database immediately before publish. See more at",
+  },
   blogIndex: {
     title: "RealData Blog",
     lead: "We measure 1,000+ Bangkok condos continuously. Every post is verifiable against our own data — no speculation, just numbers.",

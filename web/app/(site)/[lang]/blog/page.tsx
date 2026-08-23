@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
-import { listWeeklyPosts } from "@/lib/weeklyPost";
+import { listWeeklyPosts, localizeWeeklyPost } from "@/lib/weeklyPost";
 
 export const revalidate = 86400;
 
@@ -182,7 +182,7 @@ export default async function BlogIndex({
             Weekly auto-recap
           </h2>
           <ul className="space-y-3">
-            {weeklyPosts.map((p) => (
+            {weeklyPosts.map((p) => localizeWeeklyPost(p, lang)).map((p) => (
               <li key={p.slug}>
                 <Link
                   href={`/${lang}/blog/weekly/${p.slug}`}

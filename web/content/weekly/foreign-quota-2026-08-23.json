@@ -8,7 +8,7 @@
   "sections": [
     {
       "heading": "What 100% Foreign-Quota Availability Actually Means",
-      "body": "Each of the five buildings — [Cybiq Ratchada 32](/condo/06dbf0c5-3be1-4538-b39c-016ea74fb7c6), [Lumpini Park On 19](/condo/081860bf-a619-4061-a757-2e424f938123), [Reach Sukhumvit 107](/condo/159bba24-9035-4ece-8996-f15ab4677755), [SHUSH Ratchathewi](/condo/26c68400-687d-45bb-96c8-878005bfebb9), and [Life Ratchada - Rama 9](/condo/2e029fdd-d16f-4518-9321-cdd8db0c4aad) — recorded 30 foreign-quota listings available out of 30 observed, giving a foreign-quota inventory rate of 100% across the board.\n\nA 100% reading is a double-edged signal. It means maximum legal headroom for a foreign buyer right now, but it also means zero absorption pressure so far. Buyers should treat it as opportunity with an open question about demand velocity, not a reason to rush."
+      "body": "Each of the five buildings — [Cybiq Ratchada 32](/condo/cybiq-ratchada-32-bangkok-chatuchak), [Lumpini Park On 19](/condo/lumpini-park-on-19-bangkok), [Reach Sukhumvit 107](/condo/reach-sukhumvit-107-bangkok), [SHUSH Ratchathewi](/condo/shush-ratchathewi-bangkok), and [Life Ratchada - Rama 9](/condo/life-ratchada-rama-9-bangkok) — recorded 30 foreign-quota listings available out of 30 observed, giving a foreign-quota inventory rate of 100% across the board.\n\nA 100% reading is a double-edged signal. It means maximum legal headroom for a foreign buyer right now, but it also means zero absorption pressure so far. Buyers should treat it as opportunity with an open question about demand velocity, not a reason to rush."
     },
     {
       "heading": "Geographic Spread Across Five Districts",
@@ -21,42 +21,132 @@
       "value": "30 of 30 listings (100%)",
       "condo_id": "06dbf0c5-3be1-4538-b39c-016ea74fb7c6",
       "metric": "foreign_quota_listings_available",
-      "expected": 30
+      "expected": 30,
+      "slug": "cybiq-ratchada-32-bangkok-chatuchak"
     },
     {
       "label": "Lumpini Park On 19 — foreign quota available",
       "value": "30 of 30 listings (100%)",
       "condo_id": "081860bf-a619-4061-a757-2e424f938123",
       "metric": "foreign_quota_listings_available",
-      "expected": 30
+      "expected": 30,
+      "slug": "lumpini-park-on-19-bangkok"
     },
     {
       "label": "Reach Sukhumvit 107 — foreign quota available",
       "value": "30 of 30 listings (100%)",
       "condo_id": "159bba24-9035-4ece-8996-f15ab4677755",
       "metric": "foreign_quota_listings_available",
-      "expected": 30
+      "expected": 30,
+      "slug": "reach-sukhumvit-107-bangkok"
     },
     {
       "label": "SHUSH Ratchathewi — foreign quota available",
       "value": "30 of 30 listings (100%)",
       "condo_id": "26c68400-687d-45bb-96c8-878005bfebb9",
       "metric": "foreign_quota_listings_available",
-      "expected": 30
+      "expected": 30,
+      "slug": "shush-ratchathewi-bangkok"
     },
     {
       "label": "Life Ratchada - Rama 9 — foreign quota available",
       "value": "30 of 30 listings (100%)",
       "condo_id": "2e029fdd-d16f-4518-9321-cdd8db0c4aad",
       "metric": "foreign_quota_listings_available",
-      "expected": 30
+      "expected": 30,
+      "slug": "life-ratchada-rama-9-bangkok"
     },
     {
       "label": "Life Ratchada - Rama 9 — foreign quota inventory rate",
       "value": "100%",
       "condo_id": "2e029fdd-d16f-4518-9321-cdd8db0c4aad",
       "metric": "foreign_quota_inventory_pct",
-      "expected": 100
+      "expected": 100,
+      "slug": "life-ratchada-rama-9-bangkok"
     }
-  ]
+  ],
+  "i18n": {
+    "ko": {
+      "title": "외국인 쿼터 100% 잔여 방콕 콘도 5곳",
+      "description": "이번 주 외국인 쿼터 스캔에서 확인된 5개 방콕 건물은 조회된 모든 매물이 외국인 소유 요건을 충족하는 이례적인 결과를 보였습니다.",
+      "lead": "태국 콘도 건물의 외국인 소유 비율은 법적으로 49%로 제한되어 있어, 외국인 쿼터 잔여 물량은 단순한 선호의 문제가 아닌 실질적인 제약 조건입니다. 이번 주 8,994개 건물을 대상으로 한 스캔에서 방콕의 5개 프로젝트가 포착되었으며, 조회된 외국인 쿼터 매물 30건 전부가 미판매 상태로 확인되었습니다. 이처럼 폭넓은 선택지는 이례적인 상황으로, 공급 여력이 좁아지기 전에 주목할 필요가 있습니다.",
+      "sections": [
+        {
+          "heading": "외국인 쿼터 100% 잔여의 실제 의미",
+          "body": "5개 건물 — [Cybiq Ratchada 32](/condo/cybiq-ratchada-32-bangkok-chatuchak), [Lumpini Park On 19](/condo/lumpini-park-on-19-bangkok), [Reach Sukhumvit 107](/condo/reach-sukhumvit-107-bangkok), [SHUSH Ratchathewi](/condo/shush-ratchathewi-bangkok), [Life Ratchada - Rama 9](/condo/life-ratchada-rama-9-bangkok) — 각각 조회된 30건 중 30건의 외국인 쿼터 매물이 잔여 상태로, 전 건물에 걸쳐 외국인 쿼터 재고율이 100%를 기록했습니다.\n\n100% 수치는 양면적인 신호입니다. 현재 외국인 매수자에게 법적으로 허용되는 최대 여지가 남아 있다는 의미이기도 하지만, 동시에 지금까지 흡수 압력이 전혀 없었다는 뜻이기도 합니다. 매수자는 이를 기회로 받아들이되, 수요 속도에 대한 열린 질문을 함께 고려해야 하며 서두를 이유로 삼아서는 안 됩니다."
+        },
+        {
+          "heading": "5개 구에 걸친 지리적 분산",
+          "body": "5개 프로젝트는 Chatuchak, Suan Luang, Bang Na, Ratchathewi, Din Daeng에 분산되어 있어 특정 지역이 집중되지 않습니다. 이러한 분산은 잔여 물량이 하나의 공급 과잉 소규모 시장에 집중된 것이 아니라, 방콕 전반에 걸친 외국인 매수 활동의 광범위한 중기 조정을 반영한다는 점을 시사합니다.\n\n이들 건물의 임대수익률 및 가격 데이터는 현재 당사 피드에서 제공되지 않습니다. 쿼터 잔여 여부만을 근거로 행동하기 전에, 각 소지구의 거래 비교 사례와 임대 수요를 별도로 확인하시기 바랍니다."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Cybiq Ratchada 32 — 외국인 쿼터 잔여",
+          "value": "30건 중 30건 (100%)"
+        },
+        {
+          "label": "Lumpini Park On 19 — 외국인 쿼터 잔여",
+          "value": "30건 중 30건 (100%)"
+        },
+        {
+          "label": "Reach Sukhumvit 107 — 외국인 쿼터 잔여",
+          "value": "30건 중 30건 (100%)"
+        },
+        {
+          "label": "SHUSH Ratchathewi — 외국인 쿼터 잔여",
+          "value": "30건 중 30건 (100%)"
+        },
+        {
+          "label": "Life Ratchada - Rama 9 — 외국인 쿼터 잔여",
+          "value": "30건 중 30건 (100%)"
+        },
+        {
+          "label": "Life Ratchada - Rama 9 — 외국인 쿼터 재고율",
+          "value": "100%"
+        }
+      ]
+    },
+    "th": {
+      "title": "คอนโดกรุงเทพฯ 5 แห่งที่โควตาต่างชาติยังคงว่างครบ 100%",
+      "description": "การสแกนโควตาต่างชาติประจำสัปดาห์นี้พบอาคาร 5 แห่งในกรุงเทพฯ ที่ประกาศขายทุกรายการยังคงมีสิทธิ์สำหรับการถือครองของชาวต่างชาติ — สัญญาณที่หาได้ยากมาก",
+      "lead": "ผู้ซื้อต่างชาติถูกจำกัดตามกฎหมายไม่เกิน 49% ของแต่ละอาคารคอนโดในไทย — ซึ่งทำให้สต็อกโควตาต่างชาติที่ยังว่างอยู่เป็นข้อจำกัดที่แท้จริง ไม่ใช่เพียงความต้องการ การสแกนอาคาร 8,994 แห่งในสัปดาห์นี้พบโครงการในกรุงเทพฯ 5 แห่ง ที่ประกาศขายโควตาต่างชาติทั้ง 30 รายการยังไม่มีผู้ซื้อ ความหลากหลายของตัวเลือกในลักษณะนี้เป็นเรื่องผิดปกติ และควรให้ความสนใจก่อนที่ปริมาณสต็อกจะลดลง",
+      "sections": [
+        {
+          "heading": "โควตาต่างชาติว่าง 100% หมายความว่าอะไร",
+          "body": "อาคารทั้ง 5 แห่ง ได้แก่ [Cybiq Ratchada 32](/condo/cybiq-ratchada-32-bangkok-chatuchak), [Lumpini Park On 19](/condo/lumpini-park-on-19-bangkok), [Reach Sukhumvit 107](/condo/reach-sukhumvit-107-bangkok), [SHUSH Ratchathewi](/condo/shush-ratchathewi-bangkok) และ [Life Ratchada - Rama 9](/condo/life-ratchada-rama-9-bangkok) — บันทึกรายการโควตาต่างชาติที่ว่างอยู่ 30 รายการจากที่สังเกตการณ์ทั้งหมด 30 รายการ ส่งผลให้อัตราสต็อกโควตาต่างชาติอยู่ที่ 100% ทุกแห่ง\n\nตัวเลข 100% เป็นสัญญาณที่มีสองด้าน ด้านหนึ่งหมายความว่าผู้ซื้อต่างชาติมีโอกาสทางกฎหมายสูงสุด ณ ขณะนี้ แต่อีกด้านหนึ่งหมายความว่ายังไม่มีแรงกดดันจากการดูดซับเลย ผู้ซื้อควรมองว่านี่คือโอกาสที่ยังมีคำถามเปิดเกี่ยวกับความเร็วของอุปสงค์ ไม่ใช่เหตุผลที่ต้องรีบตัดสินใจ"
+        },
+        {
+          "heading": "การกระจายตัวทางภูมิศาสตร์ใน 5 เขต",
+          "body": "โครงการทั้ง 5 แห่งกระจายอยู่ในเขตจตุจักร สวนหลวง บางนา ราชเทวี และดินแดง — ไม่มีทำเลใดทำเลเดียวที่ครองพื้นที่ การกระจายตัวนี้บ่งชี้ว่าสต็อกที่ว่างอยู่ไม่ได้กระจุกตัวอยู่ในตลาดย่อยที่มีอุปทานเกินแห่งเดียว แต่สะท้อนถึงการชะลอตัวในช่วงกลางวัฏจักรของกิจกรรมผู้ซื้อต่างชาติทั่วกรุงเทพฯ\n\nข้อมูลผลตอบแทนและราคายังไม่พร้อมในระบบของเราสำหรับอาคารเหล่านี้ ก่อนดำเนินการโดยอาศัยความว่างของโควตาเพียงอย่างเดียว ควรตรวจสอบราคาซื้อขายที่เปรียบเทียบได้และอุปสงค์การเช่าในแต่ละพื้นที่ย่อยด้วยตนเอง"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Cybiq Ratchada 32 — โควตาต่างชาติที่ว่าง",
+          "value": "30 of 30 listings (100%)"
+        },
+        {
+          "label": "Lumpini Park On 19 — โควตาต่างชาติที่ว่าง",
+          "value": "30 of 30 listings (100%)"
+        },
+        {
+          "label": "Reach Sukhumvit 107 — โควตาต่างชาติที่ว่าง",
+          "value": "30 of 30 listings (100%)"
+        },
+        {
+          "label": "SHUSH Ratchathewi — โควตาต่างชาติที่ว่าง",
+          "value": "30 of 30 listings (100%)"
+        },
+        {
+          "label": "Life Ratchada - Rama 9 — โควตาต่างชาติที่ว่าง",
+          "value": "30 of 30 listings (100%)"
+        },
+        {
+          "label": "Life Ratchada - Rama 9 — อัตราสต็อกโควตาต่างชาติ",
+          "value": "100%"
+        }
+      ]
+    }
+  }
 }
