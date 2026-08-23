@@ -331,6 +331,19 @@ jobs:
           cmd /c "python scripts\generate_weekly_post.py 2>&1" | Tee-Object -FilePath autoblog.log
           if ($LASTEXITCODE -ne 0) { Write-Output "::warning::generate_weekly_post exited $LASTEXITCODE" }
 
+      - name: Distribution kits — Naver blog + community post to Telegram
+        # Takes the post the step above just verified and turns it into two
+        # copy-paste files: a Korean Naver-blog post (keyword-titled, short
+        # paragraphs, site link last) and a first-person English community
+        # post for r/Thailand / Bangkok Expats / ASEAN NOW. Sent as .txt
+        # documents so they paste clean from a phone. Every number is checked
+        # against the post JSON before sending; a kit that invents a figure
+        # is dropped, not sent. Skips if there is no post this week.
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\distribute_weekly_post.py 2>&1" | Tee-Object -FilePath distribute.log
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::distribute_weekly_post exited $LASTEXITCODE" }
+
       - name: Machine state (after)
         # Pair for the "before" reading at the top. `always()` so a failed
         # step above still leaves the measurement behind -- a failure run is
@@ -496,6 +509,7 @@ jobs:
             analysis.log
             prune.log
             autoblog.log
+            distribute.log
             revalidate.log
             indexnow.log
             machine.log
