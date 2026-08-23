@@ -231,6 +231,7 @@ export async function generateMetadata({
     risk_factors: EmbeddedOneOrMany<Risk>;
     active_listings_count: number | null; market_rent_median: number | null;
     description: string | null; google_review_count: number | null;
+    hero_image_url: string | null;
   };
   const scoreMeta = one(condoForMeta.value_scores);
   const riskMeta = one(condoForMeta.risk_factors);
@@ -293,22 +294,28 @@ export async function generateMetadata({
     // The per-condo opengraph-image route is gone — it was a second
     // ~46,000-URL ISR surface, one edge ImageResponse (a Supabase read plus
     // a 1200x630 PNG render) per entry, for a card almost none of these
-    // pages will ever have shared. Point at the [lang]-level image the way
-    // blog/weekly does; leaving this pointing at the deleted route would
-    // publish a 404 as og:image on every condo page.
+    // pages will ever have shared.
+    //
+    // The building's own photo is the card when we have one: it costs no
+    // render (it is the same hipcdn URL the page already <img>s), and a
+    // photo of the actual building is the difference between a shared
+    // condo link that gets tapped and one that scrolls past. Falls back to
+    // ogFor()'s default [lang]-level card otherwise.
     openGraph: ogFor(lang, {
       title,
       description: desc,
       url: `${SITE_URL}/${lang}/condo/${slug}`,
       type: "article",
-      images: [
-        {
-          url: `${SITE_URL}/${lang}/opengraph-image`,
-          width: 1200,
-          height: 630,
-          alt: `${c.name} — RealData Bangkok condo report`,
-        },
-      ],
+      ...(c.hero_image_url
+        ? {
+            images: [
+              {
+                url: c.hero_image_url,
+                alt: `${c.name} — RealData Bangkok condo report`,
+              },
+            ],
+          }
+        : {}),
     }),
   };
 }

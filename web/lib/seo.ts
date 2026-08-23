@@ -57,6 +57,14 @@ export function ogFor(
     images?: OgImages;
   }
 ): Metadata["openGraph"] {
+  // Every page gets a card image. Before 2026-08-23, only pages that passed
+  // `images` had one, and that was none of the 34 callers except condo —
+  // so /flood, /yields, /district/*, /best/*, and every weekly post rendered
+  // as a bare URL when pasted into Reddit, Facebook, KakaoTalk, LINE or
+  // Telegram. For a site whose only acquisition channel this month is
+  // people pasting links into communities, the preview card is the click.
+  // The [lang]-level opengraph-image route (live building count, 24h
+  // cached) is the fallback; pages with something better pass their own.
   const base = {
     title,
     description,
@@ -64,7 +72,14 @@ export function ogFor(
     siteName: "RealData",
     locale: OG_LOCALE[lang] ?? OG_LOCALE.en,
     alternateLocale: LANGS.filter((l) => l !== lang).map((l) => OG_LOCALE[l]),
-    ...(images ? { images } : {}),
+    images: images ?? [
+      {
+        url: `${SITE_URL}/${lang}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "RealData — Thailand condo data, no developer money",
+      },
+    ],
   };
   return type === "article"
     ? { ...base, type: "article", publishedTime }
