@@ -1,7 +1,5 @@
 import type { MetadataRoute } from "next";
 
-import { condoCrawlThrottled } from "@/lib/crawlThrottle";
-
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
 
@@ -26,42 +24,21 @@ const AI_AGENTS = [
   "Applebot-Extended", // Apple AI training opt-in
 ];
 
-// Agents whose UA matches middleware.ts's BOT_UA_RE without the
-// Googlebot/Bingbot exemption, so /condo/ answers them with a 503 no matter
-// what this file says. Telling them "Allow: /" and then refusing every
-// request is worse than being honest: repeated 503s read as an unstable
-// origin, and a crawler that backs off sitewide because of them costs us the
-// pages we actually want indexed.
+// Blocked from /condo/. GPTBot is a training crawler with no citation
+// surface — OpenAI's reader-facing fetches come from OAI-SearchBot and
+// ChatGPT-User, both of which are allowed — so ~12,800 cold renders of the
+// least quotable pages on the site buys nothing measurable.
 //
-// The trade is deliberate and narrow. Everything with citable analysis —
-// /flood, /yields, /macro, /data, /reality, /blog, /glossary, /guide — stays
-// fully open to these agents. What's closed is the ~12.4k per-building pages
-// x3 locales, which are the least quotable content on the site and the most
-// expensive to serve: only 300 are prebuilt, so every crawl of the long tail
-// is a cold render plus an ISR write (that fan-out is what put the free tier
-// 90% over on ISR writes; see middleware.ts).
+// This must stay in step with middleware.ts: anything listed here is 503d
+// there by falling through both SEARCH_ENGINE_UA_RE and ANSWER_ENGINE_UA_RE.
+// Telling a crawler "Allow: /" and then refusing every request is worse than
+// being honest — repeated 503s read as an unstable origin, and a crawler
+// that backs off sitewide costs us the pages we do want indexed.
 //
-// Applebot is in here for the same mechanical reason, but it is a search
-// crawler rather than an answer engine — if Apple referral traffic ever
-// matters, it belongs in middleware's SEARCH_ENGINE_UA_RE next to
-// Googlebot/Bingbot instead of on this list.
-//
-// This list is now tied to the throttle deadline rather than permanent:
-// middleware's ANSWER_ENGINE_UA_RE lets exactly this set through on exactly
-// the same date, both reading CRAWL_THROTTLE_UNTIL, so the advertised block
-// and the enforced one cannot drift apart. Being cited by these is the point
-// of the site; the block was only ever about origin bytes.
-const CONDO_BLOCKED_WHILE_THROTTLED = [
-  "OAI-SearchBot",
-  "ClaudeBot",
-  "PerplexityBot",
-  "Applebot",
-  "Applebot-Extended",
-];
-
-// Blocked from /condo/ permanently. GPTBot is a training crawler with no
-// citation surface — OpenAI's reader-facing fetches come from OAI-SearchBot
-// and ChatGPT-User — so ~46,000 cold renders buys nothing measurable.
+// The answer engines that used to sit on a second, deadline-gated list here
+// (OAI-SearchBot, ClaudeBot, PerplexityBot, Applebot) were released on
+// 2026-08-23, when a Cloudflare Cache Rule made repeat crawls cost no origin
+// bytes. See middleware.ts for that accounting.
 const CONDO_BLOCKED_ALWAYS = ["GPTBot"];
 
 const CONDO_PATHS = ["/en/condo/", "/ko/condo/", "/th/condo/"];
@@ -97,18 +74,12 @@ const BLOCKED_AGENTS = [
   "CCBot",      // Common Crawl — diffuse benefit, very heavy
 ];
 
-// The /condo/ block lapses on a date, so this file cannot be baked once at
-// build time — it would keep advertising a block that middleware has already
-// stopped enforcing. A day is close enough: the deadline is a budget cycle,
-// not a deploy.
+// Kept on a daily revalidate so an edit to the block lists reaches
+// robots.txt without waiting for the next deploy.
 export const revalidate = 86400;
 
 export default function robots(): MetadataRoute.Robots {
-  const condoBlocked = new Set(
-    condoCrawlThrottled()
-      ? [...CONDO_BLOCKED_ALWAYS, ...CONDO_BLOCKED_WHILE_THROTTLED]
-      : CONDO_BLOCKED_ALWAYS
-  );
+  const condoBlocked = new Set(CONDO_BLOCKED_ALWAYS);
 
   return {
     rules: [

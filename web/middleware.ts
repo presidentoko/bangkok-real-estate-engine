@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyAdminSession } from "./lib/adminSession";
-import { condoCrawlThrottled } from "./lib/crawlThrottle";
 import { DEFAULT_LANG, LANGS, type Lang } from "./lib/i18n";
 
 // Paths the middleware should NOT touch with the i18n redirect. /admin and
@@ -51,8 +50,7 @@ const ADMIN_PUBLIC_PATHS = new Set(["/admin/login"]);
 // therefore a no-op: they were being let through by the test above it, not
 // by the exemption. Found 2026-08-20 by probing the deployed site with each
 // crawler's real UA rather than trusting the exemption list to mean what it
-// said. They stay exempt once CRAWL_THROTTLE_UNTIL lapses, via
-// SEARCH_ENGINE_UA_RE — this only makes the throttle reach them.
+// said. They are exempt via SEARCH_ENGINE_UA_RE below.
 const BOT_UA_RE =
   /bot|crawl|spider|slurp|facebookexternalhit|ia_archiver|GPTBot|ClaudeBot|PerplexityBot|YandexBot|PetalBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|Amazonbot|Yeti\/|Daum(oa)?\//i;
 
@@ -83,18 +81,15 @@ const BOT_UA_RE =
 const SEARCH_ENGINE_UA_RE =
   /Googlebot|GoogleOther|Google-Extended|Google-InspectionTool|Storebot-Google|AdsBot-Google|Mediapartners-Google|Google-Safety|Bingbot|BingPreview|Yeti|Daum|DuckDuckBot/i;
 
-// Answer engines that cite their sources. Blocked from /condo/ only while
-// the budget throttle runs; the moment it lapses they pass, because being
-// quoted by them is the point of this site and the block was never about
-// anything but Fast Origin Transfer bytes.
+// Answer engines that cite their sources. These pass on /condo/: being
+// quoted by them is the point of this site.
 //
 // GPTBot is deliberately NOT here. It is OpenAI's training crawler and has
 // no citation surface — the reader-facing fetches come from OAI-SearchBot
-// and ChatGPT-User, both of which are. Paying ~46,000 cold renders to feed
+// and ChatGPT-User, both of which are. Paying ~12,800 cold renders to feed
 // a training corpus buys nothing measurable.
 //
-// app/robots.ts advertises exactly this set on exactly the same deadline,
-// off the shared CRAWL_THROTTLE_UNTIL. Change one, change both.
+// app/robots.ts advertises exactly this set. Change one, change both.
 const ANSWER_ENGINE_UA_RE =
   /OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|Applebot/i;
 
@@ -140,48 +135,36 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const ua = req.headers.get("user-agent") ?? "";
-  // Search-crawler throttle on /condo/, on a deadline. SELF-EXPIRING —
-  // delete this block and CRAWL_THROTTLE_UNTIL once it lapses.
+  // Cost circuit-breaker on /condo/. Turns away crawlers that cost origin
+  // bytes and return nothing. Search engines, answer engines, ad fetchers
+  // and link previews all pass.
   //
-  // The 2026-08-13 -> 09-13 cycle was at 9.79GB of a 10GB Fast Origin
-  // Transfer cap on day 7 of 24, burning 1.4GB/day. Hobby does not bill the
-  // overage, it pauses the project — that is how the previous account died
-  // in July, mid-outage. Cutting the repeat cost (condo revalidate 7d -> 30d
-  // in a4eccc0) does nothing about the *first* fetch of each of ~46,000
-  // on-demand-ISR condo URLs, which is what a crawl of the whole catalogue
-  // is, and no amount of caching helps a URL nobody has requested yet.
+  // History worth keeping, because it is why this is narrow now. A blanket
+  // version also 503d Googlebot from 2026-08-20 to 2026-08-23 to survive a
+  // Fast Origin Transfer cap (9.79GB of 10GB on day 7 of 24, burning
+  // 1.4GB/day; Hobby pauses the project rather than billing the overage,
+  // which is how the previous account died in July). It worked on the bytes
+  // and was the wrong trade: Google drops URLs that 503 for more than a few
+  // days, and ~12.4k condo pages had just been made indexable. It also
+  // froze the GSC recovery it was meant to protect.
   //
-  // Middleware runs ahead of the cache, so a 503 from here costs one edge
-  // invocation and zero origin bytes. That is the only lever that moves the
-  // number today.
+  // The real fix was upstream and free. Cloudflare was serving every page
+  // DYNAMIC because Next.js stamps ISR pages "max-age=0, must-revalidate",
+  // so every crawl of every URL was a Vercel origin fetch. A Cache Rule on
+  // /en /ko /th with a 4h edge TTL (2026-08-23) collapses repeat crawls to
+  // zero origin bytes — which is all the 503 was ever buying — without the
+  // deindexing. Only the first fetch of a cold URL still reaches the origin.
   //
-  // What stays open, deliberately:
-  //   - every hub (/district, /districts, /near, /best, /city, /yields,
-  //     /inventory, blog) — ~1,200 URLs, cheap, and where the ranking value
-  //     actually is
-  //   - Google-InspectionTool and Google-Safety (see SEARCH_ENGINE_UA_RE's
-  //     note: a diagnostic that lies, and looking evasive to abuse review,
-  //     are both worse than the bytes)
-  //   - AdsBot-Google and Mediapartners-Google (see AD_FETCHER_UA_RE: these
-  //     fetch one already-named URL, not the catalogue, and a 503 to them
-  //     costs ad fills and eventually a policy review)
-  //   - every link-preview fetcher
-  //
-  // The cost is real and should not be pretended away: a 503 sustained past
-  // a couple of days makes Google start dropping the URLs, and 4,486 of
-  // these condos are ones we just finished making indexable. Lift it as soon
-  // as the cycle's numbers allow — the alternative is the whole site,
-  // including the hubs, going dark for the rest of the cycle.
-  const throttleCrawlers =
-    condoCrawlThrottled() &&
-    !/Google-InspectionTool|Google-Safety/i.test(ua) &&
-    !AD_FETCHER_UA_RE.test(ua);
-
+  // What stays blocked is the set that was never worth a cold render: SEO
+  // tool crawlers, Bytespider, Amazonbot, YandexBot, PetalBot, and GPTBot
+  // (training-only, no citation surface). Middleware runs ahead of the
+  // cache, so this costs one edge invocation and zero origin bytes.
   if (
     pathname.includes("/condo/") &&
     BOT_UA_RE.test(ua) &&
-    (throttleCrawlers ||
-      !(SEARCH_ENGINE_UA_RE.test(ua) || ANSWER_ENGINE_UA_RE.test(ua))) &&
+    !SEARCH_ENGINE_UA_RE.test(ua) &&
+    !ANSWER_ENGINE_UA_RE.test(ua) &&
+    !AD_FETCHER_UA_RE.test(ua) &&
     !SOCIAL_PREVIEW_UA_RE.test(ua)
   ) {
     return new NextResponse(
@@ -189,9 +172,6 @@ export async function middleware(req: NextRequest) {
         "hosting budget. The section index pages are open. Please retry later.",
       {
         status: 503,
-        // 6h rather than 24h: this is a budget ceiling, not an outage, and a
-        // shorter Retry-After keeps the crawler coming back often enough to
-        // notice the moment the throttle lapses.
         headers: { "Retry-After": "21600", "Cache-Control": "no-store" },
       }
     );
