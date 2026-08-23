@@ -365,6 +365,9 @@ const dict: Dict = {
     bubbleTitle: "같은 구역 대비 가장 비싼 콘도",
     bubbleSubtitle:
       "같은 서브 구역, 같은 평수 — 그런데 평균보다 가장 높은 프리미엄.",
+    districtsTitle: (city: string) => `${city} 지역별`,
+    districtsSubtitle:
+      "측정 중인 모든 구와 각 구에서 추적 중인 빌딩 수입니다. 구 페이지에는 수익률 표와 전체 빌딩 목록이 있습니다.",
     fullInventoryTitle: (city: string) => `${city} 전체 빌딩`,
     fullInventoryStat: (n: number) => `${n.toLocaleString()}채 추적 중`,
     pendingPipeline: "아직 추적된 콘도 없음. 파이프라인 진행 중.",

@@ -365,6 +365,9 @@ const dict: Dict = {
     bubbleTitle: "ราคาแพงสุดเทียบพื้นที่เดียวกัน",
     bubbleSubtitle:
       "พื้นที่ย่อยเดียวกัน ตารางเมตรเดียวกัน — แต่พรีเมียมสูงสุด",
+    districtsTitle: (city: string) => `${city} แยกตามเขต`,
+    districtsSubtitle:
+      "ทุกเขตที่เราวัดผล พร้อมจำนวนอาคารที่ติดตามในแต่ละเขต หน้าเขตมีตารางผลตอบแทนและรายชื่ออาคารทั้งหมด",
     fullInventoryTitle: (city: string) => `อาคารทั้งหมดใน${city}`,
     fullInventoryStat: (n: number) => `ติดตาม ${n.toLocaleString()} อาคาร`,
     pendingPipeline: "ยังไม่มีคอนโดที่ติดตาม กำลังเก็บข้อมูล",

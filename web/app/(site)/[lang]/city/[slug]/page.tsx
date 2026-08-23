@@ -219,7 +219,20 @@ async function fetchCityCondos(province: CitySlug): Promise<CondoSummary[]> {
 // per card), and Bangkok alone runs ~6k condos with no limit before this.
 // Stride-sample instead of truncating so the on-page sample still reads as
 // geographically/score representative.
-const GRID_CAP = 400;
+//
+// 400 -> 60 on 2026-08-23. At 400 this page served 2,033KB of HTML for
+// Bangkok (1,193 condo links; ~1.2MB of that is the RSC flight payload,
+// which duplicates the rendered card markup). That is roughly nine condo
+// detail pages in one response, on a site whose readers are mostly on Thai
+// mobile networks, and it is the single heaviest URL we serve.
+//
+// Cutting it costs nothing in crawl reach: the 102 /district/ pages already
+// carry ~6,000 condo links between them (pathum-wan alone links 272), which
+// is the topically correct place for them, and every condo is in
+// sitemap-condos/*.xml regardless. The "N tracked ->" link to /inventory
+// below already covers the reader who wants the full list. What this page
+// was missing is the edge *to* those district pages — see districtLinks.
+const GRID_CAP = 60;
 const MAP_DOT_CAP = 600;
 function sample<T>(arr: T[], cap: number): T[] {
   return arr.length > cap
@@ -292,6 +305,31 @@ export default async function CityPage({
     }));
   const mapDots = sample(points, MAP_DOT_CAP);
   const gridCondos = sample(condos, GRID_CAP);
+
+  // City -> district links. This page had none, which left /district/ a tier
+  // reachable only from /districts and the sitemap, and left the city page
+  // trying to be the whole index by itself.
+  //
+  // The >=3 bar matches sitemap-areas.xml and district/[slug]'s own robots
+  // gate: below it that page returns noindex, and linking to a noindex page
+  // from the city hub spends crawl budget on a dead end. Slug shape is
+  // encodeURIComponent(name.toLowerCase()), the same construction
+  // districts/page.tsx and generateStaticParams use.
+  const districtLinks = (() => {
+    const counts = new Map<string, number>();
+    for (const c of condos) {
+      if (!c.region) continue;
+      counts.set(c.region, (counts.get(c.region) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .filter(([, n]) => n >= 3)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([name, count]) => ({
+        name,
+        count,
+        slug: encodeURIComponent(name.toLowerCase()),
+      }));
+  })();
 
   const cityName = city.name[lang];
   const tagline = city.tagline[lang];
@@ -464,6 +502,32 @@ export default async function CityPage({
               <BuildingCard key={c.id} condo={c} hrefPrefix={`/${lang}/condo/`} size="sm" />
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Sub-areas — the crawl path from city to district to condo */}
+      {districtLinks.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <h2 className="text-xl font-semibold">
+            {t.districtsTitle(cityName)}
+          </h2>
+          <p className="text-zinc-500 text-sm mt-1">{t.districtsSubtitle}</p>
+          <ul className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-2 text-sm">
+            {districtLinks.map((d) => (
+              <li key={d.slug}>
+                <Link
+                  href={`/${lang}/district/${d.slug}`}
+                  className="text-zinc-300 hover:text-emerald-400 hover:underline"
+                >
+                  {d.name}
+                </Link>
+                <span className="text-zinc-500 text-xs">
+                  {" \u00b7 "}
+                  {d.count}
+                </span>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

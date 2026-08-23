@@ -382,6 +382,9 @@ const dict = {
     bubbleTitle: "Most-overpriced vs same area",
     bubbleSubtitle:
       "Same sub-area, same square meter — these cost the most premium.",
+    districtsTitle: (city: string) => `${city} by sub-area`,
+    districtsSubtitle:
+      "Every district we measure, with the number of buildings tracked in each. District pages carry the yield table and the full building list.",
     fullInventoryTitle: (city: string) => `All ${city} buildings`,
     fullInventoryStat: (n: number) => `${n.toLocaleString()} tracked`,
     pendingPipeline: "No condos tracked yet. Pipeline running.",
