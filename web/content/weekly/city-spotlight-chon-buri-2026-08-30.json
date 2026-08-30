@@ -1,0 +1,152 @@
+{
+  "slug": "city-spotlight-chon-buri-2026-08-30",
+  "title": "Chon Buri Tops the Yield Table at 14.6% Gross",
+  "description": "Five Chon Buri condos currently lead RealData's yield ranking. We break down the numbers and what the spread over mortgage rate means for buyers.",
+  "published_at": "2026-08-30",
+  "topic": "city-spotlight",
+  "lead": "Chon Buri holds five of the highest gross yields in our current dataset, with the top building printing 14.55% — more than double the Bank of Thailand benchmark MRR of 7.1%. The spread across all five ranges from 5.53 to 7.45 percentage points, which is unusually wide for a coastal market where price inflation tends to compress returns. Entry prices span ฿1.34 M to ฿13 M, so the opportunity is not limited to one buyer profile.",
+  "sections": [
+    {
+      "heading": "Where the Yield Is Coming From",
+      "body": "[Nirvana Place](/condo/nirvana-place-chon-buri) leads at **14.55%** gross on an average sale price of **฿3.3 M** and monthly rent of **฿40,000** — a mid-market entry with outsized rent relative to capital cost. [Art on the Hill](/condo/art-on-the-hill-chon-buri) is the lowest-cost option at **฿1.34 M** average sale price and still yields **13.43%**, making it the clearest case for a leveraged position where financing costs are a primary concern.\n\n[Krisda Golden Condotel](/condo/krisda-golden-condotel-chon-buri) in Sattahip operates at a different scale — **฿13 M** average sale price, **฿141,000** monthly rent — and still returns **13.02%**. That consistency across price tiers suggests Chon Buri's rental demand is structurally broad rather than concentrated in one segment."
+    },
+    {
+      "heading": "Spread vs. Mortgage Rate: The Real Signal",
+      "body": "With the current MRR at **7.1%**, all five buildings carry a gross-yield-to-MRR spread above 5.5 pp. [Nirvana Place](/condo/nirvana-place-chon-buri) posts the widest spread at **7.45 pp**; [Southpoint](/condo/southpoint-chon-buri) is tightest at **5.53 pp** but still clears the rate by a meaningful margin on a **฿5.7 M** average asset.\n\nSpreads this wide typically compress as more capital enters a market — or they persist because of structural friction (limited transit, perceived risk, foreign-quota uncertainty). Buyers willing to underwrite that friction now are positioned ahead of any re-rating. The foreign-quota figures are not yet in our dataset for these buildings; confirm availability directly before transacting."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "Nirvana Place — gross yield",
+      "value": "14.55%",
+      "condo_id": "0399500c-0a67-46cd-a9f3-86110b2e565d",
+      "metric": "gross_yield_pct",
+      "expected": 14.55,
+      "slug": "nirvana-place-chon-buri"
+    },
+    {
+      "label": "Nirvana Place — yield-to-MRR spread",
+      "value": "+7.45 pp",
+      "condo_id": "0399500c-0a67-46cd-a9f3-86110b2e565d",
+      "metric": "spread_pp",
+      "expected": 7.45,
+      "slug": "nirvana-place-chon-buri"
+    },
+    {
+      "label": "Art on the Hill — avg sale price",
+      "value": "฿1,340,000",
+      "condo_id": "629b3a8a-899b-47dc-8c8b-5cc20a7ecc23",
+      "metric": "avg_sale_price",
+      "expected": 1340000,
+      "slug": "art-on-the-hill-chon-buri"
+    },
+    {
+      "label": "Art on the Hill — gross yield",
+      "value": "13.43%",
+      "condo_id": "629b3a8a-899b-47dc-8c8b-5cc20a7ecc23",
+      "metric": "gross_yield_pct",
+      "expected": 13.43,
+      "slug": "art-on-the-hill-chon-buri"
+    },
+    {
+      "label": "Krisda Golden Condotel — avg monthly rent",
+      "value": "฿141,000",
+      "condo_id": "b96068b4-0ace-4a7e-996e-948d19978c64",
+      "metric": "avg_monthly_rent",
+      "expected": 141000,
+      "slug": "krisda-golden-condotel-chon-buri"
+    },
+    {
+      "label": "Southpoint — yield-to-MRR spread",
+      "value": "+5.53 pp",
+      "condo_id": "862eb6a2-964a-4f77-9313-321db4c7fac7",
+      "metric": "spread_pp",
+      "expected": 5.53,
+      "slug": "southpoint-chon-buri"
+    }
+  ],
+  "i18n": {
+    "ko": {
+      "title": "촌부리, 총수익률 14.6%로 수익률 순위 1위",
+      "description": "현재 RealData 수익률 순위에서 촌부리 콘도 5곳이 상위권을 차지하고 있습니다. 수치 분석과 모기지 금리 대비 스프레드가 매수자에게 의미하는 바를 살펴봅니다.",
+      "lead": "촌부리는 현재 데이터셋에서 가장 높은 총임대수익률 상위 5개 건물을 모두 보유하며, 최상위 건물은 14.55%를 기록해 태국중앙은행 기준 MRR인 7.1%의 두 배를 훌쩍 넘습니다. 5개 건물 전체의 스프레드는 5.53~7.45 퍼센트포인트로, 가격 상승이 수익률을 압박하는 경향이 있는 해안 시장치고는 이례적으로 넓은 범위입니다. 진입 가격은 ฿1.34 M에서 ฿13 M까지 분포해 있어 특정 매수자 유형에만 국한된 기회가 아닙니다.",
+      "sections": [
+        {
+          "heading": "수익률의 원천",
+          "body": "[Nirvana Place](/condo/nirvana-place-chon-buri)는 평균 매매가 **฿3.3 M**, 월 임대료 **฿40,000**을 기반으로 총임대수익률 **14.55%**로 선두를 달리고 있습니다. 자본비용 대비 임대료가 높은 중가 시장 진입 사례입니다. [Art on the Hill](/condo/art-on-the-hill-chon-buri)은 평균 매매가 **฿1.34 M**으로 최저가 옵션임에도 **13.43%**의 수익률을 기록해, 금융비용이 핵심 변수인 레버리지 포지션에 가장 명확한 선택지입니다.\n\n사타힙에 위치한 [Krisda Golden Condotel](/condo/krisda-golden-condotel-chon-buri)은 규모 면에서 차원이 다릅니다. 평균 매매가 **฿13 M**, 월 임대료 **฿141,000**에도 **13.02%**의 수익률을 유지합니다. 이처럼 가격대 전반에 걸친 일관성은 촌부리의 임대 수요가 특정 세그먼트에 집중된 것이 아니라 구조적으로 폭넓게 분포되어 있음을 시사합니다."
+        },
+        {
+          "heading": "MRR 대비 스프레드: 핵심 신호",
+          "body": "현재 MRR이 **7.1%**인 상황에서 5개 건물 모두 총임대수익률 대비 MRR 스프레드가 5.5 pp를 상회합니다. [Nirvana Place](/condo/nirvana-place-chon-buri)가 **7.45 pp**로 가장 넓고, [Southpoint](/condo/southpoint-chon-buri)는 **5.53 pp**로 가장 좁지만, 평균 자산가치 **฿5.7 M** 기준으로도 여전히 유의미한 마진을 확보하고 있습니다.\n\n이처럼 넓은 스프레드는 통상 더 많은 자본이 시장에 유입되면서 압축되거나, 구조적 마찰(교통 인프라 부족, 인지된 리스크, 외국인 쿼터 불확실성)로 인해 지속되는 경향이 있습니다. 지금 이 마찰을 감수할 의향이 있는 매수자는 향후 재평가에 앞서 유리한 포지션을 선점하게 됩니다. 해당 건물들의 외국인 쿼터 현황은 아직 저희 데이터셋에 포함되어 있지 않으므로, 거래 전에 직접 확인하시기 바랍니다."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Nirvana Place — 총임대수익률",
+          "value": "14.55%"
+        },
+        {
+          "label": "Nirvana Place — 수익률 대비 MRR 스프레드",
+          "value": "+7.45 pp"
+        },
+        {
+          "label": "Art on the Hill — 평균 매매가",
+          "value": "฿1,340,000"
+        },
+        {
+          "label": "Art on the Hill — 총임대수익률",
+          "value": "13.43%"
+        },
+        {
+          "label": "Krisda Golden Condotel — 평균 월 임대료",
+          "value": "฿141,000"
+        },
+        {
+          "label": "Southpoint — 수익률 대비 MRR 스프레드",
+          "value": "+5.53 pp"
+        }
+      ]
+    },
+    "th": {
+      "title": "ชลบุรีนำตารางผลตอบแทนด้วย 14.6% รวม",
+      "description": "คอนโดในชลบุรี 5 แห่งครองอันดับต้นของการจัดอันดับผลตอบแทนของ RealData เราวิเคราะห์ตัวเลขและความหมายของส่วนต่างเหนืออัตราดอกเบี้ยจำนองสำหรับผู้ซื้อ",
+      "lead": "ชลบุรีครองห้าอันดับสูงสุดของผลตอบแทนรวมในชุดข้อมูลปัจจุบันของเรา โดยอาคารอันดับหนึ่งทำสถิติ 14.55% — สูงกว่าอัตรา MRR อ้างอิงของธนาคารแห่งประเทศไทยที่ 7.1% มากกว่าสองเท่า ส่วนต่างของทั้งห้าอาคารอยู่ในช่วง 5.53 ถึง 7.45 จุดร้อยละ ซึ่งกว้างผิดปกติสำหรับตลาดชายฝั่งที่การเพิ่มขึ้นของราคามักจะกดดันผลตอบแทน ราคาเริ่มต้นอยู่ในช่วง ฿1.34 M ถึง ฿13 M จึงไม่ได้จำกัดอยู่กับผู้ซื้อกลุ่มใดกลุ่มหนึ่ง",
+      "sections": [
+        {
+          "heading": "ที่มาของผลตอบแทน",
+          "body": "[Nirvana Place](/condo/nirvana-place-chon-buri) นำด้วยผลตอบแทนรวม **14.55%** บนราคาขายเฉลี่ย **฿3.3 M** และค่าเช่ารายเดือน **฿40,000** — เป็นทางเข้าสู่ตลาดระดับกลางที่มีค่าเช่าสูงเมื่อเทียบกับต้นทุนทุน [Art on the Hill](/condo/art-on-the-hill-chon-buri) เป็นตัวเลือกราคาต่ำสุดด้วยราคาขายเฉลี่ย **฿1.34 M** และยังคงให้ผลตอบแทน **13.43%** ทำให้เป็นกรณีที่ชัดเจนที่สุดสำหรับการใช้เลเวอเรจเมื่อต้นทุนทางการเงินเป็นข้อกังวลหลัก\n\n[Krisda Golden Condotel](/condo/krisda-golden-condotel-chon-buri) ในสัตหีบดำเนินการในระดับที่แตกต่างออกไป — ราคาขายเฉลี่ย **฿13 M** ค่าเช่ารายเดือน **฿141,000** — และยังคงให้ผลตอบแทน **13.02%** ความสม่ำเสมอนี้ในทุกระดับราคาบ่งชี้ว่าความต้องการเช่าในชลบุรีมีฐานที่กว้างในเชิงโครงสร้าง มากกว่าจะกระจุกตัวอยู่ในกลุ่มเดียว"
+        },
+        {
+          "heading": "ส่วนต่างเทียบกับอัตราดอกเบี้ยจำนอง: สัญญาณที่แท้จริง",
+          "body": "เมื่อ MRR ปัจจุบันอยู่ที่ **7.1%** อาคารทั้งห้าแห่งมีส่วนต่างระหว่างผลตอบแทนรวมกับ MRR เกิน 5.5 pp [Nirvana Place](/condo/nirvana-place-chon-buri) มีส่วนต่างสูงสุดที่ **7.45 pp** ในขณะที่ [Southpoint](/condo/southpoint-chon-buri) มีส่วนต่างแคบที่สุดที่ **5.53 pp** แต่ยังคงสูงกว่าอัตราดอกเบี้ยในระดับที่มีนัยสำคัญบนสินทรัพย์เฉลี่ยมูลค่า **฿5.7 M**\n\nส่วนต่างที่กว้างเช่นนี้มักจะหดตัวลงเมื่อเงินทุนไหลเข้าสู่ตลาดมากขึ้น — หรืออาจคงอยู่เนื่องจากความฝืดเชิงโครงสร้าง (ระบบขนส่งที่จำกัด ความเสี่ยงที่รับรู้ ความไม่แน่นอนเกี่ยวกับโควตาต่างชาติ) ผู้ซื้อที่ยินดีรับความฝืดเหล่านั้นในขณะนี้จะอยู่ในตำแหน่งที่ได้เปรียบก่อนการปรับราคาใดๆ ข้อมูลโควตาต่างชาติยังไม่มีในชุดข้อมูลของเราสำหรับอาคารเหล่านี้ กรุณายืนยันความพร้อมใช้งานโดยตรงก่อนทำธุรกรรม"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Nirvana Place — ผลตอบแทนรวม",
+          "value": "14.55%"
+        },
+        {
+          "label": "Nirvana Place — ส่วนต่างผลตอบแทนเทียบ MRR",
+          "value": "+7.45 pp"
+        },
+        {
+          "label": "Art on the Hill — ราคาขายเฉลี่ย",
+          "value": "฿1,340,000"
+        },
+        {
+          "label": "Art on the Hill — ผลตอบแทนรวม",
+          "value": "13.43%"
+        },
+        {
+          "label": "Krisda Golden Condotel — ค่าเช่ารายเดือนเฉลี่ย",
+          "value": "฿141,000"
+        },
+        {
+          "label": "Southpoint — ส่วนต่างผลตอบแทนเทียบ MRR",
+          "value": "+5.53 pp"
+        }
+      ]
+    }
+  }
+}
