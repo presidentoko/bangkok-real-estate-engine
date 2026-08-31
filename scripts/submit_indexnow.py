@@ -43,8 +43,10 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import io
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -163,7 +165,32 @@ def collect_paths(since_days: int) -> list[str]:
         districts += 1
     print(f"[indexnow] district pages: {districts}")
 
+    # Per-khet flood answer pages. Read from the same generated table the
+    # pages and sitemap-areas.xml use, so this list cannot drift from what
+    # is actually published. No condo-count gate: the flood level comes
+    # from the BMA/JICA layer, not from our coverage.
+    flood = flood_district_slugs()
+    paths.extend(f"/flood/{slug}" for slug in flood)
+    print(f"[indexnow] flood district pages: {len(flood)}")
+
     return paths
+
+
+def flood_district_slugs() -> list[str]:
+    """Slugs out of web/lib/floodDistricts.ts.
+
+    Parsed rather than duplicated: that file is generated from the GeoJSON
+    by scripts/gen_flood_districts.py, and a second hand-maintained copy of
+    50 slugs here would be one more thing to forget when the layer is
+    revised after the annual BMA monsoon report.
+    """
+    path = os.path.join(ROOT, "web", "lib", "floodDistricts.ts")
+    try:
+        src = io.open(path, encoding="utf-8").read()
+    except OSError as e:
+        print(f"[indexnow] flood districts unreadable ({e}) - skipping")
+        return []
+    return re.findall(r'\{ slug: "([a-z0-9-]+)"', src)
 
 
 def post_batch(urls: list[str]) -> bool:
