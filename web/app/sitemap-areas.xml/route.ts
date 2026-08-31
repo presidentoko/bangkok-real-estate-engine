@@ -1,6 +1,7 @@
 import { LANGS } from "@/lib/i18n";
 import { BEST_CITIES, BEST_FILTERS } from "@/lib/bestSlugs";
 import { CITIES, canonicalCitySlug, cityProvinceSlugs } from "@/lib/cities";
+import { FLOOD_DISTRICTS } from "@/lib/floodDistricts";
 import { getServerSupabase } from "@/lib/supabase";
 import { getViableStations } from "@/lib/queries/stations";
 import {
@@ -124,6 +125,21 @@ export async function GET(): Promise<Response> {
     for (const lang of LANGS) {
       entries.push(
         urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "weekly", priority: 0.7, path })
+      );
+    }
+  }
+
+  // Per-khet flood answer pages — 50 x 3 langs. No eligibility gate: the
+  // level comes from the BMA/JICA layer, not from our condo coverage, so a
+  // khet with two tracked buildings still has a real, citable answer to
+  // "does it flood" — which is the query these pages exist to win. Highest
+  // priority in this file because they are the only URLs we publish that
+  // answer a question no portal answers.
+  for (const d of FLOOD_DISTRICTS) {
+    const path = `/flood/${d.slug}`;
+    for (const lang of LANGS) {
+      entries.push(
+        urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "monthly", priority: 0.8, path })
       );
     }
   }

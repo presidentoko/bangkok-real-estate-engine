@@ -198,6 +198,70 @@ const dict = {
     footnote:
       "Source: BMA Drainage Dept + JICA reports + 2011 great flood. District (khet) baseline, not coordinate level. Local variation exists.",
   },
+  floodDistrict: {
+    eyebrow: "Bangkok flood check",
+    h1: (d: string, level: number) => `Does ${d} flood? Risk level ${level} of 5`,
+    altSpelling: (names: string) => `Also written ${names}.`,
+    verdictTitle: "The short answer",
+    verdict: {
+      0: (d: string) =>
+        `No monsoon flooding is on record for ${d} in the sources we score against. ` +
+        `What remains is a burst main or a blocked soi drain — not seasonal inundation.`,
+      1: (d: string) =>
+        `${d} is one of the driest khet in Bangkok. Comparatively high ground with BMA ` +
+        `drainage that held through the 2011 great flood; street water clears within hours ` +
+        `of a heavy storm.`,
+      2: (d: string) =>
+        `${d} carries low risk. Expect ankle-deep puddling on the smaller sois during a hard ` +
+        `monsoon downpour, draining the same day. It was not part of the 2011 inundation zone.`,
+      3: (d: string) =>
+        `${d} floods at neighbourhood level. Several times a monsoon season individual sois ` +
+        `hold water for hours; ground-floor parking and garden units are the exposure. Not a ` +
+        `reason to rule the district out — a reason to check the building’s own ground level.`,
+      4: (d: string) =>
+        `${d} is high risk. It was significantly inundated in the 2011 great flood and still ` +
+        `sees recurring waist-deep water in the worst monsoon weeks. Ground-floor and podium ` +
+        `units need a hard look, and past water is a question to put to the juristic office.`,
+      5: (d: string) =>
+        `${d} is among the most flood-exposed khet in Bangkok. Repeat full-area inundation ` +
+        `during monsoon season is on record, including weeks of standing water in 2011. Buy ` +
+        `here on price, with eyes open — not on the assumption that it stays dry.`,
+    } as Record<number, (d: string) => string>,
+    rankLine: (rank: number, total: number) =>
+      `Ranked ${rank} of ${total} Bangkok districts, riskiest first.`,
+    trackedTitle: (d: string) => `Condos we track in ${d}`,
+    trackedNote: (n: number, d: string) =>
+      `${n} buildings in ${d} inherit this district score. We do not have block-level ` +
+      `elevation, so a building’s own ground height still matters.`,
+    trackedNone: (d: string) => `We do not yet track a published building in ${d}.`,
+    seeAllInDistrict: (d: string) => `All ${d} condos — yields, prices, listings`,
+    saferTitle: "Drier districts",
+    riskierTitle: "Wetter districts",
+    sameTitle: (level: number) => `Other districts at level ${level}`,
+    allTitle: "All 50 Bangkok districts by flood risk",
+    methodTitle: "How this level is set",
+    methodBody:
+      "RealData scores each of Bangkok’s 50 khet from 0 to 5 against BMA Drainage Department " +
+      "records, JICA flood-frequency reports and 2011 great flood inundation mapping. The layer " +
+      "is district-level, not coordinate-level, and is reviewed once a year after the BMA " +
+      "monsoon report.",
+    faqTitle: (d: string) => `${d} flood risk — frequently asked questions`,
+    faq: {
+      q1: (d: string) => `Does ${d} flood in Bangkok?`,
+      q2: (d: string) => `Was ${d} affected by the 2011 Bangkok flood?`,
+      a2high: (d: string) =>
+        `Yes. ${d} sits inside the 2011 inundation zone — the flood that reached the northern ` +
+        `and eastern khet and held for weeks. Its current level reflects that history.`,
+      a2low: (d: string) =>
+        `Largely no. ${d} stayed outside the worst of the 2011 inundation, protected by ` +
+        `elevation and the King’s Dyke barrier line. Its current level reflects that.`,
+      q3: (d: string) => `Is it safe to buy a condo in ${d}?`,
+      a3: (d: string) =>
+        `Flood level is one input, not a verdict. Check the building itself: ground-floor height ` +
+        `above the soi, whether parking is at grade, and what the juristic office says about ` +
+        `past water. The ${d} score tells you the baseline you are starting from.`,
+    },
+  },
   hover: {
     buildings: "buildings",
     building: "building",
@@ -903,6 +967,13 @@ const dict = {
       `Every condo in ${district}, ${province}: gross rental yields ranked ` +
       `against Thai MRR, sale/rent medians, flood risk levels, and ` +
       `cross-portal price comparison. Independent data — no developer placement.`,
+    floodDistrictTitle: (district: string, level: number) =>
+      `Does ${district} Flood? Bangkok Flood Risk Level ${level}/5 | RealData`,
+    floodDistrictDesc: (district: string, level: number, condos: number) =>
+      `${district}, Bangkok is rated flood risk ${level} of 5 — scored against ` +
+      `BMA Drainage Department records, JICA flood-frequency reports and 2011 great ` +
+      `flood inundation mapping. ${condos} tracked buildings, monsoon history, and how ` +
+      `${district} compares with the other 49 khet.`,
     yieldsTitle:
       "Top Rental Yield Condos in Bangkok & Thailand — Ranked vs Bank of Thailand Rate | RealData",
     yieldsDesc:

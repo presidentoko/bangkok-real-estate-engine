@@ -5,6 +5,7 @@ import { FloodCityGate } from "@/components/FloodCityGate";
 import { FloodLegend } from "@/components/FloodLegend";
 import { FloodMapSvg, type FloodPoint } from "@/components/FloodMapSvg";
 import { FloodStats } from "@/components/FloodStats";
+import { FLOOD_DISTRICTS } from "@/lib/floodDistricts";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
@@ -158,21 +159,26 @@ export default async function FloodPage({
     });
   }
 
-  // Flood-risk ranking by district — pillar table for SEO/AEO.
-  const districtRanking: Array<{ district: string; level: number; condos: number }> = [];
+  // Flood-risk ranking by district — pillar table for SEO/AEO, and since
+  // 2026-08-31 the hub that links out to the 50 per-khet answer pages.
+  //
+  // Levels now come from FLOOD_DISTRICTS (the committed projection of the
+  // same GeoJSON) rather than being re-derived from `features` here, so the
+  // slug in this table is guaranteed to be the one /flood/[district] and
+  // /district/[slug] both resolve — a mismatch would publish 50 links to
+  // 404s from the page Google trusts most on this topic.
   const condosByKhet = new Map<string, number>();
   for (const c of condos) {
     const region = regionName(c);
     if (!region) continue;
     condosByKhet.set(normalize(region), (condosByKhet.get(normalize(region)) ?? 0) + 1);
   }
-  for (const f of features) {
-    const name = f.properties?.name ?? "";
-    const lvl = f.properties?.flood_risk_level;
-    if (!name || typeof lvl !== "number") continue;
-    districtRanking.push({ district: name, level: lvl, condos: condosByKhet.get(normalize(name)) ?? 0 });
-  }
-  districtRanking.sort((a, b) => b.level - a.level || b.condos - a.condos);
+  const districtRanking = FLOOD_DISTRICTS.map((d) => ({
+    district: lang === "th" && d.nameTh ? d.nameTh : d.name,
+    slug: d.slug,
+    level: d.level,
+    condos: condosByKhet.get(normalize(d.name)) ?? 0,
+  }));
 
   const cityName = "Bangkok";
   const ariaLabel = `${cityName} flood risk map`;
@@ -252,9 +258,21 @@ export default async function FloodPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {districtRanking.slice(0, 20).map((d) => (
-                    <tr key={d.district} className="border-b border-zinc-900">
-                      <td className="py-2 pr-4 text-zinc-200">{d.district}</td>
+                  {/* All 50, not the top 20. The 30 rows this used to cut
+                      were the low-risk khet — Pathum Wan, Bang Rak,
+                      Watthana — i.e. exactly the districts a buyer searches
+                      to confirm are dry, and the only path to their answer
+                      pages. */}
+                  {districtRanking.map((d) => (
+                    <tr key={d.slug} className="border-b border-zinc-900">
+                      <td className="py-2 pr-4">
+                        <Link
+                          className="text-zinc-200 hover:text-emerald-400 hover:underline"
+                          href={`/${lang}/flood/${d.slug}`}
+                        >
+                          {d.district}
+                        </Link>
+                      </td>
                       <td className="py-2 pr-4 text-zinc-300">L{d.level}</td>
                       <td className="py-2 pr-4 text-zinc-400">{d.condos}</td>
                     </tr>
