@@ -7,7 +7,7 @@ import { isLang, LANGS } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { buildDefinedTermJsonLd } from "@/lib/seo/definedTermJsonLd";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
-import { GLOSSARY, getTerm } from "@/lib/glossary";
+import { GLOSSARY, getTerm, localizeTerm } from "@/lib/glossary";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 
@@ -30,8 +30,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; term: string }> }): Promise<Metadata> {
   const { lang, term } = await params;
-  const g = getTerm(term);
-  if (!isLang(lang) || !g) return { title: "Glossary — RealData" };
+  const raw = getTerm(term);
+  if (!isLang(lang) || !raw) return { title: "Glossary — RealData" };
+  const g = localizeTerm(raw, lang);
   return {
     title: getDictionary(lang).seo.glossaryTermTitle(g.term),
     description: g.definition,
@@ -42,8 +43,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 export default async function GlossaryTermPage({ params }: { params: Promise<{ lang: string; term: string }> }) {
   const { lang, term } = await params;
   if (!isLang(lang)) notFound();
-  const g = getTerm(term);
-  if (!g) notFound();
+  const raw = getTerm(term);
+  if (!raw) notFound();
+  const g = localizeTerm(raw, lang);
   const t = getDictionary(lang);
   const jsonLd = buildDefinedTermJsonLd({
     term: g.term,
@@ -56,7 +58,10 @@ export default async function GlossaryTermPage({ params }: { params: Promise<{ l
     { name: t.glossary.breadcrumb, url: `${SEO_SITE_URL}/${lang}/glossary` },
     { name: g.term, url: `${SEO_SITE_URL}/${lang}/glossary/${g.slug}` },
   ]);
-  const related = g.related.map(getTerm).filter((x): x is NonNullable<typeof x> => x != null);
+  const related = g.related
+    .map(getTerm)
+    .filter((x): x is NonNullable<typeof x> => x != null)
+    .map((x) => localizeTerm(x, lang));
   return (
     <main className="max-w-2xl mx-auto p-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }} />
