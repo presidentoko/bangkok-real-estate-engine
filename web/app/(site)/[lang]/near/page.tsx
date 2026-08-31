@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getDictionary } from "@/lib/getDictionary";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -32,9 +33,6 @@ export function generateStaticParams() {
   return LANGS.map((lang) => ({ lang }));
 }
 
-const SEO_TITLE = "Condos Near Every BTS & MRT Station in Bangkok | RealData";
-const SEO_DESC =
-  "Every Bangkok BTS Skytrain and MRT station with condo buildings within 1 km — condo counts, median price per sqm and gross yield per station. Independent data, no developer sponsorships.";
 
 export async function generateMetadata({
   params,
@@ -42,6 +40,9 @@ export async function generateMetadata({
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
   const { lang } = await params;
+  const t = getDictionary(isLang(lang) ? lang : "en").seo;
+  const SEO_TITLE = t.nearIndexTitle;
+  const SEO_DESC = t.nearIndexDesc;
   return {
     title: SEO_TITLE,
     description: SEO_DESC,
@@ -118,7 +119,7 @@ export default async function StationIndexPage({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: SEO_TITLE,
+    name: getDictionary(lang).seo.nearIndexTitle,
     numberOfItems: stations.length,
     itemListElement: stations.slice(0, 100).map((s, i) => ({
       "@type": "ListItem",

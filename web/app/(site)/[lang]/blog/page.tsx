@@ -16,12 +16,11 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!isLang(lang)) return { title: "RealData Blog" };
   const t = getDictionary(lang);
-  const title = lang === "en"
-    ? "Bangkok Real Estate Blog — Condo Data, Flood Risk & Investment Guides | RealData"
-    : `${t.blogIndex.title} — Bangkok property data analysis`;
-  const description = lang === "en"
-    ? "Data-driven Bangkok real estate analysis — flood risk rankings, bubble index breakdowns, rental yield comparisons, retiree guides, and foreign buyer handbooks. No influencer speculation, just numbers."
-    : t.blogIndex.lead;
+  // Was `lang === "en" ? <real title> : "<blog name> — Bangkok property
+  // data analysis"`, so /ko and /th both shipped an English tail on a
+  // non-English page and neither could rank for its own language.
+  const title = t.seo.blogIndexTitle;
+  const description = t.seo.blogIndexDesc;
   return {
     title,
     description,

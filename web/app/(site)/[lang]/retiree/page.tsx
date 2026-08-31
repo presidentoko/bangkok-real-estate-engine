@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getDictionary } from "@/lib/getDictionary";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CITIES, cityProvinceSlugs } from "@/lib/cities";
@@ -16,9 +17,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Retiree-Friendly Condos in Thailand" };
-  const title = "Best Condos for Retirees in Thailand 2026 — Bangkok, Phuket, Chiang Mai | RealData";
-  const description =
-    "Thailand condos ranked for retiree suitability — healthcare access (hospitals within 1km), air quality (AQI), BTS/MRT transit, and daily errands. Bangkok, Phuket, Pattaya, Chiang Mai and more. No developer sponsorships.";
+  const t = getDictionary(lang).seo;
+  const title = t.retireeTitle;
+  const description = t.retireeDesc;
   return {
     title,
     description,

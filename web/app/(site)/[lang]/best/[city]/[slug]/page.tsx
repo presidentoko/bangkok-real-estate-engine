@@ -91,9 +91,12 @@ export async function generateMetadata({
       robots: { index: false, follow: false },
     };
   }
-  const titleChunk = filterObj.titleChunk(cityObj.display);
-  const title = `Best ${titleChunk} — RealData`;
-  const description = filterObj.descChunk(cityObj.display);
+  const tb = getDictionary(lang).best;
+  const copy = tb.filters[filterObj.slug];
+  const cityName = provinceDisplayName(cityObj.slug, lang) || cityObj.display;
+  const titleChunk = copy.chunk(cityName);
+  const title = tb.title(titleChunk);
+  const description = copy.desc(cityName);
 
   // Cheap count-only version of the page's main query — decides whether this
   // slice has enough buildings to be worth indexing.
@@ -207,8 +210,11 @@ export default async function BestSlicePage({
   const retireeRows = (retireeData ?? []) as unknown as RetireeRow[];
   const mrr = mortgage?.rate ?? null;
 
-  const titleChunk = filterObj.titleChunk(cityObj.display);
-  const h1 = `Best ${titleChunk}`;
+  const tb = getDictionary(lang).best;
+  const copy = tb.filters[filterObj.slug];
+  const cityName = provinceDisplayName(cityObj.slug, lang) || cityObj.display;
+  const titleChunk = copy.chunk(cityName);
+  const h1 = tb.h1(titleChunk);
 
   // Aggregates for the stat strip + FAQ
   const yields = rows.map((r) => r.gross_yield_pct ?? 0).filter((y) => y > 0);
@@ -227,7 +233,7 @@ export default async function BestSlicePage({
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: h1,
-    description: filterObj.descChunk(cityObj.display),
+    description: copy.desc(cityName),
     numberOfItems: rows.length,
     itemListElement: rows.slice(0, 20).map((r, i) => ({
       "@type": "ListItem",
@@ -313,7 +319,7 @@ export default async function BestSlicePage({
           {h1}
         </h1>
         <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
-          {filterObj.descChunk(cityObj.display)}
+          {copy.desc(cityName)}
           {mrr != null && (
             <>
               {" "}Spread shown against current Thai MRR{" "}
@@ -478,7 +484,7 @@ export default async function BestSlicePage({
               href={`/${lang}/best/${city}/${s.slug}`}
               className="bg-zinc-900 border border-zinc-800 rounded-full px-3.5 py-2 text-zinc-300 hover:text-emerald-400 hover:border-zinc-600 transition"
             >
-              {s.titleChunk(cityObj.display)}
+              {tb.filters[s.slug].chunk(cityName)}
             </Link>
           ))}
         </div>
@@ -495,7 +501,7 @@ export default async function BestSlicePage({
               href={`/${lang}/best/${c.slug}/${slug}`}
               className="bg-zinc-900 border border-zinc-800 rounded-full px-3.5 py-2 text-zinc-300 hover:text-emerald-400 hover:border-zinc-600 transition"
             >
-              {filterObj.titleChunk(c.display)}
+              {copy.chunk(provinceDisplayName(c.slug, lang) || c.display)}
             </Link>
           ))}
         </div>

@@ -21,12 +21,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Compare condos — RealData" };
+  const t = getDictionary(lang).seo;
   return {
-    title: "Compare Bangkok condos side-by-side — RealData",
-    description:
-      "Compare 2-3 Bangkok condos head-to-head: yield, mortgage spread, " +
-      "flood risk, transit distance, foreign quota, multi-portal price. " +
-      "Independent measurement.",
+    title: t.compareTitle,
+    description: t.compareDesc,
     alternates: {
       // Query-free on purpose: ?a/?b/?c is an unbounded permutation space,
       // and this canonical is the only thing folding all of it back onto one

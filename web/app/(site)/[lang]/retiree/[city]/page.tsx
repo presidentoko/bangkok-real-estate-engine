@@ -69,12 +69,10 @@ export async function generateMetadata({
   // Canonicalize alias URLs (e.g. "chon-buri") to the UI slug so we don't
   // publish a distinct canonical per DB province spelling.
   const canonical = canonicalCitySlug(city);
-  const cityName = cityObj.name.en;
-  const title = `Best Condos for Retirees in ${cityName} — Hospitals, AQI & Transit Ranked | RealData`;
-  const description =
-    `${cityName} condos ranked by retiree suitability score — ` +
-    `hospitals within 1 km, air quality (AQI/PM2.5), BTS/MRT transit access, and daily errands. ` +
-    `Includes foreign-quota availability and monthly CAM fees. No developer sponsorships.`;
+  const cityName = cityObj.name[lang];
+  const t = getDictionary(lang).seo;
+  const title = t.retireeCityTitle(cityName);
+  const description = t.retireeCityDesc(cityName);
 
   return {
     title,
@@ -149,7 +147,7 @@ export default async function RetireeCityPage({
     .filter((v): v is number => v != null);
   const medianCam = median(camRows);
 
-  const cityName = cityObj.name.en;
+  const cityName = cityObj.name[lang];
 
   const itemListJsonLd = {
     "@context": "https://schema.org",

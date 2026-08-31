@@ -243,6 +243,47 @@ const dict: Dict = {
         `คะแนนของ${d}บอกแค่จุดตั้งต้นเท่านั้น`,
     },
   },
+  best: {
+    title: (chunk: string) => `${chunk} — จัดอันดับจากข้อมูลจริง | RealData`,
+    h1: (chunk: string) => chunk,
+    filters: {
+      "under-3m": {
+        chunk: (c: string) => `คอนโดใน${c} ราคาต่ำกว่า ฿3 ล้าน`,
+        desc: (c: string) =>
+          `คอนโดใน${c}ทุกแห่งที่เราวัดซึ่งมีราคาขายเฉลี่ยต่ำกว่า 3,000,000 บาท — จัดอันดับด้วยผลตอบแทนค่าเช่าขั้นต้นเทียบกับอัตราดอกเบี้ยสินเชื่อบ้านของไทย`,
+      },
+      "under-5m": {
+        chunk: (c: string) => `คอนโดใน${c} ราคาต่ำกว่า ฿5 ล้าน`,
+        desc: (c: string) =>
+          `คอนโดใน${c}ที่มีราคาขายเฉลี่ยต่ำกว่า 5,000,000 บาท จัดอันดับด้วยผลตอบแทนและส่วนต่างเทียบ MRR ไทย ราคาตรวจสอบข้ามพอร์ทัล`,
+      },
+      "under-10m": {
+        chunk: (c: string) => `คอนโดใน${c} ราคาต่ำกว่า ฿10 ล้าน`,
+        desc: (c: string) =>
+          `คอนโดระดับกลางใน${c}ราคาต่ำกว่า 10,000,000 บาท เรียงตามผลตอบแทน ทุกตัวเลขวัดจาก hipflat, dotproperty, ddproperty และ fazwaz`,
+      },
+      "under-20m": {
+        chunk: (c: string) => `คอนโดใน${c} ราคาต่ำกว่า ฿20 ล้าน`,
+        desc: (c: string) =>
+          `คอนโดระดับพรีเมียมใน${c}ราคาต่ำกว่า 20,000,000 บาท พร้อมผลตอบแทนค่าเช่าที่วัดจริงและโควตาต่างชาติเท่าที่มีข้อมูล`,
+      },
+      "top-yield": {
+        chunk: (c: string) => `คอนโดใน${c} ผลตอบแทนค่าเช่าสูงสุด`,
+        desc: (c: string) =>
+          `คอนโดใน${c}ที่วัดผลตอบแทนค่าเช่าขั้นต้นได้ ≥5% เป็นตัวเลขก่อนภาษีและก่อนหักช่วงว่าง โดยมีประกาศขายอย่างน้อย 2 และประกาศเช่าอย่างน้อย 2 รายการต่ออาคาร`,
+      },
+      "under-5m-top-yield": {
+        chunk: (c: string) => `คอนโดใน${c} ต่ำกว่า ฿5 ล้าน ผลตอบแทนสูง`,
+        desc: (c: string) =>
+          `คอนโดใน${c}ราคาต่ำกว่า 5,000,000 บาท ที่ทำผลตอบแทนขั้นต้นได้ ≥5% — จุดคุ้มค่าระดับเริ่มต้นสำหรับผู้ซื้อที่เน้นกระแสเงินสด`,
+      },
+      "under-10m-top-yield": {
+        chunk: (c: string) => `คอนโดใน${c} ต่ำกว่า ฿10 ล้าน ผลตอบแทนสูง`,
+        desc: (c: string) =>
+          `คอนโดใน${c}ราคาต่ำกว่า 10,000,000 บาท ที่มีผลตอบแทนขั้นต้น ≥5% ลองเทียบกับอัตรา MRR ของไทยในปัจจุบัน`,
+      },
+    },
+  },
   hover: {
     buildings: "อาคาร",
     building: "อาคาร",
@@ -711,43 +752,43 @@ const dict: Dict = {
     domBuilding: "เริ่มติดตามแล้ว — RealData บันทึกเวลาที่แต่ละประกาศปรากฏครั้งแรก สัญญาณ days-on-market จริงจะเห็นชัดใน 1-2 สัปดาห์",
   },
   near: {
-    breadcrumb: "Stations",
-    titleSuffix: "condos near",
-    metaSuffix: "Condos near {station} — prices, yield, flood risk & ratings | RealData",
-    summaryLead: "Within 1 km of {station} we track",
-    statCondos: "condos",
-    statMedianPsm: "median ฿/sqm",
-    statMedianYield: "median gross yield",
-    statAvgFlood: "avg flood risk",
-    statAvgRating: "avg Google rating",
-    listTitle: "Condos near {station}",
-    faqTitle: "FAQ",
-    emptyNote: "Not enough geo-located condos near this station yet.",
-    relatedHubs: "Related guides",
+    breadcrumb: "สถานี",
+    titleSuffix: "คอนโดใกล้",
+    metaSuffix: "คอนโดใกล้ {station} — ราคา ผลตอบแทน ความเสี่ยงน้ำท่วม และคะแนน | RealData",
+    summaryLead: "ในรัศมี 1 กม. จาก {station} เราติดตาม",
+    statCondos: "คอนโด",
+    statMedianPsm: "฿/ตร.ม. มัธยฐาน",
+    statMedianYield: "ผลตอบแทนขั้นต้นมัธยฐาน",
+    statAvgFlood: "ความเสี่ยงน้ำท่วมเฉลี่ย",
+    statAvgRating: "คะแนน Google เฉลี่ย",
+    listTitle: "คอนโดใกล้ {station}",
+    faqTitle: "คำถามที่พบบ่อย",
+    emptyNote: "ยังมีคอนโดที่ระบุพิกัดใกล้สถานีนี้ไม่พอ",
+    relatedHubs: "คู่มือที่เกี่ยวข้อง",
   },
   guide: {
-    breadcrumb: "Guides",
+    breadcrumb: "คู่มือ",
     foreign: {
-      title: "Can Foreigners Buy a Condo in Thailand? (2026 Guide)",
-      lead: "Yes — foreigners can own Bangkok condos freehold, within limits. Here is exactly how the 49% quota, freehold vs leasehold, money transfer, and taxes work.",
+      title: "ชาวต่างชาติซื้อคอนโดในไทยได้ไหม? (คู่มือ 2026)",
+      lead: "ได้ — ชาวต่างชาติถือกรรมสิทธิ์คอนโดในกรุงเทพฯ แบบ freehold ได้ภายในขอบเขตที่กำหนด นี่คือรายละเอียดของโควตา 49% ความต่างระหว่าง freehold กับ leasehold การโอนเงินเข้าประเทศ และภาษี",
     },
     investment: {
-      title: "Bangkok Condo Investment Guide 2026",
-      lead: "Where the yields are, which areas look overpriced, financing costs, and the data behind a Bangkok buy-to-let decision — refreshed weekly.",
-      yieldTableTitle: "Gross rental yield by area",
-      colArea: "Area",
-      colCondos: "Condos",
-      colYield: "Median gross yield",
-      colPsm: "Median ฿/sqm",
+      title: "คู่มือลงทุนคอนโดกรุงเทพฯ 2026",
+      lead: "ผลตอบแทนอยู่ที่ไหน พื้นที่ไหนดูราคาสูงเกินจริง ต้นทุนทางการเงิน และข้อมูลเบื้องหลังการตัดสินใจซื้อคอนโดปล่อยเช่าในกรุงเทพฯ — อัปเดตทุกสัปดาห์",
+      yieldTableTitle: "ผลตอบแทนค่าเช่าขั้นต้นแยกตามพื้นที่",
+      colArea: "พื้นที่",
+      colCondos: "คอนโด",
+      colYield: "ผลตอบแทนขั้นต้นมัธยฐาน",
+      colPsm: "฿/ตร.ม. มัธยฐาน",
     },
   },
   glossary: {
-    breadcrumb: "Glossary",
-    title: "Bangkok Real-Estate Glossary",
-    lead: "Plain-English definitions of every metric RealData publishes — and exactly how we calculate each one.",
-    howWeCalculate: "How we calculate it",
-    relatedTitle: "Related terms",
-    backToIndex: "All terms",
+    breadcrumb: "อภิธานศัพท์",
+    title: "อภิธานศัพท์อสังหาริมทรัพย์กรุงเทพฯ",
+    lead: "คำนิยามแบบเข้าใจง่ายของทุกตัวชี้วัดที่ RealData เผยแพร่ พร้อมวิธีคำนวณที่เราใช้จริง",
+    howWeCalculate: "วิธีที่เราคำนวณ",
+    relatedTitle: "คำที่เกี่ยวข้อง",
+    backToIndex: "ศัพท์ทั้งหมด",
   },
   notFound: {
     title: "ไม่พบหน้านี้",
@@ -933,6 +974,39 @@ const dict: Dict = {
       `${district} กรุงเทพฯ มีความเสี่ยงน้ำท่วมระดับ ${level} จาก 5 ประเมินจากบันทึกของ ` +
       `สำนักการระบายน้ำ กทม. รายงานความถี่น้ำท่วมของ JICA และแผนที่น้ำท่วมใหญ่ปี 2554 ` +
       `คอนโดที่ติดตาม ${condos} แห่ง ประวัติน้ำท่วม และเทียบกับอีก 49 เขต`,
+    askTitle: "ถาม RealData — ผู้ช่วย AI วิเคราะห์คอนโดไทย",
+    askDesc:
+      "ถามอะไรก็ได้เกี่ยวกับคอนโดในกรุงเทพฯ และทั่วไทย — ผลตอบแทน ราคา การเปรียบเทียบ " +
+      "ความเสี่ยงน้ำท่วม ส่วนต่างดอกเบี้ย คำตอบอ้างอิงข้อมูลที่วัดจริงจาก 4 พอร์ทัล " +
+      "และตัวชี้วัดมหภาคของธนาคารแห่งประเทศไทย",
+    compareTitle: "เปรียบเทียบคอนโดกรุงเทพฯ แบบเคียงข้างกัน — RealData",
+    compareDesc:
+      "เทียบคอนโดกรุงเทพฯ 2-3 แห่งแบบตัวต่อตัว: ผลตอบแทน ส่วนต่างดอกเบี้ย " +
+      "ความเสี่ยงน้ำท่วม ระยะถึงรถไฟฟ้า โควตาต่างชาติ และราคาข้ามพอร์ทัล " +
+      "วัดผลอย่างเป็นอิสระ",
+    nearIndexTitle: "คอนโดใกล้ทุกสถานี BTS และ MRT ในกรุงเทพฯ | RealData",
+    nearIndexDesc:
+      "ทุกสถานี BTS และ MRT ในกรุงเทพฯ ที่มีคอนโดในรัศมี 1 กม. — จำนวนคอนโด ราคามัธยฐานต่อตารางเมตร และผลตอบแทนขั้นต้นรายสถานี ข้อมูลอิสระ ไม่มีสปอนเซอร์จากผู้พัฒนา",
+    developerIndexTitle: "ผู้พัฒนาคอนโดไทยทุกราย — ผลงานและโครงการ | RealData",
+    developerIndexDesc:
+      "ดัชนี A–Z ของผู้พัฒนาคอนโดในไทยทุกรายที่เราติดตาม พร้อมจำนวนโครงการ จำนวนยูนิตที่สร้าง และอาคารที่เรามีข้อมูลราคา ผลตอบแทน และคุณภาพการอยู่อาศัย ข้อมูลอิสระ ไม่มีสปอนเซอร์",
+    developerTitle: (name: string) => `คอนโดของ ${name} ในไทย — ผลงานที่ผ่านมา | RealData`,
+    developerDesc: (name: string, projects: string, units: string) =>
+      `${projects} โครงการ · ${units} ยูนิตที่สร้างแล้ว ` +
+      `ดูคอนโดของ ${name} ทั้งหมด พร้อมข้อมูลผลตอบแทน ราคา และคะแนนสำหรับผู้เกษียณ`,
+    retireeTitle: "คอนโดที่ดีที่สุดสำหรับผู้เกษียณในไทย 2026 — กรุงเทพฯ ภูเก็ต เชียงใหม่ | RealData",
+    retireeDesc:
+      "คอนโดไทยจัดอันดับตามความเหมาะกับผู้เกษียณ — การเข้าถึงการรักษาพยาบาล (โรงพยาบาลในรัศมี 1 กม.) คุณภาพอากาศ (AQI) รถไฟฟ้า BTS/MRT และความสะดวกในชีวิตประจำวัน กรุงเทพฯ ภูเก็ต พัทยา เชียงใหม่ และอีกมาก ไม่มีสปอนเซอร์จากผู้พัฒนา",
+    retireeCityTitle: (city: string) =>
+      `คอนโดที่ดีที่สุดสำหรับผู้เกษียณใน${city} — จัดอันดับตามโรงพยาบาล AQI และรถไฟฟ้า | RealData`,
+    retireeCityDesc: (city: string) =>
+      `คอนโดใน${city}จัดอันดับด้วยคะแนนความเหมาะกับผู้เกษียณ — ` +
+      `โรงพยาบาลในรัศมี 1 กม. คุณภาพอากาศ (AQI/PM2.5) การเข้าถึงรถไฟฟ้า BTS/MRT และความสะดวกประจำวัน ` +
+      `รวมถึงโควตาต่างชาติที่ยังว่างและค่าส่วนกลางรายเดือน ไม่มีสปอนเซอร์จากผู้พัฒนา`,
+    glossaryTermTitle: (term: string) => `${term} — คำนิยามและวิธีคำนวณ | RealData`,
+    blogIndexTitle: "บล็อกอสังหาฯ กรุงเทพฯ — ข้อมูลคอนโด ความเสี่ยงน้ำท่วม และคู่มือลงทุน | RealData",
+    blogIndexDesc:
+      "บทวิเคราะห์อสังหาฯ กรุงเทพฯ ที่ขับเคลื่อนด้วยข้อมูล — อันดับความเสี่ยงน้ำท่วม การแยกส่วนดัชนีฟองสบู่ การเทียบผลตอบแทนค่าเช่า คู่มือผู้เกษียณ และคู่มือผู้ซื้อชาวต่างชาติ ไม่มีการเดาแบบอินฟลูเอนเซอร์ มีแต่ตัวเลข",
     yieldsTitle:
       "คอนโดผลตอบแทนค่าเช่าสูงสุดในกรุงเทพฯ และไทย — เทียบอัตรา ธปท. | RealData",
     yieldsDesc:

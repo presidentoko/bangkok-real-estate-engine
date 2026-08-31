@@ -80,10 +80,13 @@ export async function generateMetadata({
   const dev = await getDevMeta(slug);
   if (!dev) return { title: "Developer" };
 
-  const title = `${dev.developer} Condos in Thailand — Track Record | RealData`;
-  const description =
-    `${dev.developer_project_count ?? "?"} projects · ${dev.developer_unit_count?.toLocaleString() ?? "?"} units built. ` +
-    `Browse all ${dev.developer} condos with yield, price, and retiree score data.`;
+  const t = getDictionary(lang).seo;
+  const title = t.developerTitle(dev.developer);
+  const description = t.developerDesc(
+    dev.developer,
+    String(dev.developer_project_count ?? "?"),
+    dev.developer_unit_count?.toLocaleString() ?? "?",
+  );
 
   return {
     title,

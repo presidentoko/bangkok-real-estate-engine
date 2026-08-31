@@ -243,6 +243,47 @@ const dict: Dict = {
         `${d} 등급은 출발점이 어디인지를 알려줄 뿐입니다.`,
     },
   },
+  best: {
+    title: (chunk: string) => `${chunk} — 실측 데이터 순위 | RealData`,
+    h1: (chunk: string) => chunk,
+    filters: {
+      "under-3m": {
+        chunk: (c: string) => `${c} ฿3M 이하 콘도`,
+        desc: (c: string) =>
+          `평균 매매가 300만 바트 미만인 ${c} 콘도 전체 — 태국 주택담보대출 금리 대비 총 임대수익률로 순위화했습니다.`,
+      },
+      "under-5m": {
+        chunk: (c: string) => `${c} ฿5M 이하 콘도`,
+        desc: (c: string) =>
+          `평균 매매가 500만 바트 미만 ${c} 콘도. 수익률과 태국 MRR 대비 스프레드로 순위화, 포털 교차 검증 가격.`,
+      },
+      "under-10m": {
+        chunk: (c: string) => `${c} ฿10M 이하 콘도`,
+        desc: (c: string) =>
+          `1,000만 바트 이하 중급 ${c} 콘도, 수익률 순. 모든 수치는 hipflat, dotproperty, ddproperty, fazwaz에서 실측했습니다.`,
+      },
+      "under-20m": {
+        chunk: (c: string) => `${c} ฿20M 이하 콘도`,
+        desc: (c: string) =>
+          `2,000만 바트 이하 프리미엄 ${c} 콘도. 실측 임대수익률과, 확인 가능한 경우 외국인 쿼터 잔여분까지.`,
+      },
+      "top-yield": {
+        chunk: (c: string) => `${c} 임대수익률 상위 콘도`,
+        desc: (c: string) =>
+          `실측 총 임대수익률 5% 이상인 ${c} 콘도. 세전·공실 반영 전 수치이며, 건물당 매매 2건 + 임대 2건 이상 표본을 확보한 경우만 포함합니다.`,
+      },
+      "under-5m-top-yield": {
+        chunk: (c: string) => `${c} ฿5M 이하 고수익률 콘도`,
+        desc: (c: string) =>
+          `500만 바트 이하이면서 총 임대수익률 5% 이상을 기록한 ${c} 콘도 — 현금흐름을 노리는 매수자의 입문 구간입니다.`,
+      },
+      "under-10m-top-yield": {
+        chunk: (c: string) => `${c} ฿10M 이하 고수익률 콘도`,
+        desc: (c: string) =>
+          `1,000만 바트 이하이면서 총 수익률 5% 이상인 ${c} 콘도. 현재 태국 MRR 대출 금리와 비교해 보세요.`,
+      },
+    },
+  },
   hover: {
     buildings: "buildings",
     building: "building",
@@ -324,7 +365,7 @@ const dict: Dict = {
     rank: "#", condo: "콘도", district: "지역", yield: "수익률", spread: "스프레드", sale: "매매가", rent: "임대료", fq: "외국인 쿼터",
   },
   press: {
-    title: "Press kit",
+    title: "언론 자료",
     lead: "RealData는 1,800+ 태국 콘도를 독립적으로 측정합니다. 기자/애널리스트가 특정 시장에 대해 문의할 때 공유하는 자료들.",
     sections: [
       {
@@ -933,6 +974,38 @@ const dict: Dict = {
       `방콕 ${district}의 침수 위험은 5단계 중 ${level}단계입니다. 방콕시 배수국 기록, ` +
       `JICA 홍수 빈도 보고서, 2011년 대홍수 침수 지도를 기준으로 산정했습니다. ` +
       `추적 중인 콘도 ${condos}개, 우기 침수 이력, 나머지 49개 구와의 비교.`,
+    askTitle: "RealData에 물어보기 — 태국 콘도 AI 리서치",
+    askDesc:
+      "방콕·태국 콘도에 대해 무엇이든 물어보세요 — 수익률, 시세, 비교, 침수 위험, " +
+      "대출 금리 스프레드. 답변은 4개 포털에서 실측한 데이터와 태국 중앙은행 거시 지표에 " +
+      "근거합니다.",
+    compareTitle: "방콕 콘도 나란히 비교 — RealData",
+    compareDesc:
+      "방콕 콘도 2~3개를 직접 맞붙여 비교: 수익률, 대출 금리 스프레드, 침수 위험, " +
+      "역세권 거리, 외국인 쿼터, 포털별 가격. 독립 측정 데이터입니다.",
+    nearIndexTitle: "방콕 BTS·MRT 역세권 콘도 전체 | RealData",
+    nearIndexDesc:
+      "반경 1km 안에 콘도가 있는 방콕 BTS·MRT 전 역 — 역별 콘도 수, ㎡당 중위 가격, 총 임대수익률. 독립 데이터, 시행사 협찬 없음.",
+    developerIndexTitle: "태국 콘도 시행사 전체 — 실적과 프로젝트 | RealData",
+    developerIndexDesc:
+      "우리가 추적하는 태국 콘도 시행사 A–Z 색인. 프로젝트 수, 준공 세대 수, 그리고 가격·수익률·거주성 데이터를 보유한 건물까지. 독립 데이터, 시행사 협찬 없음.",
+    developerTitle: (name: string) => `${name} 태국 콘도 — 시행 실적 | RealData`,
+    developerDesc: (name: string, projects: string, units: string) =>
+      `프로젝트 ${projects}개 · 준공 ${units}세대. ` +
+      `${name}의 모든 콘도를 수익률·시세·은퇴 적합도 데이터와 함께 확인하세요.`,
+    retireeTitle: "태국 은퇴자 추천 콘도 2026 — 방콕·푸껫·치앙마이 | RealData",
+    retireeDesc:
+      "은퇴 적합도로 순위를 매긴 태국 콘도 — 의료 접근성(1km 내 병원), 대기질(AQI), BTS/MRT 접근성, 생활 편의. 방콕, 푸껫, 파타야, 치앙마이 외 다수. 시행사 협찬 없음.",
+    retireeCityTitle: (city: string) =>
+      `${city} 은퇴자 추천 콘도 — 병원·대기질·교통 순위 | RealData`,
+    retireeCityDesc: (city: string) =>
+      `${city} 콘도를 은퇴 적합도 점수로 순위화 — ` +
+      `1km 내 병원, 대기질(AQI/PM2.5), BTS/MRT 접근성, 생활 편의. ` +
+      `외국인 쿼터 잔여분과 월 관리비도 포함. 시행사 협찬 없음.`,
+    glossaryTermTitle: (term: string) => `${term} — 정의와 계산 방식 | RealData`,
+    blogIndexTitle: "방콕 부동산 블로그 — 콘도 데이터, 침수 위험, 투자 가이드 | RealData",
+    blogIndexDesc:
+      "데이터로 쓰는 방콕 부동산 분석 — 침수 위험 순위, 버블 지수 해부, 임대수익률 비교, 은퇴 가이드, 외국인 매수 안내서. 인플루언서 추측 없이 숫자만.",
     yieldsTitle:
       "방콕·태국 콘도 임대수익률 순위 — 태국 중앙은행 금리와 비교 | RealData",
     yieldsDesc:

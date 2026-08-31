@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const g = getTerm(term);
   if (!isLang(lang) || !g) return { title: "Glossary — RealData" };
   return {
-    title: `${g.term} — definition & how it's calculated | RealData`,
+    title: getDictionary(lang).seo.glossaryTermTitle(g.term),
     description: g.definition,
     alternates: { canonical: `${SEO_SITE_URL}/${lang}/glossary/${term}`, languages: langAlternates(`/glossary/${term}`) },
   };

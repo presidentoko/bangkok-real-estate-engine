@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getDictionary } from "@/lib/getDictionary";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -98,9 +99,6 @@ export function generateStaticParams() {
   return LANGS.map((lang) => ({ lang }));
 }
 
-const SEO_TITLE = "Every Thai Condo Developer — Track Records & Projects | RealData";
-const SEO_DESC =
-  "An A–Z index of every condo developer in Thailand we track, with project count, units built and the buildings we hold price, yield and livability data on. Independent, no developer sponsorships.";
 
 export async function generateMetadata({
   params,
@@ -108,6 +106,9 @@ export async function generateMetadata({
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
   const { lang } = await params;
+  const t = getDictionary(isLang(lang) ? lang : "en").seo;
+  const SEO_TITLE = t.developerIndexTitle;
+  const SEO_DESC = t.developerIndexDesc;
   return {
     title: SEO_TITLE,
     description: SEO_DESC,
@@ -153,7 +154,7 @@ export default async function DeveloperIndexPage({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: SEO_TITLE,
+    name: getDictionary(lang).seo.developerIndexTitle,
     numberOfItems: developers.length,
     itemListElement: developers.slice(0, 100).map((d, i) => ({
       "@type": "ListItem",

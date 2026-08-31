@@ -15,11 +15,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return { title: "Ask RealData" };
-  const title = "Ask RealData — AI condo research for Thailand";
-  const description =
-    "Ask any question about Bangkok and Thailand condos — yields, prices, comparisons, " +
-    "flood risk, mortgage spread. Answers are grounded in measured data across 4 portals " +
-    "and Bank of Thailand macro indicators.";
+  const t = getDictionary(lang).seo;
+  const title = t.askTitle;
+  const description = t.askDesc;
   return {
     title,
     description,

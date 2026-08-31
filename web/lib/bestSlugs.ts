@@ -49,11 +49,14 @@ export type BestFilter = {
   maxSale: number | null;
   /** Inclusive lower bound on gross_yield_pct. null = no floor (but >=3). */
   minYield: number | null;
-  /** Display chunk used in titles + H1. */
-  titleChunk: (cityDisplay: string) => string;
-  /** Short description seed (~140 chars target). */
-  descChunk: (cityDisplay: string) => string;
 };
+
+/** Title/H1/description copy for each filter lives in the three
+ *  dictionaries under `best.filters[slug]`, not here: it was English
+ *  closures on this object until 2026-08-31, which is why all 189
+ *  /best/ URLs shipped an English <title> regardless of locale. This file
+ *  keeps the predicate -- the price and yield bounds -- which is data and
+ *  identical in every language. */
 
 const TOP_YIELD_FLOOR = 5;
 
@@ -62,57 +65,36 @@ export const BEST_FILTERS: BestFilter[] = [
     slug: "under-3m",
     maxSale: 3_000_000,
     minYield: null,
-    titleChunk: (c) => `condos under ฿3M in ${c}`,
-    descChunk: (c) =>
-      `Every ${c} condo we measure with average sale price below ฿3,000,000 — ranked by gross rental yield against the Thai mortgage benchmark.`,
   },
   {
     slug: "under-5m",
     maxSale: 5_000_000,
     minYield: null,
-    titleChunk: (c) => `condos under ฿5M in ${c}`,
-    descChunk: (c) =>
-      `${c} condos with average sale price under ฿5,000,000, ranked by yield and spread vs Thai MRR. Cross-portal verified pricing.`,
   },
   {
     slug: "under-10m",
     maxSale: 10_000_000,
     minYield: null,
-    titleChunk: (c) => `condos under ฿10M in ${c}`,
-    descChunk: (c) =>
-      `Mid-tier ${c} condos under ฿10,000,000, yield-ranked. Every figure measured across hipflat, dotproperty, ddproperty, fazwaz.`,
   },
   {
     slug: "under-20m",
     maxSale: 20_000_000,
     minYield: null,
-    titleChunk: (c) => `condos under ฿20M in ${c}`,
-    descChunk: (c) =>
-      `Premium ${c} condos under ฿20,000,000 with measured rental yields and foreign-quota inventory where available.`,
   },
   {
     slug: "top-yield",
     maxSale: null,
     minYield: TOP_YIELD_FLOOR,
-    titleChunk: (c) => `top rental-yield condos in ${c}`,
-    descChunk: (c) =>
-      `${c} condos with measured gross rental yield ≥${TOP_YIELD_FLOOR}%. Pre-tax, pre-vacancy figures with at least 2 sale + 2 rent listings per building.`,
   },
   {
     slug: "under-5m-top-yield",
     maxSale: 5_000_000,
     minYield: TOP_YIELD_FLOOR,
-    titleChunk: (c) => `best-yield condos under ฿5M in ${c}`,
-    descChunk: (c) =>
-      `${c} condos under ฿5,000,000 that hit ≥${TOP_YIELD_FLOOR}% gross rental yield — the entry-tier sweet spot for cashflow buyers.`,
   },
   {
     slug: "under-10m-top-yield",
     maxSale: 10_000_000,
     minYield: TOP_YIELD_FLOOR,
-    titleChunk: (c) => `best-yield condos under ฿10M in ${c}`,
-    descChunk: (c) =>
-      `${c} condos under ฿10,000,000 with ≥${TOP_YIELD_FLOOR}% gross yield. Compare against the current Thai MRR mortgage rate.`,
   },
 ];
 

@@ -262,6 +262,50 @@ const dict = {
         `past water. The ${d} score tells you the baseline you are starting from.`,
     },
   },
+  /** /best/[city]/[slug] copy. `chunk` is the noun phrase reused in the H1,
+   *  the <title>, the FAQ question and the cross-link chips, so it must read
+   *  correctly both standalone and wrapped by bestTitle/bestH1. */
+  best: {
+    title: (chunk: string) => `Best ${chunk} — RealData`,
+    h1: (chunk: string) => `Best ${chunk}`,
+    filters: {
+      "under-3m": {
+        chunk: (c: string) => `condos under ฿3M in ${c}`,
+        desc: (c: string) =>
+          `Every ${c} condo we measure with average sale price below ฿3,000,000 — ranked by gross rental yield against the Thai mortgage benchmark.`,
+      },
+      "under-5m": {
+        chunk: (c: string) => `condos under ฿5M in ${c}`,
+        desc: (c: string) =>
+          `${c} condos with average sale price under ฿5,000,000, ranked by yield and spread vs Thai MRR. Cross-portal verified pricing.`,
+      },
+      "under-10m": {
+        chunk: (c: string) => `condos under ฿10M in ${c}`,
+        desc: (c: string) =>
+          `Mid-tier ${c} condos under ฿10,000,000, yield-ranked. Every figure measured across hipflat, dotproperty, ddproperty, fazwaz.`,
+      },
+      "under-20m": {
+        chunk: (c: string) => `condos under ฿20M in ${c}`,
+        desc: (c: string) =>
+          `Premium ${c} condos under ฿20,000,000 with measured rental yields and foreign-quota inventory where available.`,
+      },
+      "top-yield": {
+        chunk: (c: string) => `top rental-yield condos in ${c}`,
+        desc: (c: string) =>
+          `${c} condos with measured gross rental yield ≥5%. Pre-tax, pre-vacancy figures with at least 2 sale + 2 rent listings per building.`,
+      },
+      "under-5m-top-yield": {
+        chunk: (c: string) => `best-yield condos under ฿5M in ${c}`,
+        desc: (c: string) =>
+          `${c} condos under ฿5,000,000 that hit ≥5% gross rental yield — the entry-tier sweet spot for cashflow buyers.`,
+      },
+      "under-10m-top-yield": {
+        chunk: (c: string) => `best-yield condos under ฿10M in ${c}`,
+        desc: (c: string) =>
+          `${c} condos under ฿10,000,000 with ≥5% gross yield. Compare against the current Thai MRR mortgage rate.`,
+      },
+    },
+  },
   hover: {
     buildings: "buildings",
     building: "building",
@@ -974,6 +1018,42 @@ const dict = {
       `BMA Drainage Department records, JICA flood-frequency reports and 2011 great ` +
       `flood inundation mapping. ${condos} tracked buildings, monsoon history, and how ` +
       `${district} compares with the other 49 khet.`,
+    askTitle: "Ask RealData — AI condo research for Thailand",
+    askDesc:
+      "Ask any question about Bangkok and Thailand condos — yields, prices, comparisons, " +
+      "flood risk, mortgage spread. Answers are grounded in measured data across 4 portals " +
+      "and Bank of Thailand macro indicators.",
+    compareTitle: "Compare Bangkok condos side-by-side — RealData",
+    compareDesc:
+      "Compare 2-3 Bangkok condos head-to-head: yield, mortgage spread, " +
+      "flood risk, transit distance, foreign quota, multi-portal price. " +
+      "Independent measurement.",
+    nearIndexTitle: "Condos Near Every BTS & MRT Station in Bangkok | RealData",
+    nearIndexDesc:
+      "Every Bangkok BTS Skytrain and MRT station with condo buildings within 1 km — condo counts, median price per sqm and gross yield per station. Independent data, no developer sponsorships.",
+    developerIndexTitle: "Every Thai Condo Developer — Track Records & Projects | RealData",
+    developerIndexDesc:
+      "An A–Z index of every condo developer in Thailand we track, with project count, units built and the buildings we hold price, yield and livability data on. Independent, no developer sponsorships.",
+    developerTitle: (name: string) => `${name} Condos in Thailand — Track Record | RealData`,
+    developerDesc: (name: string, projects: string, units: string) =>
+      `${projects} projects · ${units} units built. ` +
+      `Browse all ${name} condos with yield, price, and retiree score data.`,
+    retireeTitle:
+      "Best Condos for Retirees in Thailand 2026 — Bangkok, Phuket, Chiang Mai | RealData",
+    retireeDesc:
+      "Thailand condos ranked for retiree suitability — healthcare access (hospitals within 1km), air quality (AQI), BTS/MRT transit, and daily errands. Bangkok, Phuket, Pattaya, Chiang Mai and more. No developer sponsorships.",
+    retireeCityTitle: (city: string) =>
+      `Best Condos for Retirees in ${city} — Hospitals, AQI & Transit Ranked | RealData`,
+    retireeCityDesc: (city: string) =>
+      `${city} condos ranked by retiree suitability score — ` +
+      `hospitals within 1 km, air quality (AQI/PM2.5), BTS/MRT transit access, and daily errands. ` +
+      `Includes foreign-quota availability and monthly CAM fees. No developer sponsorships.`,
+    glossaryTermTitle: (term: string) =>
+      `${term} — definition & how it's calculated | RealData`,
+    blogIndexTitle:
+      "Bangkok Real Estate Blog — Condo Data, Flood Risk & Investment Guides | RealData",
+    blogIndexDesc:
+      "Data-driven Bangkok real estate analysis — flood risk rankings, bubble index breakdowns, rental yield comparisons, retiree guides, and foreign buyer handbooks. No influencer speculation, just numbers.",
     yieldsTitle:
       "Top Rental Yield Condos in Bangkok & Thailand — Ranked vs Bank of Thailand Rate | RealData",
     yieldsDesc:
