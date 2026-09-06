@@ -1,0 +1,152 @@
+{
+  "slug": "spread-2026-09-06",
+  "title": "5 Thai Condos Yielding 2+ pp Above the 7.1% Mortgage Rate",
+  "description": "We screened 8,994 buildings for gross yield vs. the Bank of Thailand MRR. These five clear the bar by 6.8–7.6 percentage points.",
+  "published_at": "2026-09-06",
+  "topic": "spread",
+  "lead": "The Bank of Thailand minimum retail rate sits at 7.1%. A condo yielding less than that is a leveraged bet going the wrong direction. The five buildings below post gross yields of 13.9–14.7%, leaving a spread of 6.8 to 7.6 percentage points after financing cost.",
+  "sections": [
+    {
+      "heading": "Pattaya Dominates the Top Four Slots",
+      "body": "[Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri) leads the screen at **14.69% gross yield** on an average sale price of ฿2,450,000 and ฿30,000/month rent — a 7.59 pp spread over the MRR. [Nirvana Place](/condo/nirvana-place-chon-buri) is nearly identical at **14.55%**, with rents averaging ฿40,000 on a ฿3,300,000 ask. Both are Chon Buri province, where entry prices remain low enough to keep the yield math honest.\n\n[Art on the Hill](/condo/art-on-the-hill-chon-buri) rounds out the Pattaya cluster at **13.95%** on a ฿1,290,000 average price — the cheapest entry point in this cohort. Lower absolute rent (฿15,000/month) means smaller tenant pool risk but also thinner recovery margin if a unit sits vacant."
+    },
+    {
+      "heading": "Bangkok and Ko Samui: Different Risk Profiles",
+      "body": "[Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok) in Bang Kapi posts **14.43% gross yield** at an average price of ฿1,153,858 — the lowest ticket in the group and the only Bangkok entry. At that price point, liquidity on resale is meaningfully better than the resort markets, which matters if the rental thesis breaks.\n\n[Horizon Residence](/condo/horizon-residence-ko-samui) in Ko Samui carries the highest average price at ฿5,300,000 and the highest rent at ฿61,302/month, yielding **13.88%** — a 6.78 pp spread. Samui's seasonal demand curve is sharper than Bangkok or Pattaya; the yield looks clean on an annual average but the monthly variance will be wide."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "Jomtien Condotel and Village — gross yield",
+      "value": "14.69%",
+      "condo_id": "8684f357-be0c-416f-8aea-a5e22cc3df59",
+      "metric": "gross_yield_pct",
+      "expected": 14.69,
+      "slug": "jomtien-condotel-and-village-chon-buri"
+    },
+    {
+      "label": "Jomtien Condotel and Village — yield spread over MRR",
+      "value": "+7.59 pp",
+      "condo_id": "8684f357-be0c-416f-8aea-a5e22cc3df59",
+      "metric": "spread_pp",
+      "expected": 7.59,
+      "slug": "jomtien-condotel-and-village-chon-buri"
+    },
+    {
+      "label": "Nirvana Place — avg monthly rent",
+      "value": "฿40,000",
+      "condo_id": "0399500c-0a67-46cd-a9f3-86110b2e565d",
+      "metric": "avg_monthly_rent",
+      "expected": 40000,
+      "slug": "nirvana-place-chon-buri"
+    },
+    {
+      "label": "Anna Condominium Ladprao 130 — avg sale price",
+      "value": "฿1,153,858",
+      "condo_id": "636b42fe-566e-4e6d-82ad-30450837515d",
+      "metric": "avg_sale_price",
+      "expected": 1153858,
+      "slug": "anna-condominium-ladprao-130-bangkok"
+    },
+    {
+      "label": "Horizon Residence — gross yield",
+      "value": "13.88%",
+      "condo_id": "82516858-c107-41e5-8191-1b486c434794",
+      "metric": "gross_yield_pct",
+      "expected": 13.88,
+      "slug": "horizon-residence-ko-samui"
+    },
+    {
+      "label": "Horizon Residence — avg monthly rent",
+      "value": "฿61,302",
+      "condo_id": "82516858-c107-41e5-8191-1b486c434794",
+      "metric": "avg_monthly_rent",
+      "expected": 61302,
+      "slug": "horizon-residence-ko-samui"
+    }
+  ],
+  "i18n": {
+    "ko": {
+      "title": "태국 모기지 금리 7.1%를 2%p 이상 웃도는 콘도 5선",
+      "description": "태국중앙은행 MRR 대비 총임대수익률을 기준으로 8,994개 건물을 스크리닝했습니다. 이 다섯 곳은 기준선을 6.8–7.6%p 상회합니다.",
+      "lead": "태국중앙은행 최저 소매금리(MRR)는 7.1%입니다. 이를 밑도는 임대수익률의 콘도는 레버리지가 역방향으로 작동하는 베팅입니다. 아래 다섯 건물은 총임대수익률 13.9–14.7%를 기록하며, 금융비용 차감 후에도 6.8–7.6%p의 스프레드를 남깁니다.",
+      "sections": [
+        {
+          "heading": "파타야가 상위 4개 슬롯을 독점",
+          "body": "[Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri)가 **총임대수익률 14.69%**로 스크리닝 1위를 차지했습니다. 평균 매매가 ฿2,450,000, 월 임대료 ฿30,000을 기록하며 MRR 대비 7.59%p의 스프레드를 냅니다. [Nirvana Place](/condo/nirvana-place-chon-buri)는 **14.55%**로 거의 동일한 수준이며, 평균 임대료 ฿40,000에 매도 호가 ฿3,300,000입니다. 두 건물 모두 촌부리(Chon Buri) 주에 위치하며, 이 지역은 진입 가격이 충분히 낮아 수익률 산식이 왜곡 없이 유효합니다.\n\n[Art on the Hill](/condo/art-on-the-hill-chon-buri)은 평균 매매가 ฿1,290,000으로 이 그룹에서 가장 낮은 진입가에 **13.95%**를 기록하며 파타야 클러스터를 완성합니다. 절대 임대료가 ฿15,000/월로 낮아 테넌트 풀 리스크는 줄어들지만, 공실 발생 시 회수 여력도 그만큼 얇습니다."
+        },
+        {
+          "heading": "방콕과 코사무이: 서로 다른 리스크 프로파일",
+          "body": "방콕 유일의 입선작인 Bang Kapi 소재 [Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok)은 평균 매매가 ฿1,153,858로 이 그룹에서 가장 낮은 티켓 가격을 형성하며 **총임대수익률 14.43%**를 기록합니다. 이 가격대에서는 리조트 시장 대비 재매각 시 유동성이 의미 있게 우수하며, 임대 전략이 무너질 경우 이 점이 중요하게 작용합니다.\n\n코사무이의 [Horizon Residence](/condo/horizon-residence-ko-samui)는 평균 매매가 ฿5,300,000, 월 임대료 ฿61,302로 이 그룹에서 가장 높은 수치를 기록하며 **13.88%**, 즉 6.78%p의 스프레드를 냅니다. 사무이의 계절별 수요 곡선은 방콕이나 파타야보다 훨씬 가파릅니다. 연간 평균으로는 수익률이 깔끔해 보이지만, 월별 편차는 크게 벌어질 수 있습니다."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Jomtien Condotel and Village — 총임대수익률",
+          "value": "14.69%"
+        },
+        {
+          "label": "Jomtien Condotel and Village — MRR 대비 수익률 스프레드",
+          "value": "+7.59 pp"
+        },
+        {
+          "label": "Nirvana Place — 평균 월 임대료",
+          "value": "฿40,000"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — 평균 매매가",
+          "value": "฿1,153,858"
+        },
+        {
+          "label": "Horizon Residence — 총임대수익률",
+          "value": "13.88%"
+        },
+        {
+          "label": "Horizon Residence — 평균 월 임대료",
+          "value": "฿61,302"
+        }
+      ]
+    },
+    "th": {
+      "title": "คอนโดไทย 5 แห่งที่ให้ผลตอบแทนสูงกว่าอัตราดอกเบี้ย MRR 7.1% มากกว่า 2 pp",
+      "description": "คัดกรองอาคาร 8,994 แห่ง เพื่อเปรียบเทียบผลตอบแทนขั้นต้นกับอัตรา MRR ของธนาคารแห่งประเทศไทย ทั้งห้าแห่งนี้ผ่านเกณฑ์ด้วยส่วนต่าง 6.8–7.6 เปอร์เซ็นต์พอยต์",
+      "lead": "อัตราดอกเบี้ยขั้นต่ำสำหรับลูกค้ารายย่อย (MRR) ของธนาคารแห่งประเทศไทยอยู่ที่ 7.1% คอนโดที่ให้ผลตอบแทนต่ำกว่าระดับนี้คือการลงทุนแบบใช้เลเวอเรจที่เดินหน้าผิดทิศทาง อาคารทั้งห้าแห่งด้านล่างมีผลตอบแทนขั้นต้น 13.9–14.7% ทิ้งส่วนต่างไว้ที่ 6.8 ถึง 7.6 เปอร์เซ็นต์พอยต์หลังหักต้นทุนทางการเงิน",
+      "sections": [
+        {
+          "heading": "พัทยาครองสี่อันดับแรก",
+          "body": "[Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri) นำโด่งในการคัดกรองด้วย **ผลตอบแทนขั้นต้น 14.69%** บนราคาขายเฉลี่ย ฿2,450,000 และค่าเช่า ฿30,000 ต่อเดือน — ส่วนต่างเหนือ MRR อยู่ที่ 7.59 pp [Nirvana Place](/condo/nirvana-place-chon-buri) ใกล้เคียงกันมากที่ **14.55%** โดยค่าเช่าเฉลี่ย ฿40,000 บนราคาประกาศขาย ฿3,300,000 ทั้งสองแห่งอยู่ในจังหวัดชลบุรี ซึ่งราคาเข้าถึงยังต่ำพอที่จะทำให้การคำนวณผลตอบแทนมีความน่าเชื่อถือ\n\n[Art on the Hill](/condo/art-on-the-hill-chon-buri) ปิดกลุ่มพัทยาที่ **13.95%** บนราคาเฉลี่ย ฿1,290,000 — จุดเข้าถึงที่ถูกที่สุดในกลุ่มนี้ ค่าเช่าสัมบูรณ์ที่ต่ำกว่า (฿15,000 ต่อเดือน) หมายความว่าความเสี่ยงจากฐานผู้เช่าที่แคบกว่า แต่ขณะเดียวกันก็มีอัตรากำไรในการฟื้นตัวที่บางลงหากยูนิตว่างอยู่"
+        },
+        {
+          "heading": "กรุงเทพฯ และเกาะสมุย: โปรไฟล์ความเสี่ยงที่แตกต่างกัน",
+          "body": "[Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok) ในบางกะปิมี **ผลตอบแทนขั้นต้น 14.43%** ที่ราคาเฉลี่ย ฿1,153,858 — ราคาต่ำที่สุดในกลุ่มและเป็นทรัพย์จากกรุงเทพฯ เพียงรายการเดียว ที่ระดับราคานี้ สภาพคล่องในการขายต่อดีกว่าตลาดรีสอร์ตอย่างมีนัยสำคัญ ซึ่งมีความสำคัญหากสมมติฐานด้านการเช่าไม่เป็นไปตามแผน\n\n[Horizon Residence](/condo/horizon-residence-ko-samui) ในเกาะสมุยมีราคาเฉลี่ยสูงสุดที่ ฿5,300,000 และค่าเช่าสูงสุดที่ ฿61,302 ต่อเดือน ให้ผลตอบแทน **13.88%** — ส่วนต่าง 6.78 pp เส้นโค้งอุปสงค์ตามฤดูกาลของสมุยสูงชันกว่ากรุงเทพฯ หรือพัทยา ผลตอบแทนดูดีบนค่าเฉลี่ยรายปี แต่ความแปรปรวนรายเดือนจะกว้างมาก"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Jomtien Condotel and Village — ผลตอบแทนขั้นต้น",
+          "value": "14.69%"
+        },
+        {
+          "label": "Jomtien Condotel and Village — ส่วนต่างผลตอบแทนเหนือ MRR",
+          "value": "+7.59 pp"
+        },
+        {
+          "label": "Nirvana Place — ค่าเช่าเฉลี่ยต่อเดือน",
+          "value": "฿40,000"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — ราคาขายเฉลี่ย",
+          "value": "฿1,153,858"
+        },
+        {
+          "label": "Horizon Residence — ผลตอบแทนขั้นต้น",
+          "value": "13.88%"
+        },
+        {
+          "label": "Horizon Residence — ค่าเช่าเฉลี่ยต่อเดือน",
+          "value": "฿61,302"
+        }
+      ]
+    }
+  }
+}
