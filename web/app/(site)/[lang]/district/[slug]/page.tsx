@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { provinceDisplayName } from "@/lib/cities";
+import { districtAka, districtDisplayName, provinceDisplayName } from "@/lib/cities";
 import { fmtTHB } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
@@ -156,14 +156,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug, lang } = await params;
   const region = await resolveOrNotFound(slug);
-  const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const display = districtDisplayName(region.name);
   // generateMetadata's `lang` is still an unvalidated route param here (the
   // page body narrows it via isLang below), so guard before passing it on.
   const safeLang = isLang(lang) ? lang : "en";
   const province = provinceDisplayName(region.province ?? "bangkok", safeLang);
   const t = getDictionary(safeLang);
-  const title = t.seo.districtTitle(display, province);
-  const description = t.seo.districtDesc(display, province);
+  // "Watthana" alone ranks for nothing; "Watthana (Thonglor, Ekkamai,
+  // Phrom Phong)" is what the queries say. See DISTRICT_AKA in lib/cities.
+  const aka = districtAka(region.name, safeLang);
+  const seoName = aka.length > 0 ? `${display} (${aka.slice(0, 3).join(", ")})` : display;
+  const title = t.seo.districtTitle(seoName, province);
+  const description = t.seo.districtDesc(seoName, province);
   // region.name IS the canonical slug now (see resolveRegion). Kept as a
   // named local because it appears in the canonical, the hreflang set, the
   // OG url and the breadcrumb, and those must not drift apart.
@@ -256,7 +260,7 @@ export default async function DistrictPage({
     .sort((a, b) => (b.gross_yield_pct ?? 0) - (a.gross_yield_pct ?? 0))
     .slice(0, 8);
 
-  const display = region.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const display = districtDisplayName(region.name);
   const provinceDisplay = provinceDisplayName(region.province ?? "bangkok", lang);
   // Same lowercase-canonical rule as generateMetadata above — self-referential
   // URLs in structured data should match the canonical, not the raw param.
@@ -337,6 +341,11 @@ export default async function DistrictPage({
           {d.eyebrow(provinceDisplay)}
         </p>
         <h1 className="text-3xl sm:text-4xl font-bold capitalize">{display}</h1>
+        {districtAka(canonicalSlug, lang).length > 0 && (
+          <p className="text-zinc-500 text-sm">
+            {t.seo.districtAka(districtAka(canonicalSlug, lang).join(" · "))}
+          </p>
+        )}
         <p className="text-zinc-400 text-sm max-w-2xl">
           {d.intro(condos.length, display)}
         </p>

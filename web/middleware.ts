@@ -116,6 +116,63 @@ const AD_FETCHER_UA_RE = /Mediapartners-Google|AdsBot-Google/i;
 const SOCIAL_PREVIEW_UA_RE =
   /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|WhatsApp|kakaotalk|Line\/|Pinterest|redditbot|Mastodon|Iframely|Embedly/i;
 
+// Legacy /condo/<uuid> URLs. Google still holds thousands of these from
+// before slugs existed: in the 2026-09-07 Search Console export, 596 of the
+// top 1,000 pages by impressions were uuid URLs, carrying more than half of
+// the site's impressions. condo/[slug]/page.tsx resolves them with a
+// Supabase lookup and calls permanentRedirect(), but that route is ISR and
+// an ISR page cannot emit a real 308 -- the response is a 200 whose RSC
+// payload carries a NEXT_REDIRECT digest that only a JS client follows.
+// Google kept the uuid URL in its index and kept ranking it, and every one
+// of those crawls was a cold serverless render.
+//
+// This answers them with a real 308 and no database. scripts/gen_uuid_map.py
+// shards the uuid -> slug map into web/public/u/<2hex>.json (256 files,
+// ~4.5KB each), and the shard is fetched from the repo's `main` branch on
+// GitHub rather than from this deployment: the repo is public, GitHub's CDN
+// caches it, and a weekly regeneration goes live on push with no deploy.
+// One 1MB map would not fit the edge bundle limit; one shard per request
+// does. Misses (a uuid the map does not know, a fetch failure) fall through
+// to the page, which still does the lookup the slow way.
+const LEGACY_CONDO_RE =
+  /^\/(en|ko|th)\/condo\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+const UUID_MAP_BASE =
+  "https://raw.githubusercontent.com/presidentoko/bangkok-real-estate-engine/main/web/public/u/";
+// Per-isolate memo. Edge isolates are reused across requests, so a hot
+// shard is fetched once and served from memory afterwards.
+const uuidShards = new Map<string, Promise<Record<string, string> | null>>();
+
+function loadUuidShard(shard: string): Promise<Record<string, string> | null> {
+  let p = uuidShards.get(shard);
+  if (!p) {
+    p = (async () => {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 2500);
+      try {
+        const res = await fetch(`${UUID_MAP_BASE}${shard}.json`, { signal: ctl.signal });
+        if (!res.ok) return null;
+        return (await res.json()) as Record<string, string>;
+      } catch {
+        return null;
+      } finally {
+        clearTimeout(timer);
+      }
+    })();
+    uuidShards.set(shard, p);
+    // Do not memoise a failure: the next request retries.
+    p.then((v) => {
+      if (v === null) uuidShards.delete(shard);
+    });
+  }
+  return p;
+}
+
+async function legacyCondoSlug(uuid: string): Promise<string | null> {
+  const key = uuid.toLowerCase();
+  const map = await loadUuidShard(key.slice(0, 2));
+  return map?.[key] ?? null;
+}
+
 function pickLang(req: NextRequest): Lang {
   // 1. Cookie wins (explicit user choice)
   const cookie = req.cookies.get("lang")?.value;
@@ -175,6 +232,19 @@ export async function middleware(req: NextRequest) {
         headers: { "Retry-After": "21600", "Cache-Control": "no-store" },
       }
     );
+  }
+
+  // Legacy uuid condo URL -> real 308 to the slug URL (see LEGACY_CONDO_RE).
+  // Sits after the bot 503 above on purpose: a blocked crawler should not
+  // cost a shard fetch either.
+  const legacy = pathname.match(LEGACY_CONDO_RE);
+  if (legacy) {
+    const slug = await legacyCondoSlug(legacy[2]);
+    if (slug) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/${legacy[1]}/condo/${slug}`;
+      return NextResponse.redirect(url, 308);
+    }
   }
 
   // /district/<slug> URL normalisation. regions.name is now always the

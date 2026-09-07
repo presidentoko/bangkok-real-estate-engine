@@ -243,6 +243,23 @@ jobs:
             Add-Content -Path slugs.log -Value "CI_STEP_FAILED::slugs"
           }
 
+      - name: Refresh the legacy uuid -> slug redirect map
+        # web/middleware.ts answers /condo/<uuid> with a real 308 by looking
+        # the uuid up in web/public/u/<2hex>.json, fetched from this repo's
+        # main branch on GitHub -- so the map goes live on push, and the
+        # Vercel project's ignored-build-step skips a build for a commit
+        # that touches nothing but public/u. Runs right after the slug
+        # backfill so this week's newly slugged buildings redirect too.
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\gen_uuid_map.py 2>&1" | Tee-Object -FilePath uuidmap.log
+          git add web/public/u
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git -c user.name="RealData Auto-Blog" -c user.email="auto-blog@passionaryestate.com" commit -m "chore(seo): refresh the legacy uuid -> slug redirect map"
+            git push origin HEAD
+          }
+
       - name: Snapshot prices + compute yields
         # continue-on-error, and the two scripts no longer gate each other.
         #

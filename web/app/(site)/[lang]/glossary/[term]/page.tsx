@@ -40,6 +40,20 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
+/** The page a definition should send a reader on to. /glossary/foreign-quota
+ *  was drawing 83 impressions at position 49 for "how to verify foreign
+ *  ownership condominium quota" (GSC, 2026-09-07) while the guide that
+ *  actually answers it had no link from here. */
+const GUIDE_FOR: Record<string, string> = {
+  "foreign-quota": "guide/foreign-ownership",
+  freehold: "guide/foreign-ownership",
+  leasehold: "guide/foreign-ownership",
+  "gross-yield": "guide/investment",
+  mrr: "guide/investment",
+  "bubble-index": "guide/investment",
+  "flood-risk-level": "flood",
+};
+
 export default async function GlossaryTermPage({ params }: { params: Promise<{ lang: string; term: string }> }) {
   const { lang, term } = await params;
   if (!isLang(lang)) notFound();
@@ -75,6 +89,13 @@ export default async function GlossaryTermPage({ params }: { params: Promise<{ l
       />
       <h1 className="text-3xl font-bold mt-2 mb-3">{g.term}</h1>
       <p className="text-lg text-zinc-200 leading-relaxed">{g.definition}</p>
+      {GUIDE_FOR[g.slug] && (
+        <p className="mt-3 text-sm">
+          <Link href={`/${lang}/${GUIDE_FOR[g.slug]}`} className="text-blue-400 underline">
+            {t.glossary.guideLink}
+          </Link>
+        </p>
+      )}
       <section className="mt-6">
         <h2 className="text-lg font-semibold text-white mb-1">{t.glossary.howWeCalculate}</h2>
         <p className="text-zinc-400 leading-relaxed">{g.howCalculated}</p>

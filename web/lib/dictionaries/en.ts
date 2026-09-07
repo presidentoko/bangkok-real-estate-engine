@@ -726,6 +726,8 @@ const dict = {
     ],
     guideForeign: [
       { q: "Can foreigners buy a condo in Thailand?", a: "Yes. Foreigners can own a condominium unit freehold in their own name, provided the building has not exceeded its 49% foreign-ownership quota and the purchase funds are remitted into Thailand from abroad in foreign currency." },
+      { q: "How do I verify a condo building's foreign quota before buying?", a: "Ask the juristic person (the building's management office) for a written foreign-quota letter stating the current foreign-owned share of saleable floor area, and have it confirmed at the Land Department on transfer day — the Land Office will refuse to register a foreign freehold once the 49% is used up. RealData shows the last-scraped foreign-quota status on a condo page wherever a portal reports it; treat that as a lead, not as the legal check." },
+      { q: "What happens if a condo's 49% foreign quota is already full?", a: "A foreigner cannot take freehold title in that building. The options are a registered 30-year leasehold (renewable by contract, not by law), waiting for a foreign-owned unit to come up for resale (the quota transfers with the unit), or choosing another building. A Thai company set up purely to hold the unit is treated as a nominee arrangement and carries legal risk." },
       { q: "What is the 49% foreign quota?", a: "Under the Condominium Act B.E. 2522, foreigners may collectively own up to 49% of the total saleable floor area of any condominium. The remaining 51% must be held by Thai nationals or Thai-majority entities." },
       { q: "Can a foreigner own land or a house in Thailand?", a: "Generally no. Foreigners cannot own land outright. Houses and villas are typically secured via a registered leasehold (up to 30 years) or, less commonly, through a Thai company structure — which carries legal risk and should be reviewed by a lawyer." },
       { q: "What taxes and fees apply when buying a condo?", a: "At transfer expect a 2% transfer fee on the appraised value, plus either 3.3% specific business tax (if the seller sells within 5 years) or 0.5% stamp duty, and a withholding tax. Who pays what is negotiable between buyer and seller." },
@@ -810,6 +812,7 @@ const dict = {
     lead: "Plain-English definitions of every metric RealData publishes — and exactly how we calculate each one.",
     howWeCalculate: "How we calculate it",
     relatedTitle: "Related terms",
+    guideLink: "Read the full guide →",
     backToIndex: "All terms",
   },
   notFound: {
@@ -989,6 +992,9 @@ const dict = {
   },
 
   seo: {
+    /** Under a district H1: the sub-areas people actually search that
+     *  fall inside this khet (Thonglor and Ekkamai are in Watthana). */
+    districtAka: (areas: string) => `Covers ${areas}`,
     yieldLabel: (v: string) => `yield ${v}%`,
     floodLabel: (n: number) => `flood risk L${n}/5`,
     provinceCondo: (p: string) => `${p} condo`,
@@ -1000,11 +1006,18 @@ const dict = {
         : n < 0
           ? `priced ${Math.abs(n)}% below district avg`
           : "at district average",
-    condoTitle: (name: string, region: string, suffix: string) =>
-      `${name}, ${region} — ${suffix} | RealData`,
-    condoDesc: (name: string, region: string, province: string, facts: string) =>
-      `${name} in ${region}, ${province}. ${facts}. See listings, 13-month ` +
-      `price trend, yield calculation, flood risk and amenities.`,
+    // Building-name queries are ~94% of this site's impressions and the
+    // SERP for them is listing portals with photos. The title has to say
+    // what a portal cannot: we checked the price, the yield and the flood
+    // risk. Numbers go in where we have them.
+    condoTitle: (name: string, region: string, yieldPct: string | null, flood: number | null) =>
+      `${name}, ${region} — Price/sqm, Yield${yieldPct ? ` ${yieldPct}%` : ""} & ` +
+      `Flood Risk${flood != null ? ` L${flood}/5` : ""} | RealData`,
+    condoDesc: (name: string, region: string, province: string, verdict: string | null, facts: string) =>
+      `Is ${name} (${region}, ${province}) overpriced? ` +
+      `${verdict ? verdict.charAt(0).toUpperCase() + verdict.slice(1) : "Price per sqm vs the district average"}` +
+      `${facts ? ` · ${facts}` : ""}. Independent check: listings from 4 portals, ` +
+      `13-month price trend, yield vs the mortgage rate, flood risk and amenities.`,
     districtTitle: (district: string, province: string) =>
       `${district} Condos, ${province} — Yields, Prices & Flood Risk | RealData`,
     districtDesc: (district: string, province: string) =>

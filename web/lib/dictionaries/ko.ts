@@ -704,6 +704,8 @@ const dict: Dict = {
     ],
     guideForeign: [
       { q: "외국인이 태국에서 콘도를 살 수 있나요?", a: "네. 해당 건물이 외국인 소유 49% 쿼터를 초과하지 않았고, 매수 자금을 해외에서 외화로 태국에 송금했다면 외국인도 본인 명의로 콘도를 완전 소유(freehold)할 수 있습니다." },
+      { q: "콘도 매수 전에 외국인 쿼터를 어떻게 확인하나요?", a: "관리사무소(법인, juristic person)에 현재 외국인 소유 비율(전용면적 기준)을 명시한 외국인 쿼터 확인서를 서면으로 요청하고, 이전 등기 당일 토지국(Land Department)에서 다시 확인하세요. 49%가 소진된 건물은 토지국이 외국인 명의 등기를 거부합니다. RealData는 포털이 보고한 경우 콘도 페이지에 최근 수집된 쿼터 상태를 표시하지만, 참고용이지 법적 확인은 아닙니다." },
+      { q: "콘도의 외국인 쿼터 49%가 이미 찼으면 어떻게 되나요?", a: "그 건물에서는 외국인이 자기 명의(freehold)로 등기할 수 없습니다. 선택지는 30년 등기 임차권(leasehold — 갱신은 계약상 약속일 뿐 법적 보장은 아님)으로 매수하거나, 외국인 소유 유닛의 재매각을 기다리거나(쿼터는 유닛과 함께 이전), 다른 건물을 고르는 것입니다. 유닛 보유만을 목적으로 세운 태국 법인은 명의신탁으로 간주되어 법적 위험이 있습니다." },
       { q: "49% 외국인 쿼터란 무엇인가요?", a: "콘도미니엄법(B.E. 2522)에 따라 외국인은 한 콘도미니엄의 총 분양 가능 면적 중 최대 49%까지 합산해 소유할 수 있습니다. 나머지 51%는 태국 국적자 또는 태국인 지분 과반 법인이 보유해야 합니다." },
       { q: "외국인이 태국에서 토지나 주택을 소유할 수 있나요?", a: "원칙적으로 불가능합니다. 외국인은 토지를 직접 소유할 수 없습니다. 주택과 빌라는 보통 등기된 임차권(최장 30년)으로 확보하며, 드물게 태국 법인 구조를 쓰기도 하지만 법적 위험이 있어 반드시 변호사 검토가 필요합니다." },
       { q: "콘도를 살 때 어떤 세금과 수수료가 드나요?", a: "소유권 이전 시 감정가의 2% 이전 수수료가 붙고, 매도인이 5년 이내에 매도하는 경우 3.3% 특별사업세, 그렇지 않으면 0.5% 인지세가 부과되며, 원천징수세도 있습니다. 누가 무엇을 부담할지는 매수인과 매도인이 협의합니다." },
@@ -788,6 +790,7 @@ const dict: Dict = {
     lead: "RealData가 발표하는 모든 지표의 쉬운 정의 — 그리고 우리가 정확히 어떻게 계산하는지.",
     howWeCalculate: "계산 방식",
     relatedTitle: "관련 용어",
+    guideLink: "전체 가이드 읽기 →",
     backToIndex: "전체 용어",
   },
   notFound: {
@@ -946,6 +949,7 @@ const dict: Dict = {
   },
 
   seo: {
+    districtAka: (areas: string) => `${areas} 포함`,
     yieldLabel: (v: string) => `수익률 ${v}%`,
     floodLabel: (n: number) => `침수 위험 L${n}/5`,
     provinceCondo: (p: string) => `${p} 콘도`,
@@ -957,11 +961,13 @@ const dict: Dict = {
         : n < 0
           ? `지역 평균 대비 ${Math.abs(n)}% 저렴`
           : "지역 평균 수준",
-    condoTitle: (name: string, region: string, suffix: string) =>
-      `${name}, ${region} — ${suffix} | RealData`,
-    condoDesc: (name: string, region: string, province: string, facts: string) =>
-      `${province} ${region}의 ${name}. ${facts}. 매물, 13개월 시세 추이, ` +
-      `수익률 계산, 침수 위험, 편의시설을 확인하세요.`,
+    condoTitle: (name: string, region: string, yieldPct: string | null, flood: number | null) =>
+      `${name} ${region} — 시세·수익률${yieldPct ? ` ${yieldPct}%` : ""}·` +
+      `침수 위험${flood != null ? ` L${flood}/5` : ""} 체크 | RealData`,
+    condoDesc: (name: string, region: string, province: string, verdict: string | null, facts: string) =>
+      `${province} ${region} ${name}, 비싸게 나온 걸까요? ` +
+      `${verdict ?? "지역 평균 대비 ㎡당 시세"}${facts ? ` · ${facts}` : ""}. ` +
+      `4개 포털 매물, 13개월 시세 추이, 대출금리 대비 수익률, 침수 위험을 독립적으로 확인합니다.`,
     districtTitle: (district: string, province: string) =>
       `${district} 콘도 시세 — 수익률·가격·침수 위험 | RealData`,
     districtDesc: (district: string, province: string) =>

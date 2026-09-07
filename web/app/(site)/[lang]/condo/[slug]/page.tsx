@@ -255,19 +255,29 @@ export async function generateMetadata({
       : null;
   const yieldTxt =
     c.gross_yield_pct != null ? t.seo.yieldLabel(c.gross_yield_pct.toFixed(2)) : null;
-  const titleSuffix =
-    [yieldTxt, floodTxt].filter(Boolean).join(" · ") || t.seo.provinceCondo(provinceDisplay);
-  const title = t.seo.condoTitle(c.name, region, titleSuffix);
+  // The <title> names the three checks a reader came for -- price per sqm,
+  // yield, flood -- with the numbers where we have them. The previous form
+  // ("Nordic Park Hill, Pratumnak — yield 4.60%") sat at position 9-30 for
+  // hundreds of building-name queries at a 0.3% CTR (GSC, 2026-09-07):
+  // listing portals own those SERPs with photos, so the only reason to
+  // click us is the verdict, and the title never said we had one.
+  const title = t.seo.condoTitle(
+    c.name,
+    region,
+    c.gross_yield_pct != null ? c.gross_yield_pct.toFixed(2) : null,
+    riskMeta?.flood_risk_level ?? null,
+  );
   const facts = [
     c.completion_year ? t.seo.built(c.completion_year) : null,
     c.total_units ? t.seo.units(c.total_units) : null,
     yieldTxt,
-    aboveTxt,
     floodTxt,
   ]
     .filter(Boolean)
     .join(" · ");
-  const desc = t.seo.condoDesc(c.name, region, provinceDisplay, facts);
+  // The verdict (above/below district average) leads the description
+  // instead of sitting fourth in a fact list.
+  const desc = t.seo.condoDesc(c.name, region, provinceDisplay, aboveTxt, facts);
   // Index bloat gate. ~9,750 of the 14,071 published buildings have no
   // listings, no price, no description and no reviews — they render a name
   // over a grid of empty cards. Google already refuses to index them
