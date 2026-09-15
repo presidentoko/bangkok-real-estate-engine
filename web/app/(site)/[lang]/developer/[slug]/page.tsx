@@ -10,6 +10,7 @@ import { getServerSupabase } from "@/lib/supabase";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // Developer stats only recompute weekly (compute_developer_stats.py runs in
 // weekly-refresh POST_STEPS) — see condo/[slug]/page.tsx for the full
@@ -38,6 +39,7 @@ type Row = {
 // same way sitemap-areas.xml's devSlugSet loop already does for the
 // equivalent query.
 export async function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   const supabase = getServerSupabase();
   const slugSet = new Set<string>();
   const page = 1000;

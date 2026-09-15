@@ -10,6 +10,7 @@ import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // The district index. Added 2026-08-17 to fix an internal-linking hole:
 // /district/<slug> pages carry the site's most rankable content (a real
@@ -131,6 +132,7 @@ async function fetchDistricts(): Promise<DistrictSummary[]> {
 }
 
 export function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   return LANGS.map((lang) => ({ lang }));
 }
 

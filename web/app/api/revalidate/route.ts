@@ -11,9 +11,10 @@ import { revalidatePath } from "next/cache";
  * identical too. The bill for that on 2026-08-20 was 549K ISR writes against
  * a 200K allowance and 9.79GB of a 10GB Fast Origin Transfer cap.
  *
- * So the page's own revalidate is now 30 days and freshness arrives here
- * instead: scripts/revalidate_changed.py runs at the end of the weekly
- * refresh and POSTs the slugs whose price/listing data moved.
+ * So the page's own revalidate went to 30 days and freshness arrived here
+ * instead, from a weekly script. Since 2026-09-15 condo pages are static
+ * HTML on Cloudflare (.github/workflows/condo-static.yml) and nothing calls
+ * this for them; it stays for revalidating any other path by hand.
  *
  * Not a cron endpoint and not public — REVALIDATE_SECRET is required, and a
  * caller who guesses it can only make pages rebuild themselves, never read

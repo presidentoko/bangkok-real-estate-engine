@@ -1,0 +1,18 @@
+// /en/condo/* on passionaryestate.com, served as static HTML from the export
+// (.github/workflows/condo-static.yml). One Worker per locale because a
+// Workers Free version holds at most 20,000 assets and each locale is
+// ~15,400 pages.
+{
+  "name": "pe-condo-en",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "assets": {
+    "directory": "../../dist/condo-static/en",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  "routes": [
+    { "pattern": "passionaryestate.com/en/condo/*", "zone_name": "passionaryestate.com" }
+  ]
+}

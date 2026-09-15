@@ -1,0 +1,15 @@
+// /cfs/* on passionaryestate.com: the JS/CSS the exported condo pages load
+// (next.config.mjs sets assetPrefix /cfs for the export build). Assets only,
+// no script: a miss is a plain 404.
+{
+  "name": "pe-condo-cfs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "assets": {
+    "directory": "../../dist/condo-static/cfs",
+    "not_found_handling": "none"
+  },
+  "routes": [
+    { "pattern": "passionaryestate.com/cfs/*", "zone_name": "passionaryestate.com" }
+  ]
+}

@@ -12,6 +12,7 @@ import { getViableStations, getStationData } from "@/lib/queries/stations";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import FaqSection from "@/components/FaqSection";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // Was 86400 — station/condo data only changes on the weekly refresh, and
 // getStationData's own cache is now 604800 too (bumped together 2026-07-25;
@@ -29,6 +30,7 @@ export const revalidate = 604800;
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   const stations = await getViableStations();
   return stations.flatMap((s) =>
     LANGS.map((lang) => ({ lang, station: s.slug })),

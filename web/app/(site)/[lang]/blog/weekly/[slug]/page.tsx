@@ -14,12 +14,14 @@ import {
 } from "@/lib/weeklyPost";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { renderMarkdownLink } from "@/lib/markdownLinkSafety";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // Content only changes on deploy (auto-blog publishes via git push), so a
 // daily revalidate is plenty — the deploy itself rebuilds the page anyway.
 export const revalidate = 86400;
 
 export async function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   const posts = await listWeeklyPosts();
   return posts.map((p) => ({ slug: p.slug }));
 }

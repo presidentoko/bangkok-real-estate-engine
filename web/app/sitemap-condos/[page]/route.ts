@@ -13,6 +13,7 @@ import {
   xmlResponse,
   isoDate,
 } from "@/lib/sitemap-helpers";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // The page number is a path segment, not `?page=`, and that is the whole
 // point of this route existing.
@@ -38,6 +39,7 @@ export const maxDuration = 60;
 // route used /sitemap-condos/0, which the i18n redirect promptly 307'd to
 // /en/sitemap-condos/0 and broke the sitemap. parseInt("0.xml", 10) is 0.
 export function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   return [{ page: "0.xml" }, { page: "1.xml" }, { page: "2.xml" }];
 }
 

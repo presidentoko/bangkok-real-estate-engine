@@ -10,6 +10,7 @@ import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { GLOSSARY, getTerm, localizeTerm } from "@/lib/glossary";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 export const revalidate = 86400;
 
@@ -25,6 +26,7 @@ export const revalidate = 86400;
 export const dynamicParams = false;
 
 export function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   return GLOSSARY.flatMap((g) => LANGS.map((lang) => ({ lang, term: g.slug })));
 }
 

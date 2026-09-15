@@ -57,3 +57,6 @@ backup_regions_*.json
 
 # Leftovers from the dead pre-2026-07 Vercel account/project.
 .vercel.old-account/
+
+# Cloudflare condo export working tree (.github/workflows/condo-static.yml)
+dist/

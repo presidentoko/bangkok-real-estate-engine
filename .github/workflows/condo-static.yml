@@ -1,0 +1,229 @@
+name: Condo pages -> Cloudflare (static export)
+
+# Condo pages are static HTML served by Cloudflare Workers, not rendered by
+# Vercel. The 8/13-9/13 Vercel Hobby cycle ended at 773K/200K ISR writes,
+# 15.09/10GB Fast Origin Transfer, 6h14m/4h Active CPU and 12.18/10GB
+# Deployment Storage, and all of it was condo/[slug]: 15,444 condos x 3
+# locales rendered on demand for crawlers. Requests to Workers static assets
+# are free and unlimited, so the same pages cost nothing there.
+#
+# How it fits together:
+#   plan     scripts/condo_static/plan.py picks the pages to render: condos
+#            whose last_seen_at moved this week plus anything the store lacks
+#            (mode=changed), or everything (mode=full, after a layout or
+#            component change). Split into shards of 6,000.
+#   build    `next build` with CONDO_STATIC_BUILD=1 renders just those pages
+#            (web/lib/buildMode.ts), with JS/CSS under /cfs.
+#   publish  The complete site lives in the release `condo-static-store` as
+#            one tarball per Worker. Download, overlay this run's pages,
+#            drop removed condos, deploy the four Workers
+#            (cloudflare/condo-static/), then save the store back.
+#
+# Workers Free holds 20,000 assets per Worker, hence one Worker per locale;
+# publish fails loudly before a locale gets close. At ~1,400 new condos a
+# month that is a few months away -- split a locale by slug prefix then.
+#
+# Supabase: a full export reads every condo page's data once (~46,000
+# pages). A weekly changed-only run is ~750 condos x 3. Run mode=full
+# sparingly; the project's egress has been near its 5GB cap.
+
+on:
+  workflow_run:
+    workflows: ["Weekly Tier B + score refresh"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "changed = this week's condos + missing pages; full = every page"
+        type: choice
+        options: [changed, full]
+        default: changed
+      days:
+        description: "changed mode: last_seen_at window in days"
+        default: "8"
+
+concurrency:
+  group: condo-static
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  STORE_TAG: condo-static-store
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install supabase==2.31.0 python-dotenv==1.0.1 loguru==0.7.3
+
+      - name: Fetch the store's page list
+        run: gh release download "$STORE_TAG" -p manifest.txt -D store || echo "no store yet"
+
+      - id: plan
+        name: Plan
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python scripts/condo_static/plan.py \
+            --mode "${{ inputs.mode || 'changed' }}" \
+            --days "${{ inputs.days || '8' }}" \
+            --manifest store/manifest.txt \
+            --out plan
+          echo "matrix=$(cat plan/matrix.json)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plan
+          path: plan/
+          retention-days: 3
+
+  build:
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: true
+      # Two at a time: each build already runs several pages concurrently
+      # against Supabase.
+      max-parallel: 2
+      matrix:
+        shard: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: plan
+          path: plan
+
+      - name: Install
+        working-directory: web
+        run: npm ci
+
+      - name: Export build
+        working-directory: web
+        env:
+          CONDO_STATIC_BUILD: "1"
+          CONDO_STATIC_PARAMS: ${{ github.workspace }}/plan/params-${{ matrix.shard }}.json
+          CONDO_STATIC_BUILD_ID: ${{ github.sha }}
+          NEXT_PUBLIC_SITE_URL: https://passionaryestate.com
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: node --max-old-space-size=6144 node_modules/next/dist/bin/next build
+
+      - name: Collect
+        run: |
+          node scripts/condo_static/collect.mjs web/.next out
+          tar -I 'zstd -T0 -3' -cf "shard-${{ matrix.shard }}.tar.zst" -C out .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shard-${{ matrix.shard }}
+          path: shard-${{ matrix.shard }}.tar.zst
+          retention-days: 3
+          compression-level: 0
+
+  publish:
+    needs: [plan, build]
+    if: >-
+      always() && needs.plan.result == 'success' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: plan
+          path: plan
+
+      - name: Restore the store
+        run: |
+          mkdir -p dist/condo-static store
+          if gh release view "$STORE_TAG" >/dev/null 2>&1; then
+            gh release download "$STORE_TAG" -p '*.tar.zst' -D store
+            for t in store/*.tar.zst; do
+              tar -I 'zstd -d --long=27' -xf "$t" -C dist/condo-static
+            done
+            rm -f store/*.tar.zst
+          fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: shard-*
+          path: shards
+          merge-multiple: true
+
+      - name: Overlay this run
+        run: |
+          shopt -s nullglob
+          for t in shards/*.tar.zst; do
+            tar -I 'zstd -d' -xf "$t" -C dist/condo-static
+          done
+          while read -r p; do
+            [ -n "$p" ] || continue
+            lang="${p%%/*}"; slug="${p#*/}"
+            rm -f "dist/condo-static/$lang/$lang/condo/$slug.html"
+          done < plan/removed.txt
+          mkdir -p dist/condo-static/cfs
+          printf '/cfs/_next/static/*\n  Cache-Control: public, max-age=31536000, immutable\n' \
+            > dist/condo-static/cfs/_headers
+
+      - name: Check Worker asset limits
+        run: |
+          fail=0
+          for w in en ko th cfs; do
+            n=$(find "dist/condo-static/$w" -type f | wc -l)
+            echo "$w: $n files"
+            if [ "$n" -gt 19500 ]; then
+              echo "::error::$w has $n assets; Workers Free allows 20,000. Split this locale's Worker by slug prefix."
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Deploy Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # JS/CSS first, so no page goes live before the files it loads.
+          for w in cfs en ko th; do
+            npx --yes wrangler@4 deploy -c "cloudflare/condo-static/wrangler.$w.jsonc"
+          done
+
+      - name: Save the store
+        run: |
+          (cd dist/condo-static && for l in en ko th; do
+             find "$l/$l/condo" -name '*.html' 2>/dev/null | sed -E "s#^$l/$l/condo/(.*)\.html#$l/\1#"
+           done) | sort > store/manifest.txt
+          echo "manifest: $(wc -l < store/manifest.txt) pages"
+          for w in en ko th cfs; do
+            tar -I 'zstd -T0 -10 --long=27' -cf "store/$w.tar.zst" -C dist/condo-static "$w"
+          done
+          ls -la store
+          gh release view "$STORE_TAG" >/dev/null 2>&1 || \
+            gh release create "$STORE_TAG" --title "Condo static store" \
+              --notes "Working storage for .github/workflows/condo-static.yml. Not a release." --prerelease
+          gh release upload "$STORE_TAG" store/*.tar.zst store/manifest.txt --clobber

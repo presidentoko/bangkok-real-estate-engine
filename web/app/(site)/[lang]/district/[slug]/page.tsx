@@ -15,6 +15,7 @@ import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // ~183 districts x 3 langs = ~550 pages; data only refreshes weekly (see
 // condo/[slug]/page.tsx for the full ISR-overage context from 2026-07-10).
@@ -44,6 +45,7 @@ type CondoLite = {
 // (smaller districts, alternate casings) still renders fine via on-demand
 // ISR — dynamicParams is left at its default `true`.
 export async function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   const supabase = getServerSupabase();
   const { data } = await supabase
     .from("regions")

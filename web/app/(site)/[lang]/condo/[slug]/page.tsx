@@ -44,6 +44,7 @@ import { getViableStations } from "@/lib/queries/stations";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/Breadcrumbs";
 import { SaveButton } from "@/components/SaveButton";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 import { CompareButton } from "@/components/CompareButton";
 
 // ~12,300 condos x 3 langs = ~37,000 distinct pages. Even at 24h, if
@@ -73,25 +74,42 @@ export const revalidate = 2592000;
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Prebuild the 300 most-listed condos × 3 langs = 900 pages at build time.
-// These are the pages most likely to be hit by search/social/AI crawlers —
-// serving them as static HTML keeps function invocations off the free-plan
-// budget. Bumped from 50->300 on 2026-07-25: production logs showed cold
-// (never-cached) serverless renders of condo pages -- mostly Googlebot
-// working through the long tail, since Googlebot/Bingbot are deliberately
-// exempt from the bot circuit-breaker below for SEO reasons -- as ~21% of
-// sampled traffic, a meaningful slice of the Fluid Active CPU usage that hit
-// 3h14m/4h (free-tier monthly cap) on 2026-07-25. The long tail still falls
-// back to on-demand ISR either way.
+// Condo pages are not served by Vercel any more. The 8/13-9/13 cycle ended at
+// 773K/200K ISR writes, 15.09/10GB Fast Origin Transfer and 6h14m/4h Active
+// CPU, all of it this route: 15,444 condos x 3 locales rendered on demand for
+// crawlers. Since 2026-09 the whole route is exported to static HTML by
+// scripts/condo_static/ and served from Cloudflare Workers static assets,
+// where requests are free and unlimited; Cloudflare routes
+// /<lang>/condo/* there before Vercel ever sees the request.
+//
+// So on Vercel this prebuilds nothing (it also kept ~160MB of HTML in every
+// deployment against the 10GB Deployment Storage cap). The route stays able
+// to render on demand, which only happens for a URL the export does not have
+// yet -- the Worker passes asset misses through to this origin.
+//
+// Under CONDO_STATIC_BUILD it returns the export set: the (lang, slug) pairs
+// listed in CONDO_STATIC_PARAMS (a JSON file, for incremental exports), or
+// every published condo in every locale.
 export async function generateStaticParams() {
+  if (!CONDO_STATIC_BUILD) return [];
+  const paramsFile = process.env.CONDO_STATIC_PARAMS;
+  if (paramsFile) {
+    const { readFileSync } = await import("node:fs");
+    return JSON.parse(readFileSync(paramsFile, "utf8")) as Array<{ lang: string; slug: string }>;
+  }
   const supabase = getServerSupabase();
-  const { data } = await supabase
-    .from("condos_published")
-    .select("slug, active_listings_count")
-    .not("slug", "is", null)
-    .order("active_listings_count", { ascending: false, nullsFirst: false })
-    .limit(300);
-  const slugs = (data ?? []).map((r) => String(r.slug));
+  const slugs: string[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select("slug")
+      .not("slug", "is", null)
+      .order("slug", { ascending: true })
+      .range(from, from + 999);
+    if (error) throw new Error(`condo export slug list: ${error.message}`);
+    slugs.push(...(data ?? []).map((r) => String(r.slug)));
+    if (!data || data.length < 1000) break;
+  }
   return slugs.flatMap((slug) =>
     (["en", "ko", "th"] as const).map((lang) => ({ slug, lang }))
   );
