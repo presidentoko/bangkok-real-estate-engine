@@ -15,6 +15,7 @@ import { ADSENSE_CLIENT, adsEnabled } from "@/lib/ads";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // This is a ROOT layout (owns <html>/<body>) for the (site) route group —
 // there is no top-level app/layout.tsx. Next.js only passes route params to
@@ -47,6 +48,7 @@ const OG_LOCALE: Record<string, string> = {
 };
 
 export async function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   return LANGS.map((lang) => ({ lang }));
 }
 

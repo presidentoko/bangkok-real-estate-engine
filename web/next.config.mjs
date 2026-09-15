@@ -11,6 +11,9 @@ const nextConfig = {
   ...(CONDO_STATIC_BUILD
     ? {
         assetPrefix: "/cfs",
+        // A building with hundreds of listings is a slow render while the
+        // export has Supabase busy; 60s (the default) failed a shard.
+        staticPageGenerationTimeout: 180,
         generateBuildId: async () => process.env.CONDO_STATIC_BUILD_ID || "condo-static",
       }
     : {}),
