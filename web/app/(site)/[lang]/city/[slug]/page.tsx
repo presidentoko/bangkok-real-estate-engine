@@ -17,6 +17,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // Was 86400 — every city is prebuilt at build time (generateStaticParams
 // below), so this only controls background ISR regen frequency. Underlying
@@ -33,6 +34,7 @@ export const revalidate = 604800;
 export const dynamicParams = false;
 
 export function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   return CITIES.map((c) => ({ slug: c.slug }));
 }
 

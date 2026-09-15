@@ -7,6 +7,7 @@ import { isLang, LANGS } from "@/lib/i18n";
 import { getStationNetworks, getViableStations } from "@/lib/queries/stations";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // The station index. Added 2026-08-21 for the same reason /districts exists:
 // sitemap-areas.xml publishes a /near/<station> URL for every viable station
@@ -30,6 +31,7 @@ type Group = {
 };
 
 export function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   return LANGS.map((lang) => ({ lang }));
 }
 

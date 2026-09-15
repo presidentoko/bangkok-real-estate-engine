@@ -1,6 +1,19 @@
+// The Cloudflare condo export (scripts/condo_static/, lib/buildMode.ts).
+// Its HTML is served from Cloudflare while every other page stays on Vercel,
+// so its JS/CSS must not collide with the Vercel deployment's /_next/static:
+// assetPrefix moves them under /cfs, which a separate Worker serves. A fixed
+// build id keeps chunk URLs stable across the batched builds of one export.
+const CONDO_STATIC_BUILD = process.env.CONDO_STATIC_BUILD === "1";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  ...(CONDO_STATIC_BUILD
+    ? {
+        assetPrefix: "/cfs",
+        generateBuildId: async () => process.env.CONDO_STATIC_BUILD_ID || "condo-static",
+      }
+    : {}),
   // Plain <img> against hipcdn — disabling the built-in optimizer keeps
   // Vercel bandwidth/transform cost at $0.
   images: { unoptimized: true },
@@ -42,6 +55,9 @@ const nextConfig = {
     staleTimes: {
       dynamic: 30,
     },
+    // Export build only: a transient Supabase error should retry the page,
+    // not fail a shard of thousands.
+    ...(CONDO_STATIC_BUILD ? { staticGenerationRetryCount: 3 } : {}),
   },
 };
 

@@ -7,6 +7,7 @@ import { isLang, LANGS } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // The developer index. Added 2026-08-21 alongside /near for the same
 // internal-linking hole /districts fixed on 2026-08-17: sitemap-areas.xml
@@ -96,6 +97,7 @@ function letterOf(name: string): string {
 }
 
 export function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   return LANGS.map((lang) => ({ lang }));
 }
 

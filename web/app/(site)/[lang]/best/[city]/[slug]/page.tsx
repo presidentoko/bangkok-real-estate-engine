@@ -21,6 +21,7 @@ import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import FaqSection from "@/components/FaqSection";
 import { getServerSupabase } from "@/lib/supabase";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // Was 86400 — every (city, filter) combo is prebuilt at build time (see
 // generateStaticParams below), so this only controls background ISR regen
@@ -33,6 +34,7 @@ export const revalidate = 604800;
 // × 7 slugs = 63 combos per language, that's a 1-shot static export
 // price worth paying once for AI/search-engine indexability.
 export function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   const out: Array<{ city: BestCitySlug; slug: BestFilterSlug }> = [];
   for (const c of BEST_CITIES) {
     for (const f of BEST_FILTERS) out.push({ city: c.slug, slug: f.slug });

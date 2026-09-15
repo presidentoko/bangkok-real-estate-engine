@@ -19,6 +19,7 @@ import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 /* Per-khet flood answer pages.
  *
@@ -50,6 +51,7 @@ export const revalidate = 604800;
  *  costs 150 cheap renders at build and removes every cold-start miss for
  *  the crawler that finds them through the /flood table. */
 export function generateStaticParams() {
+  if (CONDO_STATIC_BUILD) return [];
   return FLOOD_DISTRICTS.flatMap((d) =>
     LANGS.map((lang) => ({ lang, district: d.slug })),
   );
