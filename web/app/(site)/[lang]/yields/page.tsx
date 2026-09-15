@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
 import { YieldsExplorer } from "@/components/YieldsExplorer";
+import { YieldCityChips } from "@/components/YieldAreaLink";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { fetchYieldRows, getCurrentMortgageRate } from "@/lib/queries/yield";
@@ -116,6 +117,8 @@ export default async function YieldsPage({
           )}
         </p>
       </header>
+
+      <YieldCityChips lang={lang} />
 
       <YieldsExplorer lang={lang} initialRows={rows} mrr={mrr} />
 

@@ -17,6 +17,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { YieldAreaLink } from "@/components/YieldAreaLink";
 import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 // Was 86400 — every city is prebuilt at build time (generateStaticParams
@@ -420,6 +421,9 @@ export default async function CityPage({
             {tagline}
           </p>
           <p className="text-zinc-500 mt-2 text-sm italic">{audience}</p>
+          <div className="mt-3">
+            <YieldAreaLink lang={lang} province={city.slug} region={null} />
+          </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 max-w-2xl">
             {[

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { districtAka, districtDisplayName, provinceDisplayName } from "@/lib/cities";
+import { YieldAreaLink } from "@/components/YieldAreaLink";
 import { fmtTHB } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
@@ -348,6 +349,7 @@ export default async function DistrictPage({
             {t.seo.districtAka(districtAka(canonicalSlug, lang).join(" · "))}
           </p>
         )}
+        <YieldAreaLink lang={lang} province={region.province} region={region.name} />
         <p className="text-zinc-400 text-sm max-w-2xl">
           {d.intro(condos.length, display)}
         </p>

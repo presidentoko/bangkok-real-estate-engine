@@ -948,6 +948,75 @@ const dict: Dict = {
       `볼 수 없는 외부 네트워크가 판매·송출합니다.`,
   },
 
+  yieldArea: {
+    title: (area: string, median: string, n: number, year: number) =>
+      `${area} 콘도 임대수익률 (${year}) — 콘도 ${n}곳 중앙값 ${median}% | RealData`,
+    desc: (area: string, median: string, n: number, p25: string, p75: string) =>
+      `${area} 콘도는 실제로 얼마나 벌까? 매매·임대 매물이 살아 있는 건물 ${n}곳의 총 임대수익률 ` +
+      `중앙값 ${median}% (가운데 절반 ${p25}–${p75}%). 가격대별 수익률, 수익률 상위 건물, 태국 대출 금리 대비 스프레드.`,
+    linkLine: (area: string, median: string, n: number) =>
+      `${area} 임대수익률: 콘도 ${n}곳 중앙값 ${median}%`,
+    byCityTitle: "도시별 임대수익률",
+    eyebrow: "임대수익률 체크",
+    h1: (area: string, median: string) => `${area} 임대수익률: 총 ${median}%`,
+    verdict: (area: string, median: string, n: number, p25: string, p75: string) =>
+      `${area}의 중간 콘도는 매매가 대비 연 ${median}%의 총 임대수익을 냅니다. 매매·임대 매물이 모두 ` +
+      `있는 건물 ${n}곳을 측정한 값이고, 가운데 절반의 건물은 ${p25}%에서 ${p75}% 사이입니다.`,
+    spread: (spread: string, mrr: string, positive: boolean) =>
+      positive
+        ? `태국 중앙은행 MRR ${mrr}%보다 ${spread}%p 높습니다. 같은 가격을 대출받았을 때의 이자를 임대료만으로 넘어섭니다.`
+        : `태국 중앙은행 MRR ${mrr}% 대비 ${spread}%p입니다. 같은 가격을 대출받았을 때의 이자를 임대료만으로는 감당하지 못합니다.`,
+    vsParent: (parent: string, median: string) => `${parent} 전체: ${median}%.`,
+    thailand: "태국",
+    statMedian: "총 수익률 중앙값",
+    statRange: "가운데 절반",
+    statCount: "측정 건물 수",
+    statSale: "매매가 중앙값",
+    statRent: "월세 중앙값",
+    bandsTitle: (area: string) => `${area} 매매가대별 수익률`,
+    bandsNote: "해당 가격대에 건물이 3곳 이상일 때만 중앙값을 표시합니다.",
+    bands: { under3m: "300만 바트 미만", "3to5m": "300만–500만 바트", "5to10m": "500만–1,000만 바트", over10m: "1,000만 바트 이상" },
+    colBand: "매매가",
+    colBuildings: "건물 수",
+    colMedian: "수익률 중앙값",
+    topTitle: (area: string) => `${area} 수익률 상위 콘도`,
+    colCondo: "건물",
+    colYield: "총 수익률",
+    colSale: "평균 매매가",
+    colRent: "평균 월세",
+    districtsTitle: (city: string) => `${city} 구역별 임대수익률`,
+    colDistrict: "구역",
+    siblingsTitle: (city: string) => `${city}의 다른 구역`,
+    citiesTitle: "다른 도시 임대수익률",
+    seeDistrict: (area: string) => `${area} 전체 콘도 — 가격, 침수 위험, 매물`,
+    seeCity: (area: string) => `${area} 도시 가이드`,
+    seeRanking: "태국 전체 콘도 수익률 순위",
+    methodTitle: "측정 방법",
+    methodBody:
+      "총 수익률 = 12 × 평균 월세 ÷ 평균 매매가. 건물 단위로 hipflat, DotProperty, DDProperty, FazWaz의 " +
+      "살아 있는 매물에서 계산합니다. 매매 매물 2건·임대 매물 2건 이상, 매매가 50만 바트 이상, 수익률 25% " +
+      "이하인 건물만 포함합니다 — 그 밖의 값은 가격 파싱 오류이지 기회가 아닙니다. 세전·공실 반영 전 " +
+      "수치이며, 관리비·공실·세금을 빼면 순수익률은 보통 1.5–3%p 낮습니다. 매주 갱신.",
+    faqTitle: (area: string) => `${area} 임대수익률 — 자주 묻는 질문`,
+    faq: {
+      q1: (area: string) => `${area} 콘도의 평균 임대수익률은 얼마인가요?`,
+      a1: (area: string, median: string, n: number, p25: string, p75: string) =>
+        `총 ${median}%입니다. 매매·임대 매물로 측정한 ${area} 건물 ${n}곳의 중앙값이며, 절반은 ${p25}%에서 ` +
+        `${p75}% 사이입니다. 관리비·공실·세금을 뺀 순수익률은 보통 1.5–3%p 낮습니다.`,
+      q2: (area: string) => `${area}는 임대 수익용 콘도를 사기에 좋은 곳인가요?`,
+      a2: (area: string, median: string, mrr: string | null, parent: string, parentMedian: string) =>
+        `수익률만 보면 ${area} 중앙값 ${median}%는 ${parent} ${parentMedian}%` +
+        (mrr ? `, 태국 중앙은행 MRR ${mrr}%와 비교됩니다.` : "와 비교됩니다.") +
+        ` 지역은 출발점일 뿐 결과는 건물이 정합니다. 같은 지역 안에서도 최상위와 최하위 건물의 차이가 지역 간 차이보다 큽니다.`,
+      q3: (area: string) => `${area}에서 임대수익률이 가장 높은 콘도는 어디인가요?`,
+      a3: (area: string, list: string) =>
+        `현재 매물 기준 총 수익률 순: ${list}. 건물별 페이지에서 수치의 근거가 된 매물을 볼 수 있습니다.`,
+      q4: "총 임대수익률은 어떻게 계산하나요?",
+      a4:
+        "12개월 임대료를 매매가로 나눕니다. 300만 바트 콘도를 월 15,000바트에 임대하면 6.0%입니다. 건물마다 " +
+        "살아 있는 임대·매매 매물 평균으로 계산한 뒤, 지역 전체의 중앙값을 써서 이상치 하나가 답을 흔들지 못하게 합니다.",
+    },
+  },
   seo: {
     districtAka: (areas: string) => `${areas} 포함`,
     yieldLabel: (v: string) => `수익률 ${v}%`,

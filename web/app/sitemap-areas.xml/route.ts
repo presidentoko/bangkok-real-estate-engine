@@ -4,6 +4,7 @@ import { CITIES, canonicalCitySlug, cityProvinceSlugs } from "@/lib/cities";
 import { FLOOD_DISTRICTS } from "@/lib/floodDistricts";
 import { getServerSupabase } from "@/lib/supabase";
 import { getViableStations } from "@/lib/queries/stations";
+import { getYieldAreaIndex } from "@/lib/queries/yieldAreas";
 import {
   SITE_URL,
   urlEntry,
@@ -141,6 +142,21 @@ export async function GET(): Promise<Response> {
       entries.push(
         urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "monthly", priority: 0.8, path })
       );
+    }
+  }
+
+  // Rental yield by area. Same eligibility as the pages themselves (8+
+  // measured buildings, lib/yieldAreas.ts), read from the same cached index,
+  // so the sitemap can never list an area the route would 404.
+  const yieldIndex = await getYieldAreaIndex().catch(() => null);
+  for (const c of yieldIndex?.cities ?? []) {
+    const paths = [`/yield/${c.city}`, ...c.districts.map((d) => `/yield/${c.city}/${d.district}`)];
+    for (const path of paths) {
+      for (const lang of LANGS) {
+        entries.push(
+          urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "weekly", priority: 0.8, path })
+        );
+      }
     }
   }
 

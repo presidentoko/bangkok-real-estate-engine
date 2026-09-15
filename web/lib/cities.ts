@@ -477,5 +477,15 @@ export function provinceDisplayName(
   if (!dbProvince) return "";
   const city = getCity(dbProvince);
   if (city) return city.name[lang];
+  const named = PROVINCE_NAMES[dbProvince];
+  if (named) return named[lang];
   return dbProvince.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
+/** Provinces with no city page that still get a /yield/ page: the Bangkok
+ *  commuter belt, each with enough measured buildings to clear the bar. */
+const PROVINCE_NAMES: Record<string, { en: string; ko: string; th: string }> = {
+  nonthaburi: { en: "Nonthaburi", ko: "논타부리", th: "นนทบุรี" },
+  "samut-prakan": { en: "Samut Prakan", ko: "사뭇쁘라깐", th: "สมุทรปราการ" },
+  "pathum-thani": { en: "Pathum Thani", ko: "빠툼타니", th: "ปทุมธานี" },
+};

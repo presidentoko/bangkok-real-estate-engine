@@ -991,6 +991,84 @@ const dict = {
       `third-party network that never sees the data.`,
   },
 
+  /** /yield/[city] and /yield/[city]/[district]: one area's rental yield,
+   *  answered in the title. Numbers arrive pre-formatted ("7.1"). */
+  yieldArea: {
+    title: (area: string, median: string, n: number, year: number) =>
+      `Rental Yield in ${area} (${year}): ${median}% Median Across ${n} Condos | RealData`,
+    desc: (area: string, median: string, n: number, p25: string, p75: string) =>
+      `What do condos in ${area} really yield? ${median}% median gross rental yield across ${n} ` +
+      `buildings with live sale and rent listings (middle half ${p25}–${p75}%). Yield by price band, ` +
+      `the highest-yielding buildings, and the spread over the Thai mortgage rate.`,
+    linkLine: (area: string, median: string, n: number) =>
+      `Rental yield in ${area}: ${median}% median across ${n} condos`,
+    byCityTitle: "Rental yield by city",
+    eyebrow: "Rental yield check",
+    h1: (area: string, median: string) => `Rental yield in ${area}: ${median}% gross`,
+    verdict: (area: string, median: string, n: number, p25: string, p75: string) =>
+      `The median condo in ${area} earns ${median}% a year in gross rent on its sale price, measured ` +
+      `across ${n} buildings with live sale and rent listings. The middle half of those buildings ` +
+      `yield between ${p25}% and ${p75}%.`,
+    spread: (spread: string, mrr: string, positive: boolean) =>
+      positive
+        ? `That is ${spread} points above the ${mrr}% Bank of Thailand MRR: rent alone out-earns the interest a Thai bank would charge on the same price.`
+        : `That is ${spread} points against the ${mrr}% Bank of Thailand MRR: rent alone does not cover the interest a Thai bank would charge on the same price.`,
+    vsParent: (parent: string, median: string) => `${parent} overall: ${median}%.`,
+    thailand: "Thailand",
+    statMedian: "Median gross yield",
+    statRange: "Middle half",
+    statCount: "Buildings measured",
+    statSale: "Median sale price",
+    statRent: "Median rent / month",
+    bandsTitle: (area: string) => `Yield by sale price in ${area}`,
+    bandsNote: "A median is shown where at least 3 buildings fall in the band.",
+    bands: { under3m: "Under ฿3M", "3to5m": "฿3M–5M", "5to10m": "฿5M–10M", over10m: "฿10M and up" },
+    colBand: "Sale price",
+    colBuildings: "Buildings",
+    colMedian: "Median yield",
+    topTitle: (area: string) => `Highest-yielding condos in ${area}`,
+    colCondo: "Building",
+    colYield: "Gross yield",
+    colSale: "Avg sale",
+    colRent: "Avg rent / mo",
+    districtsTitle: (city: string) => `Rental yield by district in ${city}`,
+    colDistrict: "District",
+    siblingsTitle: (city: string) => `Other districts in ${city}`,
+    citiesTitle: "Rental yield in other cities",
+    seeDistrict: (area: string) => `Every condo in ${area}: prices, flood risk, listings`,
+    seeCity: (area: string) => `${area} city guide`,
+    seeRanking: "All Thailand condos ranked by yield",
+    methodTitle: "How this is measured",
+    methodBody:
+      "Gross yield = 12 × average monthly rent ÷ average sale price, per building, from live listings " +
+      "on hipflat, DotProperty, DDProperty and FazWaz. A building counts only with at least 2 sale and " +
+      "2 rent listings, a sale price of ฿500,000 or more and a yield no higher than 25% — anything else " +
+      "is a parsing error, not a bargain. It is a pre-tax, pre-vacancy figure: net yield after CAM fees, " +
+      "vacancy and tax usually lands 1.5–3 points lower. Refreshed weekly.",
+    faqTitle: (area: string) => `${area} rental yield — frequently asked questions`,
+    faq: {
+      q1: (area: string) => `What is the average rental yield for a condo in ${area}?`,
+      a1: (area: string, median: string, n: number, p25: string, p75: string) =>
+        `${median}% gross — the median of ${n} ${area} buildings we measure from live sale and rent ` +
+        `listings. Half of them yield between ${p25}% and ${p75}%. Net yield after common-area fees, ` +
+        `vacancy and tax is typically 1.5–3 points lower.`,
+      q2: (area: string) => `Is ${area} a good place to buy a condo for rental income?`,
+      a2: (area: string, median: string, mrr: string | null, parent: string, parentMedian: string) =>
+        `On yield alone, the ${median}% median in ${area} compares with ${parentMedian}% for ${parent}` +
+        (mrr ? ` and a ${mrr}% Bank of Thailand MRR.` : ".") +
+        ` The area sets the baseline; the building decides the result, which is why the spread between ` +
+        `the best and worst buildings here is wider than the gap between areas.`,
+      q3: (area: string) => `Which condos in ${area} have the highest rental yield?`,
+      a3: (area: string, list: string) =>
+        `By gross yield from current listings: ${list}. Each building's page shows the listings the ` +
+        `figure comes from.`,
+      q4: "How is gross rental yield calculated?",
+      a4:
+        "Twelve months of rent divided by the purchase price: a ฿3,000,000 condo renting at ฿15,000 a " +
+        "month yields 6.0%. We compute it per building from the average of its live rent and sale " +
+        "listings, then take the median across the area so a single outlier cannot move the answer.",
+    },
+  },
   seo: {
     /** Under a district H1: the sub-areas people actually search that
      *  fall inside this khet (Thonglor and Ekkamai are in Watthana). */
