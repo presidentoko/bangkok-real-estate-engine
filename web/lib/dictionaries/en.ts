@@ -795,6 +795,14 @@ const dict = {
     foreign: {
       title: "Can Foreigners Buy a Condo in Thailand? (2026 Guide)",
       lead: "Yes — foreigners can own Bangkok condos freehold, within limits. Here is exactly how the 49% quota, freehold vs leasehold, money transfer, and taxes work.",
+      sections: [{"h": "The 49% rule, in plain terms", "p": "Thailand's Condominium Act lets non-Thais collectively own up to 49% of the total unit area of a condominium building. If a building still has room under that quota, a foreigner can buy a unit freehold — outright, in their own name, registered at the Land Office. Once a building hits 49%, the remaining Thai-owned units can only be taken by foreigners on a leasehold basis."}, {"h": "Land and houses", "p": "Foreigners generally cannot own land in Thailand. A villa or landed house is usually structured as a registered lease (a maximum of 30 years per term) or through a Thai company — the latter carries real legal exposure and needs qualified advice. For most overseas buyers, a condo is the only clean route to direct freehold ownership."}, {"h": "Moving the money (FET)", "p": "To register foreign freehold, the purchase funds must arrive in Thailand in foreign currency and be converted to baht by the receiving bank, which issues a Foreign Exchange Transaction (FET) certificate. The Land Office requires this document at transfer — so never bring the money in as baht."}],
+      taxTitle: "Taxes and transfer costs",
+      taxes: ["Transfer fee: 2% of the appraised value.", "Specific Business Tax: 3.3% if the seller owned the unit under 5 years; otherwise 0.5% stamp duty.", "Withholding tax: progressive for an individual seller, 1% for a company.", "Who pays each of these is negotiable between buyer and seller."],
+      stepsTitle: "Buying process, step by step",
+      steps: ["Reserve the unit and sign a reservation agreement.", "Confirm the building's remaining foreign quota in writing.", "Due diligence: title deed, encumbrances, juristic-person debts.", "Remit funds from abroad and collect the FET certificate.", "Transfer ownership at the Land Office and pay fees."],
+      quotaCta: "How to check the foreign quota — and what to do if it is full",
+      disclaimer: "This guide is general information, not legal advice.",
+      next: "Next: the Bangkok condo investment guide with live yield data",
     },
     investment: {
       title: "Bangkok Condo Investment Guide 2026",
@@ -1068,6 +1076,108 @@ const dict = {
         "month yields 6.0%. We compute it per building from the average of its live rent and sale " +
         "listings, then take the median across the area so a single outlier cannot move the answer.",
     },
+  },
+  /** /guide/foreign-quota — answers "how to verify a condo's foreign quota"
+   *  and "what happens if the 49% is full" in the title, then backs it with
+   *  the foreign-quota inventory we measure. */
+  foreignQuota: {
+    title: "How to Check a Thai Condo's Foreign Quota — and What Happens When the 49% Is Full",
+    metaTitle: "How to Check a Thai Condo's Foreign Quota (49% Rule) & What If It's Full | RealData",
+    desc:
+      "The documents that prove a Thai condo still has foreign quota, who issues them, and what the Land Office " +
+      "checks on transfer day — plus your options when a building's 49% is used up. With foreign-quota inventory " +
+      "measured across 1,000+ buildings.",
+    eyebrow: "Foreign buyer check",
+    shortTitle: "The short answer",
+    shortVerify:
+      "Get a letter from the building's juristic person manager certifying the current foreign-owned share of the " +
+      "building. The Land Office reads that ratio on transfer day and will not register a foreign freehold that " +
+      "takes it past 49% — so the letter, not the agent's word, is the check.",
+    shortFull:
+      "If the 49% is used up you cannot take freehold in a unit that is Thai-owned today. You can still buy a unit " +
+      "a foreigner already owns (the quota stays with it), take a registered lease of up to 30 years, or wait for " +
+      "foreign owners to sell to Thais.",
+    verifyTitle: "How to verify the foreign quota, step by step",
+    verifySteps: [
+      {
+        h: "Ask which quota the unit is sold under",
+        p: "Every listing is either foreign quota or Thai quota. A unit sold under Thai quota cannot be registered to you freehold, whatever its price. Get the answer in writing from the seller or developer before you pay a reservation fee.",
+      },
+      {
+        h: "Resale: check who owns it now",
+        p: "The condo title deed (Or.Chor. 2) names the current owner. If that owner is a foreigner, the unit is already counted inside the 49% and can pass to another foreigner without using new quota. If the owner is Thai, a sale to you uses quota the building must still have.",
+      },
+      {
+        h: "Get the juristic person's foreign-ownership letter",
+        p: "The building's juristic person manager issues a letter certifying the foreign-owned share of the building's total unit area. The Land Office asks for it at transfer, together with the debt-free letter for common fees. Request both a few days ahead: a letter that shows the building at or near 49% is the reason to stop.",
+      },
+      {
+        h: "Bring the money in as foreign currency",
+        p: "Foreign freehold needs proof the purchase money entered Thailand from abroad in foreign currency. For US$50,000 or more the receiving Thai bank issues a Foreign Exchange Transaction form (Thor Tor 3); for smaller transfers, ask for a credit advice that shows the foreign-currency source. Money that arrives as baht does not count.",
+      },
+      {
+        h: "Transfer at the Land Office",
+        p: "The Land Office checks the ratio letter, the FET proof and your passport, then registers the title in your name. This is the only point where the quota is legally confirmed — everything before it is a promise.",
+      },
+    ],
+    fullTitle: "What happens if the 49% foreign quota is already full",
+    fullOptions: [
+      {
+        h: "Buy a unit a foreigner already owns",
+        p: "Foreign-owned units stay inside the quota when they change hands between foreigners. In a full building these resale units are the only freehold route, and they tend to carry a premium for it.",
+      },
+      {
+        h: "Take a registered lease",
+        p: "A lease registered at the Land Office runs up to 30 years. Renewal clauses are contractual promises, not rights the law guarantees, and may not bind the next owner — price the lease as 30 years, not 90.",
+      },
+      {
+        h: "Wait for quota to free up",
+        p: "When a foreign owner sells to a Thai buyer, that area leaves the 49%. In a large building this happens often; the juristic person can tell you the current ratio at any time.",
+      },
+      {
+        h: "Do not use a nominee company",
+        p: "A Thai company set up only to hold the unit for a foreigner is a nominee arrangement under the Foreign Business Act. It can be challenged and the unit forfeited. A lawyer who proposes it is not protecting you.",
+      },
+    ],
+    dataTitle: "Foreign-quota inventory we measure",
+    dataBody: (n: string, plenty: string, tight: string, month: string | null) =>
+      `Across ${n} buildings with at least 5 labelled units for sale, ${plenty} have 60% or more of their listings ` +
+      `under foreign quota, and ${tight} have under 10%${month ? ` (as of ${month})` : ""}. We count the Foreign ` +
+      `Quota and Thai Quota labels on units currently for sale — a strong sign of how easy freehold is to find, ` +
+      `but not the legal ratio. Only the juristic person's letter gives that.`,
+    colCity: "City",
+    colBuildings: "Buildings",
+    colMedian: "Median foreign-quota share",
+    colPlenty: "Buildings 60%+ foreign",
+    colTight: "Buildings under 10%",
+    tableNote:
+      "Share = foreign-quota units ÷ all quota-labelled units for sale in a building. Check a specific building on its own page.",
+    faqTitle: "Foreign quota — frequently asked questions",
+    faq: [
+      {
+        q: "How do I verify a condo building's foreign quota before buying?",
+        a: "Ask the building's juristic person manager for a letter certifying the current foreign-owned share of the total unit area. The Land Office checks that ratio when it registers the transfer and refuses a foreign freehold that would push it past 49%. For a resale unit, also check the title deed: a unit already owned by a foreigner can pass to another foreigner without using new quota.",
+      },
+      {
+        q: "What happens if a condo's 49% foreign quota is already full?",
+        a: "You cannot take freehold in a unit that is Thai-owned today. Your options are a unit already owned by a foreigner (the quota stays with it), a registered lease of up to 30 years, or waiting until foreign owners sell to Thai buyers and free up quota. A Thai company set up only to hold the unit is a nominee arrangement and can be challenged.",
+      },
+      {
+        q: "Is a 'foreign quota' listing guaranteed to be registrable to me?",
+        a: "No. The label is the seller's statement. The ratio can change between reservation and transfer if other foreign sales complete first, which is why the juristic person's letter should be dated close to your transfer day.",
+      },
+      {
+        q: "Does the 49% count units or floor area?",
+        a: "Floor area. The Condominium Act caps foreign ownership at 49% of the total area of all units in the building, so one large penthouse can use as much quota as several studios.",
+      },
+      {
+        q: "Can I buy under foreign quota if my money is already in Thailand?",
+        a: "Only if it came in from abroad in foreign currency and you have the bank's proof. Baht earned or held in Thailand does not qualify for foreign freehold registration.",
+      },
+    ],
+    disclaimer:
+      "General information, not legal advice. Rules and Land Office practice change; confirm with a Thai property lawyer before you pay a deposit.",
+    seeOwnership: "Can foreigners buy a condo in Thailand? The full guide",
   },
   seo: {
     /** Under a district H1: the sub-areas people actually search that

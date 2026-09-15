@@ -33,6 +33,7 @@ export default async function ForeignOwnershipPage({ params }: { params: Promise
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
+  const f = t.guide.foreign;
   const crumbs = [
     { name: "RealData", href: `/${lang}` },
     { name: t.guide.breadcrumb, href: `/${lang}/guide/investment` },
@@ -49,44 +50,51 @@ export default async function ForeignOwnershipPage({ params }: { params: Promise
       <h1 className="text-3xl font-bold mb-2 mt-2">{t.guide.foreign.title}</h1>
       <p className="text-zinc-400 mb-6">{t.guide.foreign.lead}</p>
 
+      {/* Body copy lives in the dictionaries. It used to be hardcoded English
+          JSX, so /ko and /th shipped an English article under a translated
+          title. */}
       <article className="space-y-6 text-zinc-300 leading-relaxed">
+        {f.sections.map((sec) => (
+          <section key={sec.h}>
+            <h2 className="text-xl font-semibold text-white">{sec.h}</h2>
+            <p>{sec.p}</p>
+          </section>
+        ))}
         <section>
-          <h2 className="text-xl font-semibold text-white">The 49% rule, in plain terms</h2>
-          <p>Thailand’s Condominium Act lets non-Thais collectively own up to <strong>49% of the total saleable floor area</strong> of a condominium building. If a building still has room under that quota, a foreigner can buy a unit <Link className="text-blue-400" href={`/${lang}/glossary/freehold`}>freehold</Link> — outright, in their own name, registered at the Land Department. Once a building hits 49%, remaining units can only be sold to foreigners on a <Link className="text-blue-400" href={`/${lang}/glossary/leasehold`}>leasehold</Link> basis.</p>
-        </section>
-        <section>
-          <h2 className="text-xl font-semibold text-white">Land and houses</h2>
-          <p>Foreigners generally <strong>cannot own land</strong> in Thailand. A villa or landed house is usually structured as a registered lease (maximum 30 years per term) or through a Thai company — the latter carries real legal exposure and needs qualified advice. For most overseas buyers, a condo is the only clean route to direct freehold ownership.</p>
-        </section>
-        <section>
-          <h2 className="text-xl font-semibold text-white">Moving the money (FET)</h2>
-          <p>To register foreign freehold, the purchase funds must arrive in Thailand <strong>in foreign currency</strong> and be converted to baht by the receiving bank, which issues a <strong>Foreign Exchange Transaction (FET) certificate</strong>. The Land Department requires this document at transfer — so never bring the money in as baht.</p>
-        </section>
-        <section>
-          <h2 className="text-xl font-semibold text-white">Taxes and transfer costs</h2>
+          <h2 className="text-xl font-semibold text-white">{f.taxTitle}</h2>
           <ul className="list-disc pl-5">
-            <li>Transfer fee: <strong>2%</strong> of the appraised value.</li>
-            <li>Specific Business Tax: <strong>3.3%</strong> if the seller owned under 5 years; otherwise <strong>0.5%</strong> stamp duty.</li>
-            <li>Withholding tax: progressive (individual) or 1% (company).</li>
-            <li>All of the above are negotiable between buyer and seller.</li>
+            {f.taxes.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
           </ul>
         </section>
         <section>
-          <h2 className="text-xl font-semibold text-white">Buying process, step by step</h2>
+          <h2 className="text-xl font-semibold text-white">{f.stepsTitle}</h2>
           <ol className="list-decimal pl-5">
-            <li>Reserve the unit and sign a reservation agreement.</li>
-            <li>Confirm the building’s remaining <Link className="text-blue-400" href={`/${lang}/glossary/foreign-quota`}>foreign quota</Link> in writing.</li>
-            <li>Due diligence: title deed, encumbrances, juristic-person debts.</li>
-            <li>Remit funds from abroad and collect the FET certificate.</li>
-            <li>Transfer ownership at the Land Department and pay fees.</li>
+            {f.steps.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
           </ol>
+          <Link className="inline-block mt-3 text-blue-400 hover:underline" href={`/${lang}/guide/foreign-quota`}>
+            {f.quotaCta} →
+          </Link>
         </section>
+        <p className="text-sm">
+          <Link className="text-blue-400" href={`/${lang}/glossary/freehold`}>Freehold</Link>
+          {" · "}
+          <Link className="text-blue-400" href={`/${lang}/glossary/leasehold`}>Leasehold</Link>
+          {" · "}
+          <Link className="text-blue-400" href={`/${lang}/glossary/foreign-quota`}>Foreign quota</Link>
+        </p>
       </article>
 
       <FaqSection items={t.pageFaq.guideForeign} heading={t.home.faqTitle} className="mt-10" />
 
       <section className="mt-8 border-t border-zinc-800 pt-4 text-sm">
-        <p className="text-zinc-500">This guide is general information, not legal advice. Next: <Link className="text-blue-400" href={`/${lang}/guide/investment`}>the Bangkok condo investment guide</Link> with live yield data.</p>
+        <p className="text-zinc-500">
+          {f.disclaimer}{" "}
+          <Link className="text-blue-400" href={`/${lang}/guide/investment`}>{f.next}</Link>
+        </p>
       </section>
     </main>
   );

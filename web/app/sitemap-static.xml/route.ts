@@ -31,6 +31,7 @@ const STATIC_PATHS = [
   { path: "/compare", changefreq: "monthly", priority: 0.6 },
   { path: "/glossary", changefreq: "monthly", priority: 0.6 },
   { path: "/guide/foreign-ownership", changefreq: "monthly", priority: 0.7 },
+  { path: "/guide/foreign-quota", changefreq: "weekly", priority: 0.8 },
   { path: "/guide/investment", changefreq: "weekly", priority: 0.8 },
   { path: "/retiree", changefreq: "weekly", priority: 0.8 },
   { path: "/privacy", changefreq: "yearly", priority: 0.3 },

@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
  *  ownership condominium quota" (GSC, 2026-09-07) while the guide that
  *  actually answers it had no link from here. */
 const GUIDE_FOR: Record<string, string> = {
-  "foreign-quota": "guide/foreign-ownership",
+  "foreign-quota": "guide/foreign-quota",
   freehold: "guide/foreign-ownership",
   leasehold: "guide/foreign-ownership",
   "gross-yield": "guide/investment",
