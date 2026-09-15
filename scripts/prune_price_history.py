@@ -22,7 +22,7 @@ price_history readers
   => Retention: always keep the most recent 2 captured_at snapshots per
      (condo_id, listing_type) regardless of age (covers the digest/delta
      readers and any condo that's stopped being scraped every run). Within
-     the last RETENTION_MONTHS (default 6) keep full weekly resolution (the
+     the last RETENTION_MONTHS (default 1, was 6) keep full weekly resolution (the
      reality-page chart wants a readable recent trend). Beyond that, keep
      at most one row per (condo_id, listing_type, calendar month) — thins
      the old tail of the chart to monthly points without flattening the
@@ -84,7 +84,15 @@ DELETE_CHUNK = 200
 # PostgREST's timeout, large enough that a big backlog clears in a few calls.
 PRUNE_BATCH = 20000
 
-DEFAULT_RETENTION_MONTHS = 6
+# Was 6. Every row dates from 2026-05-16, so 6 months had never deleted
+# anything, and on 2026-09-15 the table was 922K rows / 144MB of a Free
+# plan database at 0.469/0.5GB. Thinning beyond 1 month removed 773,300 rows
+# (done once by hand in the SQL Editor, then VACUUM FULL); at 1 the weekly
+# call has only a week's worth to thin and returns in ~1s over PostgREST.
+# The readers still get what they need: the reality chart shows monthly
+# points past the first month, and the movers/delta readers use only the
+# latest snapshots, which DEFAULT_KEEP_RECENT always keeps.
+DEFAULT_RETENTION_MONTHS = 1
 DEFAULT_KEEP_RECENT = 2
 DEFAULT_ALERT_MAX_AGE_DAYS = 90
 
