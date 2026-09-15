@@ -1,11 +1,15 @@
 import { NotFoundContent } from "@/components/NotFoundContent";
 
-// Some Next.js/Vercel ISR fallback paths (see condo/[slug], district/[slug])
-// still ship this boundary with HTTP 200 instead of 404 — a long-standing
-// App Router limitation with dynamicParams=true + revalidate that we can't
-// fully close without regressing those pages' caching. noindex is the
-// backstop: it's honored on any 2xx/4xx response, so a mis-statused
-// not-found page still never gets indexed as thin/duplicate content.
+// This boundary used to ship with HTTP 200 on every on-demand ISR path
+// (condo/[slug], district/[slug], ...), which Search Console counted as
+// 102 soft 404s. The cause was not ISR: it was (site)/[lang]/loading.tsx.
+// A loading.tsx wraps the page in a Suspense boundary, so the 200 shell is
+// committed before the page body gets to call notFound(). Deleted
+// 2026-09-15; verified with a prerender of a nonexistent slug, whose .meta
+// went from no status to "status": 404. Do not add a loading.tsx at or
+// above a route that can 404.
+//
+// noindex stays as a backstop for any path that still streams.
 export const metadata = {
   title: "Not found — RealData",
   robots: { index: false, follow: true },
