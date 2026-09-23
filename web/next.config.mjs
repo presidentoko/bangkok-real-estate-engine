@@ -1,3 +1,5 @@
+import { CONDO_SLUG_REDIRECTS } from "./lib/condoSlugRedirects.mjs";
+
 // The Cloudflare condo export (scripts/condo_static/, lib/buildMode.ts).
 // Its HTML is served from Cloudflare while every other page stays on Vercel,
 // so its JS/CSS must not collide with the Vercel deployment's /_next/static:
@@ -37,6 +39,14 @@ const nextConfig = {
     // in config rather than in a route handler means the 308 is served by the
     // platform, with no function invocation at all.
     return [
+      // Condos whose slug named the wrong city (scripts/repair_condo_slug_city.py).
+      // Platform 308s: no function runs, and the Cloudflare Worker passes an
+      // unknown /condo/ URL through to this origin, where these live.
+      ...CONDO_SLUG_REDIRECTS.map(({ from, to }) => ({
+        source: `/:lang(en|ko|th)/condo/${from}`,
+        destination: `/:lang/condo/${to}`,
+        permanent: true,
+      })),
       {
         source: "/sitemap-condos.xml",
         has: [{ type: "query", key: "page", value: "(?<page>\\d+)" }],
