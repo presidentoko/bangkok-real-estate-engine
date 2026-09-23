@@ -81,7 +81,7 @@ export default async function StationPage({
     {
       q: `How many condos are near ${data.name} station?`,
       a: `RealData tracks ${data.condos.length} condos within 1 km of ${data.name}${
-        data.medianPsm != null ? `, at a median of ฿${Math.round(data.medianPsm).toLocaleString()}/sqm` : ""
+        ""
       }.`,
     },
     {
@@ -125,7 +125,10 @@ export default async function StationPage({
         </h1>
         <p className="text-zinc-400 text-sm">
           {fill(t.near.summaryLead, data.name)} {data.condos.length} {t.near.statCondos}
-          {data.medianPsm != null && ` · ${Math.round(data.medianPsm).toLocaleString()} ${t.near.statMedianPsm}`}
+          {/* market_sale_per_sqm dropped 2026-09-23: it is a district-level
+              figure copied onto every building (240 distinct values across
+              1,000 rows) and denominated in USD, so it could not tell two
+              stations apart and read as baht. */}
           {data.medianYieldPct != null && ` · ${data.medianYieldPct.toFixed(1)}% ${t.near.statMedianYield}`}
           {data.avgFloodLevel != null && ` · L${data.avgFloodLevel} ${t.near.statAvgFlood}`}
         </p>

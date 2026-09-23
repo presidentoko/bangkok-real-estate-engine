@@ -79,3 +79,14 @@ export function fmtPct(v: number | null | undefined, decimals = 2): string {
   if (v == null || !Number.isFinite(v)) return "—";
   return `${v.toFixed(decimals)}%`;
 }
+
+/**
+ * Price per sqm from `market_sale_per_sqm`, which is USD — the column is only
+ * populated for rows whose market_summary_currency is USD (1,356 of them;
+ * zero rows say THB). /near and /guide/investment printed it with a baht sign
+ * until 2026-09-23, so a $5,910/sqm Thonglor building read as ฿5,910/sqm.
+ */
+export function fmtUsdPerSqm(v: number | null | undefined): string {
+  if (v == null || !Number.isFinite(Number(v))) return "—";
+  return `$${Math.round(Number(v)).toLocaleString()}`;
+}

@@ -6,7 +6,8 @@ export type AreaYield = {
   area: string;
   condoCount: number;
   medianYieldPct: number | null;
-  medianPsm: number | null;
+  /** THB, from avg_sale_price (per building, from listings). */
+  medianSale: number | null;
 };
 
 function median(xs: number[]): number | null {
@@ -24,12 +25,12 @@ function median(xs: number[]): number | null {
 export const getYieldByArea = unstable_cache(
   async (minCondos = 5, limit = 25): Promise<AreaYield[]> => {
     const sb = getServerSupabase();
-    const rows: Array<{ gross_yield_pct: number | null; market_sale_per_sqm: number | null; region_name: string | null }> = [];
+    const rows: Array<{ gross_yield_pct: number | null; avg_sale_price: number | null; region_name: string | null }> = [];
     const page = 1000;
     for (let from = 0; ; from += page) {
       const { data, error } = await sb
         .from("condos")
-        .select("gross_yield_pct, market_sale_per_sqm, region_name, province")
+        .select("gross_yield_pct, avg_sale_price, region_name, province")
         .eq("province", "bangkok")
         .order("id")
         .range(from, from + page - 1);
@@ -44,17 +45,17 @@ export const getYieldByArea = unstable_cache(
       if (!byArea.has(a)) byArea.set(a, { y: [], p: [] });
       const e = byArea.get(a)!;
       if (typeof r.gross_yield_pct === "number") e.y.push(r.gross_yield_pct);
-      if (typeof r.market_sale_per_sqm === "number") e.p.push(r.market_sale_per_sqm);
+      if (typeof r.avg_sale_price === "number") e.p.push(r.avg_sale_price);
     }
     const out: AreaYield[] = [];
     for (const [area, e] of byArea) {
       const count = Math.max(e.y.length, e.p.length);
       if (count < minCondos) continue;
-      out.push({ area, condoCount: count, medianYieldPct: median(e.y), medianPsm: median(e.p) });
+      out.push({ area, condoCount: count, medianYieldPct: median(e.y), medianSale: median(e.p) });
     }
     out.sort((a, b) => (b.medianYieldPct ?? 0) - (a.medianYieldPct ?? 0));
     return out.slice(0, limit);
   },
-  ["yield-by-area-v1"],
+  ["yield-by-area-v2"],
   { revalidate: 86400 },
 );

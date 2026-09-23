@@ -781,7 +781,7 @@ const dict = {
     metaSuffix: "Condos near {station} Station, Bangkok — Yield, Prices & Flood Risk | RealData",
     summaryLead: "Within 1 km of {station} station, Bangkok —",
     statCondos: "condos",
-    statMedianPsm: "median ฿/sqm",
+    statMedianPsm: "median $/sqm",
     statMedianYield: "median gross yield",
     statAvgFlood: "avg flood risk",
     statAvgRating: "avg Google rating",
@@ -811,7 +811,7 @@ const dict = {
       colArea: "Area",
       colCondos: "Condos",
       colYield: "Median gross yield",
-      colPsm: "Median ฿/sqm",
+      colPsm: "Median sale price",
     },
   },
   glossary: {
@@ -1178,6 +1178,60 @@ const dict = {
     disclaimer:
       "General information, not legal advice. Rules and Land Office practice change; confirm with a Thai property lawyer before you pay a deposit.",
     seeOwnership: "Can foreigners buy a condo in Thailand? The full guide",
+  },
+  /** /vs/[pair] — one area against another, from measured data. */
+  areaVs: {
+    metaTitle: (a: string, b: string, year: number) =>
+      `${a} vs ${b} (${year}): Condo Prices, Yields & Flood Risk Compared | RealData`,
+    desc: (a: string, b: string, n: number) =>
+      `${a} or ${b}? Median price per sqm, gross rental yield, flood level and building counts across ` +
+      `${n} tracked condos — measured from live listings, not opinion.`,
+    eyebrow: "Area comparison",
+    h1: (a: string, b: string) => `${a} vs ${b}`,
+    verdictTitle: "The short answer",
+    cheaper: (winner: string, pct: string, loser: string) =>
+      `${winner} is the cheaper entry: its median condo sells for ${pct}% less than in ${loser}.`,
+    samePrice: (a: string, b: string) =>
+      `Neither side is meaningfully cheaper — the median sale price in ${a} and ${b} is within 5%.`,
+    yields: (winner: string, w: string, loser: string, l: string) =>
+      `${winner} yields more: a median ${w}% gross against ${l}% in ${loser}.`,
+    yieldsOne: (area: string, v: string) =>
+      `Only ${area} has enough rent and sale listings to show a yield: ${v}% gross.`,
+    floodLine: (drier: string, dl: number, wetter: string, wl: number) =>
+      `${drier} is the drier side (flood level ${dl}/5 against ${wl}/5 in ${wetter}).`,
+    floodSame: (level: number) => `Both sides carry the same flood level, ${level}/5.`,
+    tableTitle: "Side by side",
+    rowCondos: "Condos tracked",
+    rowSale: "Median sale price",
+    rowYield: "Median gross yield",
+    rowFlood: "Flood level (0-5)",
+    topTitle: (area: string) => `Biggest buildings in ${area}`,
+    colCondo: "Building",
+    colSale: "Median sale",
+    methodTitle: "How this is measured",
+    methodBody:
+      "Prices and yields are medians across every building we track on each side, from live sale and rent " +
+      "listings on hipflat, DotProperty, DDProperty and FazWaz. Yield is gross: 12 x median monthly rent " +
+      "divided by median sale price, before tax, vacancy and CAM fees. Flood levels come from the BMA " +
+      "Drainage Department layer and only exist for Bangkok khet. Refreshed weekly.",
+    stationNote:
+      "Both sides are station catchments — every condo within 1 km of the station — because the khet they sit in cannot tell them apart.",
+    faqTitle: (a: string, b: string) => `${a} vs ${b} — frequently asked questions`,
+    faq: {
+      q1: (a: string, b: string) => `Is ${a} or ${b} cheaper for a condo?`,
+      q2: (a: string, b: string) => `Which gives a better rental yield, ${a} or ${b}?`,
+      q3: (a: string, b: string) => `Does ${a} or ${b} flood more?`,
+      a3none: (a: string, b: string) =>
+        `We score flood risk for Bangkok khet only, and neither ${a} nor ${b} sits inside that layer. ` +
+        `Ask the building juristic office what happened in the last monsoon.`,
+      q4: "Which should I buy in?",
+      a4: (cheap: string, yieldy: string) =>
+        `If the entry price decides it, ${cheap}. If rental income decides it, ${yieldy}. The gap between ` +
+        `the best and worst building inside one area is wider than the gap between these two areas, so ` +
+        `use this to pick the area, then compare buildings.`,
+    },
+    seeArea: (area: string) => `${area} rental yield in detail`,
+    otherTitle: "Other comparisons",
   },
   seo: {
     /** Under a district H1: the sub-areas people actually search that

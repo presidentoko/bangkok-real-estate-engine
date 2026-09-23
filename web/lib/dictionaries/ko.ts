@@ -759,7 +759,7 @@ const dict: Dict = {
     metaSuffix: "{station} 주변 콘도 — 가격, 수익률, 침수 위험, 평점 | RealData",
     summaryLead: "{station} 반경 1km 내",
     statCondos: "콘도",
-    statMedianPsm: "중위 ฿/sqm",
+    statMedianPsm: "중위 $/sqm",
     statMedianYield: "중위 총수익률",
     statAvgFlood: "평균 침수 위험",
     statAvgRating: "평균 구글 평점",
@@ -789,7 +789,7 @@ const dict: Dict = {
       colArea: "지역",
       colCondos: "콘도 수",
       colYield: "중위 총수익률",
-      colPsm: "중위 ฿/sqm",
+      colPsm: "중간 매매가",
     },
   },
   glossary: {
@@ -1119,6 +1119,57 @@ const dict: Dict = {
     disclaimer:
       "일반 정보이며 법률 자문이 아닙니다. 규정과 토지청 실무는 바뀔 수 있으니 계약금을 내기 전에 태국 부동산 변호사에게 확인하세요.",
     seeOwnership: "외국인도 태국 콘도를 살 수 있나? 전체 가이드",
+  },
+  areaVs: {
+    metaTitle: (a: string, b: string, year: number) =>
+      `${a} vs ${b} (${year}) — 콘도 가격·수익률·침수 위험 비교 | RealData`,
+    desc: (a: string, b: string, n: number) =>
+      `${a}와 ${b} 중 어디? 추적 중인 콘도 ${n}곳의 ㎡당 중간 가격, 총 임대수익률, 침수 등급, 건물 수를 ` +
+      `실제 매물 데이터로 비교합니다. 의견이 아니라 측정값이에요.`,
+    eyebrow: "지역 비교",
+    h1: (a: string, b: string) => `${a} vs ${b}`,
+    verdictTitle: "요약",
+    cheaper: (winner: string, pct: string, loser: string) =>
+      `진입 가격은 ${winner}가 더 쌉니다. 중간 매매가가 ${loser}보다 ${pct}% 낮습니다.`,
+    samePrice: (a: string, b: string) =>
+      `가격 차이는 크지 않습니다. ${a}와 ${b}의 중간 매매가 차이가 5% 이내입니다.`,
+    yields: (winner: string, w: string, loser: string, l: string) =>
+      `수익률은 ${winner}가 높습니다. 총 수익률 중앙값 ${w}% 대 ${loser} ${l}%입니다.`,
+    yieldsOne: (area: string, v: string) =>
+      `${area}만 매매·임대 매물이 충분해 수익률을 낼 수 있습니다: 총 ${v}%.`,
+    floodLine: (drier: string, dl: number, wetter: string, wl: number) =>
+      `침수는 ${drier}가 덜합니다 (침수 등급 ${dl}/5 대 ${wetter} ${wl}/5).`,
+    floodSame: (level: number) => `양쪽 모두 침수 등급 ${level}/5로 같습니다.`,
+    tableTitle: "나란히 비교",
+    rowCondos: "추적 콘도 수",
+    rowSale: "중간 매매가",
+    rowYield: "총 수익률 중앙값",
+    rowFlood: "침수 등급 (0-5)",
+    topTitle: (area: string) => `${area}의 대표 건물`,
+    colCondo: "건물",
+    colSale: "중간 매매가",
+    methodTitle: "측정 방법",
+    methodBody:
+      "가격과 수익률은 각 지역에서 추적하는 모든 건물의 중앙값이며, hipflat·DotProperty·DDProperty·FazWaz의 " +
+      "살아 있는 매매·임대 매물에서 계산합니다. 수익률은 총수익률(12 × 월세 중앙값 ÷ 매매가 중앙값)로 세금·공실·" +
+      "관리비 반영 전 수치입니다. 침수 등급은 방콕시 배수국 자료 기준이라 방콕 구에만 있습니다. 매주 갱신.",
+    stationNote:
+      "양쪽 모두 역 반경 1km 기준입니다. 같은 구에 속해 있어서 구 단위로는 구분되지 않기 때문이에요.",
+    faqTitle: (a: string, b: string) => `${a} vs ${b} — 자주 묻는 질문`,
+    faq: {
+      q1: (a: string, b: string) => `콘도 가격은 ${a}와 ${b} 중 어디가 더 싼가요?`,
+      q2: (a: string, b: string) => `임대수익률은 ${a}와 ${b} 중 어디가 높나요?`,
+      q3: (a: string, b: string) => `침수는 ${a}와 ${b} 중 어디가 더 심한가요?`,
+      a3none: (a: string, b: string) =>
+        `침수 등급은 방콕 구에 대해서만 매기고 있어서 ${a}와 ${b}는 해당 자료에 없습니다. 건물 관리사무소에 ` +
+        `지난 우기에 어땠는지 직접 물어보세요.`,
+      q4: "어디를 사야 하나요?",
+      a4: (cheap: string, yieldy: string) =>
+        `진입 가격이 기준이면 ${cheap}, 임대 수익이 기준이면 ${yieldy}입니다. 다만 한 지역 안에서 최상위와 ` +
+        `최하위 건물의 차이가 두 지역 간 차이보다 큽니다. 지역을 고른 다음에는 건물을 비교하세요.`,
+    },
+    seeArea: (area: string) => `${area} 임대수익률 자세히 보기`,
+    otherTitle: "다른 비교",
   },
   seo: {
     districtAka: (areas: string) => `${areas} 포함`,

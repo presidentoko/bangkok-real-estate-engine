@@ -5,6 +5,8 @@ import { FLOOD_DISTRICTS } from "@/lib/floodDistricts";
 import { getServerSupabase } from "@/lib/supabase";
 import { getViableStations } from "@/lib/queries/stations";
 import { getYieldAreaIndex } from "@/lib/queries/yieldAreas";
+import { COMPARE_PAIRS } from "@/lib/comparePairs";
+import { getComparison } from "@/lib/queries/areaCompare";
 import {
   SITE_URL,
   urlEntry,
@@ -157,6 +159,19 @@ export async function GET(): Promise<Response> {
           urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "weekly", priority: 0.8, path })
         );
       }
+    }
+  }
+
+  // Area comparisons (/vs/[pair]). Only pairs whose two sides both clear the
+  // data bar, which is the same check the route makes before rendering.
+  for (const pair of COMPARE_PAIRS) {
+    const usable = await getComparison(pair).catch(() => null);
+    if (!usable) continue;
+    const path = `/vs/${pair.slug}`;
+    for (const lang of LANGS) {
+      entries.push(
+        urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "weekly", priority: 0.8, path })
+      );
     }
   }
 

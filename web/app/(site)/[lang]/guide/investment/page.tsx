@@ -8,6 +8,7 @@ import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd, type FaqItem } from "@/lib/seo/faqJsonLd";
 import FaqSection from "@/components/FaqSection";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
+import { fmtTHB } from "@/lib/fmt";
 import { getYieldByArea } from "@/lib/queries/areas";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -70,7 +71,7 @@ export default async function InvestmentPage({ params }: { params: Promise<{ lan
                   <td className="py-2 pr-4 text-zinc-200">{a.area}</td>
                   <td className="py-2 pr-4 text-zinc-400">{a.condoCount}</td>
                   <td className="py-2 pr-4 text-emerald-400">{a.medianYieldPct != null ? `${a.medianYieldPct.toFixed(1)}%` : "—"}</td>
-                  <td className="py-2 pr-4 text-zinc-400">{a.medianPsm != null ? `฿${Math.round(a.medianPsm).toLocaleString()}` : "—"}</td>
+                  <td className="py-2 pr-4 text-zinc-400">{fmtTHB(a.medianSale)}</td>
                 </tr>
               ))}
             </tbody>
