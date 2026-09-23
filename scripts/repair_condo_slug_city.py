@@ -37,6 +37,7 @@ from loguru import logger  # noqa: E402
 from src.db import get_client  # noqa: E402
 
 REDIRECTS_TS = os.path.join(ROOT, "web", "lib", "condoSlugRedirects.ts")
+REDIRECTS_MJS = os.path.join(ROOT, "web", "lib", "condoSlugRedirects.mjs")
 
 # Every city word a slug may end in, and the canonical province spelling it
 # should match (web/lib/cities.ts keeps the same aliases for the UI).
