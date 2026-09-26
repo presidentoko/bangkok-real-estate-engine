@@ -279,12 +279,12 @@ export async function generateMetadata({
   // hundreds of building-name queries at a 0.3% CTR (GSC, 2026-09-07):
   // listing portals own those SERPs with photos, so the only reason to
   // click us is the verdict, and the title never said we had one.
-  const title = t.seo.condoTitle(
-    c.name,
-    region,
-    c.gross_yield_pct != null ? c.gross_yield_pct.toFixed(2) : null,
-    riskMeta?.flood_risk_level ?? null,
-  );
+  const title = t.seo.condoTitle(c.name, region, {
+    yieldPct: c.gross_yield_pct != null ? c.gross_yield_pct.toFixed(2) : null,
+    flood: riskMeta?.flood_risk_level ?? null,
+    listings: c.active_listings_count ?? null,
+    reviews: c.google_review_count ?? null,
+  });
   const facts = [
     c.completion_year ? t.seo.built(c.completion_year) : null,
     c.total_units ? t.seo.units(c.total_units) : null,

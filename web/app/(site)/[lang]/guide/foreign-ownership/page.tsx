@@ -75,9 +75,14 @@ export default async function ForeignOwnershipPage({ params }: { params: Promise
               <li key={line}>{line}</li>
             ))}
           </ol>
-          <Link className="inline-block mt-3 text-blue-400 hover:underline" href={`/${lang}/guide/foreign-quota`}>
-            {f.quotaCta} →
-          </Link>
+          <div className="mt-3 flex flex-col gap-1">
+            <Link className="text-blue-400 hover:underline" href={`/${lang}/guide/foreign-quota`}>
+              {f.quotaCta} →
+            </Link>
+            <Link className="text-blue-400 hover:underline" href={`/${lang}/guide/buying-costs`}>
+              {t.buyingCosts.title} →
+            </Link>
+          </div>
         </section>
         <p className="text-sm">
           <Link className="text-blue-400" href={`/${lang}/glossary/freehold`}>Freehold</Link>

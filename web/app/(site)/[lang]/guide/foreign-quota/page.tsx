@@ -156,9 +156,14 @@ export default async function ForeignQuotaPage({ params }: { params: Promise<{ l
 
       <section className="border-t border-zinc-800 pt-4 space-y-2 text-sm">
         <p className="text-zinc-500">{t.disclaimer}</p>
-        <Link href={`/${lang}/guide/foreign-ownership`} className="text-emerald-400 hover:underline">
-          {t.seeOwnership} →
-        </Link>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <Link href={`/${lang}/guide/foreign-ownership`} className="text-emerald-400 hover:underline">
+            {t.seeOwnership} →
+          </Link>
+          <Link href={`/${lang}/guide/buying-costs`} className="text-emerald-400 hover:underline">
+            {dict.buyingCosts.title} →
+          </Link>
+        </div>
       </section>
     </main>
   );

@@ -1233,6 +1233,107 @@ const dict = {
     seeArea: (area: string) => `${area} rental yield in detail`,
     otherTitle: "Other comparisons",
   },
+  /** /guide/buying-costs — "thailand condo transfer fee", "thailand property
+   *  tax for foreigners", "leasehold vs freehold thailand". Portals list
+   *  units; nobody adds up what the transfer day actually costs. */
+  buyingCosts: {
+    title: "What a Thai Condo Really Costs a Foreign Buyer: Transfer Fees, Taxes and Annual Charges",
+    metaTitle: "Thailand Condo Transfer Fee & Taxes for Foreign Buyers (2026) | RealData",
+    desc:
+      "Transfer fee, specific business tax, stamp duty, withholding tax, CAM fees and sinking fund — what each one is, " +
+      "who normally pays it, and what they add up to on a ฿5M condo. Plus freehold vs leasehold, priced honestly.",
+    eyebrow: "Foreign buyer costs",
+    shortTitle: "The short answer",
+    shortBody:
+      "Budget 3-6% of the price on top of the price. The transfer fee alone is 2% of the Land Office appraised value, " +
+      "and the seller's tax (3.3% specific business tax, or 0.5% stamp duty after five years of ownership) is " +
+      "negotiable — which in practice means it often lands half on the buyer. Then the building charges a monthly " +
+      "common-area fee and a one-off sinking-fund contribution at transfer.",
+    tableTitle: "One-off costs at transfer",
+    colItem: "Cost",
+    colRate: "Rate",
+    colWho: "Usually paid by",
+    colOn: "Charged on",
+    rows: [
+      {
+        item: "Transfer fee",
+        rate: "2%",
+        who: "Split 50/50 by custom",
+        on: "Land Office appraised value, which is usually below the sale price",
+      },
+      {
+        item: "Specific business tax",
+        rate: "3.3%",
+        who: "Seller",
+        on: "Applies when the seller has owned under five years; replaced by stamp duty otherwise",
+      },
+      {
+        item: "Stamp duty",
+        rate: "0.5%",
+        who: "Seller",
+        on: "Instead of specific business tax, after five years of ownership",
+      },
+      {
+        item: "Withholding tax",
+        rate: "Progressive, or 1% for a company seller",
+        who: "Seller",
+        on: "An advance on the seller's income tax, from appraised value and years held",
+      },
+      {
+        item: "Sinking fund",
+        rate: "Typically ฿300-฿1,000 per sqm, once",
+        who: "Buyer",
+        on: "New units from a developer; a resale unit has usually paid it already",
+      },
+    ],
+    exampleTitle: "On a ฿5,000,000 condo",
+    exampleBody:
+      "If the appraised value is ฿4,000,000, the transfer fee is ฿80,000. Split by custom, the buyer pays ฿40,000. " +
+      "The seller's 3.3% business tax is ฿165,000 — but a seller who insists on a net price moves it onto you, so " +
+      "agree in writing who pays what before the deposit. A 45 sqm unit's sinking fund at ฿500/sqm is ฿22,500.",
+    annualTitle: "What it costs every year",
+    annualBody:
+      "Common-area (CAM) fees run roughly ฿35-฿90 per sqm per month depending on the building's facilities — on a " +
+      "45 sqm unit that is ฿19,000-฿48,000 a year. Land and building tax on a residential condo is 0.02-0.10% of " +
+      "appraised value for most owners. If you rent the unit out, rental income is taxable in Thailand, and a " +
+      "non-resident landlord is subject to 15% withholding on rent.",
+    yieldNote:
+      "Our yield figures are gross: 12 x rent divided by price, before any of this. Net yield after CAM, vacancy " +
+      "and tax typically lands 1.5-3 points lower, which is why a 6% gross building is not a 6% return.",
+    tenureTitle: "Freehold vs leasehold, priced honestly",
+    tenureBody:
+      "Freehold means your name on the title deed, and it needs the building's foreign quota to have room. Leasehold " +
+      "is a registered lease of up to 30 years; renewal clauses are contractual promises, not rights the law " +
+      "guarantees. Price a leasehold unit as 30 years of use, not as ownership, and expect it to be cheaper than a " +
+      "comparable freehold unit in the same building.",
+    faqTitle: "Buying costs — frequently asked questions",
+    faq: [
+      {
+        q: "What is the transfer fee on a Thai condo?",
+        a: "2% of the Land Office appraised value, not of the price you agreed. Custom splits it equally between buyer and seller, but it is negotiable and the contract decides.",
+      },
+      {
+        q: "What taxes does a foreigner pay when buying a condo in Thailand?",
+        a: "The buyer's own tax bill at transfer is small: the shared half of the 2% transfer fee. The seller owes specific business tax (3.3%) or stamp duty (0.5%) and withholding tax, though a seller quoting a net price is asking you to cover them. Annually, you owe land and building tax of 0.02-0.10% of appraised value, and tax on rental income if you let the unit.",
+      },
+      {
+        q: "How much are condo maintenance fees in Thailand?",
+        a: "Common-area fees are charged per sqm per month, typically ฿35-฿90 depending on facilities; a pool, gym and concierge cost more to run than a walk-up. Expect a one-off sinking-fund payment at transfer on a new unit, often ฿300-฿1,000 per sqm.",
+      },
+      {
+        q: "Is leasehold cheaper than freehold in Thailand?",
+        a: "It should be. A 30-year registered lease is a right to use, not ownership, and renewals are not guaranteed by law. If a leasehold unit is priced like the freehold unit next door, the discount you are owed has been priced away.",
+      },
+      {
+        q: "Do these costs change if I buy off-plan?",
+        a: "The sinking fund and first-year CAM are usually charged by the developer at handover, and transfer fees are sometimes promoted as 'free' — which means the developer absorbs them, so check the contract rather than the brochure.",
+      },
+    ],
+    disclaimer:
+      "Rates here are the standard published ones and the customary split; both change with government stimulus measures and neither is legal or tax advice. Confirm with a Thai property lawyer before you pay a deposit.",
+    seeQuota: "How to check a building's foreign quota",
+    seeYields: "Rental yields by area",
+  },
   seo: {
     /** Under a district H1: the sub-areas people actually search that
      *  fall inside this khet (Thonglor and Ekkamai are in Watthana). */
@@ -1252,9 +1353,23 @@ const dict = {
     // SERP for them is listing portals with photos. The title has to say
     // what a portal cannot: we checked the price, the yield and the flood
     // risk. Numbers go in where we have them.
-    condoTitle: (name: string, region: string, yieldPct: string | null, flood: number | null) =>
-      `${name}, ${region} — Price/sqm, Yield${yieldPct ? ` ${yieldPct}%` : ""} & ` +
-      `Flood Risk${flood != null ? ` L${flood}/5` : ""} | RealData`,
+    /** The title only advertises checks this building actually has. Until
+     *  2026-09-26 every condo title said "Price/sqm, Yield & Flood Risk" even
+     *  with no listings, no price and no yield behind it: Sukon Court ranked
+     *  9.9 for its own name with 46 impressions and zero clicks. */
+    condoTitle: (
+      name: string,
+      region: string,
+      f: { yieldPct: string | null; flood: number | null; listings: number | null; reviews: number | null },
+    ) => {
+      const parts: string[] = [];
+      if (f.listings && f.listings > 0) parts.push(`${f.listings} Listings`);
+      if (f.yieldPct) parts.push(`Yield ${f.yieldPct}%`);
+      if (f.flood != null) parts.push(`Flood L${f.flood}/5`);
+      if (f.reviews && f.reviews >= 3) parts.push("Reviews");
+      if (parts.length === 0) parts.push("Building Data & District Prices");
+      return `${name}, ${region} — ${parts.join(" · ")} | RealData`;
+    },
     condoDesc: (name: string, region: string, province: string, verdict: string | null, facts: string) =>
       `Is ${name} (${region}, ${province}) overpriced? ` +
       `${verdict ? verdict.charAt(0).toUpperCase() + verdict.slice(1) : "Price per sqm vs the district average"}` +
