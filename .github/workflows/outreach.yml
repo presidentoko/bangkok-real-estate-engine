@@ -1,0 +1,63 @@
+name: Outreach scout
+
+# Finds threads our data answers and drafts the reply a human will post
+# (scripts/outreach_scout.py). It never posts anything: the drafts land in
+# /admin/outreach, a person edits and posts them, and pastes the URL back.
+#
+# Runs on the self-hosted Windows runner for the same reason the scrapers do:
+# Reddit answers a datacenter IP with 429/403 even on the public RSS feeds,
+# and a residential connection passes.
+on:
+  schedule:
+    # 09:10 ICT daily — drafts are waiting when the day starts.
+    - cron: "10 2 * * *"
+    # Sunday 10:00 ICT: re-check the links already posted.
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "max drafts this run"
+        default: "3"
+      verify:
+        description: "check posted links instead of drafting (true/false)"
+        default: "false"
+
+concurrency:
+  group: outreach
+  cancel-in-progress: false
+
+jobs:
+  scout:
+    runs-on: [self-hosted, windows, x64]
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: powershell
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      PYTHONUNBUFFERED: "1"
+      PYTHONIOENCODING: "utf-8"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: python -m pip install --upgrade pip supabase==2.31.0 python-dotenv==1.0.1 loguru==0.7.3 requests==2.32.3 anthropic==0.102.0
+
+      - name: Draft or verify
+        run: |
+          $verify = "${{ inputs.verify }}"
+          $isSunday = (Get-Date).DayOfWeek -eq "Sunday" -and "${{ github.event_name }}" -eq "schedule" -and "${{ github.event.schedule }}" -eq "0 3 * * 0"
+          if ($verify -eq "true" -or $isSunday) {
+            cmd /c "python scripts\outreach_scout.py --verify 2>&1" | Tee-Object -FilePath outreach.log
+          } else {
+            $limit = "${{ inputs.limit }}"; if (-not $limit) { $limit = "3" }
+            cmd /c "python scripts\outreach_scout.py --submit --limit $limit 2>&1" | Tee-Object -FilePath outreach.log
+          }
+          if ($LASTEXITCODE -ne 0) { Write-Output "::warning::outreach_scout exited $LASTEXITCODE" }
