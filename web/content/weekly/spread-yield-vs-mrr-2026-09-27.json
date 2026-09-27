@@ -1,0 +1,152 @@
+{
+  "slug": "spread-yield-vs-mrr-2026-09-27",
+  "title": "5 Thai Condos Beating the 7.1% Mortgage Rate by 2+ Points",
+  "description": "We screen 8,994 buildings for gross yield vs. Bank of Thailand MRR. These five clear the bar by at least 6.75 percentage points.",
+  "published_at": "2026-09-27",
+  "topic": "spread",
+  "lead": "The current Thai mortgage reference rate sits at 7.1%. A rental yield only beats that hurdle if it clears it by enough to absorb vacancy, maintenance, and management — the five buildings below do so by 6.75 to 7.84 percentage points. Three are in Pattaya; one is a mid-city Bangkok outlier that tops the entire list.",
+  "sections": [
+    {
+      "heading": "Bangkok's Lone Entry Leads on Spread",
+      "body": "[Anna condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok) posts the widest spread on this screen at 7.84 pp above MRR — a 14.94% gross yield on an average sale price of ฿1,141,856, with average monthly rent at ฿14,212. At that entry price, even a 15% vacancy haircut still leaves the net yield above 12%.\n\nThe Bang Kapi location means no beachfront premium and no foreign-quota frenzy. Buyers who can hold Thai-quota units get the math without the Pattaya liquidity risk."
+    },
+    {
+      "heading": "Pattaya Clusters at the 13–15% Band",
+      "body": "All four Chon Buri entries sit between 13.85% and 14.72% gross yield, with spreads of 6.75–7.62 pp. [Neo Condo](/condo/neo-condo-chon-buri) (฿1,590,000 avg price, ฿19,500 avg rent) and [Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri) (฿2,450,000, ฿30,000 rent) lead the sub-group; [Art on the Hill](/condo/art-on-the-hill-chon-buri) and [Nova Mirage](/condo/nova-mirage-chon-buri) trail marginally at 6.85 pp and 6.75 pp respectively.\n\nCondotel-structured units carry management-fee drag that pure residential doesn't. Verify the hotel-pool contract before treating the listed rent as take-home."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "Anna condominium Ladprao 130 — gross yield",
+      "value": "14.94%",
+      "condo_id": "636b42fe-566e-4e6d-82ad-30450837515d",
+      "metric": "gross_yield_pct",
+      "expected": 14.94,
+      "slug": "anna-condominium-ladprao-130-bangkok"
+    },
+    {
+      "label": "Anna condominium Ladprao 130 — spread vs MRR",
+      "value": "+7.84 pp",
+      "condo_id": "636b42fe-566e-4e6d-82ad-30450837515d",
+      "metric": "spread_pp",
+      "expected": 7.84,
+      "slug": "anna-condominium-ladprao-130-bangkok"
+    },
+    {
+      "label": "Neo Condo — avg monthly rent",
+      "value": "฿19,500",
+      "condo_id": "5525f6b7-cae0-443f-8ae4-9c4bfb8615a1",
+      "metric": "avg_monthly_rent",
+      "expected": 19500,
+      "slug": "neo-condo-chon-buri"
+    },
+    {
+      "label": "Jomtien Condotel and Village — avg sale price",
+      "value": "฿2,450,000",
+      "condo_id": "8684f357-be0c-416f-8aea-a5e22cc3df59",
+      "metric": "avg_sale_price",
+      "expected": 2450000,
+      "slug": "jomtien-condotel-and-village-chon-buri"
+    },
+    {
+      "label": "Art on the Hill — spread vs MRR",
+      "value": "+6.85 pp",
+      "condo_id": "629b3a8a-899b-47dc-8c8b-5cc20a7ecc23",
+      "metric": "spread_pp",
+      "expected": 6.85,
+      "slug": "art-on-the-hill-chon-buri"
+    },
+    {
+      "label": "Nova Mirage — gross yield",
+      "value": "13.85%",
+      "condo_id": "18e2a2d4-f107-4e8e-b3ca-fce8caa6f3c4",
+      "metric": "gross_yield_pct",
+      "expected": 13.85,
+      "slug": "nova-mirage-chon-buri"
+    }
+  ],
+  "i18n": {
+    "ko": {
+      "title": "MRR 7.1%를 2%p 이상 웃도는 태국 콘도 5선",
+      "description": "태국중앙은행 MRR 대비 총임대수익률을 기준으로 8,994개 건물을 스크리닝했습니다. 아래 다섯 곳은 기준금리를 최소 6.75%p 초과합니다.",
+      "lead": "현재 태국 주택담보대출 기준금리(MRR)는 7.1%입니다. 임대수익률이 이 허들을 실질적으로 넘으려면 공실, 유지보수, 관리 비용을 흡수하고도 남을 만큼의 여유가 있어야 합니다. 아래 다섯 건물은 MRR을 6.75~7.84%p 웃돕니다. 세 곳은 파타야에 있고, 방콕 도심의 한 이례적 물건이 전체 목록 1위를 차지합니다.",
+      "sections": [
+        {
+          "heading": "방콕 유일의 입성 — 스프레드 1위",
+          "body": "[Anna condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok)(안나 콘도미니엄 랏프라오 130)은 이번 스크리닝에서 MRR 대비 스프레드가 7.84%p로 가장 넓습니다. 평균 매매가 ฿1,141,856에 평균 월임대료 ฿14,212로, 총임대수익률은 14.94%입니다. 이 진입 가격 기준으로는 공실률이 15%까지 올라도 순수익률이 12%를 상회합니다.\n\nBang Kapi 입지 특성상 비치프런트 프리미엄도, 외국인 쿼터 과열도 없습니다. 태국인 쿼터 유닛을 보유할 수 있는 매수자라면 파타야의 유동성 리스크 없이 이 수익 구조를 그대로 누릴 수 있습니다."
+        },
+        {
+          "heading": "파타야, 총수익률 13~15% 구간에 집중",
+          "body": "촌부리(Chon Buri) 소재 네 곳은 총임대수익률 13.85~14.72%, MRR 대비 스프레드 6.75~7.62%p 구간에 포진해 있습니다. [Neo Condo](/condo/neo-condo-chon-buri)(네오 콘도, 평균 매매가 ฿1,590,000, 평균 임대료 ฿19,500)와 [Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri)(좀티엔 콘도텔 앤드 빌리지, ฿2,450,000, 임대료 ฿30,000)가 소그룹 내 선두이며, [Art on the Hill](/condo/art-on-the-hill-chon-buri)(아트 온 더 힐)과 [Nova Mirage](/condo/nova-mirage-chon-buri)(노바 미라지)는 각각 6.85%p, 6.75%p로 소폭 뒤처집니다.\n\n콘도텔 구조의 유닛은 일반 주거용과 달리 관리수수료 부담이 발생합니다. 제시된 임대료를 실수령액으로 간주하기 전에 반드시 호텔 풀(hotel-pool) 계약 조건을 확인하시기 바랍니다."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Anna condominium Ladprao 130 — 총임대수익률",
+          "value": "14.94%"
+        },
+        {
+          "label": "Anna condominium Ladprao 130 — MRR 대비 스프레드",
+          "value": "+7.84 pp"
+        },
+        {
+          "label": "Neo Condo — 평균 월임대료",
+          "value": "฿19,500"
+        },
+        {
+          "label": "Jomtien Condotel and Village — 평균 매매가",
+          "value": "฿2,450,000"
+        },
+        {
+          "label": "Art on the Hill — MRR 대비 스프레드",
+          "value": "+6.85 pp"
+        },
+        {
+          "label": "Nova Mirage — 총임대수익률",
+          "value": "13.85%"
+        }
+      ]
+    },
+    "th": {
+      "title": "คอนโดไทย 5 แห่งที่ให้ผลตอบแทนสูงกว่าอัตราดอกเบี้ย MRR 7.1% มากกว่า 2 จุด",
+      "description": "คัดกรองอาคาร 8,994 แห่ง เพื่อเปรียบเทียบอัตราผลตอบแทนขั้นต้นกับ MRR ของธนาคารแห่งประเทศไทย ทั้งห้าแห่งนี้ผ่านเกณฑ์สูงกว่าอย่างน้อย 6.75 เปอร์เซ็นต์พอยต์",
+      "lead": "อัตราอ้างอิงสินเชื่อที่อยู่อาศัยของไทยในปัจจุบันอยู่ที่ 7.1% ผลตอบแทนจากการเช่าจะสามารถเอาชนะอัตราดังกล่าวได้ก็ต่อเมื่อมีส่วนต่างเพียงพอที่จะรองรับการว่าง การบำรุงรักษา และค่าบริหารจัดการ — อาคารทั้งห้าแห่งด้านล่างนี้มีส่วนต่างอยู่ระหว่าง 6.75 ถึง 7.84 เปอร์เซ็นต์พอยต์ สามแห่งตั้งอยู่ในพัทยา และหนึ่งแห่งเป็นอาคารโดดเด่นใจกลางกรุงเทพฯ ที่ครองอันดับสูงสุดของรายการทั้งหมด",
+      "sections": [
+        {
+          "heading": "ตัวแทนกรุงเทพฯ เพียงรายเดียวที่นำโด่งด้านส่วนต่าง",
+          "body": "[Anna condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok) มีส่วนต่างกว้างที่สุดในการคัดกรองนี้ที่ 7.84 pp เหนือ MRR — ด้วยอัตราผลตอบแทนขั้นต้น 14.94% จากราคาขายเฉลี่ย ฿1,141,856 และค่าเช่าเฉลี่ยต่อเดือนที่ ฿14,212 ที่ระดับราคาซื้อดังกล่าว แม้หักอัตราการว่าง 15% ออกแล้ว ผลตอบแทนสุทธิยังคงอยู่เหนือ 12%\n\nทำเลบางกะปิหมายความว่าไม่มีพรีเมียมติดชายหาดและไม่มีกระแสแย่งซื้อโควตาต่างชาติ ผู้ซื้อที่ถือหน่วยในโควตาคนไทยได้รับประโยชน์ทางคณิตศาสตร์โดยไม่มีความเสี่ยงด้านสภาพคล่องแบบพัทยา"
+        },
+        {
+          "heading": "พัทยากระจุกตัวในช่วงผลตอบแทน 13–15%",
+          "body": "รายการจากชลบุรีทั้งสี่แห่งมีอัตราผลตอบแทนขั้นต้นระหว่าง 13.85% ถึง 14.72% โดยมีส่วนต่าง 6.75–7.62 pp [Neo Condo](/condo/neo-condo-chon-buri) (ราคาเฉลี่ย ฿1,590,000, ค่าเช่าเฉลี่ย ฿19,500) และ [Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri) (฿2,450,000, ค่าเช่า ฿30,000) นำกลุ่มย่อย ส่วน [Art on the Hill](/condo/art-on-the-hill-chon-buri) และ [Nova Mirage](/condo/nova-mirage-chon-buri) ตามมาในระดับที่ใกล้เคียงกันที่ 6.85 pp และ 6.75 pp ตามลำดับ\n\nหน่วยที่มีโครงสร้างแบบคอนโดเทลมีภาระค่าธรรมเนียมบริหารจัดการที่ที่พักอาศัยล้วนไม่มี ควรตรวจสอบสัญญาพูลโรงแรมก่อนนำค่าเช่าที่ระบุไว้มาคิดเป็นรายได้สุทธิ"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Anna condominium Ladprao 130 — อัตราผลตอบแทนขั้นต้น",
+          "value": "14.94%"
+        },
+        {
+          "label": "Anna condominium Ladprao 130 — ส่วนต่างเทียบ MRR",
+          "value": "+7.84 pp"
+        },
+        {
+          "label": "Neo Condo — ค่าเช่าเฉลี่ยต่อเดือน",
+          "value": "฿19,500"
+        },
+        {
+          "label": "Jomtien Condotel and Village — ราคาขายเฉลี่ย",
+          "value": "฿2,450,000"
+        },
+        {
+          "label": "Art on the Hill — ส่วนต่างเทียบ MRR",
+          "value": "+6.85 pp"
+        },
+        {
+          "label": "Nova Mirage — อัตราผลตอบแทนขั้นต้น",
+          "value": "13.85%"
+        }
+      ]
+    }
+  }
+}
