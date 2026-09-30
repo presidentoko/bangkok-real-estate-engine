@@ -1,6 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { SubscribeForm } from "@/components/SubscribeForm";
 import { getOtherLang } from "@/components/OtherShell";
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
+
+export const metadata: Metadata = {
+  title: "Get Underpriced Condo Alerts on Telegram — RealData",
+  description:
+    "Three steps to receive a Telegram message the moment a Bangkok condo lists 20% or more below its district average. Free, and we store nothing but the chat ID.",
+  alternates: { canonical: `${SITE_URL}/alerts/subscribe` },
+};
 
 export default async function SubscribePage() {
   const lang = await getOtherLang();

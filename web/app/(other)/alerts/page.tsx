@@ -1,7 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { getServerSupabase } from "@/lib/supabase";
 import { getOtherLang } from "@/components/OtherShell";
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://passionaryestate.com";
+
+// Both /alerts pages shipped without a canonical, which is how a page lands
+// in Search Console's "Duplicate without user-selected canonical" bucket:
+// they sit outside the [lang] tree, so the per-locale canonical every other
+// page gets never applied to them (73 URLs on 2026-09-30).
+export const metadata: Metadata = {
+  title: "Underpriced Bangkok Condo Alerts — RealData",
+  description:
+    "Live feed of Bangkok condos listing at least 20% below their district average price per sqm, detected from four listing portals and refreshed every six hours.",
+  alternates: { canonical: `${SITE_URL}/alerts` },
+};
 
 type Row = {
   id: string;
