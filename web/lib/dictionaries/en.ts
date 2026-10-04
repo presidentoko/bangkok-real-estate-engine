@@ -1334,6 +1334,104 @@ const dict = {
     seeQuota: "How to check a building's foreign quota",
     seeYields: "Rental yields by area",
   },
+  /** /fees/[city] — "ค่าส่วนกลาง เท่าไร" answered per area instead of per
+   *  listing, and /ev-charging, the condos that actually have a charger. */
+  feeArea: {
+    metaTitle: (city: string, median: string, year: number) =>
+      `Condo Common-Area Fees in ${city} (${year}): ฿${median}/Month Median | RealData`,
+    desc: (city: string, median: string, n: number) =>
+      `What do condo CAM fees actually cost in ${city}? ฿${median} a month is the median across ${n.toLocaleString()} ` +
+      `buildings we measure, with the range, the district breakdown and what the sinking fund adds at transfer.`,
+    eyebrow: "Running costs",
+    h1: (city: string, median: string) => `Condo common-area fees in ${city}: ฿${median} a month`,
+    verdict: (city: string, median: string, n: number, p25: string, p75: string) =>
+      `The median condo in ${city} charges ฿${median} a month in common-area fees, measured across ${n.toLocaleString()} ` +
+      `buildings. Half of them sit between ฿${p25} and ฿${p75}.`,
+    sinkLine: (sink: string) =>
+      `Where we also know the sinking fund — the one-off contribution at transfer — the median is ฿${sink}.`,
+    vsThailand: (median: string) => `Across every city we measure, the median is ฿${median} a month.`,
+    unitNote:
+      "This is the monthly fee for one unit, not a rate per sqm, so a city of large units reads higher than a city of studios. Thai buildings quote CAM per sqm; multiply by your unit size to compare a specific building.",
+    statMedian: "Median fee / month",
+    statRange: "Middle half",
+    statCount: "Buildings measured",
+    statSink: "Median sinking fund",
+    districtsTitle: (city: string) => `CAM fees by district in ${city}`,
+    colDistrict: "District",
+    colBuildings: "Buildings",
+    colMedian: "Median / month",
+    colRange: "Middle half",
+    citiesTitle: "Fees in other cities",
+    seeCosts: "Everything a purchase costs: transfer fee, taxes, sinking fund",
+    seeYield: (city: string) => `${city} rental yields`,
+    methodTitle: "How this is measured",
+    methodBody:
+      "Each building's fee comes from a FazWaz unit listing that states the monthly CAM charge. We keep readings " +
+      "between ฿200 and ฿60,000 a month: below that the source is quoting a per-sqm rate, above it the figure is a " +
+      "parse error — one building read ฿20,199,600 a month until we caught it. Medians are per area, refreshed weekly.",
+    faqTitle: (city: string) => `${city} condo fees — frequently asked questions`,
+    faq: {
+      q1: (city: string) => `How much are condo common-area fees in ${city}?`,
+      a1: (city: string, median: string, n: number, p25: string, p75: string) =>
+        `฿${median} a month is the median across ${n.toLocaleString()} ${city} buildings we measure, with half between ฿${p25} ` +
+        `and ฿${p75}. The figure is for one unit: a larger unit in the same building pays more, because Thai ` +
+        `buildings bill CAM per square metre.`,
+      q2: "What does the CAM fee pay for?",
+      a2:
+        "Security, cleaning, lifts, water in the common areas, garden and pool upkeep, and the juristic office. A " +
+        "building with a pool, a gym and a concierge costs more to run than a walk-up, which is most of the spread " +
+        "between any two buildings.",
+      q3: "What is the sinking fund?",
+      a3:
+        "A one-off contribution to the building's capital reserve, charged at transfer and quoted per square metre. " +
+        "It pays for lift replacements and repainting rather than day-to-day running, and a resale unit has usually " +
+        "paid it once already.",
+      q4: "What happens if an owner stops paying?",
+      a4:
+        "Arrears accrue interest, and the juristic person can refuse the debt-free letter the Land Office requires " +
+        "to transfer the unit — which is why unpaid CAM surfaces at the worst possible moment, on the day of a sale.",
+    },
+  },
+  evCharging: {
+    metaTitle: (n: number, year: number) =>
+      `Thai Condos With EV Charging (${year}): ${n} Buildings Confirmed | RealData`,
+    desc: (n: number) =>
+      `${n} condo buildings in Thailand where the project page states charging stations are on site, ` +
+      `with the city, the price we measure and the link to each building's data.`,
+    eyebrow: "EV charging",
+    h1: (n: number) => `Thai condos with EV charging on site: ${n} buildings`,
+    intro: (n: number, checked: number) =>
+      `Of ${checked} buildings whose facilities we have read, ${n} state that charging stations are on site. ` +
+      `That is 2% — which is the useful finding: a charger is still the exception, and worth confirming with the ` +
+      `juristic office before you commit, because a shared wall socket in the car park is not a charging station.`,
+    colBuilding: "Building",
+    colCity: "City",
+    colSale: "Median sale price",
+    noneTitle: "Nothing yet",
+    noneBody: "We have not read a building that confirms on-site charging yet.",
+    methodTitle: "How this list is built",
+    methodBody:
+      "From the facilities block on each building's FazWaz project page, where 'Charging stations on site' is stated " +
+      "as yes or no. We publish only the yes answers and only for buildings we otherwise track, so every row links " +
+      "to measured prices and flood risk. Absence from this list means we have not read a facilities block, not " +
+      "that the building lacks a charger.",
+    faqTitle: "EV charging in Thai condos — frequently asked questions",
+    faq: [
+      {
+        q: "Do Bangkok condos have EV chargers?",
+        a: "Very few confirm one. Across the buildings whose facilities we have read, about 2% state that charging stations are on site. Newer projects are far likelier than older ones, and the juristic office can tell you whether the chargers are shared, assigned, or billed per kWh.",
+      },
+      {
+        q: "Can I install my own charger in a condo parking space?",
+        a: "Only with the juristic person's approval, and most buildings refuse unless the car park's electrical capacity was designed for it. The parking space is usually common property allocated to you, not land you own, so the building decides.",
+      },
+      {
+        q: "Does a charger add to the CAM fee?",
+        a: "The electricity is normally billed to the user rather than the building, but maintenance of shared chargers comes out of common-area funds, which is one reason newer buildings quote a higher fee per square metre.",
+      },
+    ],
+    seeFees: "What condo fees cost by city",
+  },
   seo: {
     /** Under a district H1: the sub-areas people actually search that
      *  fall inside this khet (Thonglor and Ekkamai are in Watthana). */

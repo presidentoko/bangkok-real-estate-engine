@@ -11,6 +11,7 @@ import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
+import { plausibleCamFee } from "@/lib/camFee";
 
 // Was 86400 — every city is prebuilt at build time (generateStaticParams
 // below), so this only controls background ISR regen frequency. Underlying
@@ -145,7 +146,7 @@ export default async function RetireeCityPage({
   ).length;
 
   const camRows = rows
-    .map((r) => r.cam_fee_per_month)
+    .map((r) => plausibleCamFee(r.cam_fee_per_month))
     .filter((v): v is number => v != null);
   const medianCam = median(camRows);
 

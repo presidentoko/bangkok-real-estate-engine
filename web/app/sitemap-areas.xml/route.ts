@@ -7,6 +7,7 @@ import { getViableStations } from "@/lib/queries/stations";
 import { getYieldAreaIndex } from "@/lib/queries/yieldAreas";
 import { COMPARE_PAIRS } from "@/lib/comparePairs";
 import { getComparison } from "@/lib/queries/areaCompare";
+import { getFeeAreaIndex } from "@/lib/queries/feeAreas";
 import {
   SITE_URL,
   urlEntry,
@@ -171,6 +172,17 @@ export async function GET(): Promise<Response> {
     for (const lang of LANGS) {
       entries.push(
         urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "weekly", priority: 0.8, path })
+      );
+    }
+  }
+
+  // CAM-fee pages, one per city that clears the 8-building bar.
+  const feeIndex = await getFeeAreaIndex().catch(() => null);
+  for (const c of feeIndex?.cities ?? []) {
+    const path = `/fees/${c.city}`;
+    for (const lang of LANGS) {
+      entries.push(
+        urlEntry({ loc: `${SITE_URL}/${lang}${path}`, lastmod: today, changefreq: "weekly", priority: 0.7, path })
       );
     }
   }

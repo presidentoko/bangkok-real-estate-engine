@@ -38,6 +38,9 @@ AREA_RE = re.compile(r"([\d.]+)\s*SqM", flags=re.IGNORECASE)
 ROI_RE = re.compile(r"ROI[:\s]*([\d.]+)\s*%", flags=re.IGNORECASE)
 REVISITED_RE = re.compile(r"Est\.?\s*Rent[:\s]*฿([\d,]+)", flags=re.IGNORECASE)
 CAM_RE = re.compile(r"CAM\s*Fee[:\s]*฿([\d,]+)", flags=re.IGNORECASE)
+# A monthly CAM fee for one unit, in baht. Mirrors web/lib/camFee.ts.
+CAM_FEE_MIN = 200
+CAM_FEE_MAX = 60_000
 SINK_RE = re.compile(r"Sinking\s*Fund[:\s]*฿([\d,]+)", flags=re.IGNORECASE)
 
 
@@ -140,7 +143,13 @@ def _parse_card_extras(card) -> dict[str, Any]:
             extras["provided_yield_pct"] = _commafloat(m.group(1))
         m = CAM_RE.search(chips_text)
         if m:
-            extras["cam_fee_per_month"] = _commafloat(m.group(1))
+            # The chip is not always a monthly fee: it has carried a per-sqm
+            # rate (฿35) and, where the markup shifts, a price (฿20,199,600
+            # "per month"). 45 such rows were live on condo pages until
+            # 2026-10-04. Same band as web/lib/camFee.ts — change both.
+            cam = _commafloat(m.group(1))
+            if cam is not None and CAM_FEE_MIN <= cam <= CAM_FEE_MAX:
+                extras["cam_fee_per_month"] = cam
         m = SINK_RE.search(chips_text)
         if m:
             extras["sinking_fund"] = _commafloat(m.group(1))

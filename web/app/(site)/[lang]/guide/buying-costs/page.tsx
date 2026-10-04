@@ -133,6 +133,9 @@ export default async function BuyingCostsPage({ params }: { params: Promise<{ la
           <Link href={`/${lang}/yields`} className="text-emerald-400 hover:underline">
             {t.seeYields} →
           </Link>
+          <Link href={`/${lang}/fees/bangkok`} className="text-emerald-400 hover:underline">
+            {dict.feeArea.citiesTitle} →
+          </Link>
         </div>
       </section>
     </main>

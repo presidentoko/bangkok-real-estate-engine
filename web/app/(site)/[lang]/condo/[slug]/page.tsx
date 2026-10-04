@@ -11,6 +11,7 @@ import { PriceChart } from "@/components/PriceChart";
 import { ReportCard } from "@/components/ReportCard";
 import { AirQualityCard } from "@/components/AirQualityCard";
 import { CostOfOwnershipCard } from "@/components/CostOfOwnershipCard";
+import { plausibleCamFee } from "@/lib/camFee";
 import { DeveloperCard } from "@/components/DeveloperCard";
 import { GroundStabilityCard } from "@/components/GroundStabilityCard";
 import { ForeignQuotaCard } from "@/components/ForeignQuotaCard";
@@ -1070,7 +1071,7 @@ export default async function CondoPage({
       <YieldCard yieldData={yieldData} mortgageRate={mortgageRate} />
 
       <CostOfOwnershipCard
-        camFeePerMonth={condoRaw.cam_fee_per_month}
+        camFeePerMonth={plausibleCamFee(condoRaw.cam_fee_per_month)}
         sinkingFund={condoRaw.sinking_fund}
         ownership={condoRaw.building_ownership}
         avgMonthlyRent={yieldData?.avg_monthly_rent ?? null}
