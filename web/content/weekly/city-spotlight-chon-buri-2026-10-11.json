@@ -1,0 +1,152 @@
+{
+  "slug": "city-spotlight-chon-buri-2026-10-11",
+  "title": "Chon Buri Tops the Yield Table at 14.7% Gross",
+  "description": "Five Chon Buri condos leading this week's yield ranking, with spreads above 700 bp over the current mortgage reference rate.",
+  "published_at": "2026-10-11",
+  "topic": "city-spotlight",
+  "lead": "Chon Buri is the highest-yielding province in this week's RealData scan, with the top building — [Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri) — printing a 14.69% gross yield against an average sale price of ฿2.45 million. The Bank of Thailand MRR sits at 7.1%, so even the weakest name in this cluster carries a spread of roughly 685 bp before tax and vacancy. That gap is the story.",
+  "sections": [
+    {
+      "heading": "Pattaya Sub-Market: Entry Price vs. Rent Recovery",
+      "body": "Three of the four Pattaya entries are priced below ฿2 million, which compresses capital at risk while rents hold in the ฿15,000–฿30,000 range. [Neo Condo](/condo/neo-condo-chon-buri) at ฿1.59 million and [Art on the Hill](/condo/art-on-the-hill-chon-buri) at ฿1.29 million are the cheapest tickets into double-digit yields in the dataset this week.\n\n[Siam Oriental Star](/condo/siam-oriental-star-condo-chon-buri) sits in between at ฿1.92 million with a 14.37% gross yield — the tightest price-to-rent ratio of the Pattaya group on an absolute basis."
+    },
+    {
+      "heading": "Si Racha Entry: Industrial Demand, Different Risk Profile",
+      "body": "[The Sky Sriracha](/condo/the-sky-sriracha-chon-buri) at 14.35% yield is the lone Si Racha name here, priced at ฿2.3 million with average monthly rent of ฿27,500. Si Racha's rental demand skews toward EEC industrial workers and Japanese expats rather than tourism, which smooths seasonal vacancy relative to Pattaya beach-zone product.\n\nBuyers treating this as a pure yield play should note that all five buildings returned null foreign-quota inventory data this week — quota availability needs to be verified directly with juristic offices before committing."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "Jomtien Condotel and Village — gross yield",
+      "value": "14.69%",
+      "condo_id": "8684f357-be0c-416f-8aea-a5e22cc3df59",
+      "metric": "gross_yield_pct",
+      "expected": 14.69,
+      "slug": "jomtien-condotel-and-village-chon-buri"
+    },
+    {
+      "label": "Jomtien Condotel and Village — avg sale price",
+      "value": "฿2,450,000",
+      "condo_id": "8684f357-be0c-416f-8aea-a5e22cc3df59",
+      "metric": "avg_sale_price",
+      "expected": 2450000,
+      "slug": "jomtien-condotel-and-village-chon-buri"
+    },
+    {
+      "label": "Siam Oriental Star — gross yield",
+      "value": "14.37%",
+      "condo_id": "3d50814b-8c8d-4c5f-94bb-060beaeb8d5f",
+      "metric": "gross_yield_pct",
+      "expected": 14.37,
+      "slug": "siam-oriental-star-condo-chon-buri"
+    },
+    {
+      "label": "The Sky Sriracha — avg monthly rent",
+      "value": "฿27,500",
+      "condo_id": "cbc7e9af-cda9-47ca-a553-e5cff8e24ada",
+      "metric": "avg_monthly_rent",
+      "expected": 27500,
+      "slug": "the-sky-sriracha-chon-buri"
+    },
+    {
+      "label": "Neo Condo — avg sale price",
+      "value": "฿1,590,000",
+      "condo_id": "5525f6b7-cae0-443f-8ae4-9c4bfb8615a1",
+      "metric": "avg_sale_price",
+      "expected": 1590000,
+      "slug": "neo-condo-chon-buri"
+    },
+    {
+      "label": "Art on the Hill — gross yield",
+      "value": "13.95%",
+      "condo_id": "629b3a8a-899b-47dc-8c8b-5cc20a7ecc23",
+      "metric": "gross_yield_pct",
+      "expected": 13.95,
+      "slug": "art-on-the-hill-chon-buri"
+    }
+  ],
+  "i18n": {
+    "ko": {
+      "title": "촌부리, 총임대수익률 14.7%로 수익률 1위 등극",
+      "description": "이번 주 수익률 순위 상위권을 차지한 촌부리 콘도 5곳, 현행 주택담보대출 기준금리 대비 700bp 이상 스프레드 기록.",
+      "lead": "촌부리는 이번 주 RealData 조사에서 가장 높은 임대수익률을 기록한 주(州)입니다. 최상위 건물인 [Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri)는 평균 매매가 ฿2.45 million 대비 총수익률 14.69%를 달성했습니다. 태국은행(Bank of Thailand)의 MRR은 현재 7.1%로, 이 클러스터 내 가장 낮은 수익률 건물조차 세금 및 공실 차감 전 기준으로 약 685bp의 스프레드를 유지하고 있습니다. 바로 이 격차가 핵심입니다.",
+      "sections": [
+        {
+          "heading": "파타야 세부 시장: 진입 가격 대비 임대 회수율",
+          "body": "파타야 4개 매물 중 3곳은 ฿2 million 미만으로 책정되어 있어, 임대료가 ฿15,000–฿30,000 수준을 유지하는 가운데 자본 위험을 낮추는 구조입니다. [Neo Condo](/condo/neo-condo-chon-buri)(฿1.59 million)와 [Art on the Hill](/condo/art-on-the-hill-chon-buri)(฿1.29 million)은 이번 주 데이터셋에서 두 자릿수 수익률로 진입할 수 있는 가장 저렴한 선택지입니다.\n\n[Siam Oriental Star](/condo/siam-oriental-star-condo-chon-buri)는 ฿1.92 million에 총수익률 14.37%를 기록하며 그 중간에 위치하고 있으며, 절대 기준으로 파타야 그룹 내 가장 낮은 가격 대비 임대 비율을 보입니다."
+        },
+        {
+          "heading": "시라차 진입 매물: 산업 수요와 차별화된 리스크 프로파일",
+          "body": "[The Sky Sriracha](/condo/the-sky-sriracha-chon-buri)는 14.35% 수익률로 이번 목록에서 유일한 시라차 매물이며, 매매가 ฿2.3 million에 월평균 임대료 ฿27,500을 기록하고 있습니다. 시라차의 임대 수요는 관광보다 EEC 산업단지 근로자 및 일본인 거주자 위주로 형성되어 있어, 파타야 해변 지역 매물 대비 계절적 공실 변동이 상대적으로 완만한 편입니다.\n\n순수 수익률 투자로 접근하는 매수자라면, 이번 주 5개 건물 모두 외국인 쿼터 재고 데이터가 확인되지 않았다는 점에 유의해야 합니다. 계약 체결 전에 반드시 해당 건물 법인 사무소를 통해 쿼터 가용 여부를 직접 확인하시기 바랍니다."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Jomtien Condotel and Village — 총임대수익률",
+          "value": "14.69%"
+        },
+        {
+          "label": "Jomtien Condotel and Village — 평균 매매가",
+          "value": "฿2,450,000"
+        },
+        {
+          "label": "Siam Oriental Star — 총임대수익률",
+          "value": "14.37%"
+        },
+        {
+          "label": "The Sky Sriracha — 월평균 임대료",
+          "value": "฿27,500"
+        },
+        {
+          "label": "Neo Condo — 평균 매매가",
+          "value": "฿1,590,000"
+        },
+        {
+          "label": "Art on the Hill — 총임대수익률",
+          "value": "13.95%"
+        }
+      ]
+    },
+    "th": {
+      "title": "ชลบุรีครองอันดับสูงสุดด้วยผลตอบแทนขั้นต้น 14.7%",
+      "description": "คอนโดมิเนียมชลบุรี 5 แห่งนำตารางผลตอบแทนประจำสัปดาห์นี้ โดยมีส่วนต่างเหนืออัตราอ้างอิงสินเชื่อที่อยู่อาศัยปัจจุบันกว่า 700 bp",
+      "lead": "ชลบุรีเป็นจังหวัดที่มีผลตอบแทนสูงสุดในการสแกนของ RealData สัปดาห์นี้ โดยอาคารอันดับหนึ่งอย่าง [Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri) บันทึกผลตอบแทนขั้นต้น 14.69% เทียบกับราคาขายเฉลี่ย ฿2.45 ล้านบาท อัตรา MRR ของธนาคารแห่งประเทศไทยอยู่ที่ 7.1% ดังนั้นแม้แต่อาคารที่อ่อนแอที่สุดในกลุ่มนี้ก็ยังมีส่วนต่างประมาณ 685 bp ก่อนหักภาษีและอัตราห้องว่าง และนั่นคือประเด็นสำคัญของเรื่องนี้",
+      "sections": [
+        {
+          "heading": "ตลาดย่อยพัทยา: ราคาเข้าลงทุนเทียบกับการคืนทุนจากค่าเช่า",
+          "body": "สามในสี่รายการของพัทยามีราคาต่ำกว่า ฿2 ล้านบาท ซึ่งช่วยลดความเสี่ยงด้านเงินทุน ขณะที่ค่าเช่ายังคงอยู่ในช่วง ฿15,000–฿30,000 โดย [Neo Condo](/condo/neo-condo-chon-buri) ที่ ฿1.59 ล้านบาท และ [Art on the Hill](/condo/art-on-the-hill-chon-buri) ที่ ฿1.29 ล้านบาท ถือเป็นตัวเลือกราคาถูกที่สุดสำหรับผลตอบแทนสองหลักในชุดข้อมูลสัปดาห์นี้\n\n[Siam Oriental Star](/condo/siam-oriental-star-condo-chon-buri) อยู่ในระดับกลางที่ ฿1.92 ล้านบาท พร้อมผลตอบแทนขั้นต้น 14.37% ซึ่งมีอัตราส่วนราคาต่อค่าเช่าที่ตึงตัวที่สุดในกลุ่มพัทยาเมื่อพิจารณาในเชิงตัวเลขสัมบูรณ์"
+        },
+        {
+          "heading": "ศรีราชา: อุปสงค์จากภาคอุตสาหกรรม โปรไฟล์ความเสี่ยงที่แตกต่าง",
+          "body": "[The Sky Sriracha](/condo/the-sky-sriracha-chon-buri) ที่ผลตอบแทน 14.35% เป็นรายการเดียวจากศรีราชาในที่นี้ ตั้งราคาไว้ที่ ฿2.3 ล้านบาท พร้อมค่าเช่าเฉลี่ยต่อเดือน ฿27,500 อุปสงค์การเช่าของศรีราชาเอนเอียงไปทางแรงงานในโครงการ EEC และชาวต่างชาติสัญชาติญี่ปุ่น มากกว่าการท่องเที่ยว ซึ่งช่วยลดความผันผวนตามฤดูกาลเมื่อเทียบกับโครงการในโซนชายหาดพัทยา\n\nผู้ซื้อที่มองเรื่องนี้เป็นการลงทุนเพื่อผลตอบแทนล้วนๆ ควรทราบว่าทั้ง 5 อาคารส่งคืนข้อมูลโควตาต่างชาติเป็นค่าว่างในสัปดาห์นี้ จึงจำเป็นต้องตรวจสอบความพร้อมของโควตาโดยตรงกับสำนักงานนิติบุคคลก่อนตัดสินใจลงทุน"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Jomtien Condotel and Village — ผลตอบแทนขั้นต้น",
+          "value": "14.69%"
+        },
+        {
+          "label": "Jomtien Condotel and Village — ราคาขายเฉลี่ย",
+          "value": "฿2,450,000"
+        },
+        {
+          "label": "Siam Oriental Star — ผลตอบแทนขั้นต้น",
+          "value": "14.37%"
+        },
+        {
+          "label": "The Sky Sriracha — ค่าเช่าเฉลี่ยต่อเดือน",
+          "value": "฿27,500"
+        },
+        {
+          "label": "Neo Condo — ราคาขายเฉลี่ย",
+          "value": "฿1,590,000"
+        },
+        {
+          "label": "Art on the Hill — ผลตอบแทนขั้นต้น",
+          "value": "13.95%"
+        }
+      ]
+    }
+  }
+}
