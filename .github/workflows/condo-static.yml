@@ -31,6 +31,14 @@ on:
   workflow_run:
     workflows: ["Weekly Tier B + score refresh"]
     types: [completed]
+  schedule:
+    # Sunday 13:00 UTC = 20:00 ICT, after the weekly refresh has finished.
+    # The workflow_run trigger above fired for the 2026-09-21 refresh and
+    # then silently stopped: no export ran between 2026-09-26 and 2026-10-15
+    # even though the refresh itself succeeded, so every condo page served
+    # the data it held on the 26th. A schedule does not depend on another
+    # workflow's event reaching this one.
+    - cron: "0 13 * * 0"
   workflow_dispatch:
     inputs:
       mode:
