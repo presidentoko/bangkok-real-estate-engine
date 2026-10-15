@@ -10,7 +10,11 @@ import {
   type KhetCount,
   type CondoPoint,
 } from "@/components/InventoryMapSvg";
-import { CITIES } from "@/lib/cities";
+import { COMPARE_PAIRS } from "@/lib/comparePairs";
+import { sideName } from "@/components/AreaVsView";
+import { getYieldAreaIndex } from "@/lib/queries/yieldAreas";
+import { getFeeAreaIndex } from "@/lib/queries/feeAreas";
+import { CITIES, provinceDisplayName } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import {
@@ -57,6 +61,13 @@ export default async function Home({
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
+
+  const [yieldIndex, feeIndex] = await Promise.all([
+    getYieldAreaIndex().catch(() => null),
+    getFeeAreaIndex().catch(() => null),
+  ]);
+  const yieldCities = (yieldIndex?.cities ?? []).slice(0, 6);
+  const feeCities = (feeIndex?.cities ?? []).slice(0, 5);
 
   const [mapPoints, featured, stats] = await Promise.all([
     fetchCondoMapPoints(),
@@ -322,6 +333,50 @@ export default async function Home({
               className="bg-zinc-900 border border-zinc-800 rounded-full px-3.5 py-2 text-zinc-300 hover:text-emerald-400 hover:border-zinc-600 transition"
             >
               {s.label}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Area data — the yield, fee and comparison pages. They shipped in
+          September reachable only from deep pages and the sitemap, and a
+          month later had one impression between them: Google had not
+          crawled them. Everything here is one click from the home page. */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-900">
+        <div className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+            {t.home.dataByAreaTitle}
+          </h2>
+          <p className="text-zinc-400 text-sm mt-1 max-w-xl">{t.home.dataByAreaLead}</p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-sm">
+          {yieldCities.map((c) => (
+            <Link
+              key={`y-${c.city}`}
+              href={`/${lang}/yield/${c.city}`}
+              className="bg-zinc-900 border border-zinc-800 rounded-full px-3.5 py-2 text-zinc-300 hover:text-emerald-400 hover:border-zinc-600 transition"
+            >
+              {provinceDisplayName(c.city, lang)}
+              <span className="text-zinc-500"> · {(c.stats.median ?? 0).toFixed(1)}%</span>
+            </Link>
+          ))}
+          {feeCities.map((c) => (
+            <Link
+              key={`f-${c.city}`}
+              href={`/${lang}/fees/${c.city}`}
+              className="bg-zinc-900 border border-zinc-800 rounded-full px-3.5 py-2 text-zinc-300 hover:text-emerald-400 hover:border-zinc-600 transition"
+            >
+              {provinceDisplayName(c.city, lang)}
+              <span className="text-zinc-500"> · ฿{Math.round(c.stats.median ?? 0).toLocaleString()}</span>
+            </Link>
+          ))}
+          {COMPARE_PAIRS.slice(0, 6).map((p) => (
+            <Link
+              key={p.slug}
+              href={`/${lang}/vs/${p.slug}`}
+              className="bg-zinc-900 border border-zinc-800 rounded-full px-3.5 py-2 text-zinc-300 hover:text-emerald-400 hover:border-zinc-600 transition"
+            >
+              {sideName(p, p.a, lang)} vs {sideName(p, p.b, lang)}
             </Link>
           ))}
         </div>

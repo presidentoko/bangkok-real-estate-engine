@@ -46,6 +46,21 @@ fs.cpSync(path.join(nextDir, "static"), path.join(outDir, "cfs", "cfs", "_next",
   recursive: true,
 });
 
+// Workers static assets answer an .html file with a bare "text/html", while
+// Vercel sends "text/html; charset=utf-8". The pages carry <meta charSet>, so
+// a compliant parser still reads them as UTF-8 — but a Thai or Korean page
+// whose encoding is guessed is not a risk worth carrying for one header.
+for (const lang of ["en", "ko", "th"]) {
+  const dir = path.join(outDir, lang);
+  if (!fs.existsSync(dir)) continue;
+  fs.writeFileSync(
+    path.join(dir, "_headers"),
+    `/${lang}/condo/*
+  Content-Type: text/html; charset=utf-8
+`,
+  );
+}
+
 console.log(`[collect] copied ${copied} pages, skipped ${skipped.length}`);
 for (const s of skipped.slice(0, 20)) console.log(`   skipped ${s}`);
 if (copied + skipped.length > 0 && skipped.length / (copied + skipped.length) > 0.02) {

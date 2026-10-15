@@ -47,6 +47,8 @@ const dict = {
     terms: "Terms",
   },
   home: {
+    dataByAreaTitle: "Area data",
+    dataByAreaLead: "Yields, common-area fees and head-to-head area comparisons, measured from live listings.",
     heroPretitle: "Independent measurement · 4 portals · 9 cities",
     heroTitle1: "Buy a Thai condo on",
     heroTitle2Highlight: "evidence",

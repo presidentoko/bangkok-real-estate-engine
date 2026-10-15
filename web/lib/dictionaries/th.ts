@@ -46,6 +46,8 @@ const dict: Dict = {
     terms: "ข้อกำหนดการใช้งาน",
   },
   home: {
+    dataByAreaTitle: "ข้อมูลรายพื้นที่",
+    dataByAreaLead: "ผลตอบแทน ค่าส่วนกลาง และการเทียบทำเลต่อทำเล วัดจากประกาศจริง",
     heroPretitle: "ข้อมูลอิสระ · 4 พอร์ทัล · 9 เมือง",
     heroTitle1: "ซื้อคอนโดไทยด้วย",
     heroTitle2Highlight: "หลักฐาน",

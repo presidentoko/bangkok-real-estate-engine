@@ -46,6 +46,8 @@ const dict: Dict = {
     terms: "이용약관",
   },
   home: {
+    dataByAreaTitle: "지역 데이터",
+    dataByAreaLead: "수익률, 관리비, 지역 간 비교 — 전부 실제 매물에서 측정한 값이에요.",
     heroPretitle: "독립 측정 · 4개 포털 · 9개 도시",
     heroTitle1: "태국 콘도는",
     heroTitle2Highlight: "데이터",

@@ -387,6 +387,13 @@ export default async function LangRootLayout({
               <ul className="space-y-1 text-zinc-500">
                 <li><Link href={`/${lang}/guide/foreign-ownership`} className="hover:text-zinc-300">{t.footer.guideForeignOwnership}</Link></li>
                 <li><Link href={`/${lang}/guide/investment`} className="hover:text-zinc-300">{t.footer.guideInvestment}</Link></li>
+                {/* Added 2026-10-15: these shipped in September with no link
+                    anywhere in the app, so their only crawl path was the
+                    sitemap — and a month later they had 1 impression between
+                    them. */}
+                <li><Link href={`/${lang}/guide/foreign-quota`} className="hover:text-zinc-300">{t.foreignQuota.eyebrow}</Link></li>
+                <li><Link href={`/${lang}/guide/buying-costs`} className="hover:text-zinc-300">{t.buyingCosts.eyebrow}</Link></li>
+                <li><Link href={`/${lang}/ev-charging`} className="hover:text-zinc-300">{t.evCharging.eyebrow}</Link></li>
                 <li><Link href={`/${lang}/glossary`} className="hover:text-zinc-300">{t.footer.guideGlossary}</Link></li>
               </ul>
             </div>
