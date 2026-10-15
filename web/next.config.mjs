@@ -10,12 +10,14 @@ const CONDO_STATIC_BUILD = process.env.CONDO_STATIC_BUILD === "1";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // /sitemap-areas.xml aggregates yields, fees and 13 area comparisons, and
+  // /en/data counts the whole catalogue. Both have failed a production build
+  // at the 60s default while succeeding locally; the work is real, not a
+  // hang. Vercel allows 45 minutes for the build as a whole.
+  staticPageGenerationTimeout: 180,
   ...(CONDO_STATIC_BUILD
     ? {
         assetPrefix: "/cfs",
-        // A building with hundreds of listings is a slow render while the
-        // export has Supabase busy; 60s (the default) failed a shard.
-        staticPageGenerationTimeout: 180,
         generateBuildId: async () => process.env.CONDO_STATIC_BUILD_ID || "condo-static",
       }
     : {}),

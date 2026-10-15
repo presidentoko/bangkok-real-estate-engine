@@ -133,11 +133,18 @@ async function stationSide(key: string): Promise<CompareSide | null> {
   };
 }
 
-/** Both sides, or null when either lacks the data to be compared. */
-export async function getComparison(
-  pair: ComparePair,
-): Promise<{ a: CompareSide; b: CompareSide } | null> {
-  const load = pair.kind === "station" ? stationSide : districtSide;
-  const [a, b] = await Promise.all([load(pair.a), load(pair.b)]);
-  return a && b ? { a, b } : null;
-}
+/** Both sides, or null when either lacks the data to be compared.
+ *
+ *  Cached per pair: sitemap-areas.xml checks all 13 pairs and each /vs/ page
+ *  loads one, and a station side costs a livability scan plus chunked price
+ *  lookups. Uncached, that pushed the sitemap past the 60s static-generation
+ *  timeout and failed the 2026-10-15 production build. */
+export const getComparison = unstable_cache(
+  async (pair: ComparePair): Promise<{ a: CompareSide; b: CompareSide } | null> => {
+    const load = pair.kind === "station" ? stationSide : districtSide;
+    const [a, b] = await Promise.all([load(pair.a), load(pair.b)]);
+    return a && b ? { a, b } : null;
+  },
+  ["area-comparison-v1"],
+  { revalidate: 604800 },
+);
