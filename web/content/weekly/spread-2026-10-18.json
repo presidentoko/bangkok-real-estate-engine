@@ -1,0 +1,152 @@
+{
+  "slug": "spread-2026-10-18",
+  "title": "5 Thai Condos Yielding 7+ pp Above the Mortgage Rate",
+  "description": "Bank of Thailand MRR sits at 7.1%. These five condos post gross yields of 14.4–15.0%, a spread most markets never see.",
+  "published_at": "2026-10-18",
+  "topic": "spread",
+  "lead": "With the Bank of Thailand MRR at 7.1%, a yield spread of 2 pp is considered healthy. All five condos below clear 7 pp. The outlier is Anna Condominium Ladprao 130 in Bang Kapi, where a ฿1.14M average sale price and ฿14,161 monthly rent produce a 14.95% gross yield — a 7.85 pp spread over the benchmark rate.",
+  "sections": [
+    {
+      "heading": "Bangkok Entry Point: High Yield, Low Ticket",
+      "body": "[Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok) is the cheapest unit on this list at an average ฿1,136,960 — roughly a third of the Pattaya beach condos — yet it leads the entire screen on yield at 14.95%. That combination of sub-฿1.2M entry and a 7.85 pp spread over MRR is unusual for Bangkok; Bang Kapi typically trades on capital-gain narratives, not income math.\n\nThe risk is liquidity: a small, off-BTS building in Ladprao has a narrower resale pool than beachfront stock. Factor that into hold-period assumptions."
+    },
+    {
+      "heading": "Pattaya-Jomtien Cluster: Four Condos, Tight Spread Band",
+      "body": "The remaining four are all Chon Buri / Pattaya-area assets with yields clustering between 14.37% and 14.75% — a 38 bp range that signals genuine market-level pricing rather than one outlier. [Marina Golden Bay](/condo/marina-golden-bay-chon-buri) carries the highest rent at ฿49,000/month against an average sale price of ฿3,986,000, while [Siam Oriental Star](/condo/siam-oriental-star-condo-chon-buri) offers the lowest absolute entry in the cluster at ฿1,920,000.\n\n[Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri) and [Porch Land 2 Jomtien Resort](/condo/porch-land-2-jomtien-resort-pattaya) sit at nearly identical price points (฿2.45M vs ฿2.47M) and identical rents (฿30,000), making foreign-quota availability and flood-zone data the differentiating variables — check the building-level reports before choosing between them."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "Anna Condominium Ladprao 130 — gross yield",
+      "value": "14.95%",
+      "condo_id": "636b42fe-566e-4e6d-82ad-30450837515d",
+      "metric": "gross_yield_pct",
+      "expected": 14.95,
+      "slug": "anna-condominium-ladprao-130-bangkok"
+    },
+    {
+      "label": "Anna Condominium Ladprao 130 — yield-to-MRR spread",
+      "value": "+7.85 pp",
+      "condo_id": "636b42fe-566e-4e6d-82ad-30450837515d",
+      "metric": "spread_pp",
+      "expected": 7.85,
+      "slug": "anna-condominium-ladprao-130-bangkok"
+    },
+    {
+      "label": "Anna Condominium Ladprao 130 — avg sale price",
+      "value": "฿1,136,960",
+      "condo_id": "636b42fe-566e-4e6d-82ad-30450837515d",
+      "metric": "avg_sale_price",
+      "expected": 1136960,
+      "slug": "anna-condominium-ladprao-130-bangkok"
+    },
+    {
+      "label": "Marina Golden Bay — avg monthly rent",
+      "value": "฿49,000",
+      "condo_id": "bebb6ebe-c4d1-4e89-a996-5408328ee1c4",
+      "metric": "avg_monthly_rent",
+      "expected": 49000,
+      "slug": "marina-golden-bay-chon-buri"
+    },
+    {
+      "label": "Siam Oriental Star — gross yield",
+      "value": "14.37%",
+      "condo_id": "3d50814b-8c8d-4c5f-94bb-060beaeb8d5f",
+      "metric": "gross_yield_pct",
+      "expected": 14.37,
+      "slug": "siam-oriental-star-condo-chon-buri"
+    },
+    {
+      "label": "Jomtien Condotel and Village — avg sale price",
+      "value": "฿2,450,000",
+      "condo_id": "8684f357-be0c-416f-8aea-a5e22cc3df59",
+      "metric": "avg_sale_price",
+      "expected": 2450000,
+      "slug": "jomtien-condotel-and-village-chon-buri"
+    }
+  ],
+  "i18n": {
+    "ko": {
+      "title": "모기지 금리보다 7%p 이상 높은 수익률의 태국 콘도 5선",
+      "description": "태국 중앙은행 MRR은 7.1%입니다. 이 5개 콘도는 14.4–15.0%의 총 임대수익률을 기록하며, 대부분의 시장에서는 보기 드문 스프레드를 보여줍니다.",
+      "lead": "태국 중앙은행 MRR이 7.1%인 상황에서 2%p의 수익률 스프레드는 양호한 수준으로 평가됩니다. 아래 소개하는 콘도 5곳은 모두 7%p를 상회합니다. 특히 Bang Kapi에 위치한 Anna Condominium Ladprao 130은 평균 매매가 ฿1.14M, 월 임대료 ฿14,161을 기록하며 총 임대수익률 14.95% — 기준금리 대비 7.85%p 스프레드 — 를 달성하는 이례적인 사례입니다.",
+      "sections": [
+        {
+          "heading": "방콕 진입점: 높은 수익률, 낮은 투자금",
+          "body": "[Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok)은 이 목록에서 평균 ฿1,136,960으로 가장 낮은 매매가를 형성하며 — 파타야 해변 콘도의 약 3분의 1 수준 — 임대수익률 14.95%로 전체 목록을 선도합니다. ฿1.2M 미만의 진입가와 MRR 대비 7.85%p 스프레드의 조합은 방콕에서 이례적으로, Bang Kapi는 통상 임대 수익 논리보다 자본 차익 내러티브로 거래되는 지역입니다.\n\n리스크는 유동성입니다. Ladprao의 BTS 비인접 소규모 건물은 해변 입지 매물보다 재매각 수요층이 좁습니다. 보유 기간 가정에 이 점을 반드시 반영해야 합니다."
+        },
+        {
+          "heading": "파타야-좀티엔 클러스터: 콘도 4곳, 촘촘한 스프레드 밴드",
+          "body": "나머지 4곳은 모두 Chon Buri / 파타야 지역 자산으로, 임대수익률이 14.37%에서 14.75% 사이에 집중되어 있습니다 — 38 bp의 범위는 단일 이상치가 아닌 실제 시장가격이 형성되었음을 시사합니다. [Marina Golden Bay](/condo/marina-golden-bay-chon-buri)는 평균 매매가 ฿3,986,000 대비 월 임대료 ฿49,000으로 클러스터 내 최고 임대료를 기록하며, [Siam Oriental Star](/condo/siam-oriental-star-condo-chon-buri)는 ฿1,920,000으로 클러스터 내 절대 진입가가 가장 낮습니다.\n\n[Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri)와 [Porch Land 2 Jomtien Resort](/condo/porch-land-2-jomtien-resort-pattaya)는 가격(฿2.45M 대 ฿2.47M)과 임대료(฿30,000)가 거의 동일하므로, 외국인 쿼터 가용 여부와 침수구역 데이터가 두 매물을 가르는 핵심 변수입니다 — 선택 전 건물별 보고서를 반드시 확인하세요."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Anna Condominium Ladprao 130 — 총 임대수익률",
+          "value": "14.95%"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — 수익률-MRR 스프레드",
+          "value": "+7.85 pp"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — 평균 매매가",
+          "value": "฿1,136,960"
+        },
+        {
+          "label": "Marina Golden Bay — 평균 월 임대료",
+          "value": "฿49,000"
+        },
+        {
+          "label": "Siam Oriental Star — 총 임대수익률",
+          "value": "14.37%"
+        },
+        {
+          "label": "Jomtien Condotel and Village — 평균 매매가",
+          "value": "฿2,450,000"
+        }
+      ]
+    },
+    "th": {
+      "title": "5 คอนโดไทยที่ให้ผลตอบแทนสูงกว่าอัตราดอกเบี้ย MRR เกิน 7 pp",
+      "description": "อัตรา MRR ของธนาคารแห่งประเทศไทยอยู่ที่ 7.1% ทั้งห้าคอนโดนี้มีผลตอบแทนขั้นต้นระหว่าง 14.4–15.0% ซึ่งเป็นส่วนต่างที่ตลาดส่วนใหญ่แทบไม่เคยเห็น",
+      "lead": "เมื่ออัตรา MRR ของธนาคารแห่งประเทศไทยอยู่ที่ 7.1% ส่วนต่างผลตอบแทน 2 pp ถือว่าอยู่ในเกณฑ์ดี แต่ทั้งห้าคอนโดด้านล่างนี้ทำได้เกิน 7 pp ที่โดดเด่นที่สุดคือ Anna Condominium Ladprao 130 ในย่านบางกะปิ ซึ่งมีราคาขายเฉลี่ย ฿1.14M และค่าเช่ารายเดือน ฿14,161 ให้ผลตอบแทนขั้นต้น 14.95% หรือส่วนต่าง 7.85 pp เหนืออัตราอ้างอิง",
+      "sections": [
+        {
+          "heading": "จุดเข้าลงทุนในกรุงเทพฯ: ผลตอบแทนสูง ราคาเข้าถึงได้",
+          "body": "[Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok) เป็นยูนิตที่มีราคาต่ำที่สุดในรายการนี้ โดยมีราคาเฉลี่ยที่ ฿1,136,960 ซึ่งคิดเป็นประมาณหนึ่งในสามของคอนโดชายหาดพัทยา แต่กลับมีผลตอบแทนสูงที่สุดในการคัดกรองครั้งนี้ที่ 14.95% การผสมผสานระหว่างราคาเข้าต่ำกว่า ฿1.2M และส่วนต่างเหนือ MRR ถึง 7.85 pp นั้นพบได้ไม่บ่อยในกรุงเทพฯ เนื่องจากย่านบางกะปิมักถูกมองในแง่กำไรจากราคาทุน ไม่ใช่รายได้จากค่าเช่า\n\nความเสี่ยงอยู่ที่สภาพคล่อง อาคารขนาดเล็กที่ไม่ได้อยู่ติดรถไฟฟ้า BTS ในย่านลาดพร้าวมีกลุ่มผู้ซื้อต่อแคบกว่าคอนโดติดชายหาด ควรนำปัจจัยนี้ไปคำนวณในช่วงระยะเวลาการถือครองด้วย"
+        },
+        {
+          "heading": "กลุ่มคอนโดพัทยา-จอมเทียน: สี่โครงการ ส่วนต่างผลตอบแทนใกล้เคียงกัน",
+          "body": "อีกสี่โครงการที่เหลือล้วนเป็นอสังหาริมทรัพย์ในเขตชลบุรี/พัทยา โดยมีผลตอบแทนอยู่ในช่วง 14.37% ถึง 14.75% ซึ่งมีช่วงห่างเพียง 38 bp สะท้อนให้เห็นว่าราคาในตลาดนี้เป็นไปตามกลไกจริง ไม่ใช่ตัวเลขผิดปกติ [Marina Golden Bay](/condo/marina-golden-bay-chon-buri) มีค่าเช่าสูงที่สุดที่ ฿49,000/เดือน เทียบกับราคาขายเฉลี่ย ฿3,986,000 ขณะที่ [Siam Oriental Star](/condo/siam-oriental-star-condo-chon-buri) มีราคาเข้าต่ำที่สุดในกลุ่มที่ ฿1,920,000\n\n[Jomtien Condotel and Village](/condo/jomtien-condotel-and-village-chon-buri) และ [Porch Land 2 Jomtien Resort](/condo/porch-land-2-jomtien-resort-pattaya) มีราคาใกล้เคียงกันมาก (฿2.45M กับ ฿2.47M) และมีค่าเช่าเท่ากัน (฿30,000) ดังนั้นตัวแปรที่ใช้ตัดสินใจระหว่างสองโครงการนี้จึงได้แก่ ความพร้อมของโควตาต่างชาติและข้อมูลพื้นที่น้ำท่วม ควรตรวจสอบรายงานระดับอาคารก่อนตัดสินใจ"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Anna Condominium Ladprao 130 — ผลตอบแทนขั้นต้น",
+          "value": "14.95%"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — ส่วนต่างผลตอบแทนเทียบ MRR",
+          "value": "+7.85 pp"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — ราคาขายเฉลี่ย",
+          "value": "฿1,136,960"
+        },
+        {
+          "label": "Marina Golden Bay — ค่าเช่าเฉลี่ยต่อเดือน",
+          "value": "฿49,000"
+        },
+        {
+          "label": "Siam Oriental Star — ผลตอบแทนขั้นต้น",
+          "value": "14.37%"
+        },
+        {
+          "label": "Jomtien Condotel and Village — ราคาขายเฉลี่ย",
+          "value": "฿2,450,000"
+        }
+      ]
+    }
+  }
+}
