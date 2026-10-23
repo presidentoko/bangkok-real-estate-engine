@@ -13,6 +13,7 @@ import { AirQualityCard } from "@/components/AirQualityCard";
 import { CostOfOwnershipCard } from "@/components/CostOfOwnershipCard";
 import { plausibleCamFee } from "@/lib/camFee";
 import { DeveloperCard } from "@/components/DeveloperCard";
+import { DooHongInteriorsCard } from "@/components/DooHongInteriorsCard";
 import { GroundStabilityCard } from "@/components/GroundStabilityCard";
 import { ForeignQuotaCard } from "@/components/ForeignQuotaCard";
 import { LeadCaptureCTA } from "@/components/LeadCaptureCTA";
@@ -918,6 +919,15 @@ export default async function CondoPage({
           />
         )}
       </section>
+
+      {/* DooHong: the same building's interiors and fit-out quotes on the
+          founder's interiors site, or its home when DooHong lacks the
+          building. Static map, no request to DooHong (lib/doohong.ts). */}
+      <DooHongInteriorsCard
+        name={condoRaw.name}
+        province={condoRaw.province}
+        lang={isLang(lang) ? lang : "en"}
+      />
 
       {/* First ad on the page, and deliberately this far down: the report
           card and building facts above are the LCP element and the reason

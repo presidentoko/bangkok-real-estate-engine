@@ -12,6 +12,7 @@ import { BackToTop } from "@/components/BackToTop";
 import { CompareTray } from "@/components/CompareTray";
 import { SavedNavLink } from "@/components/SavedNavLink";
 import { ADSENSE_CLIENT, adsEnabled } from "@/lib/ads";
+import { doohongHomeUrl } from "@/lib/doohong";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, LANGS } from "@/lib/i18n";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
@@ -417,6 +418,15 @@ export default async function LangRootLayout({
               <Link href={`/${lang}/contact`} className="text-zinc-400 hover:text-zinc-200">
                 {t.nav.contact}
               </Link>
+            </div>
+            <div className="text-center mb-2">
+              {t.doohong.alsoBy}{" "}
+              <a
+                href={doohongHomeUrl(lang, "footer")}
+                className="text-zinc-400 hover:text-zinc-200"
+              >
+                {t.doohong.alsoByLink}
+              </a>
             </div>
             <div className="text-center">
               © {new Date().getFullYear()} RealData · {t.footer.copyright}

@@ -1459,6 +1459,15 @@ const dict: Dict = {
     realityDesc:
       "นำคอนโดกรุงเทพฯ ที่อินฟลูเอนเซอร์และโฆษณาเชียร์ มาวางข้าง Bubble Index และผลตอบแทนที่เราวัดเอง เราไม่โจมตีตัวบุคคล ดูแค่ตัวเลข ข้อมูลอิสระ ไม่รับเงินผู้พัฒนา",
   },
+  doohong: {
+    interiorsTitle: "อินทีเรียในอาคารนี้",
+    interiorsLead:
+      "ดูห้องจริงที่ตกแต่งแล้ว และขอใบเสนอราคางานบิวท์อิน ผ้าม่าน และรีโนเวท จากสตูดิโอในกรุงเทพฯ ที่ผ่านการคัดเลือกบน DooHong",
+    interiorsCtaBuilding: (name: string) => `ดูอินทีเรีย ${name} บน DooHong →`,
+    interiorsCtaHome: "ดูอินทีเรียคอนโดกรุงเทพฯ บน DooHong →",
+    alsoBy: "อีกหนึ่งโปรเจกต์จากผู้ก่อตั้ง RealData:",
+    alsoByLink: "DooHong — อินทีเรียคอนโดกรุงเทพฯ",
+  },
 };
 
 export default dict;
