@@ -86,6 +86,31 @@ jobs:
             Add-Content -Path ingest_ddproperty.log -Value "CI_STEP_FAILED::ddproperty"
           }
 
+      # Added 2026-10-25. Both of these ran sale-only -- ingest_ddproperty's
+      # own docstring said "rent listings are a separate later pass" and that
+      # pass was never written. The cost of the omission is measurable: 996
+      # published buildings have 2+ sale listings and fewer than 2 rent
+      # listings, so they carry no yield, no substance under the indexability
+      # gate, and no place on the /yield pages. Rent is half of every yield
+      # this site sells itself on.
+      - name: DDProperty Bangkok (rent, light)
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\ingest_ddproperty.py --city bangkok --listing-type rent --limit $env:LIMIT 2>&1" | Tee-Object -FilePath ingest_ddproperty_rent.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::ddproperty rent exited $LASTEXITCODE"
+            Add-Content -Path ingest_ddproperty_rent.log -Value "CI_STEP_FAILED::ddproperty_rent"
+          }
+
+      - name: FazWaz Bangkok (rent, light)
+        continue-on-error: true
+        run: |
+          cmd /c "python scripts\ingest_fazwaz.py --city bangkok --listing-type rent --limit $env:LIMIT 2>&1" | Tee-Object -FilePath ingest_fazwaz_rent.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::warning::fazwaz rent exited $LASTEXITCODE"
+            Add-Content -Path ingest_fazwaz_rent.log -Value "CI_STEP_FAILED::fazwaz_rent"
+          }
+
       - name: FazWaz Bangkok (sale, light)
         continue-on-error: true
         run: |
