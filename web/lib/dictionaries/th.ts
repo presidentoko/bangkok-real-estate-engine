@@ -1,4 +1,5 @@
 import type { Dict } from "./en";
+import { TITLE_FACTS } from "@/lib/seo/titleFacts";
 
 const dict: Dict = {
   brand: {
@@ -721,6 +722,9 @@ const dict: Dict = {
     sourceLabel: "ที่มา:",
     affiliateCta: "หาโรงแรมใกล้อาคารนี้ →",
     nearStation: (station: string) => `คอนโดใกล้สถานี${station}`,
+    feesCityLink: (city: string, median: string) =>
+      `ค่าส่วนกลางใน${city}: มัธยฐาน ฿${median} ต่อเดือน`,
+    areaVsLink: (a: string, b: string) => `${a} vs ${b}: เทียบราคา ผลตอบแทน น้ำท่วม`,
     retireeCity: (city: string) => `คอนโดที่เหมาะกับผู้เกษียณใน${city}`,
     affiliateFraming: (name: string, region: string) =>
       `วางแผนไปดู ${name} ด้วยตัวเองอยู่ไหม? จองโรงแรมพร้อมตั๋วเครื่องในการค้นหาเดียว — ที่พักใน${region}มักถูกกว่าราคาเช่าระยะสั้นของคอนโดเอง`,
@@ -1360,6 +1364,7 @@ const dict: Dict = {
   },
   seo: {
     districtAka: (areas: string) => `ครอบคลุม ${areas}`,
+    perSqmLabel: (price: string) => `ราคา ${price}/ตร.ม.`,
     yieldLabel: (v: string) => `ผลตอบแทน ${v}%`,
     floodLabel: (n: number) => `ความเสี่ยงน้ำท่วม L${n}/5`,
     provinceCondo: (p: string) => `คอนโด${p}`,
@@ -1377,15 +1382,26 @@ const dict: Dict = {
     condoTitle: (
       name: string,
       region: string,
-      f: { yieldPct: string | null; flood: number | null; listings: number | null; reviews: number | null },
+      f: {
+        pricePerSqm: string | null;
+        yieldPct: string | null;
+        flood: number | null;
+        listings: number | null;
+        reviews: number | null;
+      },
     ) => {
       const parts: string[] = [];
+      // "ราคา" is the token Thai searchers append to a building name
+      // ("grand solaire pattaya ราคา": 19 impressions at position 13.5,
+      // GSC 2026-10-25), so the price label spells it out instead of
+      // leading with a bare number.
+      if (f.pricePerSqm) parts.push(`ราคา ${f.pricePerSqm}/ตร.ม.`);
       if (f.listings && f.listings > 0) parts.push(`ขาย ${f.listings} ยูนิต`);
       if (f.yieldPct) parts.push(`ผลตอบแทน ${f.yieldPct}%`);
       if (f.flood != null) parts.push(`น้ำท่วม L${f.flood}/5`);
       if (f.reviews && f.reviews >= 3) parts.push("รีวิว");
       if (parts.length === 0) parts.push("ข้อมูลอาคารและราคาในเขต");
-      return `${name} ${region} — ${parts.join(" · ")} | RealData`;
+      return `${name} ${region} — ${parts.slice(0, TITLE_FACTS).join(" · ")} | RealData`;
     },
     condoDesc: (name: string, region: string, province: string, verdict: string | null, facts: string) =>
       `${name} ${region} ${province} ราคาแพงเกินไปไหม? ` +

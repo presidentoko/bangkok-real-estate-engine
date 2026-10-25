@@ -5,6 +5,7 @@ import { cache } from "react";
 import sanitizeHtml from "sanitize-html";
 import { AdSlot } from "@/components/AdSlot";
 import { CondoFacilities } from "@/components/CondoFacilities";
+import { CondoAreaLinks } from "@/components/CondoAreaLinks";
 import { CondoNeighbours, type NeighbourLink } from "@/components/CondoNeighbours";
 import { CondoUnitsTable } from "@/components/CondoUnitsTable";
 import { PriceChart } from "@/components/PriceChart";
@@ -22,9 +23,10 @@ import { ResaleLiquidityCard } from "@/components/ResaleLiquidityCard";
 import { RetireeSuitabilityCard } from "@/components/RetireeSuitabilityCard";
 import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
+import { fmtUsdPerSqm } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import FaqSection from "@/components/FaqSection";
-import { isLang } from "@/lib/i18n";
+import { isLang, type Lang } from "@/lib/i18n";
 import { computePortalStats, type Listing as PortalListing } from "@/lib/queries/portals";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import {
@@ -244,7 +246,8 @@ export async function generateMetadata({
   const condoForMeta = condo as unknown as {
     id: string; name: string; province: string | null;
     regions: { name: string } | { name: string }[] | null;
-    market_sale_median: number | null; market_summary_currency: string | null;
+    market_sale_median: number | null; market_sale_per_sqm: number | null;
+    market_summary_currency: string | null;
     total_units: number | null; completion_year: number | null; gross_yield_pct: number | null;
     value_scores: EmbeddedOneOrMany<ValueScore>;
     risk_factors: EmbeddedOneOrMany<Risk>;
@@ -280,13 +283,24 @@ export async function generateMetadata({
   // hundreds of building-name queries at a 0.3% CTR (GSC, 2026-09-07):
   // listing portals own those SERPs with photos, so the only reason to
   // click us is the verdict, and the title never said we had one.
+  // market_sale_per_sqm is USD on every populated row (1,145 of 15,465;
+  // zero say THB -- see lib/fmt.ts fmtUsdPerSqm), so the title prints the
+  // same "$2,675" the page body does. Printing a baht sign over this column
+  // is the bug fixed on 2026-09-23; converting here would bake a hardcoded
+  // FX rate into ~46,000 static pages that are rebuilt weekly.
+  const pricePerSqm =
+    c.market_sale_per_sqm != null && Number.isFinite(Number(c.market_sale_per_sqm))
+      ? fmtUsdPerSqm(c.market_sale_per_sqm)
+      : null;
   const title = t.seo.condoTitle(c.name, region, {
+    pricePerSqm,
     yieldPct: c.gross_yield_pct != null ? c.gross_yield_pct.toFixed(2) : null,
     flood: riskMeta?.flood_risk_level ?? null,
     listings: c.active_listings_count ?? null,
     reviews: c.google_review_count ?? null,
   });
   const facts = [
+    pricePerSqm ? t.seo.perSqmLabel(pricePerSqm) : null,
     c.completion_year ? t.seo.built(c.completion_year) : null,
     c.total_units ? t.seo.units(c.total_units) : null,
     yieldTxt,
@@ -579,6 +593,9 @@ export default async function CondoPage({
     region,
     amenities,
     signals: {
+      market_sale_per_sqm: condoRaw.market_sale_per_sqm,
+      market_sale_median: condoRaw.market_sale_median,
+      market_rent_median: condoRaw.market_rent_median,
       bubble_index: scoreData?.bubble_index,
       flood_risk_level: riskData?.flood_risk_level,
       nearest_bts_distance_m: livData?.nearest_bts_distance_m,
@@ -1157,6 +1174,14 @@ export default async function CondoPage({
           {stationLinkOk && stationName && (
             <li><Link href={`/${lang}/near/${stationSpokeSlug}`}>{tCondo.nearStation(stationName)}</Link></li>
           )}
+          {/* /yield/, /fees/ and /vs/ had no inbound link from the surface
+              Google actually crawls. See components/CondoAreaLinks.tsx. */}
+          <CondoAreaLinks
+            lang={isLang(lang) ? lang : "en"}
+            province={condoRaw.province}
+            region={regions?.name ?? null}
+            stationSlug={stationSpokeSlug}
+          />
           {(() => {
             const citySlug = condoRaw.province != null ? canonicalCitySlug(condoRaw.province) : null;
             const cityObj = citySlug ? getCity(citySlug) : null;

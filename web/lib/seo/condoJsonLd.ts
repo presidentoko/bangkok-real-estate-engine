@@ -24,6 +24,12 @@ type CondoLite = {
 };
 
 type AnalyticalSignals = {
+  /** USD, like the column — see lib/fmt.ts fmtUsdPerSqm. */
+  market_sale_per_sqm?: number | null;
+  /** USD. */
+  market_sale_median?: number | null;
+  /** USD per month. */
+  market_rent_median?: number | null;
   bubble_index?: number | null;
   flood_risk_level?: number | null;
   nearest_bts_distance_m?: number | null;
@@ -56,6 +62,32 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
     value: string | number;
   }> = [];
 
+  // Price first. Until 2026-10-25 this schema published the bubble index,
+  // the flood level, the yield and eight other derived scores — and not the
+  // sale price, which is the one number a reader (or an AI Overview quoting
+  // us) actually asks a condo page for. The unit is spelled out in the name
+  // because the column is USD, not baht.
+  if (signals.market_sale_per_sqm != null) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      name: "Median sale price per sqm (USD)",
+      value: Math.round(signals.market_sale_per_sqm),
+    });
+  }
+  if (signals.market_sale_median != null) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      name: "Median sale price (USD)",
+      value: Math.round(signals.market_sale_median),
+    });
+  }
+  if (signals.market_rent_median != null) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      name: "Median monthly rent (USD)",
+      value: Math.round(signals.market_rent_median),
+    });
+  }
   if (signals.bubble_index != null) {
     additionalProps.push({
       "@type": "PropertyValue",

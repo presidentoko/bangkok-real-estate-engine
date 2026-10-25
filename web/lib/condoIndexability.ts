@@ -31,6 +31,26 @@
  * distance. Those are derived from the district, not from the building, so
  * every condo in the district shares them — they cannot make a page unique.
  * Including them raised the pass rate to 9,761, which defeats the purpose.
+ *
+ * 2026-10-25: a Google review count stopped qualifying on its own. The
+ * 90-day GSC export, joined against this table by slug, splits the condo
+ * pages that earned impressions by what got them through the bar:
+ *
+ *     passed on          pages   impressions   clicks   avg position
+ *     listings             322           702        2           32.3
+ *     reviews              100           203        0           46.8
+ *     description           66           173        0           30.3
+ *
+ * The reviews-only class is 1,491 buildings (4,473 URLs). We render a star
+ * rating and a count on those pages and no review text at all, so there is
+ * nothing on them Google does not already own and show itself — which is
+ * what position 46.8 and zero clicks across 90 days say. They are the same
+ * stub problem the 2026-08 bar was written for, one notch up, and they
+ * spend the crawl budget the 1,375 buildings with listings need.
+ *
+ * A rating still counts as corroboration: paired with a real description it
+ * keeps a page in. It just cannot carry one on its own. If review *text*
+ * ever renders on the page, this is the line to revisit.
  */
 
 export type IndexabilitySignals = {
@@ -39,13 +59,12 @@ export type IndexabilitySignals = {
   market_rent_median?: number | null;
   gross_yield_pct?: number | null;
   description?: string | null;
-  google_review_count?: number | null;
 };
 
 /** Columns hasIndexableSubstance() reads — keep SELECTs and this in sync. */
 export const INDEXABILITY_SELECT =
   "active_listings_count, market_sale_median, market_rent_median, " +
-  "gross_yield_pct, description, google_review_count";
+  "gross_yield_pct, description";
 
 /**
  * Coarse PostgREST pre-filter for the same rule, so callers that only need
@@ -59,7 +78,6 @@ export const INDEXABILITY_OR_FILTER = [
   "market_rent_median.not.is.null",
   "gross_yield_pct.not.is.null",
   "description.not.is.null",
-  "google_review_count.gte.3",
 ].join(",");
 
 /** A description shorter than this is a scraped fragment, not content. */
@@ -72,6 +90,5 @@ export function hasIndexableSubstance(c: IndexabilitySignals | null): boolean {
   if (c.market_rent_median != null) return true;
   if (c.gross_yield_pct != null) return true;
   if ((c.description ?? "").trim().length >= MIN_DESCRIPTION_CHARS) return true;
-  if ((c.google_review_count ?? 0) >= 3) return true;
   return false;
 }

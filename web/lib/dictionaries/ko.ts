@@ -1,4 +1,5 @@
 import type { Dict } from "./en";
+import { TITLE_FACTS } from "@/lib/seo/titleFacts";
 
 const dict: Dict = {
   brand: {
@@ -721,6 +722,9 @@ const dict: Dict = {
     sourceLabel: "출처:",
     affiliateCta: "이 건물 근처 호텔 찾기 →",
     nearStation: (station: string) => `${station}역 인근 콘도`,
+    feesCityLink: (city: string, median: string) =>
+      `${city} 관리비 시세: 월 ฿${median} 중간값`,
+    areaVsLink: (a: string, b: string) => `${a} vs ${b}: 시세·수익률·침수 비교`,
     retireeCity: (city: string) => `${city}의 은퇴자 친화 콘도 더보기`,
     affiliateFraming: (name: string, region: string) =>
       `${name}을 직접 보러 가실 계획이신가요? 호텔과 항공권을 한 번에 검색하세요 — ${region} 숙박은 보통 해당 콘도의 단기 임대 가격보다 쌀니다.`,
@@ -1361,6 +1365,7 @@ const dict: Dict = {
   },
   seo: {
     districtAka: (areas: string) => `${areas} 포함`,
+    perSqmLabel: (price: string) => `㎡당 ${price}`,
     yieldLabel: (v: string) => `수익률 ${v}%`,
     floodLabel: (n: number) => `침수 위험 L${n}/5`,
     provinceCondo: (p: string) => `${p} 콘도`,
@@ -1375,15 +1380,22 @@ const dict: Dict = {
     condoTitle: (
       name: string,
       region: string,
-      f: { yieldPct: string | null; flood: number | null; listings: number | null; reviews: number | null },
+      f: {
+        pricePerSqm: string | null;
+        yieldPct: string | null;
+        flood: number | null;
+        listings: number | null;
+        reviews: number | null;
+      },
     ) => {
       const parts: string[] = [];
+      if (f.pricePerSqm) parts.push(`㎡당 ${f.pricePerSqm}`);
       if (f.listings && f.listings > 0) parts.push(`매물 ${f.listings}건`);
       if (f.yieldPct) parts.push(`수익률 ${f.yieldPct}%`);
       if (f.flood != null) parts.push(`침수 L${f.flood}/5`);
       if (f.reviews && f.reviews >= 3) parts.push("리뷰");
       if (parts.length === 0) parts.push("건물 정보·지역 시세");
-      return `${name} ${region} — ${parts.join(" · ")} | RealData`;
+      return `${name} ${region} — ${parts.slice(0, TITLE_FACTS).join(" · ")} | RealData`;
     },
     condoDesc: (name: string, region: string, province: string, verdict: string | null, facts: string) =>
       `${province} ${region} ${name}, 비싸게 나온 걸까요? ` +

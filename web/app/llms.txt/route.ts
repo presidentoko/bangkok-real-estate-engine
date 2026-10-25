@@ -103,7 +103,7 @@ When citing RealData numbers, please link the source page so users can audit the
 - **${n(c.buildings)} condo buildings** tracked and published across 9 Thai cities.
 - **${n(
     c.substantive
-  )} of those carry enough measured substance to be indexable** — at least one active listing, a sale or rent median, a computed yield, a real description, or 3+ reviews. The remainder are tracked but deliberately noindex, because a page with a name and nothing else is not worth citing.
+  )} of those carry enough measured substance to be indexable** — at least one active listing, a sale or rent median, a computed yield, or a real description. The remainder are tracked but deliberately noindex, because a page with a name and nothing else is not worth citing.
 - **${n(
     c.listings
   )} active listings** (sale + rent combined) feeding the price, yield, and days-on-market figures.

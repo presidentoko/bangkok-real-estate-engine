@@ -82,7 +82,20 @@ HUB_PATHS = (
     "/retiree",
     "/guide/investment",
     "/guide/foreign-ownership",
+    # Built September-October 2026 and never pushed to any engine. Between
+    # them they drew one impression in the 90 days to 2026-10-25.
+    "/guide/foreign-quota",
+    "/guide/buying-costs",
+    "/ev-charging",
 )
+
+# /yield/<city>[/<district>], /fees/<city> and /vs/<pair>. These are not in
+# HUB_PATHS because the eligible set is decided by the data, not by a
+# constant: an area below MIN_AREA_CONDOS has no page, and pushing its URL
+# would submit a 404. sitemap-areas.xml already resolves exactly that set
+# server-side, so read it back rather than re-deriving the bars here.
+AREA_SITEMAP = f"{SITE}/sitemap-areas.xml"
+AREA_PREFIXES = ("/yield/", "/fees/", "/vs/")
 
 # Mirrors hasIndexableSubstance() in web/lib/condoIndexability.ts. If that
 # predicate changes, change this one with it — submitting a URL we serve
@@ -100,8 +113,6 @@ def has_substance(row: dict) -> bool:
     if row.get("gross_yield_pct") is not None:
         return True
     if len((row.get("description") or "").strip()) >= MIN_DESCRIPTION_CHARS:
-        return True
-    if (row.get("google_review_count") or 0) >= 3:
         return True
     return False
 
@@ -141,7 +152,7 @@ def collect_paths(since_days: int) -> list[str]:
         client,
         "condos_published",
         "slug, last_seen_at, active_listings_count, market_sale_median, "
-        "market_rent_median, gross_yield_pct, description, google_review_count",
+        "market_rent_median, gross_yield_pct, description",
     )
     changed = 0
     for c in condos:
@@ -173,7 +184,33 @@ def collect_paths(since_days: int) -> list[str]:
     paths.extend(f"/flood/{slug}" for slug in flood)
     print(f"[indexnow] flood district pages: {len(flood)}")
 
+    area = area_paths()
+    paths.extend(area)
+    print(f"[indexnow] yield / fees / vs pages: {len(area)}")
+
     return paths
+
+
+def area_paths() -> list[str]:
+    """Locale-stripped /yield, /fees and /vs paths out of sitemap-areas.xml.
+
+    The sitemap lists every locale of every eligible area; collect_paths'
+    caller re-expands locales, so take the /en ones and strip the prefix.
+    A failure here is not fatal — the rest of the submission still goes.
+    """
+    try:
+        req = urllib.request.Request(AREA_SITEMAP, headers={"User-Agent": VERIFY_UA})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            xml = r.read().decode("utf-8", "replace")
+    except Exception as e:  # noqa: BLE001 - network shape varies
+        print(f"[indexnow] {AREA_SITEMAP} unreachable ({e}) - skipping area pages")
+        return []
+    out: list[str] = []
+    for loc in re.findall(r"<loc>([^<]+)</loc>", xml):
+        path = loc.removeprefix(f"{SITE}/en")
+        if path != loc and path.startswith(AREA_PREFIXES):
+            out.append(path)
+    return out
 
 
 def flood_district_slugs() -> list[str]:

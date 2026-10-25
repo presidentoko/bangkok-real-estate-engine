@@ -1,6 +1,8 @@
 // English — primary dictionary. Other locales must mirror this shape;
 // TypeScript will catch missing keys via the Dict type.
 
+import { TITLE_FACTS } from "@/lib/seo/titleFacts";
+
 const dict = {
   brand: {
     name: "RealData",
@@ -743,6 +745,9 @@ const dict = {
     sourceLabel: "Source:",
     affiliateCta: "Find a hotel near this building →",
     nearStation: (station: string) => `Condos near ${station} station`,
+    feesCityLink: (city: string, median: string) =>
+      `What condos cost to run in ${city}: ฿${median}/month median CAM fee`,
+    areaVsLink: (a: string, b: string) => `${a} vs ${b}: prices, yields and flood risk compared`,
     retireeCity: (city: string) => `More retiree-friendly condos in ${city}`,
     affiliateFraming: (name: string, region: string) =>
       `Planning to inspect ${name} in person? Book a hotel + flight in one search — ${region} stays are usually cheaper than the condo's own short-let pricing.`,
@@ -1438,6 +1443,7 @@ const dict = {
     /** Under a district H1: the sub-areas people actually search that
      *  fall inside this khet (Thonglor and Ekkamai are in Watthana). */
     districtAka: (areas: string) => `Covers ${areas}`,
+    perSqmLabel: (price: string) => `${price}/sqm`,
     yieldLabel: (v: string) => `yield ${v}%`,
     floodLabel: (n: number) => `flood risk L${n}/5`,
     provinceCondo: (p: string) => `${p} condo`,
@@ -1460,15 +1466,22 @@ const dict = {
     condoTitle: (
       name: string,
       region: string,
-      f: { yieldPct: string | null; flood: number | null; listings: number | null; reviews: number | null },
+      f: {
+        pricePerSqm: string | null;
+        yieldPct: string | null;
+        flood: number | null;
+        listings: number | null;
+        reviews: number | null;
+      },
     ) => {
       const parts: string[] = [];
+      if (f.pricePerSqm) parts.push(`${f.pricePerSqm}/sqm`);
       if (f.listings && f.listings > 0) parts.push(`${f.listings} Listings`);
       if (f.yieldPct) parts.push(`Yield ${f.yieldPct}%`);
       if (f.flood != null) parts.push(`Flood L${f.flood}/5`);
       if (f.reviews && f.reviews >= 3) parts.push("Reviews");
       if (parts.length === 0) parts.push("Building Data & District Prices");
-      return `${name}, ${region} — ${parts.join(" · ")} | RealData`;
+      return `${name}, ${region} — ${parts.slice(0, TITLE_FACTS).join(" · ")} | RealData`;
     },
     condoDesc: (name: string, region: string, province: string, verdict: string | null, facts: string) =>
       `Is ${name} (${region}, ${province}) overpriced? ` +
