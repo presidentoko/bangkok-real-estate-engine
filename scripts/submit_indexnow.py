@@ -54,6 +54,8 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
+from scripts.condo_indexability import SELECT as SUBSTANCE_SELECT  # noqa: E402
+from scripts.condo_indexability import has_substance  # noqa: E402
 from src.db import get_client, fetch_all  # noqa: E402
 
 HOST = "passionaryestate.com"
@@ -97,26 +99,6 @@ HUB_PATHS = (
 AREA_SITEMAP = f"{SITE}/sitemap-areas.xml"
 AREA_PREFIXES = ("/yield/", "/fees/", "/vs/")
 
-# Mirrors hasIndexableSubstance() in web/lib/condoIndexability.ts. If that
-# predicate changes, change this one with it — submitting a URL we serve
-# with <meta name="robots" content="noindex"> is a wasted push at best.
-MIN_DESCRIPTION_CHARS = 120
-
-
-def has_substance(row: dict) -> bool:
-    if (row.get("active_listings_count") or 0) >= 1:
-        return True
-    if row.get("market_sale_median") is not None:
-        return True
-    if row.get("market_rent_median") is not None:
-        return True
-    if row.get("gross_yield_pct") is not None:
-        return True
-    if len((row.get("description") or "").strip()) >= MIN_DESCRIPTION_CHARS:
-        return True
-    return False
-
-
 # Cloudflare sits in front of the site and 403s urllib's default
 # "Python-urllib/3.x" UA — which made the key-file preflight below fail with
 # a confusing "not live" message while curl fetched the same file fine.
@@ -151,8 +133,7 @@ def collect_paths(since_days: int) -> list[str]:
     condos = fetch_all(
         client,
         "condos_published",
-        "slug, last_seen_at, active_listings_count, market_sale_median, "
-        "market_rent_median, gross_yield_pct, description",
+        f"slug, last_seen_at, {SUBSTANCE_SELECT}",
     )
     changed = 0
     for c in condos:

@@ -14,6 +14,17 @@ pages that must be removed because their condo is gone.
                 or the first run with an empty manifest).
 --mode full     every published condo. For layout/component changes, which
                 touch every page.
+--mode indexable
+                every published condo above the substance bar
+                (scripts/condo_indexability.py) -- the ~3,600 buildings we
+                actually ask Google to rank, about a quarter of `full`.
+                This is the mode for a template change that only matters on
+                a page someone can find: the 2026-10-25 title rewrite moved
+                the price to the front of every <title>, and on the other
+                11,853 buildings that title sits behind
+                `robots: noindex, follow` where nobody reads it. The stubs
+                keep whatever the store already holds and get refreshed by
+                the next `full` run.
 
 The manifest is the store's current page list, one `lang/slug` per line.
 A missing manifest file means an empty store.
@@ -37,6 +48,8 @@ from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(os.path.join(ROOT, ".env"))
 
+from scripts.condo_indexability import SELECT as SUBSTANCE_SELECT  # noqa: E402
+from scripts.condo_indexability import has_substance  # noqa: E402
 from src.db import fetch_all, get_client  # noqa: E402
 
 LANGS = ("en", "ko", "th")
@@ -44,15 +57,21 @@ LANGS = ("en", "ko", "th")
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", choices=("changed", "full"), required=True)
+    ap.add_argument("--mode", choices=("changed", "full", "indexable"), required=True)
     ap.add_argument("--days", type=int, default=8)
     ap.add_argument("--manifest", help="current store page list (lang/slug per line)")
     ap.add_argument("--shard-size", type=int, default=6000)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
-    condos = fetch_all(get_client(), "condos_published", "slug, last_seen_at")
+    # `indexable` needs the substance columns; the other modes only need
+    # the slug and the timestamp, and this table is ~15,500 rows wide.
+    select = "slug, last_seen_at"
+    if args.mode == "indexable":
+        select = f"{select}, {SUBSTANCE_SELECT}"
+    condos = fetch_all(get_client(), "condos_published", select)
     live = {c["slug"]: c.get("last_seen_at") for c in condos if c.get("slug")}
+    substantive = {c["slug"] for c in condos if c.get("slug") and has_substance(c)}
 
     stored: set[str] = set()
     if args.manifest and os.path.exists(args.manifest):
@@ -70,6 +89,8 @@ def main() -> int:
 
     if args.mode == "full":
         todo = sorted(wanted)
+    elif args.mode == "indexable":
+        todo = sorted(f"{lang}/{slug}" for slug in substantive for lang in LANGS)
     else:
         cutoff = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=args.days)).isoformat()
         changed = {
@@ -92,6 +113,8 @@ def main() -> int:
         json.dump(list(range(len(shards))), fh)
 
     print(f"[plan] mode={args.mode} live condos={len(live)} stored pages={len(stored)}")
+    if args.mode == "indexable":
+        print(f"[plan] above the substance bar: {len(substantive)} of {len(live)} condos")
     print(f"[plan] render {len(todo)} pages in {len(shards)} shard(s); remove {len(removed)}")
     return 0
 

@@ -10,8 +10,10 @@ name: Condo pages -> Cloudflare (static export)
 # How it fits together:
 #   plan     scripts/condo_static/plan.py picks the pages to render: condos
 #            whose last_seen_at moved this week plus anything the store lacks
-#            (mode=changed), or everything (mode=full, after a layout or
-#            component change). Split into shards of 6,000.
+#            (mode=changed), everything above the substance bar
+#            (mode=indexable, ~6,400 pages -- the right mode for a template
+#            change, since the rest are noindex), or everything
+#            (mode=full, ~46,000). Split into shards of 6,000.
 #   build    `next build` with CONDO_STATIC_BUILD=1 renders just those pages
 #            (web/lib/buildMode.ts), with JS/CSS under /cfs.
 #   publish  The complete site lives in the release `condo-static-store` as
@@ -42,9 +44,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "changed = this week's condos + missing pages; full = every page"
+        description: "changed = this week's condos + missing pages; indexable = every page above the substance bar; full = every page"
         type: choice
-        options: [changed, full]
+        options: [changed, indexable, full]
         default: changed
       days:
         description: "changed mode: last_seen_at window in days"
