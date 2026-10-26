@@ -72,7 +72,24 @@ AREA_RE = re.compile(r"([\d.]+)\s*(?:sq\.?\s*m|m²|sqm)", flags=re.IGNORECASE)
 SID_RE = re.compile(r"-(\d{6,})(?:[?#]|$)")
 
 
-def _parse_price(text: str) -> float | None:
+#: A card carries more than one baht figure -- the headline price sits next
+#: to a per-sqm tooltip ("฿11,450,000" and "฿107,988/sqm") -- so the first
+#: plausible number wins. "Plausible" has to depend on the listing type: a
+#: Bangkok condo sells for millions but rents for tens of thousands a month.
+#: A single sale-shaped floor of ฿100,000 was applied to both until
+#: 2026-10-26, and it silently dropped every ordinary rental: the first rent
+#: pass kept 1-4 of the 20 cards on a page, all of them ฿100,000+/month
+#: luxury units, and any median computed from that sample would have been
+#: several times the real rent -- and the yields built on it with it.
+MIN_PRICE_THB = {"sale": 100_000, "rent": 1_000}
+
+#: Above this a figure on a rent card is a sale price on a mislabelled listing.
+MAX_RENT_THB = 2_000_000
+
+
+def _parse_price(text: str, listing_type: str = "sale") -> float | None:
+    lo = MIN_PRICE_THB.get(listing_type, MIN_PRICE_THB["sale"])
+    hi = MAX_RENT_THB if listing_type == "rent" else None
     for m in PRICE_RE.finditer(text):
         try:
             val = float(m.group(1).replace(",", ""))
@@ -83,7 +100,7 @@ def _parse_price(text: str) -> float | None:
             val *= 1_000_000
         elif unit == "K":
             val *= 1_000
-        if val >= 100_000:
+        if val >= lo and (hi is None or val <= hi):
             return val
     return None
 
@@ -146,7 +163,7 @@ def _parse_cards(html: str, listing_type: str) -> list[dict]:
             # which lives in the first numeric token.
             price_el = card.select_one("[da-id*='listing-card-v2-price']")
             price_text = price_el.get_text(" ", strip=True) if price_el else ""
-            price = _parse_price(price_text) if price_text else None
+            price = _parse_price(price_text, listing_type) if price_text else None
 
             def _int_el(da_id: str) -> int | None:
                 el = card.select_one(f"[da-id='{da_id}']")
@@ -204,6 +221,51 @@ def _page_url(base_path: str, page_num: int) -> str:
     return f"{BASE_URL}{base_path}/{page_num}"
 
 
+#: A search page ships its markup empty and hydrates the 20 cards client-side
+#: over a second or two. Reading outerHTML after a flat pause reads whatever
+#: happens to have landed: the 2026-10-26 Bangkok rent pass waited 3s and
+#: averaged 4.5 cards a page across 60 pages, never once reaching 20, while
+#: the same pages fetched one at a time parse 20 of 20. Three quarters of the
+#: city went uncollected and the run then called it a day on two short pages.
+#: Wait for the count to reach a full page, or to stop growing, instead.
+CARDS_PER_PAGE = 20
+CARD_COUNT_JS = "document.querySelectorAll('div.listing-card-v2').length"
+SETTLE_POLL_S = 1.0
+SETTLE_MAX_S = 25.0
+
+
+async def _wait_for_cards(tab) -> int:
+    """Block until the page's cards have hydrated. Returns the count seen.
+
+    Stops early on a full page, and otherwise on two identical non-zero
+    readings — a genuinely short last page settles in ~3s rather than
+    costing the full SETTLE_MAX_S.
+    """
+    deadline = time.monotonic() + SETTLE_MAX_S
+    last, stable = -1, 0
+    while time.monotonic() < deadline:
+        try:
+            n = int(
+                _unwrap(
+                    await asyncio.wait_for(
+                        tab.evaluate(CARD_COUNT_JS), timeout=EVALUATE_TIMEOUT_S
+                    )
+                )
+                or 0
+            )
+        except Exception as e:
+            logger.debug(f"[ddproperty] card count: {e!r}")
+            n = -1
+        if n >= CARDS_PER_PAGE:
+            return n
+        stable = stable + 1 if n == last and n > 0 else 0
+        if stable >= 2:
+            return n
+        last = n
+        await asyncio.sleep(SETTLE_POLL_S)
+    return max(last, 0)
+
+
 async def _fetch_page_html(browser, url: str, retries: int = 2) -> str | None:
     """Fetch one page, retrying transient nodriver/eval glitches a couple of
     times so a single tab-disconnect doesn't kill the whole city sweep."""
@@ -228,7 +290,7 @@ async def _fetch_page_html(browser, url: str, retries: int = 2) -> str | None:
             return None
         except Exception as e:
             logger.debug(f"[ddproperty] verify_cf: {e}")
-        await asyncio.sleep(3.0)
+        mounted = await _wait_for_cards(tab)
         try:
             html = _unwrap(
                 await asyncio.wait_for(
@@ -236,6 +298,11 @@ async def _fetch_page_html(browser, url: str, retries: int = 2) -> str | None:
                     timeout=EVALUATE_TIMEOUT_S,
                 )
             )
+            # dom_cards far above the "cards parsed" line below means the
+            # page loaded fine and the parser is dropping rows -- the shape
+            # of the 2026-10-26 rent-price bug. Cheap to keep, hard to spot
+            # without.
+            logger.info(f"[ddproperty] dom_cards={mounted}")
             return html
         except Exception as e:
             last_err = f"outerHTML failed: {e!r}"
