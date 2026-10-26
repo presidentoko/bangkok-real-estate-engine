@@ -322,7 +322,14 @@ async def _save_debug_html(browser, url: str, path: str) -> None:
         logger.info(f"Saved {len(html):,} chars to {path}")
 
 
-async def run(listing_type: str, delay_s: float, max_listings: int | None, city: str = "bangkok") -> None:
+async def run(
+    listing_type: str,
+    delay_s: float,
+    max_listings: int | None,
+    city: str = "bangkok",
+    start_page: int = 1,
+    max_pages: int | None = None,
+) -> None:
     slug = CITY_SLUGS[city]
     base_path = SEARCH_PATH_TMPL[listing_type].format(slug=slug)
     logger.info(f"[ddproperty] city={city}  type={listing_type}  path={base_path}")
@@ -344,10 +351,19 @@ async def run(listing_type: str, delay_s: float, max_listings: int | None, city:
     )
 
     try:
-        page_num = 1
+        # A full city is an hour of browser, and this laptop is routinely
+        # short enough of memory to have a long run killed under it. Pages
+        # are independent and the upserts are keyed on the listing id, so a
+        # killed run is resumed by passing the page it stopped on -- nothing
+        # is lost and nothing is collected twice.
+        page_num = max(1, start_page)
+        last_page = page_num + max_pages - 1 if max_pages else None
         empty_pages = 0
         while True:
             if max_listings and stats["seen"] >= max_listings:
+                break
+            if last_page and page_num > last_page:
+                logger.info(f"[ddproperty] reached page {last_page} — stopping")
                 break
             url = _page_url(base_path, page_num)
             logger.info(f"[ddproperty] page {page_num}: {url}")
@@ -417,6 +433,7 @@ async def run(listing_type: str, delay_s: float, max_listings: int | None, city:
 
     elapsed = time.time() - started
     logger.info(f"DONE in {elapsed/60:.1f} min — {dict(stats)}")
+    logger.info(f"[ddproperty] next page would be {page_num} (--start-page {page_num})")
 
 
 def main() -> None:
@@ -426,8 +443,21 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--delay-s", type=float, default=45.0,
                     help="Seconds between pages (default: 45)")
+    ap.add_argument("--start-page", type=int, default=1,
+                    help="Resume from this search page (default: 1)")
+    ap.add_argument("--max-pages", type=int, default=None,
+                    help="Stop after this many pages, for chunked runs")
     args = ap.parse_args()
-    asyncio.run(run(args.listing_type, args.delay_s, args.limit, args.city))
+    asyncio.run(
+        run(
+            args.listing_type,
+            args.delay_s,
+            args.limit,
+            args.city,
+            args.start_page,
+            args.max_pages,
+        )
+    )
 
 
 if __name__ == "__main__":
