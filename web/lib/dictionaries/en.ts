@@ -1554,8 +1554,8 @@ const dict = {
       "See real interiors and get built-in, curtain and renovation quotes from vetted Bangkok studios on DooHong.",
     interiorsCtaBuilding: (name: string) => `See ${name} interiors on DooHong →`,
     interiorsCtaHome: "Browse Bangkok condo interiors on DooHong →",
-    alsoBy: "Also by RealData's founder:",
-    alsoByLink: "DooHong — Bangkok condo interiors",
+    alsoBy: "Bangkok condo interiors, also by RealData's founder:",
+    alsoByLink: "DooHong",
   },
 };
 

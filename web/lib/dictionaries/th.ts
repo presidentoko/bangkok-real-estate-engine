@@ -1465,8 +1465,8 @@ const dict: Dict = {
       "ดูห้องจริงที่ตกแต่งแล้ว และขอใบเสนอราคางานบิวท์อิน ผ้าม่าน และรีโนเวท จากสตูดิโอในกรุงเทพฯ ที่ผ่านการคัดเลือกบน DooHong",
     interiorsCtaBuilding: (name: string) => `ดูอินทีเรีย ${name} บน DooHong →`,
     interiorsCtaHome: "ดูอินทีเรียคอนโดกรุงเทพฯ บน DooHong →",
-    alsoBy: "อีกหนึ่งโปรเจกต์จากผู้ก่อตั้ง RealData:",
-    alsoByLink: "DooHong — อินทีเรียคอนโดกรุงเทพฯ",
+    alsoBy: "อินทีเรียคอนโดกรุงเทพฯ อีกหนึ่งโปรเจกต์จากผู้ก่อตั้ง RealData:",
+    alsoByLink: "DooHong",
   },
 };
 

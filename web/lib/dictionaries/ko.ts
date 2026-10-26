@@ -1461,8 +1461,8 @@ const dict: Dict = {
       "DooHong에서 실제 인테리어를 보고, 검증된 방콕 스튜디오에서 붙박이 가구·커튼·리노베이션 견적을 받아보세요.",
     interiorsCtaBuilding: (name: string) => `DooHong에서 ${name} 인테리어 보기 →`,
     interiorsCtaHome: "DooHong에서 방콕 콘도 인테리어 보기 →",
-    alsoBy: "RealData 창업자의 또 다른 서비스:",
-    alsoByLink: "DooHong — 방콕 콘도 인테리어",
+    alsoBy: "RealData 창업자의 방콕 콘도 인테리어 서비스:",
+    alsoByLink: "DooHong",
   },
 };
 
