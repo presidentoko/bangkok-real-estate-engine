@@ -1,13 +1,29 @@
 import { INDEXABILITY_OR_FILTER } from "@/lib/condoIndexability";
 import { getServerSupabase } from "@/lib/supabase";
 import { SITE_URL, sitemapIndexDoc, xmlResponse, isoDate } from "@/lib/sitemap-helpers";
+import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
+/**
+ * The Cloudflare condo export prerenders every static route in the app, this
+ * one included, and then throws all but /<lang>/condo/<slug> away --
+ * collect.mjs copies nothing else. Until 2026-10-26 the three sitemap routes
+ * with no dynamic segment were the only ones left ungated, because the
+ * CONDO_STATIC_BUILD pattern lives in generateStaticParams and they have
+ * none. Then /sitemap-areas.xml crossed Next's 180s prerender budget -- its
+ * cost grows with the data, and that day's +370 yields widened the /best
+ * eligibility scan behind it -- and took the whole export down with it,
+ * three attempts and 10 minutes of build for a file nobody would publish.
+ */
 export const revalidate = 86400;
 export const maxDuration = 15;
 
 const CONDOS_PER_PAGE = 2500;
 
 export async function GET(): Promise<Response> {
+  // Nothing downstream of here is published by the export; skip the
+  // dozens of Supabase round trips it would cost.
+  if (CONDO_STATIC_BUILD) return xmlResponse(sitemapIndexDoc([]));
+
   const lastmod = isoDate(new Date());
 
   // Count the condos that pass the substance gate, not every published row,
