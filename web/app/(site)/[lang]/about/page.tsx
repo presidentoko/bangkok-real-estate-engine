@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { doohongHomeUrl } from "@/lib/doohong";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
@@ -42,7 +41,6 @@ export default async function AboutPage({
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang).about;
-  const dh = getDictionary(lang).doohong;
 
   // FAQ JSON-LD: each Q+A becomes a citable entity for AI Overviews.
   const faqJsonLd = {
@@ -158,15 +156,6 @@ export default async function AboutPage({
             </p>
             <p className="text-sm text-zinc-300 leading-relaxed">
               <strong>Why RealData exists:</strong> &ldquo;Top 10 Bangkok condos for foreigners&rdquo; videos on YouTube are almost always paid placements by developer sales agents. Influencers walk a showroom, mention &ldquo;great yield potential,&rdquo; never mention the building&rsquo;s sales velocity, the district&rsquo;s flood risk, or the realistic rent. So I built the opposite: <strong>1,894 buildings, 23,552 units, weekly portal sweeps, BOT mortgage rates, BMA flood layers</strong>. Buy on evidence, not influencers.
-            </p>
-            <p className="text-sm text-zinc-400 leading-relaxed mt-3">
-              {dh.alsoBy}{" "}
-              <a
-                href={doohongHomeUrl(lang, "about")}
-                className="text-blue-400 hover:text-blue-300 font-semibold"
-              >
-                {dh.alsoByLink}
-              </a>
             </p>
           </div>
         </div>

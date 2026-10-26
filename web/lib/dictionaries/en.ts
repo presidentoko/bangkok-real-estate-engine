@@ -1560,16 +1560,6 @@ const dict = {
     realityDesc:
       "Influencer and advertiser-promoted Bangkok condos placed next to our measured Bubble Index and yield data. We don't attack the influencer — only the numbers. Independent data, no developer money.",
   },
-  // Cross-links to DooHong, the founder's condo-interiors site (lib/doohong.ts).
-  doohong: {
-    interiorsTitle: "Interiors in this building",
-    interiorsLead:
-      "See real interiors and get built-in, curtain and renovation quotes from vetted Bangkok studios on DooHong.",
-    interiorsCtaBuilding: (name: string) => `See ${name} interiors on DooHong →`,
-    interiorsCtaHome: "Browse Bangkok condo interiors on DooHong →",
-    alsoBy: "Bangkok condo interiors, also by RealData's founder:",
-    alsoByLink: "DooHong",
-  },
 };
 
 export default dict;
