@@ -1,0 +1,152 @@
+{
+  "slug": "city-spotlight-chiang-mai-2026-11-01",
+  "title": "Chiang Mai Tops the Yield Table at 14% Gross",
+  "description": "Five Chiang Mai condos ranked by gross yield this week. Spreads over the 7.1% MRR benchmark run as wide as 6.9 pp — here is what the numbers show.",
+  "published_at": "2026-11-01",
+  "topic": "city-spotlight",
+  "lead": "Chiang Mai is producing the highest gross yields in our current city ranking, with the top building clocking 13.99% on an average sale price of ฿1.21M. Against the Bank of Thailand MRR benchmark of 7.1%, the spread at the leading buildings runs 6–7 percentage points — meaningful alpha for a yield-focused buyer. Entry prices across all five buildings sit below ฿3.1M, with four of five under ฿1.35M.",
+  "sections": [
+    {
+      "heading": "The Sub-฿1.3M Yield Leaders",
+      "body": "[The Private Condo](/condo/the-private-condo-chiang-mai) in San Sai leads at **13.99% gross** on an average sale price of **฿1,212,984** and monthly rent of **฿14,144**. [SR Complex](/condo/sr-complex-chiang-mai) (Mueang) follows at **13.44%**, with a marginally higher average price of **฿1,266,194** but near-identical rent at **฿14,178** — the two buildings are essentially trading at the same rent level with a thin price gap driving the yield difference.\n\n[103 Condominium Chiang Mai](/condo/103-condominium-chiang-mai-chiang-mai) in Saraphi rounds out the top three at **12.79%**, priced at **฿1,246,950** with rents averaging **฿13,294**. All three clear the MRR rate by more than 5.5 pp on a gross basis."
+    },
+    {
+      "heading": "Mid-Range Price, Lower Spread",
+      "body": "[The Spring Loft](/condo/the-spring-loft-chiang-mai) in Mueang steps up in price — **฿3,022,362** average — but still delivers **10.03% gross** on rents of **฿25,262**, a 2.93 pp spread over MRR. That is a thinner margin for roughly 2.5× the capital outlay versus the top three, which is a trade-off worth pricing explicitly.\n\n[The New Concept 123](/condo/the-new-concept-123-chiang-mai) in Hang Dong sits at the bottom of this group at **9.23% gross** — still above MRR, but the ฿1,313,046 price and ฿10,098 monthly rent imply tighter demand or softer occupancy in that subdistrict. Buyers targeting maximum spread per baht deployed should stay focused on the San Sai and Saraphi clusters."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "The Private Condo — gross yield",
+      "value": "13.99%",
+      "condo_id": "2a89868f-ee32-4a6a-bf25-96e454693e53",
+      "metric": "gross_yield_pct",
+      "expected": 13.99,
+      "slug": "the-private-condo-chiang-mai"
+    },
+    {
+      "label": "SR Complex — avg sale price",
+      "value": "฿1,266,194",
+      "condo_id": "8402798c-1729-46cc-83a0-c757d206ab7f",
+      "metric": "avg_sale_price",
+      "expected": 1266194,
+      "slug": "sr-complex-chiang-mai"
+    },
+    {
+      "label": "103 Condominium Chiang Mai — gross yield",
+      "value": "12.79%",
+      "condo_id": "f8e62e6c-db74-4d8c-9f7c-845645ba6fc3",
+      "metric": "gross_yield_pct",
+      "expected": 12.79,
+      "slug": "103-condominium-chiang-mai-chiang-mai"
+    },
+    {
+      "label": "The Spring Loft — avg monthly rent",
+      "value": "฿25,262",
+      "condo_id": "63a6e160-6ff5-49a8-b742-7201f83209c9",
+      "metric": "avg_monthly_rent",
+      "expected": 25262,
+      "slug": "the-spring-loft-chiang-mai"
+    },
+    {
+      "label": "The New Concept 123 — gross yield",
+      "value": "9.23%",
+      "condo_id": "c27e621f-7ba1-4124-acdb-1fe32b425775",
+      "metric": "gross_yield_pct",
+      "expected": 9.23,
+      "slug": "the-new-concept-123-chiang-mai"
+    },
+    {
+      "label": "The Private Condo — spread over MRR",
+      "value": "6.89 pp",
+      "condo_id": "2a89868f-ee32-4a6a-bf25-96e454693e53",
+      "metric": "spread_pp",
+      "expected": 6.89,
+      "slug": "the-private-condo-chiang-mai"
+    }
+  ],
+  "i18n": {
+    "ko": {
+      "title": "치앙마이, 총임대수익률 14%로 수익률 순위 1위",
+      "description": "이번 주 총임대수익률 기준으로 선정된 치앙마이 콘도 5곳을 분석했습니다. 7.1% MRR 기준금리 대비 스프레드는 최대 6.9 pp에 달합니다.",
+      "lead": "치앙마이는 현재 도시별 임대수익률 순위에서 가장 높은 총수익률을 기록하고 있으며, 최상위 건물은 평균 매매가 ฿1.21M 기준으로 13.99%를 달성했습니다. 태국중앙은행 MRR 기준금리 7.1% 대비, 상위 건물들의 스프레드는 6~7 퍼센트포인트에 달해 수익률 중심 투자자에게 의미 있는 알파를 제공합니다. 5개 건물 전체의 진입 가격은 ฿3.1M 이하이며, 그 중 4곳은 ฿1.35M 미만입니다.",
+      "sections": [
+        {
+          "heading": "฿1.3M 이하 수익률 선두 건물들",
+          "body": "San Sai에 위치한 [The Private Condo](/condo/the-private-condo-chiang-mai)는 평균 매매가 **฿1,212,984**, 월 임대료 **฿14,144** 기준으로 **총수익률 13.99%**를 기록하며 선두를 달리고 있습니다. Mueang의 [SR Complex](/condo/sr-complex-chiang-mai)는 **13.44%**로 그 뒤를 잇는데, 평균 매매가는 **฿1,266,194**로 소폭 높지만 임대료는 **฿14,178**로 거의 동일합니다. 두 건물은 사실상 같은 임대료 수준에서 거래되고 있으며, 소폭의 가격 차이가 수익률 차이를 만들어냅니다.\n\nSaraphi에 위치한 [103 Condominium Chiang Mai](/condo/103-condominium-chiang-mai-chiang-mai)는 매매가 **฿1,246,950**, 평균 임대료 **฿13,294** 기준으로 **12.79%**를 기록하며 상위 3위에 올랐습니다. 세 건물 모두 총수익률 기준으로 MRR 금리를 5.5 pp 이상 상회합니다."
+        },
+        {
+          "heading": "중간 가격대, 좁아지는 스프레드",
+          "body": "Mueang에 위치한 [The Spring Loft](/condo/the-spring-loft-chiang-mai)는 평균 **฿3,022,362**로 가격대가 높아지지만, 월 임대료 **฿25,262** 기준으로 **총수익률 10.03%**를 기록하며 MRR 대비 2.93 pp의 스프레드를 유지합니다. 상위 3개 건물 대비 약 2.5배의 자본 투입 대비 얇아진 마진으로, 이 트레이드오프는 명시적으로 가격에 반영해 평가할 필요가 있습니다.\n\nHang Dong의 [The New Concept 123](/condo/the-new-concept-123-chiang-mai)은 이 그룹에서 가장 낮은 **총수익률 9.23%**를 기록합니다. 여전히 MRR을 상회하지만, 매매가 ฿1,313,046과 월 임대료 ฿10,098은 해당 구역의 수요 약세 또는 공실률 부담을 시사합니다. 투입 자본 대비 최대 스프레드를 목표로 하는 투자자라면 San Sai 및 Saraphi 클러스터에 집중하는 것이 바람직합니다."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "The Private Condo — 총임대수익률",
+          "value": "13.99%"
+        },
+        {
+          "label": "SR Complex — 평균 매매가",
+          "value": "฿1,266,194"
+        },
+        {
+          "label": "103 Condominium Chiang Mai — 총임대수익률",
+          "value": "12.79%"
+        },
+        {
+          "label": "The Spring Loft — 평균 월 임대료",
+          "value": "฿25,262"
+        },
+        {
+          "label": "The New Concept 123 — 총임대수익률",
+          "value": "9.23%"
+        },
+        {
+          "label": "The Private Condo — MRR 대비 스프레드",
+          "value": "6.89 pp"
+        }
+      ]
+    },
+    "th": {
+      "title": "เชียงใหม่นำตารางผลตอบแทนที่ 14% รวม",
+      "description": "คอนโดมิเนียมในเชียงใหม่ 5 แห่งจัดอันดับตามผลตอบแทนรวมประจำสัปดาห์นี้ ส่วนต่างเหนือเกณฑ์ MRR ที่ 7.1% กว้างถึง 6.9 pp — นี่คือสิ่งที่ตัวเลขบอก",
+      "lead": "เชียงใหม่สร้างผลตอบแทนรวมสูงสุดในการจัดอันดับเมืองปัจจุบันของเรา โดยอาคารอันดับหนึ่งทำได้ 13.99% จากราคาขายเฉลี่ย ฿1.21M เมื่อเทียบกับเกณฑ์ MRR ของธนาคารแห่งประเทศไทยที่ 7.1% ส่วนต่างของอาคารนำอยู่ที่ 6–7 percentage points ซึ่งถือเป็น alpha ที่มีนัยสำคัญสำหรับผู้ซื้อที่มุ่งเน้นผลตอบแทน ราคาเริ่มต้นของอาคารทั้ง 5 แห่งอยู่ต่ำกว่า ฿3.1M โดย 4 ใน 5 แห่งอยู่ต่ำกว่า ฿1.35M",
+      "sections": [
+        {
+          "heading": "ผู้นำด้านผลตอบแทนในระดับต่ำกว่า ฿1.3M",
+          "body": "[The Private Condo](/condo/the-private-condo-chiang-mai) ในสันสายนำด้วย **13.99% รวม** จากราคาขายเฉลี่ย **฿1,212,984** และค่าเช่ารายเดือน **฿14,144** [SR Complex](/condo/sr-complex-chiang-mai) (เมือง) ตามมาที่ **13.44%** โดยมีราคาเฉลี่ยสูงกว่าเล็กน้อยที่ **฿1,266,194** แต่ค่าเช่าใกล้เคียงกันที่ **฿14,178** — อาคารทั้งสองแห่งซื้อขายในระดับค่าเช่าเดียวกัน โดยช่องว่างด้านราคาที่เล็กน้อยเป็นตัวขับเคลื่อนความแตกต่างของผลตอบแทน\n\n[103 Condominium Chiang Mai](/condo/103-condominium-chiang-mai-chiang-mai) ในสารภีอยู่อันดับสามที่ **12.79%** ราคา **฿1,246,950** โดยค่าเช่าเฉลี่ยอยู่ที่ **฿13,294** ทั้งสามแห่งสูงกว่าอัตรา MRR มากกว่า 5.5 pp บนพื้นฐานรวม"
+        },
+        {
+          "heading": "ราคากลาง ส่วนต่างลดลง",
+          "body": "[The Spring Loft](/condo/the-spring-loft-chiang-mai) ในเมืองมีราคาสูงขึ้น — เฉลี่ย **฿3,022,362** — แต่ยังคงให้ผลตอบแทน **10.03% รวม** จากค่าเช่า **฿25,262** ซึ่งมีส่วนต่างเหนือ MRR อยู่ที่ 2.93 pp นั่นคือส่วนต่างที่บางกว่าสำหรับเงินทุนที่สูงกว่าประมาณ 2.5 เท่าเมื่อเทียบกับสามอันดับแรก ซึ่งเป็นข้อแลกเปลี่ยนที่ควรประเมินราคาอย่างชัดเจน\n\n[The New Concept 123](/condo/the-new-concept-123-chiang-mai) ในหางดงอยู่ที่ท้ายกลุ่มนี้ด้วย **9.23% รวม** — ยังสูงกว่า MRR แต่ราคา ฿1,313,046 และค่าเช่ารายเดือน ฿10,098 บ่งชี้ถึงอุปสงค์ที่ตึงตัวหรืออัตราการเข้าพักที่อ่อนแอกว่าในเขตย่อยนั้น ผู้ซื้อที่มุ่งเน้นส่วนต่างสูงสุดต่อเงินบาทที่ลงทุนควรมุ่งความสนใจไปที่กลุ่มสันสายและสารภี"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "The Private Condo — ผลตอบแทนรวม",
+          "value": "13.99%"
+        },
+        {
+          "label": "SR Complex — ราคาขายเฉลี่ย",
+          "value": "฿1,266,194"
+        },
+        {
+          "label": "103 Condominium Chiang Mai — ผลตอบแทนรวม",
+          "value": "12.79%"
+        },
+        {
+          "label": "The Spring Loft — ค่าเช่ารายเดือนเฉลี่ย",
+          "value": "฿25,262"
+        },
+        {
+          "label": "The New Concept 123 — ผลตอบแทนรวม",
+          "value": "9.23%"
+        },
+        {
+          "label": "The Private Condo — ส่วนต่างเหนือ MRR",
+          "value": "6.89 pp"
+        }
+      ]
+    }
+  }
+}
