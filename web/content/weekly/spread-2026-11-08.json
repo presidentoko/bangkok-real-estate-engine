@@ -1,0 +1,152 @@
+{
+  "slug": "spread-2026-11-08",
+  "title": "5 Thai Condos Yielding 7+ pp Over the Mortgage Rate",
+  "description": "Bank of Thailand MRR sits at 7.1%. These five condos post gross yields of 14.5–15%, leaving a 7.4–7.9 pp spread before financing costs.",
+  "published_at": "2026-11-08",
+  "topic": "spread",
+  "lead": "With the benchmark MRR at 7.1%, a condo needs a gross yield above 9% just to break even on a fully mortgaged purchase. The five buildings below clear that bar by at least 7.4 percentage points — ranging from a ฿1.14M Bangkok unit to a ฿2.05M Sriracha tower. Three are in Pattaya; one is in Si Racha; one sits in Bangkok's Ladprao corridor.",
+  "sections": [
+    {
+      "heading": "What the Numbers Actually Mean",
+      "body": "Gross yield is annualised rental income divided by sale price — no deductions for vacancy, management, or tax. The spread shown is gross yield minus current MRR (7.1%). A buyer financing 50% of purchase price at MRR would see the effective cash-on-cash benefit roughly double the spread figure; a fully cash buyer pockets the spread as the return premium over debt cost.\n\nThe tightest entry point is [Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok) at ฿1.14M average sale price with ฿14,178 average monthly rent — a 14.94% yield. The widest absolute spread belongs to [Siam Oriental Tropical Garden](/condo/siam-oriental-tropical-garden-chon-buri) in Pattaya at 7.9 pp over MRR."
+    },
+    {
+      "heading": "Pattaya Dominance and the Si Racha Outlier",
+      "body": "Three of five buildings are in the Pattaya rental market, which skews toward short-stay demand and condotels — a structure that inflates headline rent but adds operational risk not captured in gross yield. [Jomtien Thip Condotel](/condo/jomtien-thip-condotel-chon-buri) and [Unicca](/condo/unicca-chon-buri) both sit below ฿1.5M, keeping absolute downside contained.\n\n[The Sky Sriracha](/condo/the-sky-sriracha-chon-buri) is the structural outlier: Si Racha's industrial-zone workforce provides year-round rental demand less correlated with tourism cycles, at ฿2.05M average sale price and ฿25,000 average monthly rent. For buyers diversifying away from tourism-dependent cash flows, that profile warrants a separate underwriting track."
+    }
+  ],
+  "fact_bullets": [
+    {
+      "label": "Siam Oriental Tropical Garden — gross yield",
+      "value": "15.0%",
+      "condo_id": "c46ed568-a9fb-4fb1-9002-c614758c7b7c",
+      "metric": "gross_yield_pct",
+      "expected": 15.0,
+      "slug": "siam-oriental-tropical-garden-chon-buri"
+    },
+    {
+      "label": "Siam Oriental Tropical Garden — yield-MRR spread",
+      "value": "+7.9 pp",
+      "condo_id": "c46ed568-a9fb-4fb1-9002-c614758c7b7c",
+      "metric": "spread_pp",
+      "expected": 7.9,
+      "slug": "siam-oriental-tropical-garden-chon-buri"
+    },
+    {
+      "label": "Anna Condominium Ladprao 130 — avg sale price",
+      "value": "฿1,138,558",
+      "condo_id": "636b42fe-566e-4e6d-82ad-30450837515d",
+      "metric": "avg_sale_price",
+      "expected": 1138558,
+      "slug": "anna-condominium-ladprao-130-bangkok"
+    },
+    {
+      "label": "Anna Condominium Ladprao 130 — avg monthly rent",
+      "value": "฿14,178",
+      "condo_id": "636b42fe-566e-4e6d-82ad-30450837515d",
+      "metric": "avg_monthly_rent",
+      "expected": 14178,
+      "slug": "anna-condominium-ladprao-130-bangkok"
+    },
+    {
+      "label": "The Sky Sriracha — avg monthly rent",
+      "value": "฿25,000",
+      "condo_id": "cbc7e9af-cda9-47ca-a553-e5cff8e24ada",
+      "metric": "avg_monthly_rent",
+      "expected": 25000,
+      "slug": "the-sky-sriracha-chon-buri"
+    },
+    {
+      "label": "Unicca — yield-MRR spread",
+      "value": "+7.4 pp",
+      "condo_id": "d8910914-157c-42c4-b981-5be85adac384",
+      "metric": "spread_pp",
+      "expected": 7.4,
+      "slug": "unicca-chon-buri"
+    }
+  ],
+  "i18n": {
+    "ko": {
+      "title": "모기지 금리 대비 7%p 이상 수익률을 내는 태국 콘도 5선",
+      "description": "태국 중앙은행 MRR은 7.1%입니다. 아래 다섯 콘도의 총임대수익률은 14.5–15%로, 금융비용 차감 전 7.4–7.9 pp의 스프레드를 기록합니다.",
+      "lead": "기준 MRR이 7.1%인 현재, 전액 대출로 콘도를 매입해 손익분기점을 넘으려면 총임대수익률이 9% 이상이어야 합니다. 아래 다섯 개 건물은 그 기준을 최소 7.4 percentage point 초과하며, 방콕의 ฿1.14M 유닛부터 시라차의 ฿2.05M 타워까지 다양합니다. 세 곳은 파타야, 한 곳은 시라차, 나머지 한 곳은 방콕 랏프라오 corridor에 위치합니다.",
+      "sections": [
+        {
+          "heading": "수치가 실제로 의미하는 것",
+          "body": "총임대수익률은 연간 임대수입을 매매가격으로 나눈 값으로, 공실·관리비·세금은 공제하지 않습니다. 여기서 제시하는 스프레드는 총임대수익률에서 현행 MRR(7.1%)을 뺀 수치입니다. 매입가의 50%를 MRR로 대출받은 매수자라면 실질 현금수익률은 스프레드의 약 두 배에 달하고, 전액 현금 매수자는 부채 비용 대비 초과 수익으로 스프레드 전체를 가져갑니다.\n\n진입 비용이 가장 낮은 물건은 [Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok)으로, 평균 매매가 ฿1.14M에 평균 월 임대료 ฿14,178을 기록해 수익률 14.94%를 달성합니다. 절대 스프레드가 가장 넓은 곳은 파타야의 [Siam Oriental Tropical Garden](/condo/siam-oriental-tropical-garden-chon-buri)으로 MRR 대비 7.9 pp를 기록합니다."
+        },
+        {
+          "heading": "파타야의 강세와 시라차라는 이례적 사례",
+          "body": "다섯 건물 중 세 곳이 파타야 임대 시장에 위치하며, 이 시장은 단기 체류 수요와 콘도텔 구조에 편중되어 있습니다. 이런 구조는 표면 임대료를 끌어올리지만, 총임대수익률에 반영되지 않는 운영 리스크를 수반합니다. [Jomtien Thip Condotel](/condo/jomtien-thip-condotel-chon-buri)과 [Unicca](/condo/unicca-chon-buri)는 모두 ฿1.5M 미만으로, 절대적인 하방 리스크는 제한적입니다.\n\n[The Sky Sriracha](/condo/the-sky-sriracha-chon-buri)는 구조적으로 이례적인 사례입니다. 시라차 산업단지 근로자 수요 덕분에 관광 사이클과 상관관계가 낮은 연중 임대 수요가 형성되며, 평균 매매가 ฿2.05M에 평균 월 임대료 ฿25,000을 기록합니다. 관광 의존형 현금흐름에서 분산 투자를 고려하는 매수자라면 이 물건을 별도의 심사 기준으로 검토할 필요가 있습니다."
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Siam Oriental Tropical Garden — 총임대수익률",
+          "value": "15.0%"
+        },
+        {
+          "label": "Siam Oriental Tropical Garden — 수익률-MRR 스프레드",
+          "value": "+7.9 pp"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — 평균 매매가",
+          "value": "฿1,138,558"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — 평균 월 임대료",
+          "value": "฿14,178"
+        },
+        {
+          "label": "The Sky Sriracha — 평균 월 임대료",
+          "value": "฿25,000"
+        },
+        {
+          "label": "Unicca — 수익률-MRR 스프레드",
+          "value": "+7.4 pp"
+        }
+      ]
+    },
+    "th": {
+      "title": "คอนโดไทย 5 แห่งที่ให้ผลตอบแทนสูงกว่า MRR เกิน 7 pp",
+      "description": "MRR ของธนาคารแห่งประเทศไทยอยู่ที่ 7.1% คอนโดทั้ง 5 แห่งนี้มีอัตราผลตอบแทนขั้นต้น 14.5–15% ทิ้งส่วนต่าง 7.4–7.9 pp ก่อนหักต้นทุนทางการเงิน",
+      "lead": "เมื่อ MRR อ้างอิงอยู่ที่ 7.1% คอนโดจำเป็นต้องมีอัตราผลตอบแทนขั้นต้นสูงกว่า 9% เพื่อให้คุ้มทุนในกรณีซื้อด้วยสินเชื่อเต็มจำนวน อาคาร 5 หลังด้านล่างนี้ผ่านเกณฑ์ดังกล่าวด้วยส่วนต่างอย่างน้อย 7.4 percentage points — ตั้งแต่ยูนิตในกรุงเทพฯ ราคา ฿1.14M ไปจนถึงอาคารสูงในศรีราชาราคา ฿2.05M โดย 3 แห่งอยู่ในพัทยา 1 แห่งอยู่ในศรีราชา และอีก 1 แห่งอยู่ในแนวรถไฟฟ้าลาดพร้าวของกรุงเทพฯ",
+      "sections": [
+        {
+          "heading": "ความหมายที่แท้จริงของตัวเลขเหล่านี้",
+          "body": "อัตราผลตอบแทนขั้นต้นคือรายได้ค่าเช่ารายปีหารด้วยราคาขาย โดยไม่หักค่าช่วงว่าง ค่าบริหารจัดการ หรือภาษี ส่วนต่างที่แสดงไว้คืออัตราผลตอบแทนขั้นต้นลบด้วย MRR ปัจจุบัน (7.1%) ผู้ซื้อที่ใช้สินเชื่อ 50% ของราคาซื้อในอัตรา MRR จะได้รับผลประโยชน์ด้านกระแสเงินสดต่อเงินสดจริงประมาณสองเท่าของตัวเลขส่วนต่าง ส่วนผู้ซื้อด้วยเงินสดทั้งหมดจะได้รับส่วนต่างนั้นเป็นผลตอบแทนส่วนเพิ่มเทียบกับต้นทุนหนี้\n\nจุดเข้าลงทุนที่ต่ำที่สุดคือ [Anna Condominium Ladprao 130](/condo/anna-condominium-ladprao-130-bangkok) ด้วยราคาขายเฉลี่ย ฿1.14M และค่าเช่าเฉลี่ยต่อเดือน ฿14,178 — ให้ผลตอบแทน 14.94% ส่วนส่วนต่างสัมบูรณ์ที่กว้างที่สุดเป็นของ [Siam Oriental Tropical Garden](/condo/siam-oriental-tropical-garden-chon-buri) ในพัทยา ที่ 7.9 pp เหนือ MRR"
+        },
+        {
+          "heading": "การครองตลาดของพัทยาและกรณีพิเศษของศรีราชา",
+          "body": "สามในห้าอาคารอยู่ในตลาดเช่าพัทยา ซึ่งมีแนวโน้มเอนเอียงไปสู่ความต้องการพักระยะสั้นและคอนโดเทล — โครงสร้างที่ทำให้ค่าเช่าหัวข้อสูงขึ้นแต่เพิ่มความเสี่ยงด้านการดำเนินงานที่ไม่ถูกสะท้อนในอัตราผลตอบแทนขั้นต้น [Jomtien Thip Condotel](/condo/jomtien-thip-condotel-chon-buri) และ [Unicca](/condo/unicca-chon-buri) ทั้งคู่มีราคาต่ำกว่า ฿1.5M ซึ่งช่วยจำกัดความเสี่ยงขาดทุนสัมบูรณ์\n\n[The Sky Sriracha](/condo/the-sky-sriracha-chon-buri) คืออาคารที่มีลักษณะโดดแตกต่างเชิงโครงสร้าง โดยแรงงานในเขตอุตสาหกรรมของศรีราชาสร้างความต้องการเช่าตลอดทั้งปีที่มีความสัมพันธ์กับรอบการท่องเที่ยวน้อยกว่า ด้วยราคาขายเฉลี่ย ฿2.05M และค่าเช่าเฉลี่ยต่อเดือน ฿25,000 สำหรับผู้ซื้อที่ต้องการกระจายพอร์ตออกจากกระแสเงินสดที่ขึ้นอยู่กับการท่องเที่ยว โปรไฟล์นี้สมควรได้รับการวิเคราะห์การรับประกันแยกต่างหาก"
+        }
+      ],
+      "fact_bullets": [
+        {
+          "label": "Siam Oriental Tropical Garden — อัตราผลตอบแทนขั้นต้น",
+          "value": "15.0%"
+        },
+        {
+          "label": "Siam Oriental Tropical Garden — ส่วนต่างผลตอบแทนเทียบ MRR",
+          "value": "+7.9 pp"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — ราคาขายเฉลี่ย",
+          "value": "฿1,138,558"
+        },
+        {
+          "label": "Anna Condominium Ladprao 130 — ค่าเช่าเฉลี่ยต่อเดือน",
+          "value": "฿14,178"
+        },
+        {
+          "label": "The Sky Sriracha — ค่าเช่าเฉลี่ยต่อเดือน",
+          "value": "฿25,000"
+        },
+        {
+          "label": "Unicca — ส่วนต่างผลตอบแทนเทียบ MRR",
+          "value": "+7.4 pp"
+        }
+      ]
+    }
+  }
+}
