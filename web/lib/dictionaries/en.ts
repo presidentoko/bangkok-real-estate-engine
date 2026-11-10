@@ -184,10 +184,13 @@ const dict = {
     statsDanger: "in Level 4–5 high-risk zones",
     statsSafe: "in Level 1–2 safe zones",
     statsHeader: "Bangkok condo inventory — flood risk distribution",
-    statsHeaderInverse: "Conversely, only",
-    statsHeaderInverseEnd: "are in Level 1–2 safe zones.",
+    statsHeaderInverse: "By comparison,",
+    statsHeaderInverseEnd: "are in Level 1–2 low-risk zones.",
     statsUnmatched: (n: number) =>
       `* ${n.toLocaleString()} buildings excluded from analysis (khet ↔ flood data unmatched)`,
+    asOf: (levels: string, data: string | null) =>
+      `Flood levels last revised ${levels}.` +
+      (data ? ` Buildings: the hipflat catalogue (one record per building) as of ${data}, its latest refresh.` : ""),
   },
   floodLegend: {
     title: "Bangkok monsoon flood risk",
@@ -245,7 +248,7 @@ const dict = {
     allTitle: "All 50 Bangkok districts by flood risk",
     methodTitle: "How this level is set",
     methodBody:
-      "RealData scores each of Bangkok’s 50 khet from 0 to 5 against BMA Drainage Department " +
+      "RealData scores each of Bangkok’s 50 khet from 1 to 5 against BMA Drainage Department " +
       "records, JICA flood-frequency reports and 2011 great flood inundation mapping. The layer " +
       "is district-level, not coordinate-level, and is reviewed once a year after the BMA " +
       "monsoon report.",
@@ -1554,7 +1557,7 @@ const dict = {
       "The macro backdrop every Thai condo buyer needs before signing a loan.",
     floodTitle: "Bangkok Flood Risk Map — All 50 Districts Scored | RealData",
     floodDesc:
-      "Which Bangkok districts flood every monsoon season — and which stay dry. All 50 khet scored 0–5 using BMA Drainage Dept, JICA, and 2011 great flood records. Every condo plotted on the risk map.",
+      "Which Bangkok districts flood every monsoon season — and which stay dry. All 50 khet scored 1–5 using BMA Drainage Dept, JICA, and 2011 great flood records. Every condo plotted on the risk map.",
     realityTitle:
       "Bangkok Condo Marketing vs Reality — Influencer Claims Fact-Checked | RealData",
     realityDesc:

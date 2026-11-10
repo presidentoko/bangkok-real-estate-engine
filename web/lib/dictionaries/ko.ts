@@ -166,10 +166,12 @@ const dict: Dict = {
     statsDanger: "Level 4~5 침수 위험 구역",
     statsSafe: "Level 1~2 안전 구역",
     statsHeader: "Bangkok 콘도 인벤토리 — 침수 위험 분포",
-    statsHeaderInverse: "반대로 Level 1~2 안전 구역에 있는 빌딩은",
-    statsHeaderInverseEnd: "뿐.",
+    statsHeaderInverse: "반면 Level 1~2 저위험 구역에 있는 빌딩은",
+    statsHeaderInverseEnd: "입니다.",
     statsUnmatched: (n: number) =>
       `* khet ↔ 침수 데이터 매칭 안된 빌딩 ${n.toLocaleString()}개 (분석 제외)`,
+    asOf: (levels: string, data: string | null) =>
+      `침수 등급 최종 개정 ${levels}.` + (data ? ` 빌딩 목록: hipflat 카탈로그(빌딩당 1건), ${data} 최근 갱신 기준.` : ""),
   },
   floodLegend: {
     title: "방콕 우기 침수 위험도",
@@ -226,7 +228,7 @@ const dict: Dict = {
     allTitle: "방콕 50개 구 침수 위험 전체",
     methodTitle: "등급 산정 방법",
     methodBody:
-      "RealData는 방콕 50개 구를 0~5단계로 채점합니다. 방콕시 배수국 기록, JICA 홍수 빈도 " +
+      "RealData는 방콕 50개 구를 1~5단계로 채점합니다. 방콕시 배수국 기록, JICA 홍수 빈도 " +
       "보고서, 2011년 대홍수 침수 지도를 기준으로 삼습니다. 좌표 단위가 아니라 구 단위이며, " +
       "매년 방콕시 우기 보고서가 나온 뒤 한 번 갱신합니다.",
     faqTitle: (d: string) => `${d} 침수 위험 — 자주 묻는 질문`,
@@ -1462,7 +1464,7 @@ const dict: Dict = {
       "태국 콘도 구매자가 대출에 서명하기 전에 알아야 할 거시 배경입니다.",
     floodTitle: "방콕 침수 위험 지도 — 50개 구 전체 등급화 | RealData",
     floodDesc:
-      "우기마다 잠기는 구와 끝까지 마른 구를 가릅니다. 방콕 50개 구를 BMA 배수국, JICA, 2011년 대홍수 기록으로 0~5등급 채점했습니다. 모든 콘도를 위험 지도 위에 표시합니다.",
+      "우기마다 잠기는 구와 끝까지 마른 구를 가릅니다. 방콕 50개 구를 BMA 배수국, JICA, 2011년 대홍수 기록으로 1~5등급 채점했습니다. 모든 콘도를 위험 지도 위에 표시합니다.",
     realityTitle: "방콕 콘도 광고 vs 실제 — 인플루언서 주장 팩트체크 | RealData",
     realityDesc:
       "인플루언서와 광고가 밀어주는 방콕 콘도를 저희가 측정한 버블 지수·수익률 옆에 나란히 놓습니다. 사람을 공격하지 않고 숫자만 봅니다. 시행사 돈 안 받는 독립 데이터입니다.",

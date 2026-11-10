@@ -22,12 +22,15 @@ export function FloodStats({
   const useLang: Lang = lang && isLang(lang) ? lang : DEFAULT_LANG;
   const t = getDictionary(useLang);
 
+  // Percentages are of the buildings that have a level, so the five bars
+  // always sum to 100% and danger + moderate + safe = the classified total.
+  // (They used to divide by the geolocated count, which is a different
+  // population whenever a building is unmatched or has no coordinates.)
+  const classified = Object.values(byLevel).reduce((s, n) => s + n, 0);
   const danger = (byLevel[5] ?? 0) + (byLevel[4] ?? 0);
-  const dangerPct =
-    totalGeolocated > 0 ? Math.round((danger / totalGeolocated) * 100) : 0;
+  const dangerPct = classified > 0 ? Math.round((danger / classified) * 100) : 0;
   const safe = (byLevel[1] ?? 0) + (byLevel[2] ?? 0);
-  const safePct =
-    totalGeolocated > 0 ? Math.round((safe / totalGeolocated) * 100) : 0;
+  const safePct = classified > 0 ? Math.round((safe / classified) * 100) : 0;
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-4">
@@ -60,8 +63,7 @@ export function FloodStats({
       <div className="space-y-1.5">
         {ORDER.map((lv) => {
           const n = byLevel[lv] ?? 0;
-          const pct =
-            totalGeolocated > 0 ? (n / totalGeolocated) * 100 : 0;
+          const pct = classified > 0 ? (n / classified) * 100 : 0;
           return (
             <div key={lv} className="flex items-center gap-3 text-xs">
               <span

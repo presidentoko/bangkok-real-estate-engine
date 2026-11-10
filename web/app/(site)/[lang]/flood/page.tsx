@@ -5,7 +5,8 @@ import { FloodCityGate } from "@/components/FloodCityGate";
 import { FloodLegend } from "@/components/FloodLegend";
 import { FloodMapSvg, type FloodPoint } from "@/components/FloodMapSvg";
 import { FloodStats } from "@/components/FloodStats";
-import { FLOOD_DISTRICTS } from "@/lib/floodDistricts";
+import { FLOOD_DISTRICTS, findFloodDistrict, type FloodDistrict } from "@/lib/floodDistricts";
+import { FLOOD_LAYER_REVISED, loadFloodLayer } from "@/lib/floodLayer.server";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
@@ -55,10 +56,6 @@ export async function generateMetadata({
 // moves on the weekly refresh.
 export const revalidate = 604800;
 
-function normalize(s: string): string {
-  return s.toLowerCase().replace(/[\s\-_]+/g, "");
-}
-
 type CondoRow = {
   id: string;
   slug: string | null;
@@ -68,10 +65,6 @@ type CondoRow = {
   longitude: number | null;
   region_id: string | null;
   regions: { name: string } | { name: string }[] | null;
-};
-
-type GeoFeature = {
-  properties: { name?: string; flood_risk_level?: number | null };
 };
 
 function regionName(r: CondoRow): string | null {
@@ -100,7 +93,10 @@ async function fetchAllBangkokCondos(
       .eq("province", "bangkok")
       .order("id", { ascending: true })
       .range(from, from + page - 1);
-    if (error || !data) break;
+    // Throw rather than break: a silently short list publishes wrong
+    // percentages, and a thrown render keeps the last good ISR page.
+    if (error) throw new Error(`flood: condos page ${from}: ${error.message}`);
+    if (!data) break;
     out.push(...(data as unknown as CondoRow[]));
     if (data.length < page) break;
   }
@@ -119,66 +115,72 @@ export default async function FloodPage({
   const supabase = getServerSupabase();
   const condoSelect = "id, slug, name, url, latitude, longitude, region_id, regions(name)";
 
-  const [condos, geoRes] = await Promise.all([
+  const layer = loadFloodLayer();
+  const [condos, latestSeen] = await Promise.all([
     fetchAllBangkokCondos(supabase, condoSelect),
-    fetch(
-      `${SEO_SITE_URL}/bangkok-districts.geojson`,
-      { next: { revalidate: 3600 } }
-    )
-      .then((r) => (r.ok ? r.json() : { features: [] }))
-      .catch(() => ({ features: [] })),
+    // When the building list was last refreshed -- the newest last_seen_at
+    // the scrapers wrote. One row, so it costs nothing in egress.
+    supabase
+      .from("condos_published")
+      .select("last_seen_at")
+      .eq("source", "hipflat")
+      .eq("province", "bangkok")
+      .not("last_seen_at", "is", null)
+      .order("last_seen_at", { ascending: false })
+      .limit(1)
+      .then(({ data }) => (data?.[0]?.last_seen_at as string | undefined) ?? null),
   ]);
 
-  const features = (geoRes.features ?? []) as GeoFeature[];
-  const levelByKhet = new Map<string, number>();
-  for (const f of features) {
-    const name = f.properties?.name ?? "";
-    const lvl = f.properties?.flood_risk_level;
-    if (typeof lvl === "number") {
-      levelByKhet.set(normalize(name), lvl);
-    }
-  }
-
+  // One district per building, used for every number on this page -- the
+  // map dot's colour, the level bars and the "Tracked condos" column -- so
+  // they always add up to the same total. The khet comes from the polygon
+  // the building's coordinates fall in; regions.name is only the fallback
+  // (see lib/floodLayer.server.ts for why). Before 2026-11-10 the table
+  // joined on regions.name against the display name, which missed every
+  // "vadhana" and "sathon" building (Watthana/Sathorn showed 0 of 207), and
+  // the level bars joined against a geojson fetch that came back empty.
   const points: FloodPoint[] = [];
   const byLevel: Record<number, number> = {};
+  const condosByKhet = new Map<string, number>();
   let unmatched = 0;
   for (const c of condos) {
-    if (c.latitude == null || c.longitude == null) continue;
+    const hasGeo = c.latitude != null && c.longitude != null;
     const region = regionName(c);
-    const level = region != null ? levelByKhet.get(normalize(region)) ?? null : null;
-    if (level == null) unmatched++;
-    else byLevel[level] = (byLevel[level] ?? 0) + 1;
+    const district: FloodDistrict | null =
+      (hasGeo ? layer.locate(c.latitude as number, c.longitude as number) : null) ??
+      (region ? findFloodDistrict(region) : null);
+    const level = district?.level ?? null;
+    if (district == null) unmatched++;
+    else {
+      byLevel[district.level] = (byLevel[district.level] ?? 0) + 1;
+      condosByKhet.set(district.slug, (condosByKhet.get(district.slug) ?? 0) + 1);
+    }
+    if (!hasGeo) continue;
     points.push({
       id: c.id,
       slug: c.slug,
       name: c.name,
-      lat: c.latitude,
-      lng: c.longitude,
+      lat: c.latitude as number,
+      lng: c.longitude as number,
       level,
       url: c.url,
     });
   }
 
-  // Flood-risk ranking by district — pillar table for SEO/AEO, and since
+  // Flood-risk ranking by district -- pillar table for SEO/AEO, and since
   // 2026-08-31 the hub that links out to the 50 per-khet answer pages.
-  //
-  // Levels now come from FLOOD_DISTRICTS (the committed projection of the
-  // same GeoJSON) rather than being re-derived from `features` here, so the
-  // slug in this table is guaranteed to be the one /flood/[district] and
-  // /district/[slug] both resolve — a mismatch would publish 50 links to
-  // 404s from the page Google trusts most on this topic.
-  const condosByKhet = new Map<string, number>();
-  for (const c of condos) {
-    const region = regionName(c);
-    if (!region) continue;
-    condosByKhet.set(normalize(region), (condosByKhet.get(normalize(region)) ?? 0) + 1);
-  }
+  // Levels come from FLOOD_DISTRICTS (the committed projection of the same
+  // GeoJSON), so each slug is the one /flood/[district] and /district/[slug]
+  // both resolve.
   const districtRanking = FLOOD_DISTRICTS.map((d) => ({
     district: lang === "th" && d.nameTh ? d.nameTh : d.name,
     slug: d.slug,
     level: d.level,
-    condos: condosByKhet.get(normalize(d.name)) ?? 0,
+    condos: condosByKhet.get(d.slug) ?? 0,
   }));
+  const minLevel = Math.min(...FLOOD_DISTRICTS.map((d) => d.level));
+  const maxLevel = Math.max(...FLOOD_DISTRICTS.map((d) => d.level));
+  const dataAsOf = latestSeen ? latestSeen.slice(0, 10) : null;
 
   const cityName = "Bangkok";
   const ariaLabel = `${cityName} flood risk map`;
@@ -187,13 +189,14 @@ export default async function FloodPage({
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: "Bangkok Flood Risk Map — All 50 Districts",
-    description: "Interactive flood risk map for all 50 Bangkok khet, scored 0–5 using BMA Drainage Dept, JICA, and 2011 great flood records. Every tracked condo plotted by flood level.",
+    description: `Interactive flood risk map for all 50 Bangkok khet, scored ${minLevel}–${maxLevel} using BMA Drainage Dept, JICA, and 2011 great flood records. Every tracked condo plotted by flood level.`,
     url: `${SEO_SITE_URL}/${lang}/flood`,
     inLanguage: lang,
     about: {
       "@type": "Dataset",
       name: "Bangkok District Monsoon Flood Risk Dataset",
-      description: "Flood risk scores (0–5) for all 50 Bangkok khet (districts), calibrated against BMA Drainage Department records, JICA hydrological reports, and 2011 great flood inundation mapping. Reviewed annually.",
+      description: `Flood risk scores (${minLevel}–${maxLevel}) for all 50 Bangkok khet (districts), calibrated against BMA Drainage Department records, JICA hydrological reports, and 2011 great flood inundation mapping. Levels last revised ${FLOOD_LAYER_REVISED}.`,
+      dateModified: FLOOD_LAYER_REVISED,
       creator: { "@type": "Organization", name: "RealData", url: SEO_SITE_URL },
       license: `${SEO_SITE_URL}/${lang}/about`,
       keywords: ["Bangkok flood risk", "Bangkok khet flood", "BMA flood data", "2011 Bangkok flood", "monsoon flooding Bangkok", "Bangkok district flood map"],
@@ -203,24 +206,26 @@ export default async function FloodPage({
     },
   };
 
+  // Level of a khet by slug, so the FAQ prose cannot drift from the table.
+  const lv = (slug: string) => FLOOD_DISTRICTS.find((d) => d.slug === slug)?.level;
   const highRisk = districtRanking.filter((d) => d.level >= 4).map((d) => d.district).slice(0, 6);
-  const lowRisk = districtRanking.filter((d) => d.level <= 1).map((d) => d.district).slice(0, 6);
+  const lowRisk = districtRanking.filter((d) => d.level === minLevel).map((d) => d.district).slice(0, 6);
   const faqItems = [
     {
       q: "Which Bangkok districts have the highest flood risk?",
       a: highRisk.length > 0
         ? `Districts rated Level 4–5 (highest risk) include ${highRisk.join(", ")}. These areas experienced sustained inundation during the 2011 great flood and face recurring monsoon flooding. Each condo page shows its district's exact flood level.`
-        : "Districts in outer Bangkok — particularly north and east — typically carry the highest flood risk (Level 4–5). Central elevated areas like Pathum Wan and Watthana are generally Level 1–2.",
+        : `Districts in outer Bangkok — particularly north and east — typically carry the highest flood risk (Level 4–5). Central elevated areas like Pathum Wan (Level ${lv("pathum-wan")}) and Watthana (Level ${lv("vadhana")}) are at the low end.`,
     },
     {
       q: "Which areas of Bangkok are safe from flooding?",
       a: lowRisk.length > 0
-        ? `Districts rated Level 0–1 (lowest risk) include ${lowRisk.join(", ")}. These areas have elevated terrain and robust BMA drainage infrastructure. Pathum Wan (Siam/Phloen Chit), Watthana (Asok/Phrom Phong), and Bang Rak (Silom) are typically the driest zones.`
-        : "Central Bangkok districts — Pathum Wan, Bang Rak, and Watthana — are rated Level 1 (very low risk) due to elevated terrain and robust BMA drainage. They stayed largely dry during the 2011 great flood.",
+        ? `Districts rated Level ${minLevel} (lowest risk) are ${lowRisk.join(", ")}. These areas have elevated terrain and robust BMA drainage infrastructure. Watthana (Asok/Phrom Phong) and Khlong Toei are one step up, at Level ${lv("vadhana")}. No district is risk-free: Level ${minLevel} is the lowest score any Bangkok khet receives.`
+        : `Central Bangkok districts — Pathum Wan and Bang Rak — are rated Level ${lv("pathum-wan")} (very low risk) due to elevated terrain and robust BMA drainage. They stayed largely dry during the 2011 great flood.`,
     },
     {
       q: "How is Bangkok flood risk measured?",
-      a: "RealData assigns each of Bangkok's 50 khet (districts) a flood risk level from 0 to 5 using three primary sources: BMA (Bangkok Metropolitan Administration) Drainage Department records, JICA flood frequency reports, and 2011 great flood inundation maps. Level 0 = no observed flooding; Level 5 = repeat full-area inundation during monsoon season. The layer is reviewed annually after each BMA monsoon report.",
+      a: `RealData assigns each of Bangkok's 50 khet (districts) a flood risk level from ${minLevel} to ${maxLevel} using three primary sources: BMA (Bangkok Metropolitan Administration) Drainage Department records, JICA flood frequency reports, and 2011 great flood inundation maps. Level 1 = very low (central, elevated, well drained); Level 5 = repeat full-area inundation during monsoon season. No Bangkok district is rated 0 (no observed flooding). Each building takes the level of the district polygon its coordinates fall in. Levels were last revised on ${FLOOD_LAYER_REVISED}; the layer is reviewed after each BMA monsoon report.`,
     },
     {
       q: "Did the 2011 Bangkok flood affect all areas of the city?",
@@ -228,7 +233,7 @@ export default async function FloodPage({
     },
     {
       q: "Is Sukhumvit safe from flooding in Bangkok?",
-      a: "Sukhumvit spans multiple districts with varying flood risk. Lower Sukhumvit (Khlong Toei, Watthana — BTS Asok to Phrom Phong area) carries Level 1–2 risk and stayed dry in 2011. Upper Sukhumvit extending toward On Nut, Phra Khanong, and Bang Na has Level 2–3 risk with occasional street flooding during heavy monsoon rains. Check the individual building page for its exact district flood level.",
+      a: `Sukhumvit spans multiple districts with varying flood risk. Lower Sukhumvit (Khlong Toei, Watthana — BTS Asok to Phrom Phong area) is Level ${lv("khlong-toei")} and stayed dry in 2011. Upper Sukhumvit extending toward On Nut, Phra Khanong, and Bang Na is Level ${lv("phra-khanong")}, with occasional street flooding during heavy monsoon rains. Check the individual building page for its exact district flood level.`,
     },
   ];
   const faqJsonLd = buildFaqJsonLd(faqItems);
@@ -281,7 +286,7 @@ export default async function FloodPage({
               </table>
             </div>
             <p className="text-xs text-zinc-600 mt-2">
-              Flood risk is rated L1 (lowest) to L5 (highest) from Bangkok’s district flood model. See{" "}
+              Flood risk is rated L{minLevel} (lowest) to L{maxLevel} (highest) from Bangkok’s district flood model. No Bangkok district is rated L0. Condos are counted in the district their coordinates fall in. See{" "}
               <Link className="text-blue-400" href={`/${lang}/glossary/flood-risk-level`}>how we score flood risk</Link>.
             </p>
           </section>
@@ -295,12 +300,13 @@ export default async function FloodPage({
             byLevel={byLevel}
             unmatched={unmatched}
           />
+          <p className="text-xs text-zinc-500 mt-2">{t.flood.asOf(FLOOD_LAYER_REVISED, dataAsOf)}</p>
         </div>
 
         <FloodMapSvg
           points={points}
           condoLinkPrefix={`/${lang}/condo/`}
-          districts={{ type: "FeatureCollection", features: features as unknown as Array<Record<string, unknown>> }}
+          districts={{ type: "FeatureCollection", features: layer.features as unknown as Array<Record<string, unknown>> }}
           fallbackCenter={BANGKOK_CENTER}
           ariaLabel={ariaLabel}
         />
