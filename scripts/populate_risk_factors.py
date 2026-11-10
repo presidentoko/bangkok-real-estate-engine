@@ -31,6 +31,7 @@ sys.path.insert(0, str(ROOT))
 from loguru import logger  # noqa: E402
 
 from src.data.flood_districts import FLOOD_RISK_BY_DISTRICT  # noqa: E402
+from src.data.flood_polygons import assign_district  # noqa: E402
 from src.data.subsidence_districts import SUBSIDENCE_LEVEL_BY_DISTRICT  # noqa: E402
 from src.db import get_client  # noqa: E402
 
@@ -70,7 +71,7 @@ def main() -> int:
     while True:
         page = (
             client.table("condos")
-            .select("id, name, region_id, regions(name)")
+            .select("id, name, region_id, latitude, longitude, regions(name)")
             .eq("source", "hipflat")
             .range(offset, offset + PAGE - 1)
             .execute()
@@ -112,7 +113,9 @@ def main() -> int:
     for c in condos:
         rg = c.get("regions")
         rname = (rg.get("name") if isinstance(rg, dict) else (rg[0]["name"] if rg else None))
-        key = _norm(rname)
+        # Coordinates clearly inside another khet's polygon win over the
+        # stored region -- same rule as /flood (src/data/flood_polygons.py).
+        key = _norm(assign_district(c.get("latitude"), c.get("longitude"), rname) or rname)
         level = lookup.get(key)
         sub_level = sub_lookup.get(key)
         if level is None and sub_level is None:
@@ -147,7 +150,7 @@ def main() -> int:
     # Upsert in chunks of 500 to stay under PostgREST limits.
     for i in range(0, len(rows), 500):
         client.table("risk_factors").upsert(
-            rows[i:i+500], on_conflict="condo_id"
+            rows[i:i+500], on_conflict="condo_id", returning="minimal"
         ).execute()
     logger.info(f"upserted {len(rows)} risk_factors rows")
     return 0

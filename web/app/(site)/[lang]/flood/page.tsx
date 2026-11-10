@@ -11,7 +11,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
-import { getServerSupabase } from "@/lib/supabase";
+import { getFloodCatalogue } from "@/lib/queries/floodCatalogue";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 
 const BANGKOK_CENTER: [number, number] = [100.5018, 13.7563];
@@ -56,53 +56,6 @@ export async function generateMetadata({
 // moves on the weekly refresh.
 export const revalidate = 604800;
 
-type CondoRow = {
-  id: string;
-  slug: string | null;
-  name: string;
-  url: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  region_id: string | null;
-  regions: { name: string } | { name: string }[] | null;
-};
-
-function regionName(r: CondoRow): string | null {
-  const rg = r.regions;
-  if (!rg) return null;
-  if (Array.isArray(rg)) return rg[0]?.name ?? null;
-  return rg.name ?? null;
-}
-
-// PostgREST caps every response at 1000 rows regardless of the requested
-// .range() size, so the old single .range(0, 9999) call silently returned
-// at most 1000 of Bangkok's ~6,000 condos — the flood map/stats were being
-// computed from an incomplete, arbitrary subset. Walk the table in
-// 1000-row pages instead.
-async function fetchAllBangkokCondos(
-  supabase: ReturnType<typeof getServerSupabase>,
-  select: string,
-): Promise<CondoRow[]> {
-  const out: CondoRow[] = [];
-  const page = 1000;
-  for (let from = 0; ; from += page) {
-    const { data, error } = await supabase
-      .from("condos_published")
-      .select(select)
-      .eq("source", "hipflat")
-      .eq("province", "bangkok")
-      .order("id", { ascending: true })
-      .range(from, from + page - 1);
-    // Throw rather than break: a silently short list publishes wrong
-    // percentages, and a thrown render keeps the last good ISR page.
-    if (error) throw new Error(`flood: condos page ${from}: ${error.message}`);
-    if (!data) break;
-    out.push(...(data as unknown as CondoRow[]));
-    if (data.length < page) break;
-  }
-  return out;
-}
-
 export default async function FloodPage({
   params,
 }: {
@@ -112,57 +65,35 @@ export default async function FloodPage({
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang);
 
-  const supabase = getServerSupabase();
-  const condoSelect = "id, slug, name, url, latitude, longitude, region_id, regions(name)";
-
   const layer = loadFloodLayer();
-  const [condos, latestSeen] = await Promise.all([
-    fetchAllBangkokCondos(supabase, condoSelect),
-    // When the building list was last refreshed -- the newest last_seen_at
-    // the scrapers wrote. One row, so it costs nothing in egress.
-    supabase
-      .from("condos_published")
-      .select("last_seen_at")
-      .eq("source", "hipflat")
-      .eq("province", "bangkok")
-      .not("last_seen_at", "is", null)
-      .order("last_seen_at", { ascending: false })
-      .limit(1)
-      .then(({ data }) => (data?.[0]?.last_seen_at as string | undefined) ?? null),
-  ]);
+  const { condos, latestSeen } = await getFloodCatalogue();
 
-  // One district per building, used for every number on this page -- the
-  // map dot's colour, the level bars and the "Tracked condos" column -- so
-  // they always add up to the same total. The khet comes from the polygon
-  // the building's coordinates fall in; regions.name is only the fallback
-  // (see lib/floodLayer.server.ts for why). Before 2026-11-10 the table
-  // joined on regions.name against the display name, which missed every
-  // "vadhana" and "sathon" building (Watthana/Sathorn showed 0 of 207), and
-  // the level bars joined against a geojson fetch that came back empty.
+  // One district per building (getFloodCatalogue -> layer.assign), used for
+  // every number on this page -- the map dot's colour, the level bars and
+  // the "Tracked condos" column -- and by every /flood/[district] page, so
+  // they all add up to the same total. Before 2026-11-10 the table joined
+  // regions.name against the display name, which missed every "vadhana" and
+  // "sathon" building, and the level bars joined against a geojson fetch
+  // that came back empty.
   const points: FloodPoint[] = [];
   const byLevel: Record<number, number> = {};
   const condosByKhet = new Map<string, number>();
   let unmatched = 0;
   for (const c of condos) {
-    const hasGeo = c.latitude != null && c.longitude != null;
-    const region = regionName(c);
-    const district: FloodDistrict | null =
-      (hasGeo ? layer.locate(c.latitude as number, c.longitude as number) : null) ??
-      (region ? findFloodDistrict(region) : null);
-    const level = district?.level ?? null;
+    const district: FloodDistrict | null = c.district ? findFloodDistrict(c.district) : null;
     if (district == null) unmatched++;
     else {
       byLevel[district.level] = (byLevel[district.level] ?? 0) + 1;
       condosByKhet.set(district.slug, (condosByKhet.get(district.slug) ?? 0) + 1);
     }
-    if (!hasGeo) continue;
+    if (c.lat == null || c.lng == null) continue;
     points.push({
       id: c.id,
       slug: c.slug,
       name: c.name,
-      lat: c.latitude as number,
-      lng: c.longitude as number,
-      level,
+      lat: c.lat,
+      lng: c.lng,
+      level: district?.level ?? null,
       url: c.url,
     });
   }

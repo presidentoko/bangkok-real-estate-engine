@@ -13,6 +13,7 @@ from loguru import logger
 from supabase import Client, create_client
 
 from src.config import get_settings
+from src.data.flood_polygons import assign_district
 from src.util.district import extract_district
 
 
@@ -247,6 +248,14 @@ def upsert_condo(client: Client, condo: dict[str, Any]) -> str:
     """Upsert condo by (source, source_listing_id); returns id."""
     canonical = _resolve_region(condo)
     province = canonical_province(condo.get("province") or "bangkok")
+    # Text-derived districts are wrong for ~25% of Bangkok buildings; where
+    # the coordinates are clearly inside another khet's polygon, store that
+    # khet. Without this every re-scrape would undo the 2026-11-10 repair
+    # (scripts/repair_condo_region_polygon.py). Same rule as /flood.
+    if province == "bangkok":
+        canonical = assign_district(
+            condo.get("latitude"), condo.get("longitude"), canonical
+        ) or canonical
     region_id = upsert_region(client, canonical, province=province) if canonical else None
 
     payload = {

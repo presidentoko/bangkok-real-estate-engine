@@ -52,7 +52,17 @@ export type FloodLayer = {
   features: FloodLayerFeature[];
   /** The khet whose polygon contains (lat, lng), or null if none does. */
   locate: (lat: number, lng: number) => FloodDistrict | null;
+  /** The khet a building is counted in on every flood page. See assign(). */
+  assign: (lat: number | null, lng: number | null, stored: string | null) => FloodDistrict | null;
 };
+
+/** A building this close (metres) to the polygon of the district it is
+ *  stored under is on the boundary: keep the stored district rather than
+ *  move it on geometry the layer's simplification cannot resolve. Same
+ *  constant, same rule as src/data/flood_polygons.py, which corrected
+ *  condos.region_id on 2026-11-10 -- keep the two in step, or the pages and
+ *  the stored district drift apart again. */
+export const BOUNDARY_BUFFER_M = 75;
 
 let cached: FloodLayer | null = null;
 
@@ -64,6 +74,18 @@ function inRing(x: number, y: number, ring: Ring): boolean {
     if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
   }
   return inside;
+}
+
+function segDistM(px: number, py: number, a: number[], b: number[]): number {
+  // Equirectangular metres around the point; plenty for ~100 m questions.
+  const kx = Math.cos((py * Math.PI) / 180) * 111_320;
+  const ky = 110_540;
+  const ax = a[0] * kx, ay = a[1] * ky, bx = b[0] * kx, by = b[1] * ky;
+  const x = px * kx, y = py * ky;
+  const dx = bx - ax, dy = by - ay;
+  const len = dx * dx + dy * dy;
+  const t = len === 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len));
+  return Math.hypot(x - ax - t * dx, y - ay - t * dy);
 }
 
 function inPolygon(x: number, y: number, rings: Ring[]): boolean {
@@ -117,6 +139,31 @@ export function loadFloodLayer(): FloodLayer {
     return null;
   };
 
-  cached = { features, locate };
+  const bySlug = new Map(indexed.map((d) => [d.district.slug, d]));
+  const distanceTo = (d: Indexed, lat: number, lng: number): number => {
+    let best = Infinity;
+    for (const poly of d.polygons)
+      for (const ring of poly)
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++)
+          best = Math.min(best, segDistM(lng, lat, ring[j], ring[i]));
+    return best;
+  };
+
+  // 1. polygon containing the point; 2. but if the stored district is a
+  // different khet whose polygon is within BOUNDARY_BUFFER_M, the point is
+  // on the boundary -- keep the stored one; 3. no coordinates or outside
+  // every polygon -> the stored district.
+  const assign = (lat: number | null, lng: number | null, stored: string | null) => {
+    const storedD = stored ? findFloodDistrict(stored) : null;
+    if (lat == null || lng == null) return storedD;
+    const pip = locate(lat, lng);
+    if (!pip) return storedD;
+    if (!storedD || storedD.slug === pip.slug) return pip;
+    const s = bySlug.get(storedD.slug);
+    if (s && distanceTo(s, lat, lng) <= BOUNDARY_BUFFER_M) return storedD;
+    return pip;
+  };
+
+  cached = { features, locate, assign };
   return cached;
 }

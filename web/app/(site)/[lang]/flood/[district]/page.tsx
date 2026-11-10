@@ -18,7 +18,7 @@ import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
-import { getServerSupabase } from "@/lib/supabase";
+import { getFloodCatalogue } from "@/lib/queries/floodCatalogue";
 import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 
 /* Per-khet flood answer pages.
@@ -37,8 +37,8 @@ import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
  *  cross-links — and it hands the reader to the district page for inventory.
  *
  *  Levels come from the committed lib/floodDistricts.ts table rather than
- *  the 334KB GeoJSON, so rendering costs one Supabase count + one condo
- *  query and no file parse. */
+ *  the 334KB GeoJSON. The building list is the shared, cached /flood
+ *  catalogue, so all 150 renders cost one Supabase read between them. */
 
 // Flood levels move once a year (after the BMA monsoon report); the condo
 // counts move on the weekly scraper refresh. Weekly ISR is the faster of
@@ -65,43 +65,33 @@ function displayName(d: FloodDistrict, lang: Lang): string {
   return lang === "th" && d.nameTh ? d.nameTh : d.name;
 }
 
-/** Published, active buildings in this khet, plus the total count.
+/** Buildings counted in this khet, plus the total.
  *
- *  Same published+is_active bar as district/[slug]: an unpublished condo's
- *  detail route renders the not-found boundary, so linking one from here
- *  would be a dead link on a page whose whole job is to be trusted.
+ *  Same population and same district assignment as the /flood table
+ *  (lib/queries/floodCatalogue.ts): the hipflat catalogue, one record per
+ *  building, placed by the polygon its coordinates fall in. So this page's
+ *  count is always the number in its /flood row. It used to count every
+ *  portal's rows by stored region_id, which double-counted towers listed on
+ *  several portals and trusted a text-derived district that was wrong for a
+ *  quarter of buildings (/flood/vadhana said 902; /flood said 69).
+ *
  *  cache()'d because generateMetadata needs the count for the description
- *  before the body runs the same query. */
+ *  before the body runs. */
 const getCondos = cache(async (slug: string) => {
-  const supabase = getServerSupabase();
-  const { data: region } = await supabase
-    .from("regions")
-    .select("id")
-    .eq("name", slug)
-    .limit(1)
-    .maybeSingle();
-  const regionId = (region as { id: string } | null)?.id;
-  if (!regionId) return { total: 0, rows: [] as CondoLite[] };
-
-  const [{ count }, { data }] = await Promise.all([
-    supabase
-      .from("condos")
-      .select("id", { count: "exact", head: true })
-      .eq("region_id", regionId)
-      .eq("is_active", true)
-      .eq("published", true),
-    supabase
-      .from("condos")
-      .select("id, slug, name, avg_sale_price, gross_yield_pct")
-      .eq("region_id", regionId)
-      .eq("is_active", true)
-      .eq("published", true)
-      .not("slug", "is", null)
-      .order("avg_sale_price", { ascending: false, nullsFirst: false })
-      .limit(CONDO_CAP),
-  ]);
-
-  return { total: count ?? 0, rows: (data ?? []) as CondoLite[] };
+  const { condos } = await getFloodCatalogue();
+  const inKhet = condos.filter((c) => c.district === slug);
+  const rows: CondoLite[] = inKhet
+    .filter((c) => c.slug)
+    .sort((x, y) => (y.avg_sale_price ?? -Infinity) - (x.avg_sale_price ?? -Infinity))
+    .slice(0, CONDO_CAP)
+    .map((c) => ({
+      id: c.id,
+      slug: c.slug,
+      name: c.name,
+      avg_sale_price: c.avg_sale_price,
+      gross_yield_pct: c.gross_yield_pct,
+    }));
+  return { total: inKhet.length, rows };
 });
 
 type CondoLite = {

@@ -31,3 +31,15 @@ test("locate() puts known landmarks in the right khet", () => {
   // Gulf of Thailand -- outside every polygon
   assert.equal(locate(13.3, 100.6), null);
 });
+
+test("assign() keeps the stored khet only on a boundary, else trusts the polygon", () => {
+  const { assign } = loadFloodLayer();
+  // Siam Paragon stored under Bang Rak (well over 75 m from it) -> Pathum Wan.
+  assert.equal(assign(13.7462, 100.5347, "bang-rak")?.slug, "pathum-wan");
+  // Stored = polygon -> unchanged.
+  assert.equal(assign(13.7462, 100.5347, "pathum-wan")?.slug, "pathum-wan");
+  // No coordinates -> the stored district, resolved through aliases.
+  assert.equal(assign(null, null, "Watthana")?.slug, "vadhana");
+  // Outside every polygon -> the stored district.
+  assert.equal(assign(13.3, 100.6, "sathon")?.slug, "sathon");
+});

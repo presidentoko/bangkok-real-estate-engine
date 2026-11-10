@@ -20,7 +20,8 @@ from loguru import logger
 from supabase import Client
 
 from src.analysis.construction import district_construction_signal
-from src.data.flood_districts import get_flood_level
+from src.data.flood_districts import FLOOD_RISK_BY_DISTRICT, get_flood_level
+from src.data.flood_polygons import assign_district, district_slug
 from src.data.subsidence_districts import get_subsidence_level
 from src.util.district import extract_district
 
@@ -57,6 +58,9 @@ def _flood_level_geojson(lat: float, lng: float) -> int | None:
     return None
 # ---------------------------------------------------------------------------
 
+
+# Polygon slug ("bang-rak") -> the district spelling the static lookups use.
+_DISTRICT_BY_SLUG = {district_slug(n): n for n in FLOOD_RISK_BY_DISTRICT}
 
 _BUCKET_TO_PENALTY = {"low": 0, "medium": 6, "high": 12}
 _BUCKET_TO_COUNT = {"low": 0, "medium": 1, "high": 3}  # informational only
@@ -117,6 +121,17 @@ def compute_risk(supabase: Client) -> int:
             region_name.get(r.get("region_id")),
         ]))
         district = extract_district(district_text)
+        # The text match is wrong for ~25% of Bangkok buildings (a name with
+        # "Lumpini" or "Sathorn" in it decides the district wherever the tower
+        # stands). Where the coordinates are clearly inside another khet's
+        # polygon, use that khet -- the same rule /flood and condos.region_id
+        # use (src/data/flood_polygons.py), so the report card agrees with them.
+        if r.get("latitude") is not None and r.get("longitude") is not None:
+            placed = _DISTRICT_BY_SLUG.get(
+                assign_district(r["latitude"], r["longitude"], district_slug(district)) or ""
+            )
+            if placed:
+                district = placed
 
         # ----- Flood -----
         flood_level: int | None = None
