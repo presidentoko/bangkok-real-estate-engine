@@ -44,13 +44,16 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "changed = this week's condos + missing pages; indexable = every page above the substance bar; full = every page"
+        description: "changed = this week's condos + missing pages; indexable = every page above the substance bar; full = every page; ids = only the condos in ids_file"
         type: choice
-        options: [changed, indexable, full]
+        options: [changed, indexable, full, ids]
         default: changed
       days:
         description: "changed mode: last_seen_at window in days"
         default: "8"
+      ids_file:
+        description: "ids mode: repo path to a file of condo ids (one per line, or a CSV with an id column, e.g. data/backups/*.csv)"
+        default: ""
 
 concurrency:
   group: condo-static
@@ -89,6 +92,7 @@ jobs:
           python scripts/condo_static/plan.py \
             --mode "${{ inputs.mode || 'changed' }}" \
             --days "${{ inputs.days || '8' }}" \
+            --ids-file "${{ inputs.ids_file }}" \
             --manifest store/manifest.txt \
             --out plan
           echo "matrix=$(cat plan/matrix.json)" >> "$GITHUB_OUTPUT"
@@ -199,6 +203,25 @@ jobs:
           mkdir -p dist/condo-static/cfs
           printf '/cfs/_next/static/*\n  Cache-Control: public, max-age=31536000, immutable\n' \
             > dist/condo-static/cfs/_headers
+
+      - name: Check the store came back whole
+        # `wrangler deploy` replaces each Worker's asset set with what dist/
+        # holds, so the deploy is an upsert only if the restore above put
+        # every stored page back. If it came back short (a failed or partial
+        # download), deploying would unpublish the missing pages -- refuse.
+        run: |
+          stored=$(cat plan/stored.txt 2>/dev/null | tr -d '\r' || echo 0)
+          removed=$(grep -c . plan/removed.txt || true)
+          have=0
+          for l in en ko th; do
+            n=$(find "dist/condo-static/$l/$l/condo" -name '*.html' 2>/dev/null | wc -l)
+            have=$((have + n))
+          done
+          echo "stored=$stored removed=$removed pages now=$have"
+          if [ "${stored:-0}" -gt 0 ] && [ "$have" -lt $((stored - removed)) ]; then
+            echo "::error::only $have pages after restore+overlay; the store held $stored ($removed removed). Not deploying."
+            exit 1
+          fi
 
       - name: Check Worker asset limits
         run: |

@@ -1,0 +1,67 @@
+{
+ "minCondos": 8,
+ "cities": {
+  "bangkok": [
+   "bang-kapi",
+   "bang-khae",
+   "bang-khen",
+   "bang-kho-laem",
+   "bang-na",
+   "bang-phlat",
+   "bang-rak",
+   "bang-sue",
+   "bangkok-noi",
+   "bangkok-yai",
+   "chatuchak",
+   "chom-thong",
+   "din-daeng",
+   "huai-khwang",
+   "khan-na-yao",
+   "khlong-san",
+   "lat-krabang",
+   "pathum-wan",
+   "phasi-charoen",
+   "phaya-thai",
+   "phra-khanong",
+   "prawet",
+   "ratchathewi",
+   "sathon",
+   "suan-luang",
+   "thon-buri",
+   "vadhana",
+   "yan-nawa"
+  ],
+  "chiangmai": [
+   "mueang-chiang-mai"
+  ],
+  "chonburi": [
+   "sattahip",
+   "si-racha"
+  ],
+  "huahin": [],
+  "nonthaburi": [
+   "mueang-nonthaburi",
+   "pak-kret"
+  ],
+  "pathum-thani": [
+   "khlong-luang"
+  ],
+  "pattaya": [
+   "central-pattaya",
+   "east-pattaya",
+   "jomtien",
+   "north-pattaya",
+   "pratumnak",
+   "south-pattaya"
+  ],
+  "phuket": [
+   "kathu",
+   "mueang-phuket",
+   "thalang"
+  ],
+  "samut-prakan": [
+   "bang-phli",
+   "mueang-samut-prakan"
+  ]
+ }
+}

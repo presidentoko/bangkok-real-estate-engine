@@ -290,6 +290,22 @@ jobs:
             Add-Content -Path yields.log -Value "CI_STEP_FAILED::yields"
           }
 
+      - name: Refresh the qualifying yield-district list
+        # web/middleware.ts 301s /yield/<city>/<district> to the city page
+        # when the district is not in web/public/u/yield-areas.json -- i.e.
+        # it no longer has MIN_AREA_CONDOS measured buildings. Runs after
+        # compute_yields so the list reflects this week's yields. Same
+        # public/u + push-to-main mechanism as the uuid map above (no deploy).
+        continue-on-error: true
+        run: |
+          cmd /c "node scripts\gen_yield_area_keys.mjs 2>&1" | Tee-Object -FilePath yieldareas.log
+          git add web/public/u/yield-areas.json
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git -c user.name="RealData Auto-Blog" -c user.email="auto-blog@passionaryestate.com" commit -m "chore(seo): refresh the qualifying yield-district list"
+            git push origin HEAD
+          }
+
       - name: Data quality cleanup + fuzzy rematch
         # Catches new yield outliers from this scrape + tries Levenshtein
         # ≤2 matching for orphans the base+aggressive normalizers missed.
