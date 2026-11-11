@@ -5,14 +5,14 @@ import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { fetchSiteStats } from "@/lib/queries/condos";
+import { fetchBuildingCount, fetchSiteStats } from "@/lib/queries/condos";
 
 /** Building count from the data -- the same figure as the home page's
  *  "buildings" stat (hipflat catalogue, one record per building) -- in place
  *  of the hand-written "1,700+" / "1,800+" this page used to print. */
 async function buildingCount(): Promise<string | null> {
-  const stats = await fetchSiteStats().catch(() => null);
-  return stats?.buildings ? stats.buildings.toLocaleString("en-US") : null;
+  const n = await fetchBuildingCount().catch(() => null);
+  return n ? n.toLocaleString("en-US") : null;
 }
 
 export const revalidate = 86400;
@@ -29,7 +29,7 @@ export async function generateMetadata({
     ? "Bangkok Condo Data Methodology — Bubble Index, Yield & Flood Risk | RealData"
     : `${t.title} — RealData`;
   const description = lang === "en"
-    ? `How RealData independently measures ${(await buildingCount()) ?? "every"} Thai condo buildings — Bubble Index formula, rental yield calculation, flood risk scoring using BMA & JICA data, and full refresh cadence. No developer sponsorships.`
+    ? `How RealData independently measures ${(await buildingCount()) ?? "the"} Thai condo buildings it tracks — Bubble Index formula, rental yield calculation, flood risk scoring using BMA & JICA data, and full refresh cadence. No developer sponsorships.`
     : t.lead;
   return {
     title,
@@ -50,7 +50,10 @@ export default async function AboutPage({
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang).about;
-  const buildingsLabel = (await buildingCount()) ?? "every";
+  const buildingsLabel = await buildingCount();
+  // Unit-listing count for the founder line: the same figure as the home
+  // page's "individual units" (it used to say a hand-written 23,552).
+  const unitListings = (await fetchSiteStats().catch(() => null))?.listings ?? null;
 
   // FAQ JSON-LD: each Q+A becomes a citable entity for AI Overviews.
   const faqJsonLd = {
@@ -82,7 +85,7 @@ export default async function AboutPage({
     "@type": "Dataset",
     name: "Thailand Condo Bubble Index, Flood Risk & Livability Dataset",
     description:
-      `Independent measurement of ${buildingsLabel} condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi. Per-building Bubble Index, district-level flood risk, OSM-derived livability score, weekly refresh.`,
+      `Independent measurement of ${buildingsLabel ?? "the"} condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi. Per-building Bubble Index, district-level flood risk, OSM-derived livability score, weekly refresh.`,
     url: `${SEO_SITE_URL}/${lang}/about`,
     creator: { "@id": `${SEO_SITE_URL}/#org` },
     publisher: { "@id": `${SEO_SITE_URL}/#org` },
@@ -165,7 +168,7 @@ export default async function AboutPage({
               Data architect, 12+ years. Korean founder based in Bangkok, building products for the Thai market.
             </p>
             <p className="text-sm text-zinc-300 leading-relaxed">
-              <strong>Why RealData exists:</strong> &ldquo;Top 10 Bangkok condos for foreigners&rdquo; videos on YouTube are almost always paid placements by developer sales agents. Influencers walk a showroom, mention &ldquo;great yield potential,&rdquo; never mention the building&rsquo;s sales velocity, the district&rsquo;s flood risk, or the realistic rent. So I built the opposite: <strong>1,894 buildings, 23,552 units, weekly portal sweeps, BOT mortgage rates, BMA flood layers</strong>. Buy on evidence, not influencers.
+              <strong>Why RealData exists:</strong> &ldquo;Top 10 Bangkok condos for foreigners&rdquo; videos on YouTube are almost always paid placements by developer sales agents. Influencers walk a showroom, mention &ldquo;great yield potential,&rdquo; never mention the building&rsquo;s sales velocity, the district&rsquo;s flood risk, or the realistic rent. So I built the opposite: <strong>{buildingsLabel ? `${buildingsLabel} buildings, ` : ""}{unitListings ? `${unitListings.toLocaleString("en-US")} unit listings, ` : ""}weekly portal sweeps, BOT mortgage rates, BMA flood layers</strong>. Buy on evidence, not influencers.
             </p>
           </div>
         </div>

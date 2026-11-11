@@ -490,36 +490,38 @@ async function _fetchSiteStats(): Promise<SiteStats> {
   // Every count must be real: `r.count ?? 0` used to turn a failed or
   // timed-out count into a 0 that unstable_cache then served for a day --
   // the home page showed "0 individual units" while the table held ~38,000.
-  // Throwing keeps the previous cached value / ISR page instead.
-  const must = (label: string) => (r: { count: number | null; error: unknown }) => {
-    if (r.error || r.count == null) {
-      throw new Error(`site stats: ${label} count failed: ${JSON.stringify(r.error)}`);
+  // Exact counts on the big tables can hit the statement timeout when a
+  // build renders many pages at once, so each is retried; if it still
+  // fails, throw -- the previous cached value / ISR page stays up instead of
+  // a wrong number.
+  type CountResult = { count: number | null; error: unknown };
+  async function count(label: string, run: () => PromiseLike<CountResult>): Promise<number> {
+    let last: unknown = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const r = await run();
+      if (!r.error && r.count != null) return r.count;
+      last = r.error;
+      await new Promise((res) => setTimeout(res, 500 * (attempt + 1)));
     }
-    return r.count;
-  };
+    throw new Error(`site stats: ${label} count failed: ${JSON.stringify(last)}`);
+  }
+  const head = { count: "exact" as const, head: true };
 
   const [b, l, c, g, bi, sv, y, tc, tl, mi] = await Promise.all([
-    makeBaseCondoCount().then(must("buildings")),
-    supabase.from("listings").select("id", { count: "exact", head: true })
-      .eq("source", "hipflat").then(must("listings")),
-    supabase.from("condo_market_chart").select("id", { count: "exact", head: true })
-      .then(must("chart points")),
-    makeBaseCondoCount().not("latitude", "is", null).then(must("geo")),
-    supabase.from("value_scores").select("condo_id", { count: "exact", head: true })
-      .then(must("bubble")),
-    supabase.from("value_scores").select("condo_id", { count: "exact", head: true })
-      .eq("is_super_value", true).then(must("super value")),
-    supabase.from("condos").select("id", { count: "exact", head: true })
-      .not("gross_yield_pct", "is", null).then(must("yield")),
+    count("buildings", () => makeBaseCondoCount()),
+    count("listings", () => supabase.from("listings").select("id", head).eq("source", "hipflat")),
+    count("chart points", () => supabase.from("condo_market_chart").select("id", head)),
+    count("geo", () => makeBaseCondoCount().not("latitude", "is", null)),
+    count("bubble", () => supabase.from("value_scores").select("condo_id", head)),
+    count("super value", () =>
+      supabase.from("value_scores").select("condo_id", head).eq("is_super_value", true)),
+    count("yield", () => supabase.from("condos").select("id", head).not("gross_yield_pct", "is", null)),
     // Published condo pages across all four portals -- the same population
     // as the home inventory map ("condo pages"), not every row in `condos`
     // (which includes unpublished ones).
-    supabase.from("condos_published").select("id", { count: "exact", head: true })
-      .then(must("condo pages")),
-    supabase.from("listings").select("id", { count: "exact", head: true })
-      .eq("is_active", true).then(must("active listings")),
-    supabase.from("macro_indicators").select("id", { count: "exact", head: true })
-      .then(must("macro")),
+    count("condo pages", () => supabase.from("condos_published").select("id", head)),
+    count("active listings", () => supabase.from("listings").select("id", head).eq("is_active", true)),
+    count("macro", () => supabase.from("macro_indicators").select("id", head)),
   ]);
   return {
     buildings: b,
@@ -534,6 +536,26 @@ async function _fetchSiteStats(): Promise<SiteStats> {
     macroPoints: mi,
   };
 }
+
+/** Buildings in the hipflat catalogue (one record per building) -- the
+ *  home page's "buildings" figure -- on its own, for pages that print only
+ *  this number. One head-only count. Null if it cannot be read. */
+export const fetchBuildingCount = unstable_cache(
+  async (): Promise<number | null> => {
+    const supabase = getServerSupabase();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const r = await supabase
+        .from("condos_published")
+        .select("id", { count: "exact", head: true })
+        .eq("source", "hipflat");
+      if (!r.error && r.count != null) return r.count;
+      await new Promise((res) => setTimeout(res, 500 * (attempt + 1)));
+    }
+    return null;
+  },
+  ["building-count-v1"],
+  { revalidate: 86400, tags: ["stats"] },
+);
 
 export const fetchSiteStats = unstable_cache(
   _fetchSiteStats,

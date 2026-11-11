@@ -418,7 +418,7 @@ const dict = {
     lead: "How RealData measures every Thai condo. Sources, formulas, refresh cadence, and what we deliberately don't do.",
     sectionMission: {
       title: "What we do",
-      body: (n: string) => `We measure ${n} condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi continuously. Every building gets a Bubble Index, livability score, and (in Bangkok) a flood-risk level — independent of the listing source's marketing copy. No developer money, no paid placement, no influencer deals.`,
+      body: (n: string | null) => `We measure ${n ?? "the"} condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi continuously. Every building gets a Bubble Index, livability score, and (in Bangkok) a flood-risk level — independent of the listing source's marketing copy. No developer money, no paid placement, no influencer deals.`,
     },
     sectionSources: {
       title: "Where the numbers come from",
