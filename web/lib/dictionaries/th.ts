@@ -59,7 +59,7 @@ const dict: Dict = {
     ctaInventory: "ดูคอนโดผลตอบแทนสูง",
     statsLabels: {
       buildings: "อาคาร",
-      listings: "ห้องประกาศ",
+      listings: "ประกาศที่ใช้งาน (4 พอร์ทัล)",
       chartPts: "จุดข้อมูลรายเดือน",
       floodMapping: "เขตที่จัดทำแผนที่",
     },

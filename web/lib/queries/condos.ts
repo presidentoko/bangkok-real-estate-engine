@@ -507,9 +507,11 @@ async function _fetchSiteStats(): Promise<SiteStats> {
   }
   const head = { count: "exact" as const, head: true };
 
-  const [b, l, c, g, bi, sv, y, tc, tl, mi] = await Promise.all([
+  // No hipflat-only listings count: it takes ~7s even on an idle database,
+  // timed out under build load, and was the "0 individual units" figure.
+  // `listings` is the active-listing count across all four portals.
+  const [b, c, g, bi, sv, y, tc, tl, mi] = await Promise.all([
     count("buildings", () => makeBaseCondoCount()),
-    count("listings", () => supabase.from("listings").select("id", head).eq("source", "hipflat")),
     count("chart points", () => supabase.from("condo_market_chart").select("id", head)),
     count("geo", () => makeBaseCondoCount().not("latitude", "is", null)),
     count("bubble", () => supabase.from("value_scores").select("condo_id", head)),
@@ -525,7 +527,7 @@ async function _fetchSiteStats(): Promise<SiteStats> {
   ]);
   return {
     buildings: b,
-    listings: l,
+    listings: tl,
     chartPoints: c,
     geoLocated: g,
     withBubble: bi,
@@ -559,6 +561,6 @@ export const fetchBuildingCount = unstable_cache(
 
 export const fetchSiteStats = unstable_cache(
   _fetchSiteStats,
-  ["stats-v2"],
+  ["stats-v3"],
   { revalidate: 86400, tags: ["stats"] }
 );

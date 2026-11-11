@@ -51,9 +51,9 @@ export default async function AboutPage({
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang).about;
   const buildingsLabel = await buildingCount();
-  // Unit-listing count for the founder line: the same figure as the home
-  // page's "individual units" (it used to say a hand-written 23,552).
-  const unitListings = (await fetchSiteStats().catch(() => null))?.listings ?? null;
+  // Active-listing count for the founder line: the same figure as the home
+  // page's "active listings" (it used to say a hand-written 23,552 units).
+  const activeListings = (await fetchSiteStats().catch(() => null))?.listings ?? null;
 
   // FAQ JSON-LD: each Q+A becomes a citable entity for AI Overviews.
   const faqJsonLd = {
@@ -168,7 +168,7 @@ export default async function AboutPage({
               Data architect, 12+ years. Korean founder based in Bangkok, building products for the Thai market.
             </p>
             <p className="text-sm text-zinc-300 leading-relaxed">
-              <strong>Why RealData exists:</strong> &ldquo;Top 10 Bangkok condos for foreigners&rdquo; videos on YouTube are almost always paid placements by developer sales agents. Influencers walk a showroom, mention &ldquo;great yield potential,&rdquo; never mention the building&rsquo;s sales velocity, the district&rsquo;s flood risk, or the realistic rent. So I built the opposite: <strong>{buildingsLabel ? `${buildingsLabel} buildings, ` : ""}{unitListings ? `${unitListings.toLocaleString("en-US")} unit listings, ` : ""}weekly portal sweeps, BOT mortgage rates, BMA flood layers</strong>. Buy on evidence, not influencers.
+              <strong>Why RealData exists:</strong> &ldquo;Top 10 Bangkok condos for foreigners&rdquo; videos on YouTube are almost always paid placements by developer sales agents. Influencers walk a showroom, mention &ldquo;great yield potential,&rdquo; never mention the building&rsquo;s sales velocity, the district&rsquo;s flood risk, or the realistic rent. So I built the opposite: <strong>{buildingsLabel ? `${buildingsLabel} buildings, ` : ""}{activeListings ? `${activeListings.toLocaleString("en-US")} active listings, ` : ""}weekly portal sweeps, BOT mortgage rates, BMA flood layers</strong>. Buy on evidence, not influencers.
             </p>
           </div>
         </div>

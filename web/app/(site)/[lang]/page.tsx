@@ -73,7 +73,13 @@ export default async function Home({
   const [mapPoints, featured, stats] = await Promise.all([
     fetchCondoMapPoints(),
     fetchHomeFeatured(),
-    fetchSiteStats(),
+    // At build time there is no previous page to keep, so a failed stats
+    // read renders dashes rather than failing the deployment; at runtime it
+    // throws, and ISR keeps serving the last good page.
+    fetchSiteStats().catch((e) => {
+      if (process.env.NEXT_PHASE === "phase-production-build") return null;
+      throw e;
+    }),
   ]);
 
   // ---- Aggregations (from the lean map-point feed, not every full card)
@@ -139,6 +145,8 @@ export default async function Home({
     });
   }
 
+  const fmtStat = (n: number | null | undefined) => (n == null ? "—" : n.toLocaleString());
+
   // Featured picks (selected DB-side in fetchHomeFeatured)
   const { superValue, overpriced, safest } = featured;
 
@@ -188,9 +196,9 @@ export default async function Home({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-12 max-w-3xl">
             {[
-              { n: stats.buildings.toLocaleString(), l: t.home.statsLabels.buildings },
-              { n: stats.listings.toLocaleString(), l: t.home.statsLabels.listings },
-              { n: stats.chartPoints.toLocaleString(), l: t.home.statsLabels.chartPts },
+              { n: fmtStat(stats?.buildings), l: t.home.statsLabels.buildings },
+              { n: fmtStat(stats?.listings), l: t.home.statsLabels.listings },
+              { n: fmtStat(stats?.chartPoints), l: t.home.statsLabels.chartPts },
               // Bangkok flood map = all 50 khet covered. Stat is hardcoded
               // because the flood layer is a single curated dataset, not a
               // scraped count. Label makes the scope explicit so it doesn't
@@ -212,10 +220,9 @@ export default async function Home({
           {/* Live-data strip: cross-portal coverage + macro depth */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 max-w-3xl">
             {[
-              { n: stats.totalCondos.toLocaleString(), l: "condo pages across 4 portals" },
-              { n: stats.totalListings.toLocaleString(), l: "active listings" },
-              { n: stats.withYield.toLocaleString(), l: "yield-measured condos" },
-              { n: stats.macroPoints.toLocaleString(), l: "BOT macro datapoints" },
+              { n: fmtStat(stats?.totalCondos), l: "condo pages across 4 portals" },
+              { n: fmtStat(stats?.withYield), l: "yield-measured condos" },
+              { n: fmtStat(stats?.macroPoints), l: "BOT macro datapoints" },
             ].map((s) => (
               <div
                 key={s.l}
@@ -238,7 +245,7 @@ export default async function Home({
           eyebrow={t.home.featured.superValue.eyebrow}
           eyebrowColor="text-emerald-400"
           title={t.home.featured.superValue.title}
-          subtitle={t.home.featured.superValue.subtitle(stats.superValue, stats.withBubble)}
+          subtitle={t.home.featured.superValue.subtitle(stats?.superValue ?? 0, stats?.withBubble ?? 0)}
           condos={superValue}
           priority
         />

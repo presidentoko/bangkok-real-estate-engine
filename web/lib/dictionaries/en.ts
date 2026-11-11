@@ -61,7 +61,7 @@ const dict = {
     ctaInventory: "See top-yield condos",
     statsLabels: {
       buildings: "buildings",
-      listings: "individual units",
+      listings: "active listings (4 portals)",
       chartPts: "monthly price datapoints",
       floodMapping: "districts mapped",
     },
