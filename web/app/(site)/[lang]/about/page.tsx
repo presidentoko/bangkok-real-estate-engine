@@ -5,6 +5,15 @@ import { isLang } from "@/lib/i18n";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { fetchSiteStats } from "@/lib/queries/condos";
+
+/** Building count from the data -- the same figure as the home page's
+ *  "buildings" stat (hipflat catalogue, one record per building) -- in place
+ *  of the hand-written "1,700+" / "1,800+" this page used to print. */
+async function buildingCount(): Promise<string | null> {
+  const stats = await fetchSiteStats().catch(() => null);
+  return stats?.buildings ? stats.buildings.toLocaleString("en-US") : null;
+}
 
 export const revalidate = 86400;
 
@@ -20,7 +29,7 @@ export async function generateMetadata({
     ? "Bangkok Condo Data Methodology — Bubble Index, Yield & Flood Risk | RealData"
     : `${t.title} — RealData`;
   const description = lang === "en"
-    ? "How RealData independently measures 1,800+ Thai condos — Bubble Index formula, rental yield calculation, flood risk scoring using BMA & JICA data, and full refresh cadence. No developer sponsorships."
+    ? `How RealData independently measures ${(await buildingCount()) ?? "every"} Thai condo buildings — Bubble Index formula, rental yield calculation, flood risk scoring using BMA & JICA data, and full refresh cadence. No developer sponsorships.`
     : t.lead;
   return {
     title,
@@ -41,6 +50,7 @@ export default async function AboutPage({
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang).about;
+  const buildingsLabel = (await buildingCount()) ?? "every";
 
   // FAQ JSON-LD: each Q+A becomes a citable entity for AI Overviews.
   const faqJsonLd = {
@@ -72,7 +82,7 @@ export default async function AboutPage({
     "@type": "Dataset",
     name: "Thailand Condo Bubble Index, Flood Risk & Livability Dataset",
     description:
-      "Independent measurement of 1,700+ condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi. Per-building Bubble Index, district-level flood risk, OSM-derived livability score, weekly refresh.",
+      `Independent measurement of ${buildingsLabel} condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi. Per-building Bubble Index, district-level flood risk, OSM-derived livability score, weekly refresh.`,
     url: `${SEO_SITE_URL}/${lang}/about`,
     creator: { "@id": `${SEO_SITE_URL}/#org` },
     publisher: { "@id": `${SEO_SITE_URL}/#org` },
@@ -163,7 +173,7 @@ export default async function AboutPage({
 
       <section className="mb-10">
         <h2 className="text-xl font-bold mb-3">{t.sectionMission.title}</h2>
-        <p className="text-zinc-300 leading-relaxed">{t.sectionMission.body}</p>
+        <p className="text-zinc-300 leading-relaxed">{t.sectionMission.body(buildingsLabel)}</p>
       </section>
 
       <section className="mb-10">

@@ -482,37 +482,44 @@ export type SiteStats = {
 async function _fetchSiteStats(): Promise<SiteStats> {
   const supabase = getServerSupabase();
 
-  type CondoCountQuery = ReturnType<typeof makeBaseCondoCount>;
   function makeBaseCondoCount() {
     return supabase.from("condos_published").select("id", { count: "exact", head: true })
       .eq("source", "hipflat");
   }
-  async function condosCount(extra?: (q: CondoCountQuery) => CondoCountQuery): Promise<number> {
-    let q: CondoCountQuery = makeBaseCondoCount();
-    if (extra) q = extra(q);
-    const r = await q;
-    return r.count ?? 0;
-  }
+
+  // Every count must be real: `r.count ?? 0` used to turn a failed or
+  // timed-out count into a 0 that unstable_cache then served for a day --
+  // the home page showed "0 individual units" while the table held ~38,000.
+  // Throwing keeps the previous cached value / ISR page instead.
+  const must = (label: string) => (r: { count: number | null; error: unknown }) => {
+    if (r.error || r.count == null) {
+      throw new Error(`site stats: ${label} count failed: ${JSON.stringify(r.error)}`);
+    }
+    return r.count;
+  };
 
   const [b, l, c, g, bi, sv, y, tc, tl, mi] = await Promise.all([
-    condosCount(),
+    makeBaseCondoCount().then(must("buildings")),
     supabase.from("listings").select("id", { count: "exact", head: true })
-      .eq("source", "hipflat").then((r) => r.count ?? 0),
+      .eq("source", "hipflat").then(must("listings")),
     supabase.from("condo_market_chart").select("id", { count: "exact", head: true })
-      .then((r) => r.count ?? 0),
-    condosCount((q) => q.not("latitude", "is", null)),
+      .then(must("chart points")),
+    makeBaseCondoCount().not("latitude", "is", null).then(must("geo")),
     supabase.from("value_scores").select("condo_id", { count: "exact", head: true })
-      .then((r) => r.count ?? 0),
+      .then(must("bubble")),
     supabase.from("value_scores").select("condo_id", { count: "exact", head: true })
-      .eq("is_super_value", true).then((r) => r.count ?? 0),
+      .eq("is_super_value", true).then(must("super value")),
     supabase.from("condos").select("id", { count: "exact", head: true })
-      .not("gross_yield_pct", "is", null).then((r) => r.count ?? 0),
-    supabase.from("condos").select("id", { count: "exact", head: true })
-      .then((r) => r.count ?? 0),
+      .not("gross_yield_pct", "is", null).then(must("yield")),
+    // Published condo pages across all four portals -- the same population
+    // as the home inventory map ("condo pages"), not every row in `condos`
+    // (which includes unpublished ones).
+    supabase.from("condos_published").select("id", { count: "exact", head: true })
+      .then(must("condo pages")),
     supabase.from("listings").select("id", { count: "exact", head: true })
-      .eq("is_active", true).then((r) => r.count ?? 0),
+      .eq("is_active", true).then(must("active listings")),
     supabase.from("macro_indicators").select("id", { count: "exact", head: true })
-      .then((r) => r.count ?? 0),
+      .then(must("macro")),
   ]);
   return {
     buildings: b,
@@ -530,6 +537,6 @@ async function _fetchSiteStats(): Promise<SiteStats> {
 
 export const fetchSiteStats = unstable_cache(
   _fetchSiteStats,
-  ["stats"],
+  ["stats-v2"],
   { revalidate: 86400, tags: ["stats"] }
 );

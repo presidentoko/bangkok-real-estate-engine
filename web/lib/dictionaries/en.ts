@@ -116,13 +116,13 @@ const dict = {
     },
     citiesHeader: "Other markets we cover",
     citiesLead: "Same data engine, different cities. Phuket, Chiang Mai, Pattaya, Hua Hin, Chonburi, Krabi, Koh Samui, Chiang Rai.",
-    inventoryTitle: "Bangkok Condo Inventory",
-    inventoryStatsCondos: "buildings",
+    inventoryTitle: "Thailand Condo Inventory",
+    inventoryStatsCondos: "condo pages",
     inventoryStatsDistricts: "districts",
     inventoryGeoSuffix: "geo-located",
     inventoryFullList: "full list →",
     inventoryHelp:
-      "Yellow dots = buildings with lat/lng. Click a dot for the full data report.",
+      "Yellow dots = an even sample of the condos with coordinates. Click a dot for the full data report.",
     faqTitle: "Frequently asked questions",
     faq: [
       {
@@ -152,10 +152,6 @@ const dict = {
       {
         q: "How often is the data refreshed?",
         a: "Bangkok listings refresh daily for new inventory. Full Thailand sweep runs weekly across hipflat, dotproperty, ddproperty, fazwaz. Yields and bubble index recompute after every ingest cycle. BOT macro rates refresh daily. Flood layer reviews annually. Each building page shows its own measurement timestamp.",
-      },
-      {
-        q: "What is the typical rental yield for condos in Bangkok?",
-        a: "Gross rental yields for Bangkok condos measured by RealData typically range from 3% to 7%, with a median around 4.5–5%. Central districts like Silom and Sukhumvit tend toward 3.5–5% due to higher sale prices, while outer areas like Lat Phrao and Phra Khanong can reach 5–7%. Net yield is typically 1.5–3 percentage points lower after CAM fees, vacancy, and management costs.",
       },
       {
         q: "How much does a condo in Bangkok cost?",
@@ -422,7 +418,7 @@ const dict = {
     lead: "How RealData measures every Thai condo. Sources, formulas, refresh cadence, and what we deliberately don't do.",
     sectionMission: {
       title: "What we do",
-      body: "We measure 1,700+ condos across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi continuously. Every building gets a Bubble Index, livability score, and (in Bangkok) a flood-risk level — independent of the listing source's marketing copy. No developer money, no paid placement, no influencer deals.",
+      body: (n: string) => `We measure ${n} condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi continuously. Every building gets a Bubble Index, livability score, and (in Bangkok) a flood-risk level — independent of the listing source's marketing copy. No developer money, no paid placement, no influencer deals.`,
     },
     sectionSources: {
       title: "Where the numbers come from",

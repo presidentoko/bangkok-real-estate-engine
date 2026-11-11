@@ -262,9 +262,15 @@ export function InventoryMapSvg({
           <div className="mt-2 pt-2 border-t border-zinc-800 flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-amber-400 ring-1 ring-amber-900" />
             <span className="text-zinc-400">
+              {/* The dots are an even sample (DOT_CAP on the home page) of
+                  the condos that have coordinates, so say "shown", not
+                  "geo-located": "396 / 1,894 geo-located" read as if only
+                  396 buildings had coordinates. */}
               {points.length.toLocaleString()}
-              {totalBuildings ? ` / ${totalBuildings.toLocaleString()}` : ""}{" "}
-              geo-located
+              {totalBuildings && totalBuildings !== points.length
+                ? ` of ${totalBuildings.toLocaleString()}`
+                : ""}{" "}
+              shown
             </span>
           </div>
         )}

@@ -114,13 +114,13 @@ const dict: Dict = {
     },
     citiesHeader: "우리가 커버하는 다른 도시",
     citiesLead: "같은 데이터 엔진, 다른 도시. 푸켓, 치앙마이, 파타야, 후아힌, 촌부리, 끄라비, 코사무이, 치앙라이.",
-    inventoryTitle: "Bangkok Condo Inventory",
-    inventoryStatsCondos: "buildings",
+    inventoryTitle: "태국 콘도 인벤토리",
+    inventoryStatsCondos: "콘도 페이지",
     inventoryStatsDistricts: "districts",
     inventoryGeoSuffix: "geo-located",
     inventoryFullList: "full list →",
     inventoryHelp:
-      "노란 점 = lat/lng 매핑된 빌딩. 점 클릭하면 풀 데이터 리포트.",
+      "노란 점 = 좌표가 있는 콘도 중 고르게 뽑은 표본. 점 클릭하면 풀 데이터 리포트.",
     faqTitle: "자주 묻는 질문",
     faq: [
       {
@@ -398,7 +398,7 @@ const dict: Dict = {
     lead: "RealData가 태국 콘도를 어떻게 측정하는지 — 데이터 출처, 공식, 갱신 주기, 그리고 우리가 의도적으로 안 하는 것.",
     sectionMission: {
       title: "우리가 하는 일",
-      body: "방콕, 푸켓, 치앙마이, 파타야, 후아힌, 촌부리에 걸쳐 1,700+개 콘도를 지속 측정합니다. 모든 빌딩에 Bubble Index, 생활편의 점수, (방콕은) 침수 위험 등급을 산출합니다 — 매물 출처의 마케팅 카피와 무관하게. 시행사 돈 없음, 유료 배치 없음, 인플루언서 PPL 없음.",
+      body: (n: string) => `방콕, 푸켓, 치앙마이, 파타야, 후아힌, 촌부리에 걸쳐 콘도 빌딩 ${n}개를 지속 측정합니다. 모든 빌딩에 Bubble Index, 생활편의 점수, (방콕은) 침수 위험 등급을 산출합니다 — 매물 출처의 마케팅 카피와 무관하게. 시행사 돈 없음, 유료 배치 없음, 인플루언서 PPL 없음.`,
     },
     sectionSources: {
       title: "데이터 출처",

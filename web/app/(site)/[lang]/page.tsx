@@ -14,7 +14,8 @@ import { COMPARE_PAIRS } from "@/lib/comparePairs";
 import { sideName } from "@/components/AreaVsView";
 import { getYieldAreaIndex } from "@/lib/queries/yieldAreas";
 import { getFeeAreaIndex } from "@/lib/queries/feeAreas";
-import { CITIES, provinceDisplayName } from "@/lib/cities";
+import { CITIES, districtDisplayName, provinceDisplayName } from "@/lib/cities";
+import { MIN_AREA_CONDOS } from "@/lib/yieldAreas";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang } from "@/lib/i18n";
 import {
@@ -110,6 +111,34 @@ export default async function Home({
       ? points.filter((_, i) => i % Math.ceil(points.length / DOT_CAP) === 0)
       : points;
 
+  // "Typical Bangkok yield" FAQ answer, computed from the same index that
+  // /yield/bangkok prints, so the two can never disagree. It used to be a
+  // hand-written "median around 4.5-5%" while /yield/bangkok said 5.3%.
+  // English only: the ko/th FAQs never carried this question.
+  const bkk = yieldIndex?.cities.find((c) => c.city === "bangkok");
+  const faqItems = [...t.home.faq];
+  if (lang === "en" && bkk?.stats.median != null) {
+    const s = bkk.stats;
+    const ranked = bkk.districts.filter((d) => d.stats.median != null);
+    const lo = ranked[ranked.length - 1];
+    const hi = ranked[0];
+    const f1 = (n: number | null) => (n == null ? "—" : n.toFixed(1));
+    const spread =
+      lo && hi && lo !== hi
+        ? ` District medians run from ${f1(lo.stats.median)}% in ${districtDisplayName(lo.district)} to ${f1(hi.stats.median)}% in ${districtDisplayName(hi.district)} (districts with at least ${MIN_AREA_CONDOS} measured condos).`
+        : "";
+    const at = faqItems.findIndex((f) => f.q === "How often is the data refreshed?");
+    faqItems.splice(at >= 0 ? at + 1 : faqItems.length, 0, {
+      q: "What is the typical rental yield for condos in Bangkok?",
+      a:
+        `Across the ${s.count.toLocaleString("en-US")} Bangkok condos with enough sale and rent listings to measure, ` +
+        `the median gross rental yield is ${f1(s.median)}%; the middle half sit between ${f1(s.p25)}% and ${f1(s.p75)}%.` +
+        spread +
+        " Net yield is typically 1.5–3 percentage points lower after CAM fees, vacancy, and management costs. " +
+        "Figures are Bangkok only and update weekly; see the Bangkok yield page for the full breakdown.",
+    });
+  }
+
   // Featured picks (selected DB-side in fetchHomeFeatured)
   const { superValue, overpriced, safest } = featured;
 
@@ -183,7 +212,7 @@ export default async function Home({
           {/* Live-data strip: cross-portal coverage + macro depth */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 max-w-3xl">
             {[
-              { n: stats.totalCondos.toLocaleString(), l: "condos across 4 portals" },
+              { n: stats.totalCondos.toLocaleString(), l: "condo pages across 4 portals" },
               { n: stats.totalListings.toLocaleString(), l: "active listings" },
               { n: stats.withYield.toLocaleString(), l: "yield-measured condos" },
               { n: stats.macroPoints.toLocaleString(), l: "BOT macro datapoints" },
@@ -284,7 +313,7 @@ export default async function Home({
         <div className="flex items-baseline gap-3 mb-3 flex-wrap">
           <h2 className="text-xl font-semibold">{t.home.inventoryTitle}</h2>
           <span className="text-zinc-500 text-sm">
-            {stats.buildings.toLocaleString()} {t.home.inventoryStatsCondos} ·{" "}
+            {mapPoints.length.toLocaleString()} {t.home.inventoryStatsCondos} ·{" "}
             {khetCounts.length} {t.home.inventoryStatsDistricts} ·{" "}
             <span className="text-amber-400">
               {points.length.toLocaleString()} {t.home.inventoryGeoSuffix}
@@ -300,7 +329,7 @@ export default async function Home({
         <InventoryMapSvg
           khetCounts={khetCounts}
           points={mapDots}
-          totalBuildings={stats.buildings}
+          totalBuildings={points.length}
           condoLinkPrefix={`/${lang}/condo/`}
         />
         <p className="text-xs text-zinc-500 mt-2">{t.home.inventoryHelp}</p>
@@ -410,7 +439,7 @@ export default async function Home({
 
       {/* FAQ */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
-        <FaqSection items={t.home.faq} heading={t.home.faqTitle} />
+        <FaqSection items={faqItems} heading={t.home.faqTitle} />
 
         <script
           type="application/ld+json"
@@ -419,7 +448,7 @@ export default async function Home({
               "@context": "https://schema.org",
               "@type": "FAQPage",
               inLanguage: lang,
-              mainEntity: t.home.faq.map((f) => ({
+              mainEntity: faqItems.map((f) => ({
                 "@type": "Question",
                 name: f.q,
                 acceptedAnswer: { "@type": "Answer", text: f.a },
