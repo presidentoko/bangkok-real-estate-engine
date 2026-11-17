@@ -16,6 +16,7 @@ import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { findYieldArea, type AreaStats, type YieldAreaIndex } from "@/lib/yieldAreas";
+import { mrrLabel } from "@/lib/mrr";
 
 /* Shared by /yield/[city] and /yield/[city]/[district]. See lib/yieldAreas.ts
  * for why these pages exist and how an area qualifies. */
@@ -120,7 +121,7 @@ export async function YieldAreaView({
     { q: t.faq.q1(label), a: t.faq.a1(label, pct(s.median), s.count, pct(s.p25), pct(s.p75)) },
     {
       q: t.faq.q2(label),
-      a: t.faq.a2(label, pct(s.median), mrr != null ? mrr.toFixed(2) : null, parent.label, pct(parent.stats.median)),
+      a: t.faq.a2(label, pct(s.median), mrr != null ? mrrLabel(mrr, mortgage?.period, lang) : null, parent.label, pct(parent.stats.median)),
     },
     ...(topList ? [{ q: t.faq.q3(label), a: t.faq.a3(label, topList) }] : []),
     { q: t.faq.q4, a: t.faq.a4 },
@@ -172,7 +173,7 @@ export async function YieldAreaView({
         </p>
         {spread != null && mrr != null && (
           <p className="text-sm leading-relaxed text-zinc-300">
-            {t.spread(`${spread >= 0 ? "+" : ""}${spread.toFixed(1)}`, mrr.toFixed(2), spread >= 0)}
+            {t.spread(`${spread >= 0 ? "+" : ""}${spread.toFixed(1)}`, mrrLabel(mrr, mortgage?.period, lang), spread >= 0)}
           </p>
         )}
         <p className="text-xs text-zinc-400">{t.vsParent(parent.label, pct(parent.stats.median))}</p>

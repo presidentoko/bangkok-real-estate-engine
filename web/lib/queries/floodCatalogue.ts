@@ -92,7 +92,7 @@ async function load(): Promise<{ condos: FloodCatalogueCondo[]; latestSeen: stri
   };
 }
 
-export const getFloodCatalogue = unstable_cache(load, ["flood-catalogue-v1"], {
+export const getFloodCatalogue = unstable_cache(load, ["flood-catalogue-v2"], {
   revalidate: 604800,
-  tags: ["flood-catalogue"],
+  tags: ["flood-catalogue", "site-data"],
 });

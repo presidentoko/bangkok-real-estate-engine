@@ -1,5 +1,6 @@
 import { fmtTHB } from "@/lib/fmt";
 import type { CondoYield, MortgageRate } from "@/lib/queries/yield";
+import { mrrLabel } from "@/lib/mrr";
 
 type Props = {
   yieldData: CondoYield | null;
@@ -68,7 +69,7 @@ export function YieldCard({ yieldData, mortgageRate }: Props) {
         <div className="mt-4 pt-4 border-t border-zinc-800 text-sm">
           <div className="flex flex-wrap items-baseline gap-2">
             <span className="text-zinc-500 text-xs uppercase tracking-wider">
-              vs. mortgage (MRR {mortgage!.toFixed(2)}%)
+              vs. mortgage (MRR {mrrLabel(mortgage!, mortgageRate?.period)})
             </span>
             <span
               className={`text-lg font-semibold tabular-nums ${

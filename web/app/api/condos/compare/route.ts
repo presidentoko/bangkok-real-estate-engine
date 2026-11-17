@@ -30,6 +30,7 @@ export async function GET(req: Request) {
     risks: Object.fromEntries(risks),
     liv: Object.fromEntries(liv),
     mrr: mortgage?.rate ?? null,
+    mrrPeriod: mortgage?.period ?? null,
   };
 
   return NextResponse.json(payload, { headers: CACHE_HEADERS });

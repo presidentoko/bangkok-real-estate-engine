@@ -76,8 +76,8 @@ const dict: Dict = {
         href: "/macro",
         emoji: "🏦",
         title: "모기지 매크로",
-        desc: "태국중앙은행 정책금리·MRR·MLR·MOR·예금금리 — 모든 주담대 상품의 기준선. 매일 갱신.",
-        badge: "BOT 일일 갱신",
+        desc: "태국중앙은행 정책금리·MRR·MLR·MOR·예금금리 — 모든 주담대 상품의 기준선. 각 수치에 기준 월 표시.",
+        badge: "BOT 기준금리",
       },
       {
         href: "/flood",
@@ -322,7 +322,7 @@ const dict: Dict = {
   },
   dataShowcase: {
     title: "데이터 — 진짜 스케일",
-    lead: "9개 도시 + 6개월 weekly 크롤이 실제로 어떻게 생겼는지. 아래 숫자는 페이지 로드마다 재계산. 매물은 매일, 태국 전국 sweep 은 주 1회 갱신.",
+    lead: "9개 도시 + 6개월 weekly 크롤이 실제로 어떻게 생겼는지. 아래 숫자는 매일 재계산. 매물은 매일, 태국 전국 sweep 은 주 1회 갱신.",
     statsHeader: "커버리지",
     statBuildings: "추적 빌딩",
     statListings: "활성 매물",
@@ -364,7 +364,7 @@ const dict: Dict = {
   },
   press: {
     title: "언론 자료",
-    lead: "RealData는 1,800+ 태국 콘도를 독립적으로 측정합니다. 기자/애널리스트가 특정 시장에 대해 문의할 때 공유하는 자료들.",
+    lead: "RealData는 4개 포털의 태국 콘도 페이지 {condos}개를 독립적으로 측정합니다. 기자/애널리스트가 특정 시장에 대해 문의할 때 공유하는 자료들.",
     sections: [
       {
         title: "RealData가 뭐냐",
@@ -379,7 +379,7 @@ const dict: Dict = {
     contactsBody: "텔레그램 @Bkkbudong_bot 또는 contact 폼. 영업일 2일 내 답변.",
     statsHeader: "Headline 숫자 (라이브)",
     factsheet: [
-      { k: "추적 빌딩", v: "1,800+" },
+      { k: "추적 콘도 페이지", v: "{condos}" },
       { k: "커버 도시", v: "9 (방콕·푸켓·치앙마이 포함)" },
       { k: "언어", v: "EN / KO / TH" },
       { k: "갱신 주기", v: "주간 매물, 일간 DOM tick" },
@@ -514,7 +514,7 @@ const dict: Dict = {
       `${province} ${name} 구역의 ${n}채이며, hipflat · dotproperty · ddproperty · fazwaz 매물에서 수집했습니다.`,
     faqYield: (name: string) => `${name}의 중위 총 임대수익률은 얼마인가요?`,
     faqSpread: (y: string, spread: string, mrr: string) =>
-      `중위 수익률 ${y}%는 현재 태국 MRR ${mrr}% 대비 ${spread}%p 스프레드입니다.`,
+      `중위 수익률 ${y}%는 태국 MRR ${mrr} 대비 ${spread}%p 스프레드입니다.`,
     faqYieldOnly: (y: string) => `중위 수익률은 ${y}%입니다.`,
     faqNoYield:
       "이 구역의 대부분 빌딩은 아직 매매·임대 매물이 함께 잡히지 않아 수익률을 계산할 수 없습니다.",
@@ -664,7 +664,7 @@ const dict: Dict = {
     countQ: (chunk: string) => `RealData가 현재 측정 중인 ${chunk}는 몇 개인가요?`,
     countA: (n: string) => `필터에 맞는 빌딩은 ${n}개입니다. hipflat, dotproperty, ddproperty, fazwaz의 활성 매매·임대 매물에서 산출했습니다.`,
     yieldA: (pct: string, spread: string, mrr: string) =>
-      `이 구간의 수익률 중간값은 ${pct}%이며, 현재 태국 MRR ${mrr}% 대비 ${spread}%p 스프레드입니다.`,
+      `이 구간의 수익률 중간값은 ${pct}%이며, 태국 MRR ${mrr} 대비 ${spread}%p 스프레드입니다.`,
     priceA: (sale: string, rent: string) => `매매가 중간값은 ${sale}입니다. 월세 중간값은 ${rent}입니다. 두 수치 모두 저희가 추적하는 4개 포털의 활성 매물에서 나옵니다.`,
     missingQ: (city: string) => `유명한 ${city} 콘도 일부가 왜 빠졌나요?`,
     shortlistA: (city: string) => `빌딩 이름을 누르면 전체 RealData 리포트로 연결됩니다 — 수익률, 외국인 쿼터 물량, 침수 위험, 매물 체류일수, 보유 비용 패널. 이 페이지 하단에서 무료로 전문가 의견을 요청하실 수 있고, ${city}를 아는 검증된 독립 브로커 1인에게 전달됩니다.`,
@@ -823,7 +823,7 @@ const dict: Dict = {
       `매매가 중간값으로 계산했습니다.${spread}` +
       ` 세전·공실 반영 전 수치이며, 실질 수익률은 보통 1.5~3%p 낮습니다.`,
     yieldSpread: (mrr: string, signed: string) =>
-      ` 현재 태국 MRR ${mrr}% 대비 ${signed}%p 스프레드입니다.`,
+      ` 태국 MRR ${mrr} 대비 ${signed}%p 스프레드입니다.`,
 
     bubbleQ: (name: string, region: string) =>
       `${name}은 ${region}의 다른 콘도에 비해 비싼가요?`,
@@ -969,8 +969,8 @@ const dict: Dict = {
       `있는 건물 ${n}곳을 측정한 값이고, 가운데 절반의 건물은 ${p25}%에서 ${p75}% 사이입니다.`,
     spread: (spread: string, mrr: string, positive: boolean) =>
       positive
-        ? `태국 중앙은행 MRR ${mrr}%보다 ${spread}%p 높습니다. 같은 가격을 대출받았을 때의 이자를 임대료만으로 넘어섭니다.`
-        : `태국 중앙은행 MRR ${mrr}% 대비 ${spread}%p입니다. 같은 가격을 대출받았을 때의 이자를 임대료만으로는 감당하지 못합니다.`,
+        ? `태국 중앙은행 MRR ${mrr}보다 ${spread}%p 높습니다. 같은 가격을 대출받았을 때의 이자를 임대료만으로 넘어섭니다.`
+        : `태국 중앙은행 MRR ${mrr} 대비 ${spread}%p입니다. 같은 가격을 대출받았을 때의 이자를 임대료만으로는 감당하지 못합니다.`,
     vsParent: (parent: string, median: string) => `${parent} 전체: ${median}%.`,
     thailand: "태국",
     statMedian: "총 수익률 중앙값",
@@ -1011,7 +1011,7 @@ const dict: Dict = {
       q2: (area: string) => `${area}는 임대 수익용 콘도를 사기에 좋은 곳인가요?`,
       a2: (area: string, median: string, mrr: string | null, parent: string, parentMedian: string) =>
         `수익률만 보면 ${area} 중앙값 ${median}%는 ${parent} ${parentMedian}%` +
-        (mrr ? `, 태국 중앙은행 MRR ${mrr}%와 비교됩니다.` : "와 비교됩니다.") +
+        (mrr ? `, 태국 중앙은행 MRR ${mrr}와 비교됩니다.` : "와 비교됩니다.") +
         ` 지역은 출발점일 뿐 결과는 건물이 정합니다. 같은 지역 안에서도 최상위와 최하위 건물의 차이가 지역 간 차이보다 큽니다.`,
       q3: (area: string) => `${area}에서 임대수익률이 가장 높은 콘도는 어디인가요?`,
       a3: (area: string, list: string) =>

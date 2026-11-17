@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { activeListingsOrFilter } from "@/lib/activeListings";
 import { canonicalCitySlug, CITIES, cityProvinceSlugs } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
@@ -31,10 +32,23 @@ export async function generateMetadata({
   };
 }
 
-const PROVINCES: Array<{ slug: string; en: string; ko: string; th: string }> = [
-  { slug: "bangkok", en: "Bangkok", ko: "방콕", th: "กรุงเทพ" },
-  ...CITIES.map((c) => ({ slug: c.slug, en: c.name.en, ko: c.name.ko, th: c.name.th })),
-];
+// CITIES already starts with Bangkok; prepending it again printed a second
+// Bangkok row and "10 cities" (data audit M3).
+const PROVINCES: Array<{ slug: string; en: string; ko: string; th: string }> =
+  CITIES.map((c) => ({ slug: c.slug, en: c.name.en, ko: c.name.ko, th: c.name.th }));
+
+type CountResult = { count: number | null; error: unknown };
+/** An exact count, retried, or null. `r.count ?? 0` printed "0 sub-areas
+ *  mapped" whenever the count failed under build load (audit M3); a null
+ *  renders as a dash instead. */
+async function exactCount(run: () => PromiseLike<CountResult>): Promise<number | null> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const r = await run();
+    if (!r.error && r.count != null) return r.count;
+    await new Promise((res) => setTimeout(res, 500 * (attempt + 1)));
+  }
+  return null;
+}
 
 function median(arr: number[]): number | null {
   if (!arr.length) return null;
@@ -86,17 +100,21 @@ export default async function DataShowcase({
   const supabase = getServerSupabase();
 
   // 1. Total counts
-  const [
-    buildingsTotal,
-    listingsTotal,
-    chartPointsTotal,
-    regionsTotal,
-  ] = await Promise.all([
-    supabase.from("condos_published").select("id", { count: "exact", head: true }).eq("source", "hipflat"),
-    supabase.from("listings").select("id", { count: "exact", head: true }).eq("is_active", true),
-    supabase.from("condo_market_chart").select("id", { count: "exact", head: true }),
-    supabase.from("regions").select("id", { count: "exact", head: true }),
+  // Buildings = every published condo page (all four portals), the same
+  // population the per-city table below sums to. It used to count hipflat
+  // rows only (1,894) next to a table adding up to 15,645.
+  const head = { count: "exact" as const, head: true };
+  const [buildingsN, listingsN, chartPointsN, regionsN] = await Promise.all([
+    exactCount(() => supabase.from("condos_published").select("id", head).not("slug", "is", null)),
+    exactCount(() =>
+      supabase.from("listings").select("id", head).eq("is_active", true).or(activeListingsOrFilter())),
+    exactCount(() => supabase.from("condo_market_chart").select("id", head)),
+    exactCount(() => supabase.from("regions").select("id", head)),
   ]);
+  const buildingsTotal = { count: buildingsN };
+  const listingsTotal = { count: listingsN };
+  const chartPointsTotal = { count: chartPointsN };
+  const regionsTotal = { count: regionsN };
 
   // 2. Per-city stats
   const cityStats: CityStat[] = [];
@@ -400,10 +418,10 @@ export default async function DataShowcase({
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { n: buildingsTotal.count ?? 0, l: t.statBuildings },
-            { n: listingsTotal.count ?? 0, l: t.statListings },
-            { n: chartPointsTotal.count ?? 0, l: t.statChartPoints },
-            { n: regionsTotal.count ?? 0, l: t.statRegions },
+            { n: buildingsTotal.count, l: t.statBuildings },
+            { n: listingsTotal.count, l: t.statListings },
+            { n: chartPointsTotal.count, l: t.statChartPoints },
+            { n: regionsTotal.count, l: t.statRegions },
             { n: PROVINCES.length, l: t.statCities },
             { n: 3, l: t.statLangs },
           ].map((s) => (
@@ -412,7 +430,7 @@ export default async function DataShowcase({
               className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 backdrop-blur"
             >
               <div className="text-3xl sm:text-4xl font-black tabular-nums bg-gradient-to-b from-zinc-50 to-zinc-400 bg-clip-text text-transparent">
-                {s.n.toLocaleString()}
+                {s.n == null ? "—" : s.n.toLocaleString()}
               </div>
               <div className="text-[11px] sm:text-xs text-zinc-500 mt-1 leading-tight">
                 {s.l}

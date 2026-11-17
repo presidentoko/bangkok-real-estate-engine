@@ -9,7 +9,12 @@ import { buildYieldAreaIndex, type YieldAreaIndex, type YieldAreaRow } from "@/l
  * fetchYieldRows): at least 2 sale and 2 rent listings, yield above 0 and at
  * most 25%, sale price at least ฿500k, active and published. ~1,100 rows,
  * ~150KB, read once and shared by every area page, the sitemap and the
- * cross-links — cached for a week, which is the scrape cadence.
+ * cross-links. This is the single source of every yield sample size on
+ * the site (home FAQ, /yield pages, district banners). It used to be cached
+ * for a week with no tag, so after the 2026-11-10 region repair /en and /ko
+ * kept 899 buildings while /th and the district banners had 876 and 872
+ * (audit H5/M4). Now daily, tagged "yields" / "site-data" so a data repair
+ * can revalidate it (POST /api/revalidate {"tags": ["site-data"]}).
  */
 export const getYieldAreaIndex = unstable_cache(
   async (): Promise<YieldAreaIndex> => {
@@ -48,6 +53,6 @@ export const getYieldAreaIndex = unstable_cache(
     }
     return buildYieldAreaIndex(rows);
   },
-  ["yield-area-index-v1"],
-  { revalidate: 604800 },
+  ["yield-area-index-v2"],
+  { revalidate: 86400, tags: ["yields", "site-data"] },
 );

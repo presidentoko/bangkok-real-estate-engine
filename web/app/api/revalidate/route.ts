@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 /**
  * On-demand ISR revalidation for the pages whose data actually changed.
@@ -45,19 +45,34 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
 
-  const raw = (body as { paths?: unknown })?.paths;
-  if (!Array.isArray(raw)) {
-    return Response.json({ error: "paths[] required" }, { status: 400 });
+  const raw = (body as { paths?: unknown })?.paths ?? [];
+  const rawTags = (body as { tags?: unknown })?.tags ?? [];
+  if (!Array.isArray(raw) || !Array.isArray(rawTags)) {
+    return Response.json({ error: "paths[] / tags[] must be arrays" }, { status: 400 });
   }
 
   // Only site paths, and only ones this endpoint is meant to touch. A stray
-  // "/" here would rebuild the home page's 44KB map payload on every call.
-  const allowed = /^\/(en|ko|th)\/(condo|district|city|near|developer|retiree|best)\//;
+  // "/" here would rebuild the home page's 44KB map payload on every call;
+  // the home page itself is allowed only as an exact /en, /ko or /th.
+  // yield/flood/data/districts were added 2026-11-17: they aggregate the
+  // whole catalogue and went stale for days after a data repair (audit H5).
+  const allowed =
+    /^\/(en|ko|th)(\/(condo|district|city|near|developer|retiree|best|yield|flood)\/.+|\/(yields|flood|data|districts|inventory))?$/;
   const paths = [...new Set(raw.filter((p): p is string => typeof p === "string"))]
     .filter((p) => allowed.test(p))
     .slice(0, MAX_PATHS);
+  // Shared data caches (unstable_cache tags). "site-data" covers the yield
+  // index, site stats and the per-area aggregates.
+  const ALLOWED_TAGS = new Set(["site-data", "yields", "stats"]);
+  const tags = [...new Set(rawTags.filter((t): t is string => typeof t === "string"))]
+    .filter((t) => ALLOWED_TAGS.has(t));
 
+  for (const t of tags) revalidateTag(t);
   for (const p of paths) revalidatePath(p);
 
-  return Response.json({ revalidated: paths.length, skipped: raw.length - paths.length });
+  return Response.json({
+    revalidated: paths.length,
+    tags: tags.length,
+    skipped: raw.length - paths.length + rawTags.length - tags.length,
+  });
 }

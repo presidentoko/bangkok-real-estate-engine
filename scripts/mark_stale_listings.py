@@ -13,10 +13,15 @@ upserts always set is_active=True and refresh last_seen_at on every sighting
 (verified in src/db.py's upsert_dotproperty_listing / upsert_fazwaz_listing /
 upsert_ddproperty_listing), so this sweep is safe to run repeatedly.
 
-hipflat is deliberately excluded — persist_detail_b() already manages its
-own is_active lifecycle per condo (marks all rows inactive, then upserts the
-current scrape back to active), so a blanket time-based sweep isn't needed
-and could fight with it.
+hipflat is excluded by default — persist_detail_b() manages its own
+is_active lifecycle per condo when it re-scrapes one. A condo it never
+revisits keeps its rows active, though: on 2026-11-17 that was ~15,000
+hipflat listings last seen around 2026-08-03 (data audit M7). The site's
+"active listings" counts leave out hipflat rows older than 30 days
+(web/lib/queries/condos.ts HIPFLAT_ACTIVE_DAYS). --hipflat-days N sweeps them
+here too, but it is opt-in: deactivating them removes most hipflat yields
+(1,491 -> 1,115 buildings, Bangkok yield districts 28 -> 8 when tried on
+2026-11-17), which is a coverage decision, not a cleanup.
 
 Dry-run by default. Pass --apply to write.
 
@@ -24,6 +29,7 @@ Usage:
   python scripts/mark_stale_listings.py                  # dry-run, default 21 days
   python scripts/mark_stale_listings.py --apply
   python scripts/mark_stale_listings.py --days 14 --apply
+  python scripts/mark_stale_listings.py --apply --backup data/backups/x.csv
 """
 from __future__ import annotations
 
@@ -60,24 +66,25 @@ def _fetch_stale_ids(client, source: str, cutoff: str) -> list[str]:
     ids gives an accurate count AND the exact rows to update. `.order("id")`
     is required for stable pagination across separate .range() requests.
     """
+    # Keyset pagination (id > last), not OFFSET: hipflat has ~65k active rows
+    # and a deep OFFSET scan hit the statement timeout.
     ids: list[str] = []
-    offset = 0
+    last = None
     while True:
-        chunk = (
+        q = (
             client.table("listings")
             .select("id")
             .eq("source", source)
             .eq("is_active", True)
             .lt("last_seen_at", cutoff)
-            .order("id")
-            .range(offset, offset + 999)
-            .execute()
-            .data
-        ) or []
+        )
+        if last is not None:
+            q = q.gt("id", last)
+        chunk = q.order("id").limit(1000).execute().data or []
         ids.extend(r["id"] for r in chunk)
         if len(chunk) < 1000:
             break
-        offset += 1000
+        last = chunk[-1]["id"]
     return ids
 
 
@@ -85,21 +92,37 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=DEFAULT_STALE_DAYS,
                      help=f"Mark listings inactive if not seen in this many days (default {DEFAULT_STALE_DAYS})")
+    ap.add_argument("--hipflat-days", type=int, default=None,
+                     help="Also sweep hipflat with this window (default: hipflat is skipped)")
+    ap.add_argument("--backup", help="write the ids about to be deactivated to this CSV first")
     ap.add_argument("--apply", action="store_true",
                      help="Write changes. Without this, dry-run only.")
     args = ap.parse_args()
     dry_run = not args.apply
 
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=args.days)).isoformat()
-    logger.info(f"Stale cutoff: last_seen_at < {cutoff} ({args.days} days)")
+    now = datetime.now(timezone.utc)
+    cutoffs = {s: (now - timedelta(days=args.days)).isoformat() for s in SOURCES}
+    if args.hipflat_days:
+        cutoffs["hipflat"] = (now - timedelta(days=args.hipflat_days)).isoformat()
+    logger.info(f"Stale cutoff: last_seen_at < {cutoffs[SOURCES[0]]} ({args.days} days)"
+                + (f", hipflat < {cutoffs['hipflat']} ({args.hipflat_days} days)" if args.hipflat_days else ""))
 
     client = get_client()
 
+    stale_by_source = {s: _fetch_stale_ids(client, s, c) for s, c in cutoffs.items()}
+    if args.backup and not dry_run:
+        import csv
+        with open(args.backup, "w", newline="", encoding="utf-8") as fh:
+            w = csv.writer(fh)
+            w.writerow(["id", "source", "is_active"])
+            for s, ids in stale_by_source.items():
+                w.writerows([i, s, True] for i in ids)
+        logger.info(f"backup: {args.backup}")
+
     total_stale = 0
-    for source in SOURCES:
-        stale_ids = _fetch_stale_ids(client, source, cutoff)
+    for source, stale_ids in stale_by_source.items():
         stale = len(stale_ids)
-        logger.info(f"  {source:12s}  stale(>{args.days}d)={stale:>7,}")
+        logger.info(f"  {source:12s}  stale={stale:>7,}")
         total_stale += stale
 
         if dry_run or stale == 0:
@@ -132,7 +155,7 @@ def main() -> int:
     if dry_run:
         logger.info(f"\nDRY-RUN — {total_stale} listings would be marked inactive. Pass --apply to commit.")
     else:
-        logger.info(f"\nDone. {total_stale} listings marked inactive across {len(SOURCES)} sources.")
+        logger.info(f"\nDone. {total_stale} listings marked inactive across {len(cutoffs)} sources.")
 
     return 0
 

@@ -2,7 +2,7 @@
 // Run with: node --test web/lib/cities.test.ts   (Node >= 23, native TS strip)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getCity, canonicalCitySlug, cityProvinceSlugs } from "./cities.ts";
+import { CITIES, getCity, canonicalCitySlug, cityProvinceSlugs } from "./cities.ts";
 
 test("getCity resolves the canonical compact slug", () => {
   assert.equal(getCity("chiangmai")?.slug, "chiangmai");
@@ -18,8 +18,11 @@ test("getCity also resolves kebab / DB-province aliases (the hardening)", () => 
   assert.equal(getCity("surat-thani")?.slug, "samui");
 });
 
-test("getCity returns null for bangkok (handled separately) and unknown slugs", () => {
-  assert.equal(getCity("bangkok"), null);
+test("getCity resolves bangkok (CITIES starts with it) and returns null for unknown slugs", () => {
+  // Bangkok joined CITIES with the city yield pages (eb46166); /data used to
+  // prepend it a second time and print two Bangkok rows (audit M3).
+  assert.equal(getCity("bangkok")?.slug, "bangkok");
+  assert.equal(CITIES.filter((c) => c.slug === "bangkok").length, 1);
   assert.equal(getCity("atlantis"), null);
 });
 

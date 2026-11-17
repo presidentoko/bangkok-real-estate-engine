@@ -8,6 +8,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
+import { activeListingsOrFilter } from "@/lib/activeListings";
 import { getServerSupabase } from "@/lib/supabase";
 
 type Condo = {
@@ -119,7 +120,8 @@ async function _fetchStaticRagContext(): Promise<StaticRagContext> {
   // 0) Cheap counts
   const [{ count: totalCondos }, { count: totalListings }] = await Promise.all([
     supabase.from("condos").select("id", { count: "exact", head: true }),
-    supabase.from("listings").select("id", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("listings").select("id", { count: "exact", head: true })
+      .eq("is_active", true).or(activeListingsOrFilter()),
   ]);
 
   // 1) MRR

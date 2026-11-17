@@ -73,7 +73,7 @@ export function CompareExplorer({ lang }: { lang: string }) {
     );
   }
 
-  const { condos, scores, risks, liv, mrr } = data;
+  const { condos, scores, risks, liv, mrr, mrrPeriod } = data;
 
   if (!hasIds || condos.length === 0) {
     return (
@@ -164,7 +164,7 @@ export function CompareExplorer({ lang }: { lang: string }) {
               })}
             </tr>
             {mrr != null && (
-              <tr><td className="px-4 py-3 text-zinc-500">vs MRR ({mrr.toFixed(2)}%)</td>
+              <tr><td className="px-4 py-3 text-zinc-500">vs MRR ({mrr.toFixed(2)}%{mrrPeriod ? `, ${mrrPeriod.slice(0, 7)}` : ""})</td>
                 {condos.map((c) => {
                   const spread = c.gross_yield_pct != null ? c.gross_yield_pct - mrr : null;
                   return (

@@ -40,8 +40,11 @@ export async function generateMetadata({
   const title = lang === "en"
     ? "Bangkok Condo Data — Yields, Prices & Flood Risk | RealData"
     : `${t.brand.name} — ${t.home.heroTitle1} ${t.home.heroTitle2Highlight}${t.home.heroTitle3}`;
+  // Counts come from the data (site stats), not a hand-written "1,800+".
+  const stats = lang === "en" ? await fetchSiteStats().catch(() => null) : null;
+  const pages = stats?.totalCondos ? `${stats.totalCondos.toLocaleString("en-US")} ` : "";
   const description = lang === "en"
-    ? "Independent data on 1,800+ Thai condos across 9 cities — rental yields vs Bank of Thailand mortgage rate, district flood risk, foreign-quota inventory, cross-portal price comparison. Bangkok, Phuket, Chiang Mai and 6 more."
+    ? `Independent data on ${pages}Thai condo pages across ${CITIES.length} cities — rental yields vs Bank of Thailand mortgage rate, district flood risk, foreign-quota inventory, cross-portal price comparison. Bangkok, Phuket, Chiang Mai and ${CITIES.length - 3} more.`
     : t.home.heroLead;
   return {
     title,

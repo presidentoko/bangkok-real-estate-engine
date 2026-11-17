@@ -10,6 +10,7 @@
 // to the call site (or use the `noCache` variant).
 
 import { unstable_cache } from "next/cache";
+import { activeListingsOrFilter } from "@/lib/activeListings";
 import { cityProvinceSlugs } from "@/lib/cities";
 import { encodeCompact, warnIfNearCacheCeiling, type CompactCondoSummaries } from "@/lib/condo-compact";
 import { getServerSupabase } from "@/lib/supabase";
@@ -360,8 +361,8 @@ async function _fetchCondoMapPointsCompact(): Promise<CompactMapPoints> {
 
 const fetchCondoMapPointsCompactCached = unstable_cache(
   _fetchCondoMapPointsCompact,
-  ["condos:map-points-compact-v2"],
-  { revalidate: 86400, tags: ["condos"] }
+  ["condos:map-points-compact-v3"],
+  { revalidate: 86400, tags: ["condos", "site-data"] }
 );
 
 export async function fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
@@ -517,12 +518,21 @@ async function _fetchSiteStats(): Promise<SiteStats> {
     count("bubble", () => supabase.from("value_scores").select("condo_id", head)),
     count("super value", () =>
       supabase.from("value_scores").select("condo_id", head).eq("is_super_value", true)),
-    count("yield", () => supabase.from("condos").select("id", head).not("gross_yield_pct", "is", null)),
+    // Same eligibility bar as the yield pages (lib/queries/yieldAreas.ts):
+    // it used to count every row with a yield, published or not (1,466 vs
+    // 1,457 on the yield pages; audit M2).
+    count("yield", () => supabase.from("condos").select("id", head)
+      .gt("gross_yield_pct", 0).lte("gross_yield_pct", 25).gte("avg_sale_price", 500_000)
+      .gte("yield_sample_sale", 2).gte("yield_sample_rent", 2)
+      .eq("is_active", true).eq("published", true).not("slug", "is", null)),
     // Published condo pages across all four portals -- the same population
     // as the home inventory map ("condo pages"), not every row in `condos`
     // (which includes unpublished ones).
-    count("condo pages", () => supabase.from("condos_published").select("id", head)),
-    count("active listings", () => supabase.from("listings").select("id", head).eq("is_active", true)),
+    // Rows without a slug have no page; the inventory map below the headline
+    // already left them out, so the two figures disagreed (15,645 / 15,582).
+    count("condo pages", () => supabase.from("condos_published").select("id", head).not("slug", "is", null)),
+    count("active listings", () =>
+      supabase.from("listings").select("id", head).eq("is_active", true).or(activeListingsOrFilter())),
     count("macro", () => supabase.from("macro_indicators").select("id", head)),
   ]);
   return {
@@ -556,11 +566,11 @@ export const fetchBuildingCount = unstable_cache(
     return null;
   },
   ["building-count-v1"],
-  { revalidate: 86400, tags: ["stats"] },
+  { revalidate: 86400, tags: ["stats", "site-data"] },
 );
 
 export const fetchSiteStats = unstable_cache(
   _fetchSiteStats,
-  ["stats-v3"],
-  { revalidate: 86400, tags: ["stats"] }
+  ["stats-v4"],
+  { revalidate: 86400, tags: ["stats", "site-data"] }
 );

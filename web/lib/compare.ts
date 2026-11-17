@@ -38,6 +38,8 @@ export type CompareData = {
   risks: Record<string, number>;
   liv: Record<string, number | null>;
   mrr: number | null;
+  /** YYYY-MM-DD month the MRR is from (audit H4: print it with the rate). */
+  mrrPeriod?: string | null;
 };
 
 /** Parse up to 3 condo ids off a/b/c query params (shared by page + route). */

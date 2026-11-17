@@ -22,6 +22,7 @@ import { buildFaqJsonLd } from "@/lib/seo/faqJsonLd";
 import FaqSection from "@/components/FaqSection";
 import { getServerSupabase } from "@/lib/supabase";
 import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
+import { mrrLabel } from "@/lib/mrr";
 
 // Was 86400 — every (city, filter) combo is prebuilt at build time (see
 // generateStaticParams below), so this only controls background ISR regen
@@ -269,7 +270,7 @@ export default async function BestSlicePage({
       ? tBest.yieldA(
           medianYield.toFixed(2),
           `${medianYield - mrr >= 0 ? "+" : ""}${(medianYield - mrr).toFixed(2)}`,
-          mrr.toFixed(2)
+          mrrLabel(mrr, mortgage?.period, lang)
         )
       : tBest.yieldANoMrr;
 
@@ -324,8 +325,8 @@ export default async function BestSlicePage({
           {copy.desc(cityName)}
           {mrr != null && (
             <>
-              {" "}Spread shown against current Thai MRR{" "}
-              <strong className="text-zinc-200">{mrr.toFixed(2)}%</strong>.
+              {" "}Spread shown against the Thai MRR{" "}
+              <strong className="text-zinc-200">{mrrLabel(mrr, mortgage?.period)}</strong>.
             </>
           )}
         </p>

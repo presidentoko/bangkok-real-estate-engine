@@ -5,7 +5,7 @@ import { LANGS } from "@/lib/i18n";
 import { getYieldAreaIndex } from "@/lib/queries/yieldAreas";
 
 // Rental yield for one district. The figures move with the weekly scrape.
-export const revalidate = 604800;
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   if (CONDO_STATIC_BUILD) return [];

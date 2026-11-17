@@ -12,6 +12,7 @@ import FaqSection from "@/components/FaqSection";
 import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
+import { mrrLabel } from "@/lib/mrr";
 
 // Static shell — no searchParams read here. Reading searchParams server-side
 // silently opts the whole route out of ISR (every request becomes a live
@@ -82,7 +83,7 @@ export default async function YieldsPage({
 
   const mrrLine =
     mrr != null
-      ? `As of the latest BOT update, MRR is ${mrr.toFixed(2)}%. A yield of 6% therefore implies a +${(6 - mrr).toFixed(2)}pp spread.`
+      ? `The latest Bank of Thailand MRR we hold is ${mrrLabel(mrr, mortgage?.period)}. A yield of 6% therefore implies a +${(6 - mrr).toFixed(2)}pp spread.`
       : "Spread is shown wherever the current Bank of Thailand MRR is available.";
   const faqItems = t.pageFaq.yields.map((item, idx) =>
     idx === 1 ? { ...item, a: item.a + mrrLine } : item
@@ -108,7 +109,7 @@ export default async function YieldsPage({
           price-parse outliers (yield &gt; 25%, sale &lt; ฿500k) are filtered.
           {mrr != null && (
             <>
-              {" "}Spread is yield minus the current Thai{" "}
+              {" "}Spread is yield minus the Thai{" "}
               <strong className="text-zinc-200">
                 MRR {mrr.toFixed(2)}%
               </strong>{" "}

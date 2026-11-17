@@ -78,8 +78,8 @@ const dict = {
         href: "/macro",
         emoji: "🏦",
         title: "Mortgage Macro",
-        desc: "Bank of Thailand policy rate, MRR, MLR, MOR, deposit max — the floor on every mortgage product. Updated daily.",
-        badge: "BOT daily refresh",
+        desc: "Bank of Thailand policy rate, MRR, MLR, MOR, deposit max — the floor on every mortgage product. Each figure shows the month it is from.",
+        badge: "BOT benchmark rates",
       },
       {
         href: "/flood",
@@ -342,7 +342,7 @@ const dict = {
   },
   dataShowcase: {
     title: "The data — at scale",
-    lead: "What 9 cities and 6 months of weekly crawls actually look like. Counts below recompute on every page load; listings refresh daily, full Thailand sweep weekly.",
+    lead: "What 9 cities and 6 months of weekly crawls actually look like. Counts below are recomputed daily; listings refresh daily, full Thailand sweep weekly.",
     statsHeader: "Coverage",
     statBuildings: "buildings tracked",
     statListings: "active listings",
@@ -384,7 +384,7 @@ const dict = {
   },
   press: {
     title: "Press kit",
-    lead: "RealData covers 1,800+ Thai condos with independent measurement. Below are the assets we share when journalists or analysts ask about specific markets.",
+    lead: "RealData covers {condos} Thai condo pages from four portals with independent measurement. Below are the assets we share when journalists or analysts ask about specific markets.",
     sections: [
       {
         title: "What RealData is",
@@ -399,7 +399,7 @@ const dict = {
     contactsBody: "Message @Bkkbudong_bot on Telegram or use the contact form. We respond within 2 business days.",
     statsHeader: "Headline numbers (live)",
     factsheet: [
-      { k: "Buildings tracked", v: "1,800+" },
+      { k: "Condo pages tracked", v: "{condos}" },
       { k: "Cities covered", v: "9 (incl. Bangkok, Phuket, Chiang Mai)" },
       { k: "Languages", v: "EN / KO / TH" },
       { k: "Data refresh", v: "Weekly listings, daily DOM tick" },
@@ -534,7 +534,7 @@ const dict = {
       `${n} buildings across the ${name} district of ${province}, drawn from hipflat, dotproperty, ddproperty and fazwaz listings.`,
     faqYield: (name: string) => `What is the median gross rental yield in ${name}?`,
     faqSpread: (y: string, spread: string, mrr: string) =>
-      `Median yield ${y}% means a ${spread}pp spread versus the current Thai MRR of ${mrr}%.`,
+      `Median yield ${y}% means a ${spread}pp spread versus the Thai MRR of ${mrr}.`,
     faqYieldOnly: (y: string) => `Median yield is ${y}%.`,
     faqNoYield:
       "Most buildings in this district do not have enough matched sale + rent listings yet to compute a yield.",
@@ -684,7 +684,7 @@ const dict = {
     countQ: (chunk: string) => `How many ${chunk} does RealData currently measure?`,
     countA: (n: string) => `${n} buildings match the filter, drawn from active sale and rent listings across hipflat, dotproperty, ddproperty, and fazwaz.`,
     yieldA: (pct: string, spread: string, mrr: string) =>
-      `Median yield in this slice is ${pct}%, a ${spread}pp spread against the current Thai MRR of ${mrr}%.`,
+      `Median yield in this slice is ${pct}%, a ${spread}pp spread against the Thai MRR of ${mrr}.`,
     priceA: (sale: string, rent: string) => `Median sale price is ${sale}. Median monthly rent is ${rent}. Both figures come from active listings on the four portals we track.`,
     missingQ: (city: string) => `Why are some popular ${city} condos missing?`,
     shortlistA: (city: string) => `Each building name links to its full RealData report — yield, foreign-quota inventory, flood risk, days-on-market, cost-of-ownership panel. The bottom of this page has a free expert-opinion request that goes to one vetted independent broker who knows ${city}.`,
@@ -851,7 +851,7 @@ const dict = {
       `monthly rent) ÷ median sale price across our active listings.${spread}` +
       ` This is a pre-tax, pre-vacancy figure — net yield is typically 1.5–3pp lower.`,
     yieldSpread: (mrr: string, signed: string) =>
-      ` Versus the current Thai MRR of ${mrr}%, that is a ${signed}pp spread.`,
+      ` Versus the Thai MRR of ${mrr}, that is a ${signed}pp spread.`,
 
     bubbleQ: (name: string, region: string) =>
       `Is ${name} overpriced compared to the rest of ${region}?`,
@@ -1014,8 +1014,8 @@ const dict = {
       `yield between ${p25}% and ${p75}%.`,
     spread: (spread: string, mrr: string, positive: boolean) =>
       positive
-        ? `That is ${spread} points above the ${mrr}% Bank of Thailand MRR: rent alone out-earns the interest a Thai bank would charge on the same price.`
-        : `That is ${spread} points against the ${mrr}% Bank of Thailand MRR: rent alone does not cover the interest a Thai bank would charge on the same price.`,
+        ? `That is ${spread} points above the Bank of Thailand MRR of ${mrr}: rent alone out-earns the interest a Thai bank would charge on the same price.`
+        : `That is ${spread} points against the Bank of Thailand MRR of ${mrr}: rent alone does not cover the interest a Thai bank would charge on the same price.`,
     vsParent: (parent: string, median: string) => `${parent} overall: ${median}%.`,
     thailand: "Thailand",
     statMedian: "Median gross yield",
@@ -1058,7 +1058,7 @@ const dict = {
       q2: (area: string) => `Is ${area} a good place to buy a condo for rental income?`,
       a2: (area: string, median: string, mrr: string | null, parent: string, parentMedian: string) =>
         `On yield alone, the ${median}% median in ${area} compares with ${parentMedian}% for ${parent}` +
-        (mrr ? ` and a ${mrr}% Bank of Thailand MRR.` : ".") +
+        (mrr ? ` and the Bank of Thailand MRR of ${mrr}.` : ".") +
         ` The area sets the baseline; the building decides the result, which is why the spread between ` +
         `the best and worst buildings here is wider than the gap between areas.`,
       q3: (area: string) => `Which condos in ${area} have the highest rental yield?`,

@@ -56,6 +56,6 @@ export const getYieldByArea = unstable_cache(
     out.sort((a, b) => (b.medianYieldPct ?? 0) - (a.medianYieldPct ?? 0));
     return out.slice(0, limit);
   },
-  ["yield-by-area-v2"],
-  { revalidate: 86400 },
+  ["yield-by-area-v3"],
+  { revalidate: 86400, tags: ["yields", "site-data"] },
 );

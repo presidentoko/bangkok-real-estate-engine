@@ -49,6 +49,7 @@ import { Breadcrumbs, type BreadcrumbItem } from "@/components/Breadcrumbs";
 import { SaveButton } from "@/components/SaveButton";
 import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 import { CompareButton } from "@/components/CompareButton";
+import { mrrLabel } from "@/lib/mrr";
 
 // ~12,300 condos x 3 langs = ~37,000 distinct pages. Even at 24h, if
 // crawlers touch most of them once a day that's >1M ISR regenerations a
@@ -671,7 +672,7 @@ export default async function CondoPage({
     const spreadLine =
       mrr != null
         ? tFaq.yieldSpread(
-            mrr.toFixed(2),
+            mrrLabel(mrr, mortgageRate?.period, isLang(lang) ? lang : "en"),
             `${yieldVal - mrr >= 0 ? "+" : ""}${(yieldVal - mrr).toFixed(2)}`
           )
         : "";

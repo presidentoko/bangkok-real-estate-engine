@@ -68,8 +68,8 @@ const getDistrictIndex = unstable_cache(
     }
     return out;
   },
-  ["district-compare-index-v1"],
-  { revalidate: 604800 },
+  ["district-compare-index-v2"],
+  { revalidate: 604800, tags: ["site-data"] },
 );
 
 /** Enough buildings that a median means something, and enough that the two
@@ -145,6 +145,6 @@ export const getComparison = unstable_cache(
     const [a, b] = await Promise.all([load(pair.a), load(pair.b)]);
     return a && b ? { a, b } : null;
   },
-  ["area-comparison-v1"],
-  { revalidate: 604800 },
+  ["area-comparison-v2"],
+  { revalidate: 604800, tags: ["site-data"] },
 );

@@ -306,6 +306,22 @@ jobs:
             git push origin HEAD
           }
 
+      - name: Revalidate the shared yield / stats caches
+        # The yield index, site stats and area aggregates are unstable_cache
+        # entries tagged "site-data" (web/lib/queries). Without this, each
+        # locale picked up new yields whenever its own cache happened to
+        # expire, and /en, /ko and /th printed different Bangkok samples for
+        # days (data audit 2026-11-17, H5/M4). Skipped if the secret is unset.
+        continue-on-error: true
+        env:
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+        run: |
+          if (-not $env:REVALIDATE_SECRET) { Write-Output "REVALIDATE_SECRET not set; skipping"; exit 0 }
+          $body = '{"tags":["site-data"],"paths":["/en/yields","/ko/yields","/th/yields","/en/yield/bangkok","/ko/yield/bangkok","/th/yield/bangkok","/en/data","/ko/data","/th/data","/en","/ko","/th"]}'
+          $r = Invoke-RestMethod -Method Post -Uri "https://passionaryestate.com/api/revalidate" `
+            -Headers @{ "x-revalidate-secret" = $env:REVALIDATE_SECRET } -ContentType "application/json" -Body $body
+          $r | ConvertTo-Json -Compress | Tee-Object -FilePath revalidate.log
+
       - name: Data quality cleanup + fuzzy rematch
         # Catches new yield outliers from this scrape + tries Levenshtein
         # ≤2 matching for orphans the base+aggressive normalizers missed.

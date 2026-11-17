@@ -17,6 +17,7 @@ import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
+import { mrrLabel } from "@/lib/mrr";
 
 // ~183 districts x 3 langs = ~550 pages; data only refreshes weekly (see
 // condo/[slug]/page.tsx for the full ISR-overage context from 2026-07-10).
@@ -301,7 +302,7 @@ export default async function DistrictPage({
       ? d.faqSpread(
           medianYield.toFixed(2),
           `${medianYield - mrr >= 0 ? "+" : ""}${(medianYield - mrr).toFixed(2)}`,
-          mrr.toFixed(2),
+          mrrLabel(mrr, mortgage?.period, lang),
         )
       : medianYield != null
         ? d.faqYieldOnly(medianYield.toFixed(2))
@@ -377,7 +378,7 @@ export default async function DistrictPage({
               }`}
             >
               {medianYield - mrr >= 0 ? "+" : ""}
-              {(medianYield - mrr).toFixed(2)}pp {d.vsMrr}
+              {(medianYield - mrr).toFixed(2)}pp {d.vsMrr} ({mrrLabel(mrr, mortgage?.period, lang)})
             </div>
           )}
         </div>
