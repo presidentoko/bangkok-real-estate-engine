@@ -49,6 +49,19 @@ const nextConfig = {
         destination: `/:lang/condo/${to}`,
         permanent: true,
       })),
+      // Wang Thonglang was two regions rows (wang-thong-lang, wang-thonglang)
+      // and two district pages; merged into the polygon layer's spelling on
+      // 2026-11-17 (data audit M10).
+      {
+        source: "/:lang(en|ko|th)/district/wang-thong-lang",
+        destination: "/:lang/district/wang-thonglang",
+        permanent: true,
+      },
+      {
+        source: "/:lang(en|ko|th)/flood/wang-thong-lang",
+        destination: "/:lang/flood/wang-thonglang",
+        permanent: true,
+      },
       {
         source: "/sitemap-condos.xml",
         has: [{ type: "query", key: "page", value: "(?<page>\\d+)" }],

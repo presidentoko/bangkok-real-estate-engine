@@ -197,7 +197,16 @@ def canonical_region_name(name: str | None) -> str:
     scripts/normalize_regions_and_provinces.py; normalising here is what
     stops the next scrape from recreating the split.
     """
-    return _canon(name)
+    base = _canon(name)
+    return _REGION_ALIASES.get(base, base)
+
+
+# Spellings that are a different string but the same khet. "wang-thong-lang"
+# and "wang-thonglang" were two regions rows and two /district/ pages until
+# 2026-11-17 (data audit M10); the polygon layer names it wang-thonglang.
+_REGION_ALIASES = {
+    "wang-thong-lang": "wang-thonglang",
+}
 
 
 def canonical_province(value: str | None) -> str:

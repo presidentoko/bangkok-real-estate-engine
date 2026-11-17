@@ -1,7 +1,9 @@
 // Score → letter grade conversion. Tuned to give A-F a meaningful spread on
 // the active Bangkok condo set; revisit once we have real percentiles in DB.
 
-export type Grade = "A" | "B" | "C" | "D" | "F";
+// "?" = no data. Shown as a grey tile, never as a letter: a missing flood
+// level used to grade "C", which reads as a measured middle (audit M8).
+export type Grade = "A" | "B" | "C" | "D" | "F" | "?";
 
 export const GRADE_BG: Record<Grade, string> = {
   A: "bg-emerald-500",
@@ -9,6 +11,7 @@ export const GRADE_BG: Record<Grade, string> = {
   C: "bg-yellow-400",
   D: "bg-orange-500",
   F: "bg-red-500",
+  "?": "bg-zinc-700",
 };
 
 export const GRADE_FG: Record<Grade, string> = {
@@ -17,6 +20,7 @@ export const GRADE_FG: Record<Grade, string> = {
   C: "text-yellow-950",
   D: "text-orange-50",
   F: "text-red-50",
+  "?": "text-zinc-100",
 };
 
 // Bubble Index: 100 = on regional average. <100 = better (cheaper than peers).
@@ -56,7 +60,7 @@ export function gradeFromInfra(h: number, s: number, m: number): Grade {
 
 // Flood risk: 0..5 from district baseline. Lower = better.
 export function gradeFromFlood(level: number | null | undefined): Grade {
-  if (level == null) return "C"; // unknown → neutral
+  if (level == null) return "?"; // unknown: not measured, never "safe"
   if (level <= 1) return "A";
   if (level === 2) return "B";
   if (level === 3) return "C";

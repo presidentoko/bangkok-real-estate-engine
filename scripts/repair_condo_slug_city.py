@@ -135,7 +135,14 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true", help="write (default: dry run)")
     ap.add_argument("--all", action="store_true", help="include noindex stubs too")
+    ap.add_argument("--ids-file", help="only these condos (CSV with an id column, "
+                    "e.g. a data/backups/ export of rows a repair changed)")
     args = ap.parse_args()
+    only_ids: set[str] | None = None
+    if args.ids_file:
+        import csv
+        with open(args.ids_file, encoding="utf-8", newline="") as fh:
+            only_ids = {r["id"] for r in csv.DictReader(fh) if r.get("id")}
 
     client = get_client()
     rows = fetch_all(client, "condos_published", f"id, slug, name, province, {INDEXABLE_COLUMNS}")
@@ -146,12 +153,18 @@ def main() -> int:
         slug, province = r.get("slug"), r.get("province")
         if not slug:
             continue
-        bad = wrong_city(slug, province)
+        if only_ids is not None and r["id"] not in only_ids:
+            continue
+        # A dedupe counter ("...-bangkok-2") hides the city word from the
+        # check: 61 Phuket buildings stored as Bangkok all ended that way.
+        m = re.match(r"^(.*)-(\d+)$", slug)
+        core = m.group(1) if m and wrong_city(m.group(1), province) else slug
+        bad = wrong_city(core, province)
         if not bad:
             continue
         if not args.all and not has_substance(r):
             continue
-        stem = slug[: -(len(bad) + 1)]
+        stem = core[: -(len(bad) + 1)]
         # "supalai-mare-pattaya-bangkok" is already named for its city, and
         # "baan-had-hua-hin-condo-bangkok" carries it mid-name: appending the
         # province again would give ...-pattaya-pattaya. Only add it when the
