@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { fmtListingCompact, fmtListingPerSqm } from "@/lib/fmt";
+import { provinceDisplayName } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import {
   GRADE_BG,
@@ -47,7 +48,7 @@ function GradeTile({
 
 export function ReportCard({ condo, score, liv, risk, latest, lang }: Props) {
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const region = condo.regions?.name ?? "Bangkok";
+  const region = condo.regions?.name ?? (condo.province ? provinceDisplayName(condo.province, "en") : "Bangkok");
   const useLang: Lang = lang && isLang(lang) ? lang : DEFAULT_LANG;
   const t = getDictionary(useLang).reportCard;
 

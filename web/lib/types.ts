@@ -4,6 +4,7 @@ export type Condo = {
   developer: string | null;
   url: string | null;
   regions?: { name: string } | null;
+  province?: string | null;
   retiree_score?: number | null;
 };
 

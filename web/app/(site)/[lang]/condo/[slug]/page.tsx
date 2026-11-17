@@ -264,7 +264,9 @@ export async function generateMetadata({
   // go in a <title> or an address.
   const region = districtDisplayName(
     (Array.isArray(c.regions) ? c.regions[0] : c.regions)?.name,
-  ) || "Bangkok";
+  // No district -> the building's own province, not "Bangkok": the 61
+  // Phuket buildings that used to be filed as Bangkok have no district.
+  ) || provinceDisplayName(c.province ?? "bangkok", "en") || "Bangkok";
   const provinceDisplay = provinceDisplayName(c.province ?? "bangkok", lang as "en" | "ko" | "th");
   // Every string below comes from the per-locale dictionary. Hardcoding them
   // here is what left /ko and /th with English titles on all ~12.4k condo
@@ -575,7 +577,8 @@ export default async function CondoPage({
   const tCondo = tAll.condoPage;
   const tFaq = tAll.condoFaq;
 
-  const region = districtDisplayName(regions?.name) || "Bangkok";
+  const region =
+    districtDisplayName(regions?.name) || provinceDisplayName(condoRaw.province ?? "bangkok", "en") || "Bangkok";
 
   // Retiree suitability — computed from livability + air-quality data the page
   // already holds (no DB column needed). Frames the building for the large
