@@ -207,6 +207,9 @@ function loadYieldAreas(): Promise<Record<string, string[]> | null> {
   return p;
 }
 
+// Removed "Marketing vs Reality" section, with or without a locale prefix.
+const REALITY_RE = /^(?:\/(?:en|ko|th))?\/reality(?:\/.*)?$/;
+
 async function legacyCondoSlug(uuid: string): Promise<string | null> {
   const key = uuid.toLowerCase();
   const map = await loadUuidShard(key.slice(0, 2));
@@ -230,6 +233,23 @@ function pickLang(req: NextRequest): Lang {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // /reality and /reality/<id> ("Marketing vs Reality") are gone for good.
+  // Every claim on them came from scripts/seed_influencer_promotions.py: a
+  // random sentence from a hardcoded list per named creator, pinned to a
+  // random building, never a real quote with a source URL (data audit
+  // 2026-11-17, H1). 410 rather than 404 so search engines drop the ~300
+  // indexed URLs promptly instead of retrying them.
+  if (REALITY_RE.test(pathname)) {
+    return new NextResponse("This page has been permanently removed.", {
+      status: 410,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "public, max-age=3600",
+        "X-Robots-Tag": "noindex",
+      },
+    });
+  }
 
   const ua = req.headers.get("user-agent") ?? "";
   // Cost circuit-breaker on /condo/. Turns away crawlers that cost origin

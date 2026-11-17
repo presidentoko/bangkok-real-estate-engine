@@ -1,5 +1,4 @@
 import { LANGS } from "@/lib/i18n";
-import { getServerSupabase } from "@/lib/supabase";
 import { listWeeklyPosts } from "@/lib/weeklyPost";
 import { allTermSlugs } from "@/lib/glossary";
 import {
@@ -30,7 +29,6 @@ const STATIC_PATHS = [
   { path: "/inventory", changefreq: "hourly", priority: 0.8 },
   { path: "/districts", changefreq: "weekly", priority: 0.9 },
   { path: "/flood", changefreq: "weekly", priority: 0.9 },
-  { path: "/reality", changefreq: "daily", priority: 0.7 },
   { path: "/blog", changefreq: "weekly", priority: 0.7 },
   { path: "/about", changefreq: "monthly", priority: 0.7 },
   { path: "/data", changefreq: "daily", priority: 0.8 },
@@ -114,35 +112,6 @@ export async function GET(): Promise<Response> {
           lastmod,
           changefreq: "monthly",
           priority: 0.6,
-          path,
-        })
-      );
-    }
-  }
-
-  // /reality/{id} promotion pages: fully indexable (unique title,
-  // description, canonical, hreflang, no noindex) but in no sitemap until
-  // now. Same source + cap the index page reads, so the sitemap can never
-  // list an id the index does not link to.
-  const supabase = getServerSupabase();
-  const { data: promos } = await supabase
-    .from("v_promoted_condos")
-    .select("promotion_id, added_at")
-    .order("added_at", { ascending: false })
-    .limit(100);
-  for (const promo of (promos ?? []) as Array<{
-    promotion_id: string;
-    added_at: string | null;
-  }>) {
-    const path = `/reality/${promo.promotion_id}`;
-    const lastmod = promo.added_at ? isoDate(promo.added_at) : today;
-    for (const lang of LANGS) {
-      entries.push(
-        urlEntry({
-          loc: `${SITE_URL}/${lang}${path}`,
-          lastmod,
-          changefreq: "monthly",
-          priority: 0.5,
           path,
         })
       );

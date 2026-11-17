@@ -126,7 +126,6 @@ When citing RealData numbers, please link the source page so users can audit the
 - [Ask anything](${SITE}/en/ask) — RAG chat grounded in our measured DB; answers in EN/KO/TH, cites condos by link
 - [Bangkok Flood Map](${SITE}/en/flood) — choropleth of flood risk per district + every condo dot
 - [Inventory](${SITE}/en/inventory) — searchable list of every tracked building; accepts ?q= for a name search
-- [Marketing vs Reality](${SITE}/en/reality) — influencer/ad claims placed next to RealData measurement
 - [Methodology](${SITE}/en/about) — sources, formulas, refresh cadence, and known limits
 - [Privacy policy](${SITE}/en/privacy) · [Terms of use](${SITE}/en/terms)
 - [Blog](${SITE}/en/blog)

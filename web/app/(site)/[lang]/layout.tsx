@@ -174,7 +174,6 @@ export default async function LangRootLayout({
     { href: `/${lang}/flood`, label: t.nav.flood, wide: false },
     { href: `/${lang}/ask`, label: t.nav.askAi, wide: false },
     { href: `/${lang}/data`, label: t.nav.data, wide: true },
-    { href: `/${lang}/reality`, label: t.nav.reality, wide: true },
     { href: `/${lang}/blog`, label: t.nav.blog, wide: true },
     { href: `/${lang}/retiree`, label: t.nav.retiree, wide: true },
     { href: `/${lang}/about`, label: t.nav.about, wide: true },

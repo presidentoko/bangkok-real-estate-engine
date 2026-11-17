@@ -88,13 +88,6 @@ const dict = {
         desc: "Monsoon flood risk for every Bangkok district on a 0–5 scale, with every condo plotted as a dot in its risk colour.",
         badge: "50 districts scored",
       },
-      {
-        href: "/reality",
-        emoji: "❌✅",
-        title: "Marketing vs Reality",
-        desc: "Influencer / ad claims placed next to our measured data. Bubble Index verdict per building.",
-        badge: "Cross-portal verified",
-      },
     ],
     featured: {
       superValue: {
@@ -399,7 +392,7 @@ const dict = {
       },
       {
         title: "What we don't do",
-        body: "No developer money, no influencer placement, no sponsored data, no building buying its way up a ranking. Display advertising is served by a third-party network that never sees the measurements, and the Marketing-vs-Reality slot is labelled paid promotion that never softens the data column.",
+        body: "No developer money, no influencer placement, no sponsored data, no building buying its way up a ranking. Display advertising is served by a third-party network that never sees the measurements.",
       },
     ],
     contactsHeader: "Contact for interviews / data licensing",
@@ -443,7 +436,7 @@ const dict = {
       items: [
         "We don't broker listings. Listing clicks go to the original hipflat page.",
         "We don't take developer money, and no agent can pay to change a number.",
-        "We don't let advertising touch the data. Display ads are served by a third-party network that never sees our measurements; Marketing-vs-Reality slots are paid promotion, clearly labeled.",
+        "We don't let advertising touch the data. Display ads are served by a third-party network that never sees our measurements.",
         "We don't accept influencer placement or 'sponsored content' that shapes our data.",
         "We don't publish bubble_index values above 10× district median — those are data-quality issues, not real prices.",
       ],
@@ -618,10 +611,6 @@ const dict = {
       fallbackHandle: "@Bkkbudong_bot",
     },
     useCases: [
-      {
-        title: "Promote my condo",
-        body: "Buy a Marketing-vs-Reality slot. We do not soften the data — but you control the claim wording. Pay only after we confirm fit.",
-      },
       {
         title: "License RealData market reports",
         body: "Quarterly Bangkok-wide bubble / flood / amenity datasets in CSV + dashboard. For agents, REITs, and analysts.",
