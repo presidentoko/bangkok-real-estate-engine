@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { fmtTHBCompact } from "@/lib/fmt";
+import { fmtListingCompact, fmtListingPerSqm } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import {
   GRADE_BG,
@@ -145,12 +145,15 @@ export function ReportCard({ condo, score, liv, risk, latest, lang }: Props) {
                   {t.latestListing}
                 </div>
                 <div className="font-bold mt-0.5">
-                  {fmtTHBCompact(latest?.price)}
+                  {fmtListingCompact(latest?.price, latest?.currency)}
+                  {latest?.listing_type === "rent" && latest?.price != null ? "/mo" : ""}
                   {latest?.area_sqm ? (
                     <span className="text-zinc-400 font-normal text-sm">
                       {" "}
-                      · {latest.area_sqm} m² · ฿
-                      {Math.round(latest?.price_per_sqm ?? 0).toLocaleString()}/m²
+                      · {latest.area_sqm} m²
+                      {latest.listing_type !== "rent" && latest.price_per_sqm
+                        ? ` · ${fmtListingPerSqm(latest.price_per_sqm, latest.currency)}/m²`
+                        : null}
                     </span>
                   ) : null}
                 </div>

@@ -65,6 +65,41 @@ export function fmtMoney(
 }
 
 /**
+ * Compact listing price in the listing's own currency. hipflat listings are
+ * USD and were printed as "฿63K" (audit H3); converting would mean picking
+ * an FX rate for a shareable card, so the amount keeps its own currency.
+ * An unknown code prints nothing rather than a guessed symbol.
+ */
+export function fmtListingCompact(
+  v: number | string | null | undefined,
+  currency: string | null | undefined
+): string {
+  if (v == null) return "—";
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return "—";
+  const cur = (currency ?? "THB").toUpperCase();
+  if (cur === "THB") return fmtTHBCompact(n);
+  if (cur !== "USD") return "—";
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${Math.round(n).toLocaleString("en-US")}`;
+}
+
+/** Price per m² in the listing's own currency (see fmtListingCompact). */
+export function fmtListingPerSqm(
+  v: number | string | null | undefined,
+  currency: string | null | undefined
+): string {
+  if (v == null) return "—";
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return "—";
+  const cur = (currency ?? "THB").toUpperCase();
+  if (cur === "THB") return `฿${Math.round(n).toLocaleString("en-US")}`;
+  if (cur === "USD") return `$${Math.round(n).toLocaleString("en-US")}`;
+  return "—";
+}
+
+/**
  * Signed percentage point delta (e.g. +1.25pp, -0.8pp). Null → "—".
  */
 export function fmtPP(v: number | null | undefined): string {

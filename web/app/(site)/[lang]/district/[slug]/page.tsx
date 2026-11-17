@@ -250,11 +250,16 @@ export default async function DistrictPage({
     return s.length % 2 === 0 ? (s[m - 1] + s[m]) / 2 : s[m];
   };
   const medianYield = median(yieldsArr);
+  // THB only. avg_sale_price / avg_monthly_rent are compute_yields.py's
+  // per-building THB medians. The old fallback to market_sale_median /
+  // market_rent_median mixed in hipflat's USD summaries and printed them
+  // with a baht sign ("Watthana median rent ฿2,311/mo"; audit H2), so a
+  // building without its own THB figure is simply left out.
   const medianSale = median(
-    condos.map((c) => c.avg_sale_price ?? c.market_sale_median).filter((v): v is number => !!v && v >= 500_000),
+    condos.map((c) => c.avg_sale_price).filter((v): v is number => !!v && v >= 500_000),
   );
   const medianRent = median(
-    condos.map((c) => c.avg_monthly_rent ?? c.market_rent_median).filter((v): v is number => !!v && v >= 1_000),
+    condos.map((c) => c.avg_monthly_rent).filter((v): v is number => !!v && v >= 1_000),
   );
   const mrr = mortgage?.rate ?? null;
 
@@ -434,10 +439,10 @@ export default async function DistrictPage({
                         </td>
                       )}
                       <td className="px-4 py-3 text-right tabular-nums">
-                        {fmtTHB(c.avg_sale_price ?? c.market_sale_median)}
+                        {fmtTHB(c.avg_sale_price)}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">
-                        {fmtTHB(c.avg_monthly_rent ?? c.market_rent_median)}
+                        {fmtTHB(c.avg_monthly_rent)}
                       </td>
                     </tr>
                   );

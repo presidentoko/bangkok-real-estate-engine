@@ -32,6 +32,40 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 from loguru import logger
 from src.db import get_client
 
+# Plausibility bounds for listing rows fed into the medians (audit 2026-11-17,
+# M6). hipflat rows tagged USD that are really baht were multiplied by the FX
+# rate a second time: The Master Sukhumvit On Nut showed "USD 9,001" rents
+# for a 587 (sqft) studio, i.e. a ฿306,034/mo median rent and a ฿59M median
+# sale. The ratio cancelled, so the yield looked sane while every price in
+# the yield tables was ~34x off. Those rows also carry the area in sqft.
+MAX_AREA_SQM = 300          # whole-floor / mis-unit rows (and sqft areas)
+USD_RENT_MIN, USD_RENT_MAX = 100, 5_000
+USD_SALE_MIN = 10_000
+
+
+def plausible_thb(row: dict, listing_type: str, thb_per_usd: float) -> float | None:
+    """THB value of a listing row for the yield medians, or None to drop it.
+
+    THB rows pass through, USD rows convert at thb_per_usd, any other currency
+    is dropped. Rows over MAX_AREA_SQM are dropped (whole floors; sqft areas
+    stored as m²), as are USD amounts outside the bounds above, which are
+    baht figures mis-tagged as dollars rather than real dollar prices.
+    """
+    currency = row.get("currency")
+    price = float(row["price"])
+    area = row.get("area_sqm")
+    if area is not None and float(area) > MAX_AREA_SQM:
+        return None
+    if currency == "THB":
+        return price
+    if currency == "USD":
+        if listing_type == "rent" and not (USD_RENT_MIN <= price < USD_RENT_MAX):
+            return None
+        if listing_type == "sale" and price < USD_SALE_MIN:
+            return None
+        return price * thb_per_usd
+    return None
+
 
 def main() -> None:
     ap = argparse.ArgumentParser()
@@ -55,7 +89,7 @@ def main() -> None:
         while True:
             batch = (
                 client.table("listings")
-                .select("condo_id, price, currency")
+                .select("condo_id, price, currency, area_sqm")
                 .eq("listing_type", listing_type)
                 .eq("is_active", True)
                 .not_.is_("price", "null")
@@ -77,37 +111,26 @@ def main() -> None:
     rent_rows = load_listings("rent")
     logger.info(f"  loaded {len(rent_rows)} rent rows")
 
-    def to_thb(row: dict) -> float | None:
-        """THB rows pass through, USD rows convert at --thb-per-usd. Any other
-        currency is excluded from the median inputs rather than taken at face
-        value (a handful of live rows carry a third currency)."""
-        currency = row.get("currency")
-        price = float(row["price"])
-        if currency == "THB":
-            return price
-        if currency == "USD":
-            return price * args.thb_per_usd
-        return None
-
     from collections import defaultdict
     sale_map: dict[str, list[float]] = defaultdict(list)
     rent_map: dict[str, list[float]] = defaultdict(list)
 
     skipped_currency = 0
     for r in sale_rows:
-        thb = to_thb(r)
+        thb = plausible_thb(r, "sale", args.thb_per_usd)
         if thb is None:
             skipped_currency += 1
             continue
         sale_map[r["condo_id"]].append(thb)
     for r in rent_rows:
-        thb = to_thb(r)
+        thb = plausible_thb(r, "rent", args.thb_per_usd)
         if thb is None:
             skipped_currency += 1
             continue
         rent_map[r["condo_id"]].append(thb)
     if skipped_currency:
-        logger.debug(f"  skipped {skipped_currency} rows in unsupported currencies")
+        logger.info(f"  skipped {skipped_currency} rows (other currency, >{MAX_AREA_SQM} m², "
+                    f"or a USD amount outside the plausible range)")
 
     both = set(sale_map) & set(rent_map)
     logger.info(f"  {len(sale_map)} condos with sale | {len(rent_map)} condos with rent | {len(both)} with both")

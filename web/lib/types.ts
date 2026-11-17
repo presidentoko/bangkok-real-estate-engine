@@ -40,4 +40,8 @@ export type LatestListing = {
   price: number;
   area_sqm: number | null;
   price_per_sqm: number | null;
+  // hipflat rows are USD; everything else is THB. v_latest_listings has no
+  // currency column, so the card read every price as baht (audit H3).
+  currency: string | null;
+  listing_type: string | null;
 };

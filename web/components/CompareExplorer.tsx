@@ -134,15 +134,15 @@ export function CompareExplorer({ lang }: { lang: string }) {
             <tr><td className="px-4 py-3 text-zinc-500 bg-zinc-900/30">Avg sale</td>
               {condos.map((c) => (
                 <td key={c.id} className="px-4 py-3 tabular-nums bg-zinc-900/30 font-semibold">
-                  {fmtTHB(c.avg_sale_price ?? c.market_sale_median)}
+                  {fmtTHB(c.avg_sale_price)}
                 </td>
               ))}
             </tr>
             <tr><td className="px-4 py-3 text-zinc-500 bg-zinc-900/30">Avg rent</td>
               {condos.map((c) => (
                 <td key={c.id} className="px-4 py-3 tabular-nums bg-zinc-900/30">
-                  {fmtTHB(c.avg_monthly_rent ?? c.market_rent_median)}
-                  {(c.avg_monthly_rent ?? c.market_rent_median) != null && <span className="text-zinc-500 font-normal text-xs">/mo</span>}
+                  {fmtTHB(c.avg_monthly_rent)}
+                  {c.avg_monthly_rent != null && <span className="text-zinc-500 font-normal text-xs">/mo</span>}
                 </td>
               ))}
             </tr>

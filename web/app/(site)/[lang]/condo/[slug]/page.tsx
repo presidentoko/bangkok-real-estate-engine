@@ -390,10 +390,15 @@ export default async function CondoPage({
     yieldData, mortgageRate,
   ] = await Promise.all([
     getCondoFullById(id),
+    // Same row v_latest_listings picks (newest active listing), read from
+    // the table so the currency comes with it: hipflat prices are USD.
     supabase
-      .from("v_latest_listings")
-      .select("price, area_sqm, price_per_sqm")
+      .from("listings")
+      .select("price, area_sqm, price_per_sqm, currency, listing_type")
       .eq("condo_id", id)
+      .eq("is_active", true)
+      .order("scraped_at", { ascending: false, nullsFirst: false })
+      .limit(1)
       .maybeSingle(),
     // Every listing for this condo, any source, active or not — a single
     // building will never approach the 1000-row PostgREST cap. Derives both

@@ -117,12 +117,12 @@ async function fetchDistricts(): Promise<DistrictSummary[]> {
       ),
       medianSale: median(
         rows
-          .map((c) => c.avg_sale_price ?? c.market_sale_median)
+          .map((c) => c.avg_sale_price)
           .filter((v): v is number => !!v && v >= 500_000),
       ),
       medianRent: median(
         rows
-          .map((c) => c.avg_monthly_rent ?? c.market_rent_median)
+          .map((c) => c.avg_monthly_rent)
           .filter((v): v is number => !!v && v >= 1_000),
       ),
     });
