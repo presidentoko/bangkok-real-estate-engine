@@ -427,7 +427,7 @@ const dict = {
       items: [
         { k: "Bubble Index", v: "(building's median price-per-sqm ÷ district median price-per-sqm) × 100. 100 = at market. 200 = double the local average. <80 = underpriced. >130 = bubble suspect. Districts with fewer than 5 sampled buildings excluded (small-sample noise)." },
         { k: "Livability Score", v: "Weighted aggregate of BTS/MRT distance, hospitals/schools/supermarkets within 1km, and total amenities. 0–100 scale." },
-        { k: "Super Value flag", v: "Underpriced (Bubble Index < 90) AND top-quartile livability." },
+        { k: "Super Value flag", v: "Top 5% on price value (from the Bubble Index) AND top 5% on livability after the risk penalty." },
         { k: "Flood Risk (0–5)", v: "0 = none observed, 1 = very low (central elevated), 2 = occasional puddling, 3 = neighborhood flooding common, 4 = waist-deep recurring, 5 = severe full-area inundation." },
       ],
     },
@@ -756,7 +756,11 @@ const dict = {
     totalUnits: "Total units",
     completed: "Completed",
     availableNow: "Available now",
-    marketSignals: "Market signals (hipflat-published)",
+    marketSignals: "Area market signals (hipflat-published)",
+    areaFigureNote: (asOf: string | null) =>
+      `Area-level figure from hipflat's market summary${asOf ? ` (${asOf})` : ""}, not this building's own listings, which are too few to take a median from.`,
+    ownSignals: "This building's listings",
+    ownSignalsNote: (n: number) => `Medians of this building's own active listings (up to ${n}), in the currency they are listed in.`,
     saleMedian: "Sale · median",
     rentMedian: "Rent · median",
     perSqm: "/sqm",

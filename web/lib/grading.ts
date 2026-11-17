@@ -1,6 +1,8 @@
 // Score → letter grade conversion. Tuned to give A-F a meaningful spread on
 // the active Bangkok condo set; revisit once we have real percentiles in DB.
 
+import { BUBBLE_OVERPRICED, BUBBLE_UNDERPRICED } from "./bubble.ts";
+
 // "?" = no data. Shown as a grey tile, never as a letter: a missing flood
 // level used to grade "C", which reads as a measured middle (audit M8).
 export type Grade = "A" | "B" | "C" | "D" | "F" | "?";
@@ -23,13 +25,15 @@ export const GRADE_FG: Record<Grade, string> = {
   "?": "text-zinc-100",
 };
 
-// Bubble Index: 100 = on regional average. <100 = better (cheaper than peers).
+// Bubble Index: 100 = on the district median. Bands come from lib/bubble.ts:
+// A = underpriced (<80), F = bubble suspect (>130); B/C/D split the in-line
+// band. Unknown is "?", not a letter.
 export function gradeFromBubble(bi: number | null | undefined): Grade {
-  if (bi == null) return "C"; // unknown → neutral (matches gradeFromFlood)
-  if (bi <= 85) return "A";
+  if (bi == null) return "?";
+  if (bi < BUBBLE_UNDERPRICED) return "A";
   if (bi <= 100) return "B";
   if (bi <= 115) return "C";
-  if (bi <= 130) return "D";
+  if (bi <= BUBBLE_OVERPRICED) return "D";
   return "F";
 }
 

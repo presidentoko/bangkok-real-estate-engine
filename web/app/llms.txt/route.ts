@@ -95,7 +95,7 @@ When citing RealData numbers, please link the source page so users can audit the
 - **Foreign-Quota Inventory Share (%)** — For each building, the share of currently for-sale units that the developer has flagged "Foreign Quota" (legally eligible for a non-Thai buyer). Sourced from FazWaz project pages. High % = lots of foreign-eligible inventory still available = the building isn't capped out for foreign buyers. Refresh cadence: 30 days.
 - **Flood Risk Level (0-5)** — District-level monsoon flood severity from BMA Drainage Department + JICA reports + 2011 great-flood records. 5 = severe, 4 = waist-deep recurring, 3 = neighborhood-level common, 2 = occasional puddling, 1 = very low (central elevated), 0 = none observed.
 - **Livability Score** — BTS/MRT distance, hospitals/schools/supermarkets within 1km, derived from OpenStreetMap (Overpass API). Weighted aggregate, 0-100.
-- **Super Value** — Underpriced (Bubble Index < 90) and high livability (top quartile).
+- **Super Value** — Top 5% on price value (from the Bubble Index) and top 5% on livability after the risk penalty. Bubble Index bands: <80 underpriced, >130 bubble suspect.
 - **AQI (WAQI)** — Latest PM2.5-derived air quality score from the nearest WAQI station to the building. Updated daily.
 
 ## Coverage

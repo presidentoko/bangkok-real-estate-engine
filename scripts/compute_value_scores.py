@@ -1,30 +1,49 @@
-"""Compute bubble_index per building from listings.
+"""Compute bubble_index per building from listings, for every source.
 
-Strategy
---------
-1. Pull all listings with price_per_sqm set, group by (condo, listing_type).
-2. Building median pps per (condo, listing_type) — use median to reduce
-   noise from one-off luxury units or fire-sale outliers.
-3. Region median pps per (region, listing_type) — across all buildings'
-   listings in that region. Same robustness reasoning.
-4. bubble_index = building_pps / region_pps * 100  (100 = at-market, >100 = premium)
-   - Prefer SALE comparison; fall back to RENT if no sale data exists.
-   - This is what RealityCard already reads (value_scores.bubble_index).
-5. Side-effect: store regions.avg_price_per_sqm = SALE region median (or rent
-   if no sale), so the existing /reality page's region-avg display works too.
+bubble_index = building median sale price/m2 / baseline median price/m2 x 100
+(100 = at the local median, >100 = premium, <100 = discount).
 
-Currency
---------
-hipflat exposes everything in USD on the L3 page; Tier B captured USD prices
-verbatim. We compute everything in USD; the dashboard renders the value as-is.
+Why this changed (data audit 2026-11-17, H6)
+-------------------------------------------
+This script used to score hipflat buildings only, in USD, against hipflat-only
+district medians. The other ~5,000 rows in value_scores (fazwaz, ddproperty,
+dotproperty) were left from a 2026-08-13 run of src/analysis/bubble_index.py,
+which averaged USD and THB price/m2 into one regional mean. Outside Bangkok
+that pushed the per-city median bubble to 23 (Pattaya), 31 (Samui) and 50
+(Phuket) where by construction it should sit near 100.
+
+Now, in one pass:
+1. Every active SALE listing, any source, converted to THB/m2 (USD x
+   --thb-per-usd). Rows over 300 m2 or under 15 m2 (whole floors, sqft areas
+   stored as m2) and price/m2 outside 10k-600k THB are dropped, the same
+   kind of plausibility gate compute_yields.py applies.
+2. Building median THB/m2 (one vote per building).
+3. Baseline = the median over buildings in the same district (region_id),
+   when the district has MIN_BUILDINGS; outside Bangkok, otherwise the median
+   over the building's province (so a city's buildings centre on 100 too);
+   otherwise no score. A Bangkok building with no district is not scored:
+   against the citywide median a central tower reads as a "bubble".
+3b. Buildings with no active sale listing that can be priced today (fazwaz
+   has none active; dotproperty sale rows carry no area) keep their stored
+   score only re-based: divided by the median stored score of the same
+   district (or, outside Bangkok, province) and x100. The stored score is
+   building/regional-mean, so this recovers building/district-median on the
+   data it was computed from, without the mixed-currency mean.
+4. Scores outside [BI_FLOOR, BI_CEILING] are not published (null): past
+   that range it is a data-quality artifact, not a premium.
+5. value_scores rows that get no score this run have bubble_index set to
+   null instead of keeping a stale value from another baseline.
+regions.avg_price_per_sqm is written as the district median, in THB.
 
 Usage:
   python scripts/compute_value_scores.py
   python scripts/compute_value_scores.py --dry-run
+  python scripts/compute_value_scores.py --backup data/backups/value_scores_x.csv
 """
 from __future__ import annotations
 
 import argparse
+import csv
 import statistics
 import sys
 from collections import defaultdict
@@ -36,179 +55,166 @@ sys.path.insert(0, str(ROOT))
 
 from loguru import logger  # noqa: E402
 
-from src.db import get_client  # noqa: E402
-
 PAGE = 1000
-MIN_LISTINGS_FOR_REGION = 5  # below this, region median is not trustworthy
+MIN_BUILDINGS = 5          # buildings with a price needed for a baseline
+BI_FLOOR, BI_CEILING = 25.0, 400.0
+MIN_AREA, MAX_AREA = 15.0, 300.0
+MIN_PPS_THB, MAX_PPS_THB = 10_000.0, 600_000.0
+
+# Same spelling folds as src/db._PROVINCE_ALIASES / web/lib/cities.ts, so a
+# city split across two province spellings shares one baseline.
+PROVINCE_ALIASES = {
+    "chiang-mai": "chiangmai", "chiang-rai": "chiangrai", "hua-hin": "huahin",
+    "chon-buri": "chonburi", "ko-samui": "samui", "koh-samui": "samui",
+}
 
 
-def _fetch_all(client, table: str, columns: str, *, order_by: str = "id", **filters) -> list[dict]:
-    # order_by the PK (listings.id / condos.id are uuid PKs) — without ORDER BY,
-    # Postgres doesn't guarantee stable row order across separate .range()
-    # requests, so pages can skip or duplicate rows.
+def thb_pps(row: dict, thb_per_usd: float) -> float | None:
+    """Sale price per m2 in THB, or None when the row is not plausible."""
+    pps, cur, area = row.get("price_per_sqm"), row.get("currency"), row.get("area_sqm")
+    if pps is None:
+        return None
+    if area is not None and not (MIN_AREA <= float(area) <= MAX_AREA):
+        return None
+    v = float(pps)
+    if cur == "USD":
+        v *= thb_per_usd
+    elif cur != "THB":
+        return None
+    return v if MIN_PPS_THB <= v <= MAX_PPS_THB else None
+
+
+def _prov(p: str | None) -> str | None:
+    return PROVINCE_ALIASES.get(p, p) if p else None
+
+
+def score_buildings(
+    building_pps: dict[str, float],
+    region_of: dict[str, str | None],
+    province_of: dict[str, str | None],
+    min_buildings: int = MIN_BUILDINGS,
+) -> tuple[dict[str, float | None], dict[str, float]]:
+    """{condo_id: bubble or None (implausible)}, {region_id: median value}.
+
+    Values are divided by the median value of the building's district, or
+    outside Bangkok its province, when that group has min_buildings. Used for
+    THB/m2 (step 3) and for re-basing stored scores (step 3b)."""
+    by_region: dict[str, list[float]] = defaultdict(list)
+    by_prov: dict[str, list[float]] = defaultdict(list)
+    for cid, v in building_pps.items():
+        if region_of.get(cid):
+            by_region[region_of[cid]].append(v)
+        p = _prov(province_of.get(cid))
+        if p and p != "bangkok":
+            by_prov[p].append(v)
+    region_med = {r: statistics.median(v) for r, v in by_region.items() if len(v) >= min_buildings}
+    prov_med = {p: statistics.median(v) for p, v in by_prov.items() if len(v) >= min_buildings}
+
+    out: dict[str, float | None] = {}
+    for cid, v in building_pps.items():
+        base = region_med.get(region_of.get(cid) or "")
+        if base is None:
+            base = prov_med.get(_prov(province_of.get(cid)) or "")
+        if not base:
+            continue
+        bi = round(v / base * 100, 2)
+        out[cid] = bi if BI_FLOOR <= bi <= BI_CEILING else None
+    return out, region_med
+
+
+def _fetch_keyset(client, table: str, columns: str, key: str = "id", **eq) -> list[dict]:
     out: list[dict] = []
-    offset = 0
+    last = None
     while True:
         q = client.table(table).select(columns)
-        for k, v in filters.items():
+        for k, v in eq.items():
             q = q.eq(k, v)
-        page = q.order(order_by).range(offset, offset + PAGE - 1).execute().data or []
+        if last is not None:
+            q = q.gt(key, last)
+        page = q.order(key).limit(PAGE).execute().data or []
         out.extend(page)
         if len(page) < PAGE:
-            break
-        offset += PAGE
-    return out
-
-
-def _median(xs: list[float]) -> float | None:
-    return statistics.median(xs) if xs else None
+            return out
+        last = page[-1][key]
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--thb-per-usd", type=float, default=34.0)
+    ap.add_argument("--backup", help="CSV of value_scores (condo_id, bubble_index, computed_at) before writing")
     args = ap.parse_args()
 
+    from src.db import get_client
     client = get_client()
 
-    # ---- Pull listings with pps set
-    listings = _fetch_all(
-        client,
-        "listings",
-        "condo_id, listing_type, price_per_sqm",
-        source="hipflat",
-        is_active=True,
+    listings = _fetch_keyset(
+        client, "listings", "id, condo_id, price_per_sqm, currency, area_sqm",
+        listing_type="sale", is_active=True,
     )
-    listings = [l for l in listings if l.get("price_per_sqm") is not None]
-    logger.info(f"listings with pps: {len(listings)}")
-
-    # ---- Pull condos for region lookup
-    condos = _fetch_all(client, "condos", "id, region_id", source="hipflat")
-    region_by_condo = {c["id"]: c.get("region_id") for c in condos}
-
-    # ---- Group: (condo, type) -> [pps]
-    by_condo_type: dict[tuple[str, str], list[float]] = defaultdict(list)
+    per_condo: dict[str, list[float]] = defaultdict(list)
+    dropped = 0
     for l in listings:
-        cid = l["condo_id"]
-        t = l["listing_type"]
-        by_condo_type[(cid, t)].append(float(l["price_per_sqm"]))
-
-    # ---- Group: (region, type) -> [pps] (every listing contributes; use
-    #      building median first to weight buildings equally? simpler: use
-    #      raw listing pps medians since that smooths within-building too)
-    by_region_type: dict[tuple[str, str], list[float]] = defaultdict(list)
-    for (cid, t), pps_list in by_condo_type.items():
-        rid = region_by_condo.get(cid)
-        if not rid:
+        v = thb_pps(l, args.thb_per_usd)
+        if v is None:
+            dropped += 1
             continue
-        b_med = _median(pps_list)
-        if b_med is None:
-            continue
-        # One vote per building per type (avoid letting big buildings dominate).
-        by_region_type[(rid, t)].append(b_med)
+        per_condo[l["condo_id"]].append(v)
+    logger.info(f"sale listings: {len(listings)}, used {len(listings) - dropped}, dropped {dropped}")
 
-    region_medians: dict[tuple[str, str], float] = {}
-    for k, vals in by_region_type.items():
-        if len(vals) < MIN_LISTINGS_FOR_REGION:
-            continue
-        region_medians[k] = statistics.median(vals)
-    logger.info(
-        f"regions with sale median: {sum(1 for k in region_medians if k[1]=='sale')}, "
-        f"with rent median: {sum(1 for k in region_medians if k[1]=='rent')}"
-    )
+    condos = _fetch_keyset(client, "condos", "id, region_id, province", is_active=True)
+    region_of = {c["id"]: c.get("region_id") for c in condos}
+    province_of = {c["id"]: c.get("province") for c in condos}
+    building_pps = {cid: statistics.median(v) for cid, v in per_condo.items() if cid in region_of}
 
-    # ---- Compute per-building bubble_index
-    now = datetime.now(timezone.utc).isoformat()
-    score_rows: list[dict] = []
-    n_sale_used = n_rent_used = n_no_match = 0
+    scores, region_med = score_buildings(building_pps, region_of, province_of)
+    published = {k: v for k, v in scores.items() if v is not None}
+    logger.info(f"buildings priced: {len(building_pps)}, scored: {len(published)}, "
+                f"implausible (nulled): {len(scores) - len(published)}, districts with baseline: {len(region_med)}")
 
-    for cid in {l["condo_id"] for l in listings}:
-        rid = region_by_condo.get(cid)
-        if not rid:
-            n_no_match += 1
-            continue
-        # SALE preferred
-        period = None
-        b_med = None
-        r_med = None
-        sale_list = by_condo_type.get((cid, "sale"))
-        if sale_list and (rid, "sale") in region_medians:
-            b_med = _median(sale_list)
-            r_med = region_medians[(rid, "sale")]
-            period = "sale"
-            n_sale_used += 1
-        else:
-            rent_list = by_condo_type.get((cid, "rent"))
-            if rent_list and (rid, "rent") in region_medians:
-                b_med = _median(rent_list)
-                r_med = region_medians[(rid, "rent")]
-                period = "rent"
-                n_rent_used += 1
-            else:
-                n_no_match += 1
-                continue
-        if not r_med or r_med <= 0 or b_med is None:
-            continue
-        bubble_index = round(b_med / r_med * 100, 2)
-        # >1000 (i.e. building 10x district median pps) is invariably bad
-        # data — usually a mis-parsed area_sqm driving pps to the moon, or
-        # a one-unit region with no useful baseline. Skip writing the row
-        # so the site shows that building's bubble as "no data" (gray)
-        # instead of "9999% bubble suspect".
-        if bubble_index > 1000:
-            logger.warning(
-                f"skipping insane bubble_index for {cid}: {bubble_index} "
-                f"(b_med={b_med}, r_med={r_med}, period={period})"
-            )
-            continue
-        score_rows.append({
-            "condo_id": cid,
-            "bubble_index": bubble_index,
-            "computed_at": now,
-        })
+    # 3b. Re-base stored scores of buildings that cannot be priced today.
+    existing = _fetch_keyset(client, "value_scores", "condo_id, bubble_index, computed_at", key="condo_id")
+    stored = {r["condo_id"]: float(r["bubble_index"]) for r in existing
+              if r.get("bubble_index") is not None and r["condo_id"] not in building_pps
+              and r["condo_id"] in region_of and float(r["bubble_index"]) > 0}
+    rebased, _ = score_buildings(stored, region_of, province_of)
+    carried = {k: v for k, v in rebased.items() if v is not None}
+    logger.info(f"stored scores without a price today: {len(stored)}, re-based: {len(carried)}")
+    published.update(carried)
 
-    logger.info(
-        f"value_scores rows: {len(score_rows)} "
-        f"(sale={n_sale_used}, rent={n_rent_used}, no-match={n_no_match})"
-    )
+    by_prov: dict[str, list[float]] = defaultdict(list)
+    for cid, bi in published.items():
+        p = province_of.get(cid) or "?"
+        by_prov[_prov(p) or "?"].append(bi)
+    for p, v in sorted(by_prov.items(), key=lambda kv: -len(kv[1]))[:12]:
+        logger.info(f"  {p:22s} n={len(v):5d} median bubble={statistics.median(v):6.1f}")
 
-    # ---- Region avg_price_per_sqm: prefer SALE median, fallback to rent
-    region_avg_rows: list[dict] = []
-    seen_regions: set[str] = set()
-    for (rid, t), med in region_medians.items():
-        if t == "sale":
-            seen_regions.add(rid)
-            region_avg_rows.append({"id": rid, "avg_price_per_sqm": round(med, 2)})
-    for (rid, t), med in region_medians.items():
-        if t == "rent" and rid not in seen_regions:
-            seen_regions.add(rid)
-            region_avg_rows.append({"id": rid, "avg_price_per_sqm": round(med, 2)})
-    logger.info(f"regions to update: {len(region_avg_rows)}")
+    if args.backup and not args.dry_run:
+        with open(args.backup, "w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=["condo_id", "bubble_index", "computed_at"])
+            w.writeheader()
+            w.writerows(existing)
+        logger.info(f"backup: {args.backup} ({len(existing)} rows)")
+    to_null = [r["condo_id"] for r in existing
+               if r.get("bubble_index") is not None and r["condo_id"] not in published]
+    logger.info(f"value_scores rows: upsert {len(published)}, set bubble_index null on {len(to_null)}")
 
     if args.dry_run:
-        logger.info("dry-run — not writing")
-        if score_rows:
-            logger.info(f"sample bubble_index: {sorted(s['bubble_index'] for s in score_rows)[:5]} ... {sorted(s['bubble_index'] for s in score_rows)[-5:]}")
+        logger.info("dry-run -- not writing")
         return 0
 
-    # ---- Write
-    # regions.id refs an existing row (FK from condos.region_id). Use UPDATE
-    # so we don't trip the NOT NULL constraint on `name` that would fire if
-    # supabase-py treated this as an INSERT path.
-    now_iso = datetime.now(timezone.utc).isoformat()
-    for r in region_avg_rows:
-        client.table("regions").update({
-            "avg_price_per_sqm": r["avg_price_per_sqm"],
-            "last_recalculated_at": now_iso,
-        }).eq("id", r["id"]).execute()
-    logger.info(f"updated {len(region_avg_rows)} regions")
-
-    if score_rows:
-        for i in range(0, len(score_rows), 500):
-            client.table("value_scores").upsert(
-                score_rows[i:i+500], on_conflict="condo_id", returning="minimal"
-            ).execute()
-        logger.info(f"upserted {len(score_rows)} value_scores rows")
+    now = datetime.now(timezone.utc).isoformat()
+    rows = [{"condo_id": cid, "bubble_index": bi, "computed_at": now} for cid, bi in published.items()]
+    for i in range(0, len(rows), 500):
+        client.table("value_scores").upsert(rows[i:i + 500], on_conflict="condo_id", returning="minimal").execute()
+    for i in range(0, len(to_null), 150):
+        client.table("value_scores").update({"bubble_index": None, "computed_at": now}, returning="minimal") \
+            .in_("condo_id", to_null[i:i + 150]).execute()
+    for rid, med in region_med.items():
+        client.table("regions").update(
+            {"avg_price_per_sqm": round(med, 2), "last_recalculated_at": now}, returning="minimal"
+        ).eq("id", rid).execute()
+    logger.info(f"upserted {len(rows)} value_scores rows; nulled {len(to_null)}; {len(region_med)} regions updated")
     return 0
 
 

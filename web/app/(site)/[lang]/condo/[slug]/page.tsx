@@ -23,11 +23,11 @@ import { ResaleLiquidityCard } from "@/components/ResaleLiquidityCard";
 import { RetireeSuitabilityCard } from "@/components/RetireeSuitabilityCard";
 import { YieldCard } from "@/components/YieldCard";
 import { decodeEntities } from "@/lib/decode";
-import { fmtUsdPerSqm } from "@/lib/fmt";
 import { getDictionary } from "@/lib/getDictionary";
 import FaqSection from "@/components/FaqSection";
 import { isLang, type Lang } from "@/lib/i18n";
 import { computePortalStats, type Listing as PortalListing } from "@/lib/queries/portals";
+import { fmtOwnMoney, ownMedian, type OwnListingRow } from "@/lib/ownListingMedians";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import {
   getCondoYield,
@@ -179,7 +179,7 @@ const CONDO_FULL_SELECT = [
   "floors", "total_units", "completion_year", "description", "hero_image_url",
   "market_rent_median", "market_rent_per_sqm", "market_rent_yoy_pct",
   "market_sale_median", "market_sale_per_sqm", "market_sale_yoy_pct",
-  "market_summary_currency", "available_units_count",
+  "market_summary_currency", "market_summary_updated_at", "available_units_count",
   "active_listings_count", "median_listing_dom_days", "max_listing_dom_days",
   "cam_fee_per_month", "sinking_fund", "building_ownership",
   "aqi_score", "pm25_value", "aqi_station_name", "aqi_fetched_at",
@@ -289,10 +289,22 @@ export async function generateMetadata({
   // same "$2,675" the page body does. Printing a baht sign over this column
   // is the bug fixed on 2026-09-23; converting here would bake a hardcoded
   // FX rate into ~46,000 static pages that are rebuilt weekly.
+  //
+  // Since 2026-11-17 the figure is this building's own median from its active
+  // sale listings (lib/ownListingMedians.ts), in the listings' currency, and
+  // only with at least 3 of them. market_sale_per_sqm is an area-level hipflat
+  // summary that ran up to 7x off the building (data audit H9), so it no
+  // longer goes in the title at all.
+  const { data: ownRows } = await getServerSupabase()
+    .from("listings")
+    .select("listing_type, price, price_per_sqm, currency, area_sqm, is_active")
+    .eq("condo_id", id)
+    .eq("is_active", true)
+    .eq("listing_type", "sale")
+    .range(0, 999);
+  const ownSale = ownMedian((ownRows ?? []) as OwnListingRow[], "sale");
   const pricePerSqm =
-    c.market_sale_per_sqm != null && Number.isFinite(Number(c.market_sale_per_sqm))
-      ? fmtUsdPerSqm(c.market_sale_per_sqm)
-      : null;
+    ownSale?.perSqm != null ? fmtOwnMoney(ownSale.perSqm, ownSale.currency) : null;
   const title = t.seo.condoTitle(c.name, region, {
     pricePerSqm,
     yieldPct: c.gross_yield_pct != null ? c.gross_yield_pct.toFixed(2) : null,
@@ -448,6 +460,10 @@ export default async function CondoPage({
 
   const allListings = (allListingsRes.data ?? []) as unknown as PortalListing[];
   const portalStats = computePortalStats(allListings);
+  // This building's own medians (>= 3 active listings) -- see the note on
+  // the <title> in generateMetadata.
+  const ownSaleMedian = ownMedian(allListings as unknown as OwnListingRow[], "sale");
+  const ownRentMedian = ownMedian(allListings as unknown as OwnListingRow[], "rent");
 
   // supabase-js types `regions` as an array on joins; collapse to single.
   const condoRaw = condoData as unknown as {
@@ -473,6 +489,7 @@ export default async function CondoPage({
     market_sale_per_sqm: number | null;
     market_sale_yoy_pct: number | null;
     market_summary_currency: string | null;
+    market_summary_updated_at: string | null;
     available_units_count: number | null;
     active_listings_count: number | null;
     median_listing_dom_days: number | null;
@@ -599,9 +616,13 @@ export default async function CondoPage({
     region,
     amenities,
     signals: {
-      market_sale_per_sqm: condoRaw.market_sale_per_sqm,
-      market_sale_median: condoRaw.market_sale_median,
-      market_rent_median: condoRaw.market_rent_median,
+      // The building's own listing medians only; the hipflat area summary
+      // is not published as this building's price (audit H9).
+      market_sale_per_sqm: ownSaleMedian?.perSqm ?? null,
+      market_sale_median: ownSaleMedian?.median ?? null,
+      market_rent_median: ownRentMedian?.median ?? null,
+      sale_currency: ownSaleMedian?.currency ?? null,
+      rent_currency: ownRentMedian?.currency ?? null,
       bubble_index: scoreData?.bubble_index,
       flood_risk_level: riskData?.flood_risk_level,
       nearest_bts_distance_m: livData?.nearest_bts_distance_m,
@@ -1029,12 +1050,54 @@ export default async function CondoPage({
         </Link>
       )}
 
-      {/* Market summary */}
-      {(condoRaw.market_rent_median || condoRaw.market_sale_median) && (
+      {/* This building's own listing medians, when there are enough. */}
+      {(ownSaleMedian || ownRentMedian) && (
         <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-          <h2 className="text-sm font-semibold text-zinc-300 mb-3">
+          <h2 className="text-sm font-semibold text-zinc-300 mb-1">{tCondo.ownSignals}</h2>
+          <p className="text-xs text-zinc-500 mb-3">
+            {tCondo.ownSignalsNote(Math.max(ownSaleMedian?.n ?? 0, ownRentMedian?.n ?? 0))}
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4 text-sm">
+            {ownSaleMedian && (
+              <div className="bg-zinc-950 rounded-xl p-3 border border-zinc-800">
+                <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">
+                  {tCondo.saleMedian} ({ownSaleMedian.n})
+                </div>
+                <div className="text-2xl font-bold tabular-nums">
+                  {fmtOwnMoney(ownSaleMedian.median, ownSaleMedian.currency)}
+                </div>
+                {ownSaleMedian.perSqm != null && (
+                  <div className="text-zinc-400 text-xs">
+                    {fmtOwnMoney(ownSaleMedian.perSqm, ownSaleMedian.currency)}/sqm
+                  </div>
+                )}
+              </div>
+            )}
+            {ownRentMedian && (
+              <div className="bg-zinc-950 rounded-xl p-3 border border-zinc-800">
+                <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">
+                  {tCondo.rentMedian} ({ownRentMedian.n})
+                </div>
+                <div className="text-2xl font-bold tabular-nums">
+                  {fmtOwnMoney(ownRentMedian.median, ownRentMedian.currency)}
+                  <span className="text-sm text-zinc-500 font-normal">/mo</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* hipflat's market summary: an area-level figure, labelled as one, and
+          only when the building has too few listings of its own (audit H9). */}
+      {!ownSaleMedian && !ownRentMedian && (condoRaw.market_rent_median || condoRaw.market_sale_median) && (
+        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-300 mb-1">
             {tCondo.marketSignals}
           </h2>
+          <p className="text-xs text-amber-400/90 mb-3">
+            {tCondo.areaFigureNote(condoRaw.market_summary_updated_at?.slice(0, 10) ?? null)}
+          </p>
           <div className="grid sm:grid-cols-2 gap-4 text-sm">
             {condoRaw.market_sale_median != null && (
               <div className="bg-zinc-950 rounded-xl p-3 border border-zinc-800">

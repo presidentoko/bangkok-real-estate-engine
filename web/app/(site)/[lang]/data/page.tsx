@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { activeListingsOrFilter } from "@/lib/activeListings";
+import { BUBBLE_OVERPRICED, BUBBLE_UNDERPRICED } from "@/lib/bubble";
 import { canonicalCitySlug, CITIES, cityProvinceSlugs } from "@/lib/cities";
 import { getDictionary } from "@/lib/getDictionary";
 import { isLang, type Lang } from "@/lib/i18n";
@@ -480,9 +481,9 @@ export default async function DataShowcase({
                       {c.medianBubble != null ? (
                         <span
                           className={
-                            c.medianBubble > 130
+                            c.medianBubble > BUBBLE_OVERPRICED
                               ? "text-rose-400 font-semibold"
-                              : c.medianBubble < 90
+                              : c.medianBubble < BUBBLE_UNDERPRICED
                               ? "text-emerald-400 font-semibold"
                               : "text-zinc-300"
                           }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BuildingCard } from "@/components/BuildingCard";
+import { BUBBLE_OVERPRICED, BUBBLE_UNDERPRICED } from "@/lib/bubble";
 import { decodeCompact, isCompact } from "@/lib/condo-compact";
 import { normalizeDistrictLabel, type InventoryStats } from "@/lib/inventory";
 import type { CondoSummary, PropertyType } from "@/lib/queries/condos";
@@ -27,10 +28,10 @@ const TYPE_LABELS: Record<TypeFilter, string> = {
 
 const BUBBLE_LABELS: Record<BubbleBucket, string> = {
   all: "Any price",
-  under: "Underpriced (<90)",
-  market: "At market (90–130)",
-  premium: "Premium (131–200)",
-  bubble: "Bubble (>200)",
+  under: `Underpriced (<${BUBBLE_UNDERPRICED})`,
+  market: `In line (${BUBBLE_UNDERPRICED}–${BUBBLE_OVERPRICED})`,
+  premium: `Bubble suspect (${BUBBLE_OVERPRICED}–200)`,
+  bubble: "Bubble suspect (>200)",
 };
 
 // How many cards to actually paint at once. The lazy-fetch pulls the full
@@ -170,9 +171,9 @@ export function InventoryGrid({
       if (bubble !== "all") {
         const b = c.bubble_index;
         if (b == null) return false;
-        if (bubble === "under" && b >= 90) return false;
-        if (bubble === "market" && (b < 90 || b > 130)) return false;
-        if (bubble === "premium" && (b < 131 || b > 200)) return false;
+        if (bubble === "under" && b >= BUBBLE_UNDERPRICED) return false;
+        if (bubble === "market" && (b < BUBBLE_UNDERPRICED || b > BUBBLE_OVERPRICED)) return false;
+        if (bubble === "premium" && (b <= BUBBLE_OVERPRICED || b > 200)) return false;
         if (bubble === "bubble" && b <= 200) return false;
       }
       return true;
@@ -250,9 +251,9 @@ export function InventoryGrid({
             tint={
               stats.bubbleAvg == null
                 ? "text-zinc-400"
-                : stats.bubbleAvg > 130
+                : stats.bubbleAvg > BUBBLE_OVERPRICED
                 ? "text-rose-300"
-                : stats.bubbleAvg < 90
+                : stats.bubbleAvg < BUBBLE_UNDERPRICED
                 ? "text-emerald-300"
                 : "text-zinc-200"
             }

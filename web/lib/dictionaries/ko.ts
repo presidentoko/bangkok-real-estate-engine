@@ -126,7 +126,7 @@ const dict: Dict = {
       },
       {
         q: "Bubble Index가 뭔가요?",
-        a: "빌딩 매물 가격/면적 ÷ 같은 구(khet) 평균 가격/면적 × 100. 100이면 시세, 200이면 두 배 비싸다는 뜻. 100 미만은 저평가, 130 초과는 거품 의심으로 표기합니다.",
+        a: "빌딩 매물 가격/면적 ÷ 같은 구(khet) 평균 가격/면적 × 100. 100이면 시세, 200이면 두 배 비싸다는 뜻. 80 미만은 저평가, 130 초과는 거품 의심으로 표기합니다.",
       },
       {
         q: "Gross 임대수익률은 어떻게 계산되나요?",
@@ -407,7 +407,7 @@ const dict: Dict = {
       items: [
         { k: "Bubble Index", v: "(빌딩 매물 가격/면적 중간값 ÷ 같은 구 매물 가격/면적 중간값) × 100. 100 = 시세, 200 = 두 배 비쌈, 80 미만 = 저평가, 130 초과 = 거품 의심. 표본 5건 미만 구역은 제외 (작은 표본 노이즈)." },
         { k: "Livability Score", v: "BTS/MRT 거리 + 1km 내 병원/학교/슈퍼마켓 + 시설 합산 가중치. 0~100." },
-        { k: "Super Value 플래그", v: "저평가(Bubble Index < 90) AND 생활편의 상위 25%." },
+        { k: "Super Value 플래그", v: "가격 가치(Bubble Index 기반)와 생활편의(리스크 차감 후)가 모두 상위 5%." },
         { k: "침수 위험 (0~5)", v: "0=관측 없음, 1=매우 낮음(중심 고지대), 2=가끔 빗물 고임, 3=동네 단위 침수 빈번, 4=2011년 침수+매년 허리까지, 5=우기마다 광범위 침수." },
       ],
     },
@@ -736,7 +736,11 @@ const dict: Dict = {
     totalUnits: "총 unit",
     completed: "준공",
     availableNow: "현재 매물",
-    marketSignals: "시장 신호 (hipflat 게시)",
+    marketSignals: "지역 시장 신호 (hipflat 게시)",
+    areaFigureNote: (asOf: string | null) =>
+      `hipflat 시장 요약의 지역 단위 수치${asOf ? ` (${asOf})` : ""}입니다. 이 빌딩 자체 매물은 중간값을 낼 만큼 많지 않습니다.`,
+    ownSignals: "이 빌딩의 매물",
+    ownSignalsNote: (n: number) => `이 빌딩의 현재 매물(최대 ${n}건) 중간값, 매물 표시 통화 기준.`,
     saleMedian: "매매 · 중간값",
     rentMedian: "월세 · 중간값",
     perSqm: "/sqm",

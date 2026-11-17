@@ -30,6 +30,10 @@ type AnalyticalSignals = {
   market_sale_median?: number | null;
   /** USD per month. */
   market_rent_median?: number | null;
+  /** Currency of the sale / rent figures above when they are the building's
+   *  own listing medians (THB or USD); default USD. */
+  sale_currency?: string | null;
+  rent_currency?: string | null;
   bubble_index?: number | null;
   flood_risk_level?: number | null;
   nearest_bts_distance_m?: number | null;
@@ -70,21 +74,21 @@ export function buildCondoJsonLd(args: Args): Record<string, unknown> {
   if (signals.market_sale_per_sqm != null) {
     additionalProps.push({
       "@type": "PropertyValue",
-      name: "Median sale price per sqm (USD)",
+      name: `Median sale price per sqm (${signals.sale_currency ?? "USD"})`,
       value: Math.round(signals.market_sale_per_sqm),
     });
   }
   if (signals.market_sale_median != null) {
     additionalProps.push({
       "@type": "PropertyValue",
-      name: "Median sale price (USD)",
+      name: `Median sale price (${signals.sale_currency ?? "USD"})`,
       value: Math.round(signals.market_sale_median),
     });
   }
   if (signals.market_rent_median != null) {
     additionalProps.push({
       "@type": "PropertyValue",
-      name: "Median monthly rent (USD)",
+      name: `Median monthly rent (${signals.rent_currency ?? "USD"})`,
       value: Math.round(signals.market_rent_median),
     });
   }
