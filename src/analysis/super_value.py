@@ -20,8 +20,10 @@ def _percentile_rank(values: list[float], v: float) -> float:
     return round(n / len(values) * 100, 2)
 
 
-def _fetch_all(supabase: Client, table: str, order_by: str = "condo_id") -> list[dict]:
-    """Paginate a select("*") — PostgREST caps every response at 1000 rows
+def _fetch_all(
+    supabase: Client, table: str, columns: str, order_by: str = "condo_id"
+) -> list[dict]:
+    """Paginate a select(columns) — PostgREST caps every response at 1000 rows
     regardless of .limit(). Ordering by the PK (condo_id for value_scores/
     livability_metrics/risk_factors) is required: without ORDER BY, Postgres
     doesn't guarantee stable row order across separate .range() requests, so
@@ -31,7 +33,7 @@ def _fetch_all(supabase: Client, table: str, order_by: str = "condo_id") -> list
     while True:
         chunk = (
             supabase.table(table)
-            .select("*")
+            .select(columns)
             .order(order_by)
             .range(offset, offset + 999)
             .execute()
@@ -45,9 +47,18 @@ def _fetch_all(supabase: Client, table: str, order_by: str = "condo_id") -> list
 
 
 def compute_super_value(supabase: Client, top_pct: float = 5.0) -> int:
-    scores = _fetch_all(supabase, "value_scores")
-    livs = {r["condo_id"]: r for r in _fetch_all(supabase, "livability_metrics")}
-    risks = {r["condo_id"]: r for r in _fetch_all(supabase, "risk_factors")}
+    # Only the columns the rollup reads. These were select("*") over three
+    # tables (value_scores, livability_metrics, risk_factors: ~30k rows, several
+    # MB) on every weekly run.
+    scores = _fetch_all(supabase, "value_scores", "condo_id, bubble_index")
+    livs = {
+        r["condo_id"]: r
+        for r in _fetch_all(supabase, "livability_metrics", "condo_id, livability_score")
+    }
+    risks = {
+        r["condo_id"]: r
+        for r in _fetch_all(supabase, "risk_factors", "condo_id, risk_penalty")
+    }
 
     enriched: list[dict] = []
     for s in scores:
