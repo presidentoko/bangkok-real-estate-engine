@@ -37,13 +37,21 @@ export async function GET(): Promise<Response> {
   // URLs, it was the number of empty ones. When it lapsed, GSC's "not
   // indexed" count went 21,080 -> 39,555 in a day.)
   const supabase = getServerSupabase();
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from("condos_published")
     .select("id", { count: "exact", head: true })
     .not("slug", "is", null)
     .or(INDEXABILITY_OR_FILTER);
+  // Never cache "0 condos" caused by an outage (402 egress, timeout...).
+  // Throwing makes Next keep serving the previous good ISR copy
+  // (data/audits/sitemap-condos-diagnosis-2026-11-19.md).
+  if (error || count == null) {
+    throw new Error(
+      `sitemap index: condo count failed (${error?.code ?? error?.message ?? "null count"})`,
+    );
+  }
 
-  const totalPages = Math.ceil((count ?? 0) / CONDOS_PER_PAGE);
+  const totalPages = Math.ceil(count / CONDOS_PER_PAGE);
   const condoSitemaps = Array.from({ length: totalPages }, (_, p) => ({
     loc: `${SITE_URL}/sitemap-condos/${p}.xml`,
     lastmod,

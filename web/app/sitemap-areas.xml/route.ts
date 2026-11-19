@@ -65,7 +65,7 @@ export async function GET(): Promise<Response> {
   {
     let offset = 0;
     while (true) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("condos")
         .select("province, gross_yield_pct, avg_sale_price")
         .eq("is_active", true)
@@ -77,6 +77,8 @@ export async function GET(): Promise<Response> {
         .gte("yield_sample_rent", 2)
         .order("id")
         .range(offset, offset + 999);
+      // A failed read must not become an ISR-cached sitemap with no /best URLs.
+      if (error) throw new Error(`sitemap-areas: best candidates failed (${error.code ?? error.message})`);
       const chunk = (data ?? []) as BestCandidateRow[];
       bestRows.push(...chunk);
       if (chunk.length < 1000) break;
@@ -123,13 +125,16 @@ export async function GET(): Promise<Response> {
   // they carry noindex (see district/[slug]/page.tsx) because every condo
   // link on them is unreachable — so submitting them here was asking Google
   // to crawl a page we then tell it to drop.
-  const { data: regionData } = await supabase
+  // `id` is not selected: only the is_active/published flags are counted, and
+  // the id was ~half of the ~15,600 embedded rows' bytes.
+  const { data: regionData, error: regionError } = await supabase
     .from("regions")
-    .select("name, condos(id, is_active, published)")
+    .select("name, condos(is_active, published)")
     .limit(500);
+  if (regionError) throw new Error(`sitemap-areas: regions failed (${regionError.code ?? regionError.message})`);
   type RegionRow = {
     name: string;
-    condos: { id: string; is_active: boolean | null; published: boolean | null }[] | null;
+    condos: { is_active: boolean | null; published: boolean | null }[] | null;
   };
   for (const r of (regionData ?? []) as RegionRow[]) {
     const linkable = (r.condos ?? []).filter((c) => c.is_active && c.published).length;
@@ -219,12 +224,13 @@ export async function GET(): Promise<Response> {
   {
     let offset = 0;
     while (true) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("condos_published")
         .select("developer_slug")
         .not("developer_slug", "is", null)
         .order("id")
         .range(offset, offset + 999);
+      if (error) throw new Error(`sitemap-areas: developer slugs failed (${error.code ?? error.message})`);
       const chunk = (data ?? []) as Array<{ developer_slug: string }>;
       for (const r of chunk) devSlugSet.add(r.developer_slug);
       if (chunk.length < 1000) break;

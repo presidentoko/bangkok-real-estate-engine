@@ -48,12 +48,17 @@ async function counts() {
         .from("condos_published")
         .select("id", { count: "exact", head: true })
         .not("foreign_quota_inventory_pct", "is", null),
-      supabase.from("regions").select("name, condos(id, is_active, published)").limit(500),
+      supabase.from("regions").select("name, condos(is_active, published)").limit(500),
     ]);
+
+  // Throw rather than cache zeros: a failed read (402 egress, timeout) used to
+  // render "0 buildings" into a 24h ISR copy.
+  const failed = [buildings, substantive, listings, yields, quota, regions].find((r) => r.error);
+  if (failed?.error) throw new Error(`llms.txt: counts failed (${failed.error.code ?? failed.error.message})`);
 
   type RegionRow = {
     name: string | null;
-    condos: { id: string; is_active: boolean | null; published: boolean | null }[] | null;
+    condos: { is_active: boolean | null; published: boolean | null }[] | null;
   };
   // Same >=3 linkable bar sitemap-areas.xml and district/[slug] both apply,
   // so the number here is the number of district pages that actually exist.

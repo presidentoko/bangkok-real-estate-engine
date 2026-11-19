@@ -90,13 +90,19 @@ export async function GET(
   for (let sub = 0; sub < CONDOS_PER_PAGE; sub += SUB_PAGE) {
     const from = offset + sub;
     const to = offset + Math.min(sub + SUB_PAGE, CONDOS_PER_PAGE) - 1;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("condos_published")
       .select(`slug, last_seen_at, ${INDEXABILITY_SELECT}`)
       .not("slug", "is", null)
       .or(INDEXABILITY_OR_FILTER)
       .order("id")
       .range(from, to);
+    // An error must never become an empty (and then ISR-cached) urlset.
+    if (error) {
+      throw new Error(
+        `sitemap-condos/${page}: query failed (${error.code ?? error.message ?? "unknown"})`,
+      );
+    }
     const chunk = (data ?? []) as unknown as Row[];
     rows.push(...chunk);
     if (chunk.length < to - from + 1) break; // exhausted the table
