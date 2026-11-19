@@ -83,6 +83,23 @@ export const INDEXABILITY_OR_FILTER = [
 /** A description shorter than this is a scraped fragment, not content. */
 const MIN_DESCRIPTION_CHARS = 120;
 
+/** The four signals that need no description text. A row that passes this is
+ *  indexable whatever its description says, so a caller that only has to
+ *  decide pass/fail (the sitemap) need not download the description at all. */
+export const INDEXABILITY_SELECT_NO_DESCRIPTION =
+  "active_listings_count, market_sale_median, market_rent_median, gross_yield_pct";
+
+export function hasIndexableSubstanceWithoutDescription(
+  c: Omit<IndexabilitySignals, "description"> | null,
+): boolean {
+  if (!c) return false;
+  if ((c.active_listings_count ?? 0) >= 1) return true;
+  if (c.market_sale_median != null) return true;
+  if (c.market_rent_median != null) return true;
+  if (c.gross_yield_pct != null) return true;
+  return false;
+}
+
 export function hasIndexableSubstance(c: IndexabilitySignals | null): boolean {
   if (!c) return false;
   if ((c.active_listings_count ?? 0) >= 1) return true;

@@ -28,7 +28,10 @@ import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
  * eligibility scan behind it -- and took the whole export down with it,
  * three attempts and 10 minutes of build for a file nobody would publish.
  */
-export const revalidate = 86400;
+// Seven days (was 86400). It reads ~3MB per regeneration (every /best
+// candidate, every region's building flags, every developer slug) and its
+// inputs move with the weekly scrape; every deploy rebuilds it anyway.
+export const revalidate = 604800;
 export const maxDuration = 60;
 
 export async function GET(): Promise<Response> {

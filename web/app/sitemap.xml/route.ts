@@ -14,7 +14,10 @@ import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
  * eligibility scan behind it -- and took the whole export down with it,
  * three attempts and 10 minutes of build for a file nobody would publish.
  */
-export const revalidate = 86400;
+// Seven days (was 86400): it only counts the passing condos, which move with
+// the weekly scrape, and every deploy rebuilds it. A failed count now throws
+// instead of caching "0 condos".
+export const revalidate = 604800;
 export const maxDuration = 15;
 
 const CONDOS_PER_PAGE = 2500;

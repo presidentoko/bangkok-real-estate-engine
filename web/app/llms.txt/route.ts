@@ -18,7 +18,9 @@ import { getServerSupabase } from "@/lib/supabase";
 // wrong most of the time, so the counts are queried. Cached for a day: this
 // is read by crawlers, not humans, and the underlying numbers move on a
 // weekly refresh cycle.
-export const revalidate = 86400;
+// Seven days now (was one day, as the paragraph above says): the counts move
+// with the weekly scrape.
+export const revalidate = 604800;
 export const maxDuration = 30;
 
 const SITE =

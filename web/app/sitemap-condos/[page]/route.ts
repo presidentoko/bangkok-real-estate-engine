@@ -1,8 +1,9 @@
 import { LANGS } from "@/lib/i18n";
 import {
   INDEXABILITY_OR_FILTER,
-  INDEXABILITY_SELECT,
+  INDEXABILITY_SELECT_NO_DESCRIPTION,
   hasIndexableSubstance,
+  hasIndexableSubstanceWithoutDescription,
 } from "@/lib/condoIndexability";
 import { getServerSupabase } from "@/lib/supabase";
 import {
@@ -26,7 +27,10 @@ import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 // pushing ~120KB (5.1MB uncompressed) from the origin, on a project sitting
 // at 9.79GB of a 10GB Fast Origin Transfer cap. As a static segment it is
 // ISR-cached like sitemap-areas.xml, which answers HIT.
-export const revalidate = 86400;
+// Seven days: the gate's inputs move with the weekly scrape, and every deploy
+// prerenders pages 0-2 again anyway. This was 86400, i.e. a full read of the
+// ~6,400 passing rows every day.
+export const revalidate = 604800;
 export const dynamicParams = true;
 export const maxDuration = 60;
 
@@ -76,14 +80,15 @@ export async function GET(
   // applied *after* the filter, so page boundaries shift; that is fine,
   // sitemap-condos.xml?page=N is not a stable identity anyone links to.
   type Row = {
+    id: string;
     slug: string;
     last_seen_at: string | null;
     active_listings_count: number | null;
     market_sale_median: number | null;
     market_rent_median: number | null;
     gross_yield_pct: number | null;
-    description: string | null;
-    google_review_count: number | null;
+    description?: string | null;
+    google_review_count?: number | null;
   };
   const rows: Row[] = [];
   const SUB_PAGE = 1000;
@@ -92,7 +97,10 @@ export async function GET(
     const to = offset + Math.min(sub + SUB_PAGE, CONDOS_PER_PAGE) - 1;
     const { data, error } = await supabase
       .from("condos_published")
-      .select(`slug, last_seen_at, ${INDEXABILITY_SELECT}`)
+      // No `description`: it is the bulk of this payload, and a row that
+      // passes on listings / prices / yield is indexable whatever it says.
+      // Only the rows that pass on description alone get it fetched, below.
+      .select(`id, slug, last_seen_at, ${INDEXABILITY_SELECT_NO_DESCRIPTION}`)
       .not("slug", "is", null)
       .or(INDEXABILITY_OR_FILTER)
       .order("id")
@@ -106,6 +114,26 @@ export async function GET(
     const chunk = (data ?? []) as unknown as Row[];
     rows.push(...chunk);
     if (chunk.length < to - from + 1) break; // exhausted the table
+  }
+
+  // Descriptions, only for the rows the cheap signals did not already pass
+  // (passes on description length alone). Same predicate as before, same rows.
+  const needDescription = rows.filter(
+    (r) => !UUID_RE.test(r.slug) && !hasIndexableSubstanceWithoutDescription(r),
+  );
+  for (let i = 0; i < needDescription.length; i += 100) {
+    const ids = needDescription.slice(i, i + 100).map((r) => r.id);
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select("id, description")
+      .in("id", ids);
+    if (error) {
+      throw new Error(`sitemap-condos/${page}: description read failed (${error.code ?? error.message ?? "unknown"})`);
+    }
+    const byId = new Map(
+      ((data ?? []) as unknown as Array<{ id: string; description: string | null }>).map((d) => [d.id, d.description]),
+    );
+    for (const r of needDescription.slice(i, i + 100)) r.description = byId.get(r.id) ?? null;
   }
 
   for (const r of rows) {
