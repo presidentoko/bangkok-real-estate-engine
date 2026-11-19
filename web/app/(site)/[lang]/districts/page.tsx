@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { provinceDisplayName } from "@/lib/cities";
@@ -58,14 +59,16 @@ function median(arr: number[]): number | null {
   return s.length % 2 === 0 ? (s[m - 1] + s[m]) / 2 : s[m];
 }
 
-async function fetchDistricts(): Promise<DistrictSummary[]> {
+async function loadDistricts(): Promise<DistrictSummary[]> {
   const supabase = getServerSupabase();
 
-  const { data: regionData } = await supabase
+  const { data: regionData, error: regionError } = await supabase
     .from("regions")
     .select("id, name, province")
     .order("name")
     .range(0, 999);
+  // Throw: a failed read must not be cached below as an empty index.
+  if (regionError) throw new Error(`districts: regions ${regionError.message}`);
   const regions = (regionData ?? []) as RegionRow[];
   if (regions.length === 0) return [];
 
@@ -76,7 +79,7 @@ async function fetchDistricts(): Promise<DistrictSummary[]> {
   const condos: CondoRow[] = [];
   let offset = 0;
   for (;;) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("condos")
       .select(
         "region_id, gross_yield_pct, avg_sale_price, avg_monthly_rent, " +
@@ -87,6 +90,7 @@ async function fetchDistricts(): Promise<DistrictSummary[]> {
       .not("region_id", "is", null)
       .order("id")
       .range(offset, offset + 999);
+    if (error) throw new Error(`districts: condos ${error.message}`);
     const chunk = (data ?? []) as unknown as CondoRow[];
     condos.push(...chunk);
     if (chunk.length < 1000) break;
@@ -130,6 +134,14 @@ async function fetchDistricts(): Promise<DistrictSummary[]> {
   out.sort((a, b) => b.count - a.count);
   return out;
 }
+
+// The whole active catalogue (~15,600 rows, ~1.7MB) was re-read for each of the
+// three locales and on every deploy's prerender. The summary is language-
+// neutral and moves with the weekly scrape only: read once a week, shared.
+const fetchDistricts = unstable_cache(loadDistricts, ["districts-index-v1"], {
+  revalidate: 604800,
+  tags: ["site-data"],
+});
 
 export function generateStaticParams() {
   if (CONDO_STATIC_BUILD) return [];

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { fmtTHB } from "@/lib/fmt";
@@ -71,6 +72,28 @@ const getDevMeta = cache(async (slug: string) => {
   return data?.[0] ?? null;
 });
 
+/** One developer's published buildings. Shared across locales and deploys for a
+ *  week instead of read per render; throws on a failed read so an outage never
+ *  caches an empty developer (which would 404). */
+const getDeveloperRows = unstable_cache(
+  async (devSlug: string) => {
+    const supabase = getServerSupabase();
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select(
+        "id, slug, name, province, completion_year, total_units, avg_sale_price, " +
+          "gross_yield_pct, google_rating, google_review_count, retiree_score, " +
+          "foreign_quota_inventory_pct"
+      )
+      .eq("developer_slug", devSlug)
+      .order("avg_sale_price", { ascending: false, nullsFirst: false });
+    if (error) throw new Error(`developer ${devSlug}: ${error.message}`);
+    return (data ?? []) as unknown[];
+  },
+  ["developer-rows-v1"],
+  { revalidate: 604800, tags: ["site-data"] },
+);
+
 export async function generateMetadata({
   params,
 }: {
@@ -110,16 +133,7 @@ export default async function DeveloperPage({
   if (!isLang(lang)) notFound();
   const t = getDictionary(lang).developerTable;
 
-  const supabase = getServerSupabase();
-  const { data } = await supabase
-    .from("condos_published")
-    .select(
-      "id, slug, name, province, completion_year, total_units, avg_sale_price, " +
-        "gross_yield_pct, google_rating, google_review_count, retiree_score, " +
-        "foreign_quota_inventory_pct"
-    )
-    .eq("developer_slug", slug)
-    .order("avg_sale_price", { ascending: false, nullsFirst: false });
+  const data = await getDeveloperRows(slug);
 
   // Slugless rows are dropped, never linked by id. `/condo/<uuid>` does
   // resolve, but only as a meta-refresh hop to the slug URL (ISR can't

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { districtAka, districtDisplayName, provinceDisplayName } from "@/lib/cities";
@@ -145,6 +146,31 @@ const countPublishedCondos = cache(async (regionId: string): Promise<number> => 
   return count ?? 0;
 });
 
+/** Every active building of one district (up to 1,000 rows). Read once per
+ *  district per week and shared by the three locales and by every deploy's
+ *  prerender, instead of once per render. Throws on a failed read so an empty
+ *  district is never cached (and never 404s) because of an outage. */
+const getDistrictCondos = unstable_cache(
+  async (regionId: string) => {
+    const supabase = getServerSupabase();
+    const { data, error } = await supabase
+      .from("condos")
+      .select(
+        "id, slug, name, province, url, gross_yield_pct, avg_sale_price, " +
+        "avg_monthly_rent, market_sale_median, market_rent_median, " +
+        "market_summary_currency, published"
+      )
+      .eq("region_id", regionId)
+      .eq("is_active", true)
+      .order("id")
+      .range(0, 999);
+    if (error) throw new Error(`district ${regionId}: ${error.message}`);
+    return (data ?? []) as unknown[];
+  },
+  ["district-condos-v1"],
+  { revalidate: 604800, tags: ["site-data"] },
+);
+
 async function resolveOrNotFound(rawSlug: string) {
   const canonical = canonicalDistrictSlug(rawSlug);
   if (!canonical) notFound();
@@ -206,27 +232,16 @@ export default async function DistrictPage({
   const { slug, lang } = await params;
   if (!isLang(lang)) notFound();
 
-  const supabase = getServerSupabase();
   const region = await resolveOrNotFound(slug);
   const t = getDictionary(lang);
   const d = t.districtPage;
 
-  const [{ data: condoRows }, mortgage] = await Promise.all([
-    supabase
-      .from("condos")
-      .select(
-        "id, slug, name, province, url, gross_yield_pct, avg_sale_price, " +
-        "avg_monthly_rent, market_sale_median, market_rent_median, " +
-        "market_summary_currency, published"
-      )
-      .eq("region_id", region.id)
-      .eq("is_active", true)
-      .order("id")
-      .range(0, 999),
+  const [condoRows, mortgage] = await Promise.all([
+    getDistrictCondos(region.id),
     getCurrentMortgageRate(),
   ]);
 
-  const condos = (condoRows ?? []) as unknown as CondoLite[];
+  const condos = condoRows as unknown as CondoLite[];
   if (condos.length === 0) notFound();
 
   // Only published buildings have a reachable /condo/ page: the detail

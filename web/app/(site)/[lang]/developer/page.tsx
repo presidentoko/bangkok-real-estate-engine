@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/getDictionary";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { isLang, LANGS } from "@/lib/i18n";
@@ -37,7 +38,7 @@ export type DeveloperSummary = {
   units: number | null;
 };
 
-async function fetchDevelopers(): Promise<DeveloperSummary[]> {
+async function loadDevelopers(): Promise<DeveloperSummary[]> {
   const supabase = getServerSupabase();
 
   // Same source, same filter and same pagination as sitemap-areas.xml's
@@ -48,7 +49,7 @@ async function fetchDevelopers(): Promise<DeveloperSummary[]> {
   const rows: DevRow[] = [];
   const page = 1000;
   for (let offset = 0; ; offset += page) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("condos_published")
       .select(
         "developer_slug, slug, developer, developer_project_count, developer_unit_count",
@@ -56,6 +57,8 @@ async function fetchDevelopers(): Promise<DeveloperSummary[]> {
       .not("developer_slug", "is", null)
       .order("id")
       .range(offset, offset + page - 1);
+    // Throw: never cache a truncated or empty developer list.
+    if (error) throw new Error(`developers: ${error.message}`);
     const chunk = (data ?? []) as unknown as DevRow[];
     rows.push(...chunk);
     if (chunk.length < page) break;
@@ -89,6 +92,13 @@ async function fetchDevelopers(): Promise<DeveloperSummary[]> {
     a.name.localeCompare(b.name, "en", { sensitivity: "base" }),
   );
 }
+
+// ~15,000 rows (~2MB) per read, previously repeated for each locale and on
+// every deploy's prerender; the list moves with the weekly scrape only.
+const fetchDevelopers = unstable_cache(loadDevelopers, ["developers-index-v1"], {
+  revalidate: 604800,
+  tags: ["site-data"],
+});
 
 /** A–Z bucket key; anything not starting with a Latin letter lands in "#". */
 function letterOf(name: string): string {
