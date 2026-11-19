@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
@@ -147,26 +148,26 @@ const CONTENT = {
   },
 };
 
-export default async function FloodRiskyPost({
-  params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
-  const { lang } = await params;
-  if (!isLang(lang)) notFound();
-  const t = CONTENT[lang];
-  const POST_URL = `${SITE_URL}/${lang}/blog/${SLUG}`;
+// The three table scans below (all hipflat condos, every risk_factors row, every
+// hipflat listing's condo_id: ~5MB) used to run on every render of every
+// locale and again on every deploy's prerender. The result is the same for all
+// three locales and moves only with the weekly scrape, so it is read once per
+// week and shared (tag "site-data" is also what the weekly job revalidates).
+const getFloodTop = unstable_cache(
+  async (): Promise<Row[]> => {
   const supabase = getServerSupabase();
 
   const PAGE = 1000;
   const condos: Array<{ id: string; slug: string | null; name: string; regions: { name: string } | { name: string }[] | null }> = [];
   let offset = 0;
   while (true) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("condos_published")
       .select("id, slug, name, regions(name)")
       .eq("source", "hipflat")
       .range(offset, offset + PAGE - 1);
+    // Throw, never cache an empty list for a week because a read failed.
+    if (error) throw new Error(`flood post: ${error.message}`);
     const page = (data ?? []) as Array<{ id: string; slug: string | null; name: string; regions: { name: string } | { name: string }[] | null }>;
     condos.push(...page);
     if (page.length < PAGE) break;
@@ -175,10 +176,12 @@ export default async function FloodRiskyPost({
   const riskMap = new Map<string, number>();
   offset = 0;
   while (true) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("risk_factors")
       .select("condo_id, flood_risk_level")
       .range(offset, offset + PAGE - 1);
+    // Throw, never cache an empty list for a week because a read failed.
+    if (error) throw new Error(`flood post: ${error.message}`);
     const page = (data ?? []) as Array<{ condo_id: string; flood_risk_level: number | null }>;
     for (const p of page) {
       if (p.flood_risk_level != null) riskMap.set(p.condo_id, p.flood_risk_level);
@@ -189,11 +192,13 @@ export default async function FloodRiskyPost({
   const listingsCount = new Map<string, number>();
   offset = 0;
   while (true) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("listings")
       .select("condo_id")
       .eq("source", "hipflat")
       .range(offset, offset + PAGE - 1);
+    // Throw, never cache an empty list for a week because a read failed.
+    if (error) throw new Error(`flood post: ${error.message}`);
     const page = (data ?? []) as Array<{ condo_id: string }>;
     for (const p of page) listingsCount.set(p.condo_id, (listingsCount.get(p.condo_id) ?? 0) + 1);
     if (page.length < PAGE) break;
@@ -216,7 +221,22 @@ export default async function FloodRiskyPost({
     });
   }
   rows.sort((a, b) => b.listings_count - a.listings_count);
-  const top = rows.slice(0, 12);
+  return rows.slice(0, 12);
+  },
+  ["blog-flood-risky-top-v1"],
+  { revalidate: 604800, tags: ["site-data"] },
+);
+
+export default async function FloodRiskyPost({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  if (!isLang(lang)) notFound();
+  const t = CONTENT[lang];
+  const POST_URL = `${SITE_URL}/${lang}/blog/${SLUG}`;
+  const top = await getFloodTop();
 
   const jsonLd = {
     "@context": "https://schema.org",

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { activeListingsOrFilter } from "@/lib/activeListings";
 import { BUBBLE_OVERPRICED, BUBBLE_UNDERPRICED } from "@/lib/bubble";
@@ -90,14 +91,13 @@ const HISTOGRAM_BUCKETS = [
   { lo: 501, hi: 9999, color: "#dc2626" },
 ];
 
-export default async function DataShowcase({
-  params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
-  const { lang } = await params;
-  if (!isLang(lang)) notFound();
-  const t = getDictionary(lang).dataShowcase;
+// Everything below the headline is language-neutral and moves only with the
+// weekly scrape, but it was recomputed on every render of each of the three
+// locales (and on every deploy's prerender): a full scan of condos_published
+// by province, two passes over value_scores and a few hundred chunked reads,
+// ~1.5MB each time. Read once a week and shared.
+const loadShowcase = unstable_cache(
+  async () => {
   const supabase = getServerSupabase();
 
   // 1. Total counts
@@ -138,7 +138,7 @@ export default async function DataShowcase({
         .order("id", { ascending: true })
         .range(from, from + page - 1);
       if (from === 0) bcount = count ?? 0;
-      if (error || !data) break;
+      if (error || !data) throw new Error(`data showcase: ${error?.message ?? "no data"}`);
       condos.push(...(data as Array<{ id: string; market_sale_median: number | null }>));
       if (data.length < page) break;
     }
@@ -163,7 +163,7 @@ export default async function DataShowcase({
     }
     cityStats.push({
       slug: p.slug,
-      name: p[lang as Lang] ?? p.en,
+      name: p.en,
       buildings: bcount ?? 0,
       scored,
       medianSale: median(sales),
@@ -282,6 +282,39 @@ export default async function DataShowcase({
       })
       .filter((x): x is TopCondo => x !== null && x.slug !== null);
   }
+
+  // A failed count or page read must not be cached for a week: throw instead
+  // (an outage then keeps the previous page rather than baking in dashes).
+  if (buildingsN == null || listingsN == null || chartPointsN == null || regionsN == null) {
+    throw new Error("data showcase: a total count failed");
+  }
+  return { buildingsN, listingsN, chartPointsN, regionsN, cityStats, histogram, topExpensive, topSuperValue };
+  },
+  ["data-showcase-v1"],
+  { revalidate: 604800, tags: ["site-data"] },
+);
+
+export default async function DataShowcase({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  if (!isLang(lang)) notFound();
+  const t = getDictionary(lang).dataShowcase;
+  const {
+    buildingsN, listingsN, chartPointsN, regionsN,
+    cityStats: cityStatsBase, histogram, topExpensive, topSuperValue,
+  } = await loadShowcase();
+  const buildingsTotal = { count: buildingsN };
+  const listingsTotal = { count: listingsN };
+  const chartPointsTotal = { count: chartPointsN };
+  const regionsTotal = { count: regionsN };
+  const histMax = Math.max(...histogram, 1);
+  const cityStats: CityStat[] = cityStatsBase.map((c) => {
+    const p = PROVINCES.find((x) => x.slug === c.slug);
+    return { ...c, name: p ? (p[lang as Lang] ?? p.en) : c.name };
+  });
 
   const provLabel = (slug: string) => {
     const p = PROVINCES.find((x) => x.slug === slug);

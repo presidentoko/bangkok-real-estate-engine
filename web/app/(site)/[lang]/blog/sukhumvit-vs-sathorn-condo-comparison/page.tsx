@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { isLang, type Lang } from "@/lib/i18n";
@@ -112,6 +113,43 @@ function median(xs: number[]): number | null {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+type CorridorRow = {
+  id: string;
+  regions: { name: string } | { name: string }[] | null;
+  market_sale_median: number | null;
+  market_rent_median: number | null;
+  market_summary_currency: string | null;
+};
+
+// Every hipflat building plus every value_scores row, read on each render of
+// each locale and again on every deploy's prerender. Identical for the three
+// locales and moved only by the weekly scrape, so it is read once a week and
+// shared. Throws on a failed read so an empty set is never cached.
+const getCorridorData = unstable_cache(
+  async () => {
+    const supabase = getServerSupabase();
+    // Pull all condos with the columns we need to compute corridor stats.
+    const { data: condos, error: condosError } = await supabase
+      .from("condos_published")
+      .select("id, regions(name), market_sale_median, market_rent_median, market_summary_currency")
+      .eq("source", "hipflat")
+      .range(0, 9999);
+    if (condosError) throw new Error(`corridor post: condos ${condosError.message}`);
+    // Pull bubble_index per condo id (separately to avoid triple-join cost).
+    const { data: scores, error: scoresError } = await supabase
+      .from("value_scores")
+      .select("condo_id, bubble_index")
+      .range(0, 9999);
+    if (scoresError) throw new Error(`corridor post: scores ${scoresError.message}`);
+    return {
+      allRows: (condos ?? []) as unknown as CorridorRow[],
+      scores: (scores ?? []) as Array<{ condo_id: string; bubble_index: number | null }>,
+    };
+  },
+  ["blog-corridor-data-v1"],
+  { revalidate: 604800, tags: ["site-data"] },
+);
+
 export default async function CorridorComparison({
   params,
 }: {
@@ -121,29 +159,9 @@ export default async function CorridorComparison({
   if (!isLang(lang)) notFound();
   const POST_URL = `${SITE_URL}/${lang}/blog/${SLUG}`;
 
-  const supabase = getServerSupabase();
-  // Pull all condos with the columns we need to compute corridor stats.
-  const { data: condos } = await supabase
-    .from("condos_published")
-    .select("id, regions(name), market_sale_median, market_rent_median, market_summary_currency")
-    .eq("source", "hipflat")
-    .range(0, 9999);
-
-  const allRows = (condos ?? []) as unknown as Array<{
-    id: string;
-    regions: { name: string } | { name: string }[] | null;
-    market_sale_median: number | null;
-    market_rent_median: number | null;
-    market_summary_currency: string | null;
-  }>;
-
-  // Pull bubble_index per condo id (separately to avoid triple-join cost).
-  const { data: scores } = await supabase
-    .from("value_scores")
-    .select("condo_id, bubble_index")
-    .range(0, 9999);
+  const { allRows, scores } = await getCorridorData();
   const bubbleByCondo = new Map<string, number>();
-  for (const s of (scores ?? []) as Array<{ condo_id: string; bubble_index: number | null }>) {
+  for (const s of scores) {
     if (s.bubble_index != null) bubbleByCondo.set(s.condo_id, s.bubble_index);
   }
 
