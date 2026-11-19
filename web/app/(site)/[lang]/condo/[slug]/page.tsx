@@ -48,6 +48,7 @@ import { LinkShareButtons } from "@/components/LinkShareButtons";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/Breadcrumbs";
 import { SaveButton } from "@/components/SaveButton";
 import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
+import { exportMemo } from "@/lib/exportMemo";
 import { CompareButton } from "@/components/CompareButton";
 import { mrrLabel } from "@/lib/mrr";
 
@@ -132,15 +133,22 @@ const SITE_URL =
 // isn't fetch-shaped and doesn't get that dedup for free. Wrapping these
 // lookups in React's `cache()` collapses the two call sites (metadata + page
 // body) into a single Supabase round trip each, per request.
+//
+// In the Cloudflare export (CONDO_STATIC_BUILD) the same building is rendered
+// once per locale, so every lookup below also goes through exportMemo(): the
+// second and third locale reuse the first read instead of querying again
+// (lib/exportMemo.ts). Outside the export it is a pass-through.
 const getCondoIdBySlug = cache(async (slug: string): Promise<string | null> => {
   const supabase = getServerSupabase();
-  const { data, error } = await supabase
-    .from("condos_published")
-    .select("id")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (error) console.error(`[condo] getCondoIdBySlug(${slug}) failed:`, error.message, error.code, error.details);
-  return (data as { id: string } | null)?.id ?? null;
+  return exportMemo(`id:${slug}`, async () => {
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error) console.error(`[condo] getCondoIdBySlug(${slug}) failed:`, error.message, error.code, error.details);
+    return (data as { id: string } | null)?.id ?? null;
+  });
 });
 
 const getSlugByLegacyId = cache(async (id: string): Promise<string | null> => {
@@ -200,13 +208,32 @@ function one<T>(v: EmbeddedOneOrMany<T>): T | null {
 
 const getCondoFullById = cache(async (id: string) => {
   const supabase = getServerSupabase();
-  const { data, error } = await supabase
-    .from("condos_published")
-    .select(CONDO_FULL_SELECT)
-    .eq("id", id)
-    .maybeSingle();
-  if (error) console.error(`[condo] getCondoFullById(${id}) failed:`, error.message, error.code, error.details);
-  return data;
+  return exportMemo(`full:${id}`, async () => {
+    const { data, error } = await supabase
+      .from("condos_published")
+      .select(CONDO_FULL_SELECT)
+      .eq("id", id)
+      .maybeSingle();
+    if (error) console.error(`[condo] getCondoFullById(${id}) failed:`, error.message, error.code, error.details);
+    return data;
+  });
+});
+
+// Every listing of one building, any source, active or not. generateMetadata()
+// used to run its own narrower "active sale listings" query for the title's
+// price per sqm and the page body then ran this wider one; ownMedian() filters
+// on is_active and listing_type itself, so one read feeds both (a building
+// never approaches the 1000-row cap).
+const getCondoListings = cache(async (id: string) => {
+  const supabase = getServerSupabase();
+  return exportMemo(`listings:${id}`, async () =>
+    await supabase
+      .from("listings")
+      .select("source, listing_type, price, currency, area_sqm, price_per_sqm, " +
+              "bedrooms, bathrooms, floor_level, publisher, listing_url, source_unit_id, is_active")
+      .eq("condo_id", id)
+      .range(0, 999),
+  );
 });
 
 // AEO/SEO metadata. Each condo page gets a unique title + description that
@@ -297,14 +324,8 @@ export async function generateMetadata({
   // only with at least 3 of them. market_sale_per_sqm is an area-level hipflat
   // summary that ran up to 7x off the building (data audit H9), so it no
   // longer goes in the title at all.
-  const { data: ownRows } = await getServerSupabase()
-    .from("listings")
-    .select("listing_type, price, price_per_sqm, currency, area_sqm, is_active")
-    .eq("condo_id", id)
-    .eq("is_active", true)
-    .eq("listing_type", "sale")
-    .range(0, 999);
-  const ownSale = ownMedian((ownRows ?? []) as OwnListingRow[], "sale");
+  const { data: ownRows } = await getCondoListings(id);
+  const ownSale = ownMedian((ownRows ?? []) as unknown as OwnListingRow[], "sale");
   const pricePerSqm =
     ownSale?.perSqm != null ? fmtOwnMoney(ownSale.perSqm, ownSale.currency) : null;
   const title = t.seo.condoTitle(c.name, region, {
@@ -407,45 +428,50 @@ export default async function CondoPage({
     getCondoFullById(id),
     // Same row v_latest_listings picks (newest active listing), read from
     // the table so the currency comes with it: hipflat prices are USD.
-    supabase
-      .from("listings")
-      .select("price, area_sqm, price_per_sqm, currency, listing_type")
-      .eq("condo_id", id)
-      .eq("is_active", true)
-      .order("scraped_at", { ascending: false, nullsFirst: false })
-      .limit(1)
-      .maybeSingle(),
+    exportMemo(`latest:${id}`, async () =>
+      await supabase
+        .from("listings")
+        .select("price, area_sqm, price_per_sqm, currency, listing_type")
+        .eq("condo_id", id)
+        .eq("is_active", true)
+        .order("scraped_at", { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle(),
+    ),
     // Every listing for this condo, any source, active or not — a single
     // building will never approach the 1000-row PostgREST cap. Derives both
     // the hipflat-only units table AND the cross-portal comparison below
     // instead of running two separate queries against the same table.
-    supabase
-      .from("listings")
-      .select("source, listing_type, price, currency, area_sqm, price_per_sqm, " +
-              "bedrooms, bathrooms, floor_level, publisher, listing_url, source_unit_id, is_active")
-      .eq("condo_id", id)
-      .range(0, 999),
-    supabase
-      .from("condo_market_chart")
-      .select("period, metric, currency, year_month, value")
-      .eq("condo_id", id)
-      .order("year_month", { ascending: true })
-      .range(0, 199),
-    supabase
-      .from("condo_amenities")
-      .select("name")
-      .eq("condo_id", id)
-      .order("name", { ascending: true }),
-    supabase
-      .from("condo_parking_facts")
-      .select("fact_key, fact_value")
-      .eq("condo_id", id),
-    supabase
-      .from("condo_neighbours")
-      .select("neighbour_slug, neighbour_url, neighbour_name")
-      .eq("condo_id", id)
-      .range(0, 19),
-    getCondoYield(supabase, id),
+    getCondoListings(id),
+    exportMemo(`chart:${id}`, async () =>
+      await supabase
+        .from("condo_market_chart")
+        .select("period, metric, currency, year_month, value")
+        .eq("condo_id", id)
+        .order("year_month", { ascending: true })
+        .range(0, 199),
+    ),
+    exportMemo(`amenities:${id}`, async () =>
+      await supabase
+        .from("condo_amenities")
+        .select("name")
+        .eq("condo_id", id)
+        .order("name", { ascending: true }),
+    ),
+    exportMemo(`parking:${id}`, async () =>
+      await supabase
+        .from("condo_parking_facts")
+        .select("fact_key, fact_value")
+        .eq("condo_id", id),
+    ),
+    exportMemo(`neighbours:${id}`, async () =>
+      await supabase
+        .from("condo_neighbours")
+        .select("neighbour_slug, neighbour_url, neighbour_name")
+        .eq("condo_id", id)
+        .range(0, 19),
+    ),
+    exportMemo(`yield:${id}`, () => getCondoYield(supabase, id)),
     getCurrentMortgageRate(),
   ]);
 
@@ -600,13 +626,16 @@ export default async function CondoPage({
 
   // Developer report-card roll-up (one extra lookup, keyed by the slug we
   // scraped). Null when this building has no developer or no stats row yet.
-  const devStats = condoRaw.developer_slug
+  const devSlug = condoRaw.developer_slug;
+  const devStats = devSlug
     ? (
-        await supabase
-          .from("developers")
-          .select("tracked_buildings, avg_gross_yield_pct, avg_foreign_quota_pct")
-          .eq("developer_slug", condoRaw.developer_slug)
-          .maybeSingle()
+        await exportMemo(`dev:${devSlug}`, async () =>
+          await supabase
+            .from("developers")
+            .select("tracked_buildings, avg_gross_yield_pct, avg_foreign_quota_pct")
+            .eq("developer_slug", devSlug)
+            .maybeSingle(),
+        )
       ).data as {
         tracked_buildings: number | null;
         avg_gross_yield_pct: number | null;

@@ -63,6 +63,23 @@ from src.db import fetch_all, get_client  # noqa: E402
 LANGS = ("en", "ko", "th")
 
 
+def order_pages(pages) -> list[str]:
+    """Sort `lang/slug` pages slug-first, so a building's three locales are
+    adjacent in the plan (and therefore in a shard and in the build).
+
+    The export renders each locale separately and every render reads the same
+    rows for the building; web/lib/exportMemo.ts keeps the first read so the
+    second and third locale cost nothing, but only while the three renders are
+    close together. A plain sort puts every `en/` page before any `ko/` page,
+    which would make the memo hold the whole shard.
+    """
+    def key(p: str) -> tuple[str, str]:
+        lang, _, slug = p.partition("/")
+        return (slug, lang)
+
+    return sorted(set(pages), key=key)
+
+
 def write_plan(out: str, shards: list[list[str]], removed: list[str], stored: int) -> None:
     os.makedirs(out, exist_ok=True)
     for i, shard in enumerate(shards):
@@ -111,7 +128,7 @@ def plan_ids(args) -> int:
             .in_("id", ids[i : i + 150]).execute().data
         ) or []
         slugs.update(r["slug"] for r in rows if r.get("slug"))
-    todo = sorted(f"{lang}/{slug}" for slug in slugs for lang in LANGS)
+    todo = order_pages(f"{lang}/{slug}" for slug in slugs for lang in LANGS)
     shards = [todo[i : i + args.shard_size] for i in range(0, len(todo), args.shard_size)]
     write_plan(args.out, shards, [], len(stored))
     print(f"[plan] mode=ids ids={len(ids)} published with slug={len(slugs)} stored pages={len(stored)}")
@@ -156,9 +173,9 @@ def main() -> int:
         return 1
 
     if args.mode == "full":
-        todo = sorted(wanted)
+        todo = order_pages(wanted)
     elif args.mode == "indexable":
-        todo = sorted(f"{lang}/{slug}" for slug in substantive for lang in LANGS)
+        todo = order_pages(f"{lang}/{slug}" for slug in substantive for lang in LANGS)
     else:
         cutoff = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=args.days)).isoformat()
         changed = {
@@ -167,7 +184,7 @@ def main() -> int:
             if seen and seen >= cutoff
             for lang in LANGS
         }
-        todo = sorted(changed | (wanted - stored))
+        todo = order_pages(changed | (wanted - stored))
 
     shards = [todo[i : i + args.shard_size] for i in range(0, len(todo), args.shard_size)]
     write_plan(args.out, shards, removed, len(stored))

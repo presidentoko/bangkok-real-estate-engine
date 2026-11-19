@@ -139,6 +139,10 @@ jobs:
           CONDO_STATIC_BUILD: "1"
           CONDO_STATIC_PARAMS: ${{ github.workspace }}/plan/params-${{ matrix.shard }}.json
           CONDO_STATIC_BUILD_ID: ${{ github.sha }}
+          # Shared by the build's worker processes so a building's second and
+          # third locale reuse the first locale's Supabase reads
+          # (web/lib/exportMemo.ts). A fresh runner dir per job, never reused.
+          CONDO_STATIC_DATA_CACHE: ${{ runner.temp }}/condo-static-data
           NEXT_PUBLIC_SITE_URL: https://passionaryestate.com
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
