@@ -202,7 +202,10 @@ async function _fetchCondoSummariesCompactByCity(
 export const fetchCondoSummariesCompactByCity = unstable_cache(
   _fetchCondoSummariesCompactByCity,
   ["condos:by-city-compact"],
-  { revalidate: 86400, tags: ["condos"] }
+  // 7 days, was 1 (~0.4KB x every building of the city, ~6MB a day across the
+  // cities): the data moves with the weekly scrape, and "site-data" is the tag
+  // the weekly job revalidates right after it, so it refreshes then.
+  { revalidate: 604800, tags: ["condos", "site-data"] }
 );
 
 // Cheap province-only pull (no joins, no long strings) used to render the
@@ -230,7 +233,7 @@ async function _fetchCondoProvinces(): Promise<string[]> {
 export const fetchCondoProvinces = unstable_cache(
   _fetchCondoProvinces,
   ["condos:provinces"],
-  { revalidate: 86400, tags: ["condos"] }
+  { revalidate: 604800, tags: ["condos", "site-data"] }
 );
 
 // ---------------------------------------------------------------------------
@@ -362,7 +365,7 @@ async function _fetchCondoMapPointsCompact(): Promise<CompactMapPoints> {
 const fetchCondoMapPointsCompactCached = unstable_cache(
   _fetchCondoMapPointsCompact,
   ["condos:map-points-compact-v3"],
-  { revalidate: 86400, tags: ["condos", "site-data"] }
+  { revalidate: 604800, tags: ["condos", "site-data"] }
 );
 
 export async function fetchCondoMapPoints(): Promise<CondoMapPoint[]> {
