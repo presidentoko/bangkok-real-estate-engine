@@ -1,6 +1,7 @@
 import { INDEXABILITY_OR_FILTER } from "@/lib/condoIndexability";
 import { TELEGRAM_HANDLE } from "@/lib/contactChannels";
 import { getServerSupabase } from "@/lib/supabase";
+import { requireCount, roundEstimate } from "@/lib/llmsCounts";
 
 // llms.txt, generated rather than hand-maintained.
 //
@@ -40,7 +41,9 @@ async function counts() {
         .or(INDEXABILITY_OR_FILTER),
       supabase
         .from("listings")
-        .select("id", { count: "exact", head: true })
+        // Planner estimate: the exact count over ~66k rows took ~7.8 s and
+        // timed out under build load. Rounded below.
+        .select("id", { count: "estimated", head: true })
         .eq("is_active", true),
       supabase
         .from("condos_published")
@@ -70,11 +73,11 @@ async function counts() {
   ).length;
 
   return {
-    buildings: buildings.count ?? 0,
-    substantive: substantive.count ?? 0,
-    listings: listings.count ?? 0,
-    yields: yields.count ?? 0,
-    quota: quota.count ?? 0,
+    buildings: requireCount(buildings, "buildings", 1),
+    substantive: requireCount(substantive, "substantive", 1),
+    listings: roundEstimate(requireCount(listings, "listings", 1)),
+    yields: requireCount(yields, "yields", 1),
+    quota: requireCount(quota, "quota", 1),
     districts,
   };
 }
@@ -195,20 +198,11 @@ For data licensing, B2B market reports, press inquiries, or correction requests:
 }
 
 export async function GET(): Promise<Response> {
-  let text: string;
-  try {
-    const c = await counts();
-    text = body(c, new Date().toISOString().slice(0, 10));
-  } catch (err) {
-    // A dead database must not turn llms.txt into a 500. The definitions and
-    // URL patterns are the part answer engines actually quote, and none of
-    // them depend on a count.
-    console.error("[llms.txt] count query failed:", err);
-    text = body(
-      { buildings: 0, substantive: 0, listings: 0, yields: 0, quota: 0, districts: 0 },
-      "a failed refresh — counts below are unavailable, definitions and URL patterns are current"
-    );
-  }
+  // No fallback body: if a count fails this throws, the request errors and
+  // Next keeps serving the last good ISR copy. The old catch rendered zeros
+  // with a 200 and those were cached for 7 days.
+  const c = await counts();
+  const text = body(c, new Date().toISOString().slice(0, 10));
 
   return new Response(text, {
     status: 200,
