@@ -1,3 +1,4 @@
+// Deployed 2026-11-21 after the egress cut (Vercel skipped the audit-only tip commit).
 import { INDEXABILITY_OR_FILTER } from "@/lib/condoIndexability";
 import { getServerSupabase } from "@/lib/supabase";
 import { SITE_URL, sitemapIndexDoc, xmlResponse, isoDate } from "@/lib/sitemap-helpers";
