@@ -30,7 +30,7 @@ const SITE =
 async function counts() {
   const supabase = getServerSupabase();
 
-  const [buildings, substantive, listings, yields, quota, regions] =
+  const [buildings, substantive, withData, listings, yields, quota, regions] =
     await Promise.all([
       supabase
         .from("condos_published")
@@ -39,6 +39,13 @@ async function counts() {
         .from("condos_published")
         .select("id", { count: "exact", head: true })
         .or(INDEXABILITY_OR_FILTER),
+      // Same population as the site's "buildings with price data" stat
+      // (lib/queries/condos.ts buildingsWithDataQuery).
+      supabase
+        .from("condos_published")
+        .select("id", { count: "exact", head: true })
+        .not("slug", "is", null)
+        .or("active_listings_count.gte.1,market_sale_median.not.is.null,market_rent_median.not.is.null,gross_yield_pct.not.is.null"),
       supabase
         .from("listings")
         // Planner estimate: the exact count over ~66k rows took ~7.8 s and
@@ -58,7 +65,7 @@ async function counts() {
 
   // Throw rather than cache zeros: a failed read (402 egress, timeout) used to
   // render "0 buildings" into a 24h ISR copy.
-  const failed = [buildings, substantive, listings, yields, quota, regions].find((r) => r.error);
+  const failed = [buildings, substantive, withData, listings, yields, quota, regions].find((r) => r.error);
   if (failed?.error) throw new Error(`llms.txt: counts failed (${failed.error.code ?? failed.error.message})`);
 
   type RegionRow = {
@@ -75,6 +82,7 @@ async function counts() {
   return {
     buildings: requireCount(buildings, "buildings", 1),
     substantive: requireCount(substantive, "substantive", 1),
+    withData: requireCount(withData, "with data", 1),
     listings: roundEstimate(requireCount(listings, "listings", 1)),
     yields: requireCount(yields, "yields", 1),
     quota: requireCount(quota, "quota", 1),
@@ -87,9 +95,11 @@ function body(c: Awaited<ReturnType<typeof counts>>, measuredOn: string): string
 
   return `# RealData — passionaryestate.com
 
-> Independent, data-verified analysis of the Thai condo market. We continuously measure ${n(
+> Independent, data-verified analysis of the Thai condo market. We keep pages for ${n(
     c.buildings
-  )} condo buildings across Bangkok and 8 secondary cities, drawing from ${n(
+  )} condo buildings across Bangkok and 8 secondary cities; ${n(
+    c.withData
+  )} of them have listing, price or yield data, drawn from ${n(
     c.listings
   )} active sale and rent listings (hipflat, dotproperty, ddproperty, fazwaz). We don't accept paid placement from developers — no building can buy its way up a ranking. Revenue is third-party display advertising (which never sees the data) plus a flat broker referral when a reader requests an "expert opinion." Numbers on the site are computed, not editorial.
 
