@@ -6,6 +6,7 @@ import { isLang } from "@/lib/i18n";
 import { langAlternates, SEO_SITE_URL } from "@/lib/seo";
 import { CITIES } from "@/lib/cities";
 import { fetchSiteStats } from "@/lib/queries/condos";
+import { TEN_NUMBERS, TEN_NUMBERS_PATH } from "@/lib/tenNumbers";
 
 export const revalidate = 86400;
 
@@ -80,6 +81,12 @@ export default async function PressPage({
             <div className="text-xs text-zinc-500 mt-1">cities</div>
           </div>
         </div>
+        <Link
+          href={`/${lang}${TEN_NUMBERS_PATH}`}
+          className="inline-block mt-4 text-sm text-blue-300 hover:underline"
+        >
+          {TEN_NUMBERS[lang].inboundLink} →
+        </Link>
       </section>
 
       {t.sections.map((s) => (

@@ -11,6 +11,7 @@ import { langAlternates, ogFor, SEO_SITE_URL } from "@/lib/seo";
 import { buildBreadcrumbsJsonLd } from "@/lib/seo/breadcrumbsJsonLd";
 import { jsonLdString } from "@/lib/seo/safeJsonLd";
 import { getServerSupabase } from "@/lib/supabase";
+import { TEN_NUMBERS, TEN_NUMBERS_PATH } from "@/lib/tenNumbers";
 
 export const revalidate = 86400;
 
@@ -669,7 +670,12 @@ export default async function DataShowcase({
         </section>
       )}
 
-      <p className="text-zinc-500 text-xs italic text-center mt-8">{t.pageCTA}</p>
+      <p className="text-sm text-center mt-8">
+        <Link href={`/${lang}${TEN_NUMBERS_PATH}`} className="text-blue-300 hover:underline">
+          {TEN_NUMBERS[lang].inboundLink} →
+        </Link>
+      </p>
+      <p className="text-zinc-500 text-xs italic text-center mt-4">{t.pageCTA}</p>
     </main>
   );
 }

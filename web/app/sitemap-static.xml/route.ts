@@ -34,6 +34,7 @@ const STATIC_PATHS = [
   { path: "/data", changefreq: "daily", priority: 0.8 },
   { path: "/stale", changefreq: "daily", priority: 0.7 },
   { path: "/press", changefreq: "monthly", priority: 0.5 },
+  { path: "/insights/bangkok-condo-market-10-numbers", changefreq: "monthly", priority: 0.7 },
   { path: "/contact", changefreq: "yearly", priority: 0.5 },
   { path: "/yields", changefreq: "weekly", priority: 0.9 },
   { path: "/macro", changefreq: "weekly", priority: 0.7 },
