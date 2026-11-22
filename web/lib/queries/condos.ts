@@ -483,6 +483,23 @@ export type SiteStats = {
   macroPoints: number;
 };
 
+/**
+ * "Buildings" as the site states it in prose ("tracks N buildings"): published
+ * condo pages that carry an active listing, a sale or rent median, or a yield.
+ * It used to be the hipflat catalogue (1,894 on 2026-11-21), which mixed
+ * buildings with no data in and left other portals' buildings out; this
+ * population (1,764 the same day) is what the numbers on the site are made of.
+ * The ~15,600 building pages without data are counted separately
+ * (`totalCondos`, "condo pages").
+ */
+function buildingsWithDataQuery(supabase: ReturnType<typeof getServerSupabase>) {
+  return supabase
+    .from("condos_published")
+    .select("id", { count: "exact", head: true })
+    .not("slug", "is", null)
+    .or("active_listings_count.gte.1,market_sale_median.not.is.null,market_rent_median.not.is.null,gross_yield_pct.not.is.null");
+}
+
 async function _fetchSiteStats(): Promise<SiteStats> {
   const supabase = getServerSupabase();
 
@@ -515,7 +532,7 @@ async function _fetchSiteStats(): Promise<SiteStats> {
   // timed out under build load, and was the "0 individual units" figure.
   // `listings` is the active-listing count across all four portals.
   const [b, c, g, bi, sv, y, tc, tl, mi] = await Promise.all([
-    count("buildings", () => makeBaseCondoCount()),
+    count("buildings", () => buildingsWithDataQuery(supabase)),
     count("chart points", () => supabase.from("condo_market_chart").select("id", head)),
     count("geo", () => makeBaseCondoCount().not("latitude", "is", null)),
     count("bubble", () => supabase.from("value_scores").select("condo_id", head)),
@@ -552,28 +569,25 @@ async function _fetchSiteStats(): Promise<SiteStats> {
   };
 }
 
-/** Buildings in the hipflat catalogue (one record per building) -- the
- *  home page's "buildings" figure -- on its own, for pages that print only
- *  this number. One head-only count. Null if it cannot be read. */
+/** Buildings with price data (see buildingsWithDataQuery) -- the home page's
+ *  "buildings" figure -- on its own, for pages that print only this number.
+ *  One head-only count. Null if it cannot be read. */
 export const fetchBuildingCount = unstable_cache(
   async (): Promise<number | null> => {
     const supabase = getServerSupabase();
     for (let attempt = 0; attempt < 3; attempt++) {
-      const r = await supabase
-        .from("condos_published")
-        .select("id", { count: "exact", head: true })
-        .eq("source", "hipflat");
+      const r = await buildingsWithDataQuery(supabase);
       if (!r.error && r.count != null) return r.count;
       await new Promise((res) => setTimeout(res, 500 * (attempt + 1)));
     }
     return null;
   },
-  ["building-count-v1"],
+  ["building-count-v2"],
   { revalidate: 86400, tags: ["stats", "site-data"] },
 );
 
 export const fetchSiteStats = unstable_cache(
   _fetchSiteStats,
-  ["stats-v4"],
+  ["stats-v5"],
   { revalidate: 86400, tags: ["stats", "site-data"] }
 );

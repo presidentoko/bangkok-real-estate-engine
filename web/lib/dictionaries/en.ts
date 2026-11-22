@@ -60,7 +60,7 @@ const dict = {
     ctaFlood: "Ask the data →",
     ctaInventory: "See top-yield condos",
     statsLabels: {
-      buildings: "buildings",
+      buildings: "buildings with price data",
       listings: "active listings (4 portals)",
       chartPts: "monthly price datapoints",
       floodMapping: "districts mapped",

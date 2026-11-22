@@ -8,7 +8,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { fetchBuildingCount, fetchSiteStats } from "@/lib/queries/condos";
 
 /** Building count from the data -- the same figure as the home page's
- *  "buildings" stat (hipflat catalogue, one record per building) -- in place
+ *  "buildings" stat (buildings with listing, price or yield data) -- in place
  *  of the hand-written "1,700+" / "1,800+" this page used to print. */
 async function buildingCount(): Promise<string | null> {
   const n = await fetchBuildingCount().catch(() => null);
@@ -29,7 +29,7 @@ export async function generateMetadata({
     ? "Bangkok Condo Data Methodology — Bubble Index, Yield & Flood Risk | RealData"
     : `${t.title} — RealData`;
   const description = lang === "en"
-    ? `How RealData independently measures ${(await buildingCount()) ?? "the"} Thai condo buildings it tracks — Bubble Index formula, rental yield calculation, flood risk scoring using BMA & JICA data, and full refresh cadence. No developer sponsorships.`
+    ? `How RealData independently measures ${(await buildingCount()) ?? "the"} Thai condo buildings with price data —Bubble Index formula, rental yield calculation, flood risk scoring using BMA & JICA data, and full refresh cadence. No developer sponsorships.`
     : t.lead;
   return {
     title,
@@ -85,7 +85,7 @@ export default async function AboutPage({
     "@type": "Dataset",
     name: "Thailand Condo Bubble Index, Flood Risk & Livability Dataset",
     description:
-      `Independent measurement of ${buildingsLabel ?? "the"} condo buildings across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi. Per-building Bubble Index, district-level flood risk, OSM-derived livability score, weekly refresh.`,
+      `Independent measurement of ${buildingsLabel ?? "the"} condo buildings with listing, price or yield data across Bangkok, Phuket, Chiang Mai, Pattaya, Hua Hin, and Chonburi. Per-building Bubble Index, district-level flood risk, OSM-derived livability score, weekly refresh.`,
     url: `${SEO_SITE_URL}/${lang}/about`,
     creator: { "@id": `${SEO_SITE_URL}/#org` },
     publisher: { "@id": `${SEO_SITE_URL}/#org` },

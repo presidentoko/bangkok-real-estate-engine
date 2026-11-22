@@ -336,7 +336,7 @@ export default async function DataShowcase({
     "@type": "Dataset",
     name: "RealData Thailand Condo Coverage & Bubble Index Distribution",
     description:
-      `Coverage snapshot of the RealData Thailand condo crawl: ${(buildingsTotal.count ?? 0).toLocaleString()} buildings, ` +
+      `Coverage snapshot of the RealData Thailand condo crawl: ${(buildingsTotal.count ?? 0).toLocaleString()} building pages, ` +
       `${(listingsTotal.count ?? 0).toLocaleString()} active listings, ` +
       `${(chartPointsTotal.count ?? 0).toLocaleString()} price-chart data points across ` +
       `${(regionsTotal.count ?? 0).toLocaleString()} districts in ${PROVINCES.length} Thai markets. ` +
@@ -365,9 +365,9 @@ export default async function DataShowcase({
     variableMeasured: [
       {
         "@type": "PropertyValue",
-        name: "Buildings tracked",
+        name: "Building pages",
         value: buildingsTotal.count ?? 0,
-        description: "Condo buildings published from the hipflat crawl",
+        description: "Condo buildings with a published page, merged across hipflat, dotproperty, ddproperty and fazwaz; most have no listing or price data yet",
       },
       {
         "@type": "PropertyValue",

@@ -58,7 +58,7 @@ const dict: Dict = {
     ctaFlood: "ถามข้อมูล →",
     ctaInventory: "ดูคอนโดผลตอบแทนสูง",
     statsLabels: {
-      buildings: "อาคาร",
+      buildings: "อาคารที่มีข้อมูลราคา",
       listings: "ประกาศที่ใช้งาน (4 พอร์ทัล)",
       chartPts: "จุดข้อมูลรายเดือน",
       floodMapping: "เขตที่จัดทำแผนที่",
