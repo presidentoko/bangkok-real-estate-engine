@@ -28,7 +28,7 @@ import { CONDO_STATIC_BUILD } from "@/lib/buildMode";
 // at 9.79GB of a 10GB Fast Origin Transfer cap. As a static segment it is
 // ISR-cached like sitemap-areas.xml, which answers HIT.
 // Seven days: the gate's inputs move with the weekly scrape, and every deploy
-// prerenders pages 0-2 again anyway. This was 86400, i.e. a full read of the
+// prerenders page 0 again anyway. This was 86400, i.e. a full read of the
 // ~6,400 passing rows every day.
 export const revalidate = 604800;
 export const dynamicParams = true;
@@ -44,7 +44,11 @@ export const maxDuration = 60;
 // /en/sitemap-condos/0 and broke the sitemap. parseInt("0.xml", 10) is 0.
 export function generateStaticParams() {
   if (CONDO_STATIC_BUILD) return [];
-  return [{ page: "0.xml" }, { page: "1.xml" }, { page: "2.xml" }];
+  // Only the page that exists. 1.xml and 2.xml were listed here from when
+  // ~6,400 buildings passed the gate; since 2026-10-25 about 2,100 do, so
+  // those two prerendered as empty files. dynamicParams still serves a
+  // second page on demand the day the count crosses 2,500.
+  return [{ page: "0.xml" }];
 }
 
 // 2,500 condos × 3 langs = 7,500 entries ≈ ~5MB per page
@@ -114,6 +118,23 @@ export async function GET(
     const chunk = (data ?? []) as unknown as Row[];
     rows.push(...chunk);
     if (chunk.length < to - from + 1) break; // exhausted the table
+  }
+
+  // Past the last page: 404, not an empty urlset. The index only lists pages
+  // the count fills (one page since the gate tightened to ~2,100 buildings),
+  // but 1.xml and 2.xml were still prerendered and answered 200 with zero
+  // URLs, which Search Console reports as an empty sitemap for anyone who
+  // submitted them directly. A query failure never reaches here (it throws
+  // above), so zero rows really does mean "no such page".
+  if (rows.length === 0) {
+    return new Response("Not Found", {
+      status: 404,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "public, s-maxage=3600",
+        "X-Robots-Tag": "noindex",
+      },
+    });
   }
 
   // Descriptions, only for the rows the cheap signals did not already pass
