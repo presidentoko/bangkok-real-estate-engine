@@ -55,7 +55,7 @@ jobs:
     # Ingest steps (DotProperty 40+ cities + DDProperty 5 cities + FazWaz
     # 6 cities + foreign quota) dominate runtime: budget ~6h. Tier B itself
     # is ~60min, compute steps ~5min, plus inter-city settle delays.
-    timeout-minutes: 540
+    timeout-minutes: 720
     defaults:
       run:
         shell: powershell
@@ -208,6 +208,7 @@ jobs:
           }
 
       - name: Mark stale listings inactive
+        timeout-minutes: 20
         # dotproperty/ddproperty/fazwaz listings are only ever flipped to
         # is_active=true on sighting; nothing else ever flips them back, so
         # sold/delisted listings would otherwise pollute every median
@@ -222,6 +223,7 @@ jobs:
           }
 
       - name: Backfill condo slugs
+        timeout-minutes: 15
         # The ingest path (src/db.upsert_condo and its three portal-specific
         # siblings) never writes condos.slug, so every building discovered
         # since the last run is born slugless. Nothing linked those by slug,
@@ -244,6 +246,7 @@ jobs:
           }
 
       - name: Refresh the legacy uuid -> slug redirect map
+        timeout-minutes: 15
         # web/middleware.ts answers /condo/<uuid> with a real 308 by looking
         # the uuid up in web/public/u/<2hex>.json, fetched from this repo's
         # main branch on GitHub -- so the map goes live on push, and the
@@ -260,7 +263,8 @@ jobs:
             git push origin HEAD
           }
 
-      - name: Snapshot prices + compute yields
+      - name: Snapshot prices
+        timeout-minutes: 45
         # continue-on-error, and the two scripts no longer gate each other.
         #
         # This step used to `exit $LASTEXITCODE` after each script, with no
@@ -284,6 +288,14 @@ jobs:
             Write-Output "::warning::snapshot_prices exited $LASTEXITCODE"
             Add-Content -Path snapshot.log -Value "CI_STEP_FAILED::snapshot"
           }
+
+      - name: Compute yields
+        # Its own step since 2026-11-27: on 2026-11-22 snapshot_prices.py hung
+        # for ~3h50m with no output, the 540-minute job limit killed the run,
+        # and compute_yields (in the same step) never ran.
+        timeout-minutes: 45
+        continue-on-error: true
+        run: |
           cmd /c "python scripts\compute_yields.py 2>&1" | Tee-Object -FilePath yields.log
           if ($LASTEXITCODE -ne 0) {
             Write-Output "::warning::compute_yields exited $LASTEXITCODE"
@@ -291,6 +303,7 @@ jobs:
           }
 
       - name: Refresh the qualifying yield-district list
+        timeout-minutes: 15
         # web/middleware.ts 301s /yield/<city>/<district> to the city page
         # when the district is not in web/public/u/yield-areas.json -- i.e.
         # it no longer has MIN_AREA_CONDOS measured buildings. Runs after
@@ -307,6 +320,7 @@ jobs:
           }
 
       - name: Revalidate the shared yield / stats caches
+        timeout-minutes: 10
         # The yield index, site stats and area aggregates are unstable_cache
         # entries tagged "site-data" (web/lib/queries). Without this, each
         # locale picked up new yields whenever its own cache happened to
@@ -323,6 +337,7 @@ jobs:
           $r | ConvertTo-Json -Compress | Tee-Object -FilePath revalidate.log
 
       - name: Data quality cleanup + fuzzy rematch
+        timeout-minutes: 45
         # Catches new yield outliers from this scrape + tries Levenshtein
         # ≤2 matching for orphans the base+aggressive normalizers missed.
         # Both idempotent — safe weekly.
@@ -333,16 +348,19 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Recompute bubble_index + region averages
+        timeout-minutes: 30
         run: |
           cmd /c "python scripts\compute_value_scores.py 2>&1" | Tee-Object -FilePath compute.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Analysis pipeline (risk + super_value + alerts + reports)
+        timeout-minutes: 60
         run: |
           cmd /c "python scripts\run_analysis.py 2>&1" | Tee-Object -FilePath analysis.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Prune price_history / condo_market_chart / underpriced_alerts
+        timeout-minutes: 30
         # Unbounded-growth cleanup (price_history ~793k rows and growing
         # ~1.9M rows/year at current cadence; condo_market_chart re-inserts
         # its whole series on every Tier-B revisit). Keeps the most recent
@@ -369,6 +387,7 @@ jobs:
           }
 
       - name: Auto-blog — generate + verify + push
+        timeout-minutes: 30
         # Pulls a story off the rotating topic dial (yield-spread,
         # foreign-quota, city-spotlight), generates a JSON post via
         # Claude Sonnet, re-verifies every numeric claim against the DB,
@@ -381,6 +400,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Output "::warning::generate_weekly_post exited $LASTEXITCODE" }
 
       - name: Distribution kits — Naver blog + community post to Telegram
+        timeout-minutes: 15
         # Takes the post the step above just verified and turns it into two
         # copy-paste files: a Korean Naver-blog post (keyword-titled, short
         # paragraphs, site link last) and a first-person English community

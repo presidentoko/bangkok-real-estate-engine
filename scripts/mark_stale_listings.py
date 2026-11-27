@@ -88,8 +88,44 @@ def _fetch_stale_ids(client, source: str, cutoff: str) -> list[str]:
     return ids
 
 
+def _count_fresh(client, source: str, cutoff: str) -> int:
+    """Active listings of a source seen since the cutoff (keyset, ids only)."""
+    n = 0
+    last = None
+    while True:
+        q = (
+            client.table("listings")
+            .select("id")
+            .eq("source", source)
+            .eq("is_active", True)
+            .gte("last_seen_at", cutoff)
+        )
+        if last is not None:
+            q = q.gt("id", last)
+        chunk = q.order("id").limit(1000).execute().data or []
+        n += len(chunk)
+        if len(chunk) < 1000:
+            break
+        last = chunk[-1]["id"]
+    return n
+
+
+# Safety brake. "Not seen in 21 days" only means "gone" if the sweep that
+# would have seen it actually ran. On 2026-11-22 the DotProperty sweep hit
+# its 150-minute step limit and DDProperty its 60-minute one, FazWaz parsed
+# zero cards (layout change), and this script then deactivated 17,661
+# listings that had simply not been visited. Buildings lost their only
+# listings, fell below the indexability bar and went noindex. A real week of
+# delistings is a small fraction of a source; a sweep that did not run looks
+# like most of it.
+DEFAULT_MAX_STALE_FRAC = 0.4
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--max-stale-frac", type=float, default=DEFAULT_MAX_STALE_FRAC,
+                     help="skip a source when more than this share of its active listings "
+                          f"would be deactivated (default {DEFAULT_MAX_STALE_FRAC}); 1 disables")
     ap.add_argument("--days", type=int, default=DEFAULT_STALE_DAYS,
                      help=f"Mark listings inactive if not seen in this many days (default {DEFAULT_STALE_DAYS})")
     ap.add_argument("--hipflat-days", type=int, default=None,
@@ -110,6 +146,20 @@ def main() -> int:
     client = get_client()
 
     stale_by_source = {s: _fetch_stale_ids(client, s, c) for s, c in cutoffs.items()}
+    for s in list(stale_by_source):
+        stale = len(stale_by_source[s])
+        if not stale or args.max_stale_frac >= 1:
+            continue
+        fresh = _count_fresh(client, s, cutoffs[s])
+        frac = stale / (stale + fresh)
+        if frac > args.max_stale_frac:
+            logger.warning(
+                f"  {s}: {stale:,} of {stale + fresh:,} active listings ({frac:.0%}) unseen since "
+                f"the cutoff. That is a sweep that did not finish, not a week of delistings. "
+                f"Skipping {s}; rerun with --max-stale-frac 1 to force."
+            )
+            print(f"::warning::mark_stale skipped {s}: {frac:.0%} of active listings unseen")
+            stale_by_source[s] = []
     if args.backup and not dry_run:
         import csv
         with open(args.backup, "w", newline="", encoding="utf-8") as fh:
