@@ -56,8 +56,11 @@ export async function POST(request: Request): Promise<Response> {
   // the home page itself is allowed only as an exact /en, /ko or /th.
   // yield/flood/data/districts were added 2026-11-17: they aggregate the
   // whole catalogue and went stale for days after a data repair (audit H5).
+  // The sitemaps and llms.txt cache for 7 days; when a data change moves
+  // buildings across the indexability bar (migration 021, 2026-11-27) they
+  // have to be refreshed without waiting a week or redeploying.
   const allowed =
-    /^\/(en|ko|th)(\/(condo|district|city|near|developer|retiree|best|yield|flood)\/.+|\/(yields|flood|data|districts|inventory))?$/;
+    /^(\/(en|ko|th)(\/(condo|district|city|near|developer|retiree|best|yield|flood)\/.+|\/(yields|flood|data|districts|inventory))?|\/sitemap\.xml|\/sitemap-condos\/\d+\.xml|\/llms\.txt)$/;
   const paths = [...new Set(raw.filter((p): p is string => typeof p === "string"))]
     .filter((p) => allowed.test(p))
     .slice(0, MAX_PATHS);
