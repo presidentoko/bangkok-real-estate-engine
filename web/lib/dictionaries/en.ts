@@ -1544,7 +1544,10 @@ const dict = {
     macroDesc:
       "Bank of Thailand benchmark rates: Policy Rate, MRR, MLR, MOR, household debt. " +
       "The macro backdrop every Thai condo buyer needs before signing a loan.",
-    floodTitle: "Bangkok Flood Risk Map — All 50 Districts Scored | RealData",
+    // Leads with the exact query that reaches this page ("bangkok flood map",
+    // "bangkok flooding map": 15 impressions at position 28-30 over Aug-Nov
+    // 2026, the only generic query the site ranks for at all).
+    floodTitle: "Bangkok Flood Map — Flood Risk for All 50 Districts | RealData",
     floodDesc:
       "Which Bangkok districts flood every monsoon season — and which stay dry. All 50 khet scored 1–5 using BMA Drainage Dept, JICA, and 2011 great flood records. Every condo plotted on the risk map.",
     realityTitle:

@@ -1,4 +1,5 @@
-import { INDEXABILITY_OR_FILTER } from "@/lib/condoIndexability";
+import { hasIndexableSubstance } from "@/lib/condoIndexability";
+import { UUID_RE } from "@/lib/sitemap-helpers";
 import { TELEGRAM_HANDLE } from "@/lib/contactChannels";
 import { getServerSupabase } from "@/lib/supabase";
 import { requireCount, roundEstimate } from "@/lib/llmsCounts";
@@ -35,10 +36,21 @@ async function counts() {
       supabase
         .from("condos_published")
         .select("id", { count: "exact", head: true }),
+      // Buildings that pass on their description alone. The coarse .or()
+      // pre-filter counted any non-empty description, so this file said
+      // 2,279 indexable while the sitemap (which applies the real predicate)
+      // listed 2,117. Fetch just these rows and apply hasIndexableSubstance,
+      // then add them to withData below: the same population as the sitemap.
       supabase
         .from("condos_published")
-        .select("id", { count: "exact", head: true })
-        .or(INDEXABILITY_OR_FILTER),
+        .select("slug, description")
+        .not("slug", "is", null)
+        .not("description", "is", null)
+        .or("active_listings_count.is.null,active_listings_count.lt.1")
+        .is("market_sale_median", null)
+        .is("market_rent_median", null)
+        .is("gross_yield_pct", null)
+        .range(0, 9999),
       // Same population as the site's "buildings with price data" stat
       // (lib/queries/condos.ts buildingsWithDataQuery).
       supabase
@@ -81,7 +93,11 @@ async function counts() {
 
   return {
     buildings: requireCount(buildings, "buildings", 1),
-    substantive: requireCount(substantive, "substantive", 1),
+    substantive:
+      requireCount(withData, "with data", 1) +
+      ((substantive.data ?? []) as { slug: string; description: string | null }[]).filter(
+        (r) => !UUID_RE.test(r.slug) && hasIndexableSubstance({ description: r.description }),
+      ).length,
     withData: requireCount(withData, "with data", 1),
     listings: roundEstimate(requireCount(listings, "listings", 1)),
     yields: requireCount(yields, "yields", 1),
