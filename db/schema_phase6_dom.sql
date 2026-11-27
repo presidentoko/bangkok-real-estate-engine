@@ -60,6 +60,7 @@ grant select on condos_published to anon, authenticated, service_role;
 --    .github/workflows/daily-dom.yml) since the DOM values shift by +1 day
 --    every run even without a new scrape.
 --
+--    Superseded by supabase/migrations/021_dom_all_sources.sql (all sources).
 --    This intentionally recomputes across ALL active hipflat listings every
 --    call rather than only condos touched "recently" — DOM (days on
 --    market) increases by one for every still-active listing every day
