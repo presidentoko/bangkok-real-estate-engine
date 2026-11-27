@@ -176,8 +176,172 @@ def _project_url_from_anchors(card) -> str | None:
     return None
 
 
+# --- Search page layout "s2" (live by 2026-11-22) ----------------------------
+# FazWaz replaced .result-search__item + the onmouseenter JSON bridge with
+# <article class="s2-card" data-id=.. data-m='{"a":area,"f":floor,"b":beds,
+# "p":price}'>. Everything else is plain markup: project name/link in
+# .s2-pname, address in .s2-where, nearest station in .s2-place, pills for
+# quota/year, and the "more" drawer for CAM fee and estimated rent/yield.
+# The old parser matched nothing from then on, every city ended after two
+# "parsed 0 cards" pages, and fazwaz fell to zero active listings.
+S2_CARD_SELECTOR = "article.s2-card[data-id]"
+S2_DIST_RE = re.compile(r"([\d.,]+)\s*(km|m)\s+to\s+(.+)$", flags=re.IGNORECASE)
+S2_TRANSIT_RE = re.compile(r"\b(BTS|MRT|ARL|SRT|BRT)\b\s*$", flags=re.IGNORECASE)
+S2_YIELD_RE = re.compile(r"([\d.]+)\s*%\s*yield", flags=re.IGNORECASE)
+S2_RENT_RE = re.compile(r"rent\s*≈?\s*฿\s*([\d,]+)", flags=re.IGNORECASE)
+S2_BUILT_RE = re.compile(r"Built:?\s*(\d{4})", flags=re.IGNORECASE)
+S2_FACT_SKIP = {"s2i-bed", "s2i-bath", "s2i-size"}
+
+
+def _s2_text(el) -> str | None:
+    if el is None:
+        return None
+    t = el.get_text(" ", strip=True).replace("\xa0", " ")
+    return t or None
+
+
+def _s2_transit(card) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for p in card.select(".s2-place"):
+        t = _s2_text(p) or ""
+        m = S2_DIST_RE.search(t)
+        if not m:
+            continue
+        v = _commafloat(m.group(1))
+        km = None if v is None else (v / 1000 if m.group(2).lower() == "m" else v)
+        where = m.group(3).strip()
+        lm = S2_TRANSIT_RE.search(where)
+        out.append({
+            "label": lm.group(1).upper() if lm else None,
+            "station": (where[: lm.start()].strip() if lm else where) or None,
+            "distance_km": round(km, 3) if km is not None else None,
+        })
+    return out
+
+
+def _parse_s2_card(card, listing_type: str) -> dict[str, Any] | None:
+    sid = card.get("data-id")
+    try:
+        meta = json.loads(card.get("data-m") or "{}")
+    except json.JSONDecodeError:
+        meta = {}
+
+    price = meta.get("p")
+    if not price:
+        price = _thb_to_float(_s2_text(card.select_one(".s2-price b")))
+    try:
+        price = float(price) if price else None
+    except (TypeError, ValueError):
+        price = None
+    if not price:
+        return None
+
+    pname = card.select_one(".s2-pname a") or card.select_one(".s2-pname")
+    project_name = (_s2_text(pname) or "").strip()
+    if not project_name:
+        return None
+    project_url = _absolutize(pname.get("href")) if pname is not None and pname.name == "a" else None
+
+    area = meta.get("a")
+    if area is None:
+        m = AREA_RE.search(_s2_text(card.select_one(".s2i-size")) or "")
+        area = float(m.group(1)) if m else None
+    try:
+        area = float(area) if area else None
+    except (TypeError, ValueError):
+        area = None
+
+    bath_el = card.select_one(".s2-fact.s2i-bath")
+    prop_type = None
+    for f in card.select(".s2-fact"):
+        if not S2_FACT_SKIP.intersection(f.get("class") or []):
+            prop_type = _s2_text(f)
+            break
+
+    address = _s2_text(card.select_one(".s2-where"))
+    sub, district, province = _split_address(address)
+
+    price_a = card.select_one("a.s2-price") or card.select_one("a.s2-ph")
+    detail_url = _absolutize(price_a.get("href")) if price_a is not None else None
+
+    year_built = ownership = None
+    for pill in card.select(".s2-pills .tag"):
+        t = _s2_text(pill) or ""
+        m = S2_BUILT_RE.search(t)
+        if m:
+            year_built = int(m.group(1))
+        elif "Quota" in t and ownership is None:
+            ownership = t
+
+    more = " ".join(_s2_text(d) or "" for d in card.select(".s2-more dd"))
+    est_rent = provided_yield = cam = sink = None
+    if more:
+        m = S2_RENT_RE.search(more)
+        if m:
+            est_rent = _commafloat(m.group(1))
+        m = S2_YIELD_RE.search(more)
+        if m:
+            provided_yield = _commafloat(m.group(1))
+        m = CAM_RE.search(more)
+        if m:
+            v = _commafloat(m.group(1))
+            if v is not None and CAM_FEE_MIN <= v <= CAM_FEE_MAX:
+                cam = v
+        m = SINK_RE.search(more)
+        if m:
+            sink = _commafloat(m.group(1))
+
+    img = card.select_one(".s2-ph img, .lm-pds img, img")
+    thumb = None
+    if img is not None:
+        thumb = img.get("src") or img.get("data-src")
+
+    return {
+        "source": "fazwaz",
+        "source_listing_id": sid,
+        "name": project_name,
+        "url": detail_url,
+        "project_url": project_url,
+        "listing_type": listing_type,
+        "price": price,
+        # The s2 card no longer prints ฿/SqM; derive it like the page does.
+        "price_per_sqm": round(price / area, 2) if area else None,
+        "area_sqm": area,
+        "bedrooms": _to_smallint(meta.get("b")),
+        "bathrooms": _to_smallint(_s2_text(bath_el)),
+        "property_type": prop_type or "Condo",
+        "address": address,
+        "subdistrict": sub,
+        "district": district,
+        "province": province,
+        "transit": _s2_transit(card),
+        "year_built": year_built,
+        "ownership": ownership,
+        "est_rent_per_month": est_rent,
+        "provided_yield_pct": provided_yield,
+        "cam_fee_per_month": cam,
+        "sinking_fund": sink,
+        "thumbnail": thumb,
+    }
+
+
 def parse_cards(html: str, listing_type: str = "sale") -> list[dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
+    s2 = soup.select(S2_CARD_SELECTOR)
+    if s2:
+        out_s2: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for card in s2:
+            sid = card.get("data-id")
+            if not sid or sid in seen:
+                continue
+            item = _parse_s2_card(card, listing_type)
+            if item:
+                out_s2.append(item)
+                seen.add(sid)
+        return out_s2
+
+    # Legacy layout (before 2026-11).
     cards = soup.select(CARD_SELECTOR)
     out: list[dict[str, Any]] = []
     seen_sids: set[str] = set()
